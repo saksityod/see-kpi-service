@@ -1191,11 +1191,11 @@ class DashboardController extends Controller
 			
 			$cat2 = [];
 			foreach ($perspective as $p) {
-				$cat2[] = ['label' => $p->perspective_abbr.' '.$p->total_score.'', 'color' => $p->color_code, 'value' => $p->total_score, 'perspective_id' => $p->perspective_id,
-				'tooltext' => "<div id='nameDiv'>" . $p->perspective_name . "</div>{br}" . $p->total_score." of " . $p->perspective_weight . ""];
+				$cat2[] = ['label' => $p->perspective_abbr.' '.$p->total_score.'%', 'color' => $p->color_code, 'value' => $p->total_score, 'perspective_id' => $p->perspective_id,
+				'tooltext' => "<div id='nameDiv'>" . $p->perspective_name . "</div>{br}" . $p->total_score."% of " . $p->perspective_weight . "%"];
 			}
-			$cat1[] = ['label' => $e->name . ' ' . $e->total_weigh_score .'', 'color' => $e->color_code, 'value' => $e->result_score, 'category' => $cat2,
-			'tooltext' => "<div id='nameDiv'>" . $e->full_name . "</div>{br}" . $e->total_weigh_score." of " . $e->total_weight_percent . ""];
+			$cat1[] = ['label' => $e->name . ' ' . $e->total_weigh_score .'%', 'color' => $e->color_code, 'value' => $e->result_score, 'category' => $cat2,
+			'tooltext' => "<div id='nameDiv'>" . $e->full_name . "</div>{br}" . $e->total_weigh_score."% of " . $e->total_weight_percent . "%"];
 			$header = $e->name;
 		}
 		
