@@ -41,7 +41,7 @@ class AuthenticateController extends Controller
 		}		
 		
 		$emp = DB::select("
-			select b.is_hr
+			select b.is_hr, b.is_self_assign ,a.emp_code
 			from employee a
 			inner join appraisal_level b
 			on a.level_id = b.level_id
@@ -55,7 +55,7 @@ class AuthenticateController extends Controller
 
 		
 		
-		return response()->json(['status' => 200, 'theme_color' => $config->theme_color, 'is_hr' => $emp[0]->is_hr]);
+		return response()->json(['status' => 200, 'theme_color' => $config->theme_color, 'is_hr' => $emp[0]->is_hr, 'is_self_assign' => $emp[0]->is_self_assign, 'emp_code' => $emp[0]->emp_code]);
     }    
 	
 	public function debug(Request $request)

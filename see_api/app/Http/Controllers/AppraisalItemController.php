@@ -57,7 +57,7 @@ class AppraisalItemController extends Controller
 		$qinput = array();
 		$query = "
 			select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
-			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.is_active, f.form_name, f.app_url, f.form_id
+			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
 			from appraisal_item i
 			left outer join appraisal_structure s
 			on i.structure_id = s.structure_id 
@@ -170,6 +170,11 @@ class AppraisalItemController extends Controller
 							'column_display' => 'Deduct Score/Unit',
 							'column_name' => 'unit_deduct_score',
 							'data_type' => 'number',
+						],
+						[
+							'column_display' => 'Value Get Zero',
+							'column_name' => 'value_get_zero',
+							'data_type' => 'number',
 						],									
 						[
 							'column_display' => 'IsActive',
@@ -248,6 +253,11 @@ class AppraisalItemController extends Controller
 						[
 							'column_display' => 'Deduct Score/Unit',
 							'column_name' => 'unit_deduct_score',
+							'data_type' => 'number',
+						],
+						[
+							'column_display' => 'Value Get Zero',
+							'column_name' => 'value_get_zero',
 							'data_type' => 'number',
 						],									
 						[
@@ -430,7 +440,7 @@ class AppraisalItemController extends Controller
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [	
 				'item_name' => 'required|max:255|unique:appraisal_item',
-				'kpi_type_id' => 'required|integer',
+				//'kpi_type_id' => 'required|integer',
 				'perspective_id' => 'required|integer',
 				'structure_id' => 'required|integer',
 				'appraisal_level' => 'required',
@@ -659,7 +669,7 @@ class AppraisalItemController extends Controller
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [
 				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
-				'kpi_type_id' => 'required|integer',
+				//'kpi_type_id' => 'required|integer',
 				'perspective_id' => 'required|integer',
 				'structure_id' => 'required|integer',
 				'appraisal_level' => 'required',

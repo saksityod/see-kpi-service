@@ -54,6 +54,7 @@ class AppraisalDataController extends Controller
 			select level_id, appraisal_level_name
 			from appraisal_level
 			where is_active = 1
+			and is_individual = 1
 			order by level_id
 		");
 		return response()->json($items);

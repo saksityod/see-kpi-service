@@ -23,7 +23,6 @@ class CDSResultController extends Controller
 
 	public function __construct()
 	{
-
 	   $this->middleware('jwt.auth');
 	}
 	
@@ -52,6 +51,7 @@ class CDSResultController extends Controller
 						$errors[] = ['employee_id' => $i->employee_id, 'errors' => $validator->errors()];
 					} else {
 						$month_name = PeriodMonth::find($i->month);
+						$a_date = $i->year."-".$i->month."-01";
 						if (empty($month_name)) {
 							$errors[] = ['employee_id' => $i->employee_id, 'errors' => 'Invalid Month.'];
 						} else {
@@ -59,6 +59,8 @@ class CDSResultController extends Controller
 								$result_check = CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
 								
 								if ($result_check->count() == 0) {
+									
+									//echo date("Y-m-t", strtotime($a_date));
 									$cds_result = new CDSResult;
 									$cds_result->appraisal_type_id = $i->appraisal_type_id;
 									$cds_result->emp_id = $i->employee_id;
@@ -70,11 +72,13 @@ class CDSResultController extends Controller
 									$cds_result->appraisal_month_no = $i->month;
 									$cds_result->appraisal_month_name = $month_name->month_name;
 									$cds_result->cds_value = $i->cds_value;
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
 									$cds_result->updated_by = Auth::id();						
 									$cds_result->save();							
 								} else {
-									CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value, 'updated_by' => Auth::id()]);							
+									CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
+										'updated_by' => Auth::id()]);							
 								}
 
 							} catch (Exception $e) {
@@ -98,6 +102,7 @@ class CDSResultController extends Controller
 						$errors[] = ['org_id' => $i->organization_id, 'errors' => $validator->errors()];
 					} else {
 						$month_name = PeriodMonth::find($i->month);
+						$a_date = $i->year."-".$i->month."-01";
 						if (empty($month_name)) {
 							$errors[] = ['org_id' => $i->organization_id, 'errors' => 'Invalid Month.'];
 						} else {
@@ -105,6 +110,7 @@ class CDSResultController extends Controller
 								$result_check = CDSResult::where("org_id",$i->organization_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
 								
 								if ($result_check->count() == 0) {
+									
 									$cds_result = new CDSResult;
 									$cds_result->appraisal_type_id = $i->appraisal_type_id;
 									$cds_result->org_id = $i->organization_id;
@@ -114,11 +120,12 @@ class CDSResultController extends Controller
 									$cds_result->appraisal_month_no = $i->month;
 									$cds_result->appraisal_month_name = $month_name->month_name;
 									$cds_result->cds_value = $i->cds_value;
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
 									$cds_result->updated_by = Auth::id();						
 									$cds_result->save();							
 								} else {
-									CDSResult::where("org_id",$i->organization_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value, 'updated_by' => Auth::id()]);							
+									CDSResult::where("org_id",$i->organization_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)), 'updated_by' => Auth::id()]);							
 								}
 
 							} catch (Exception $e) {
@@ -132,7 +139,7 @@ class CDSResultController extends Controller
 		return response()->json(['status' => 200, 'errors' => $errors]);
 	}	
 	
-	public function export_bk(Request $request)
+	public function export(Request $request)
 	{
 		$qinput = array();
 
@@ -178,7 +185,42 @@ class CDSResultController extends Controller
 			and cr.appraisal_month_no = {$request->month_id}
 			where cds.is_sql = 0	
 		";
-		
+/* 
+	-- TOTO --
+		$query ="
+			SELECT DISTINCT
+				r.level_id,
+				al.appraisal_level_name,
+				r.org_id,
+				org.org_name,
+				r.emp_id,
+				e.emp_name,
+				r.position_id,
+				po.position_name,
+				cds.cds_id,
+				cds.cds_name,
+				ifnull(cr.cds_value, 0) AS cds_value,
+				ap.appraisal_year
+			FROM
+				appraisal_item_result r
+			LEFT OUTER JOIN employee e ON r.emp_id = e.emp_id
+			INNER JOIN appraisal_item i ON r.item_id = i.item_id
+			LEFT OUTER JOIN appraisal_item_position p ON i.item_id = p.item_id
+			INNER JOIN kpi_cds_mapping m ON i.item_id = m.item_id
+			INNER JOIN cds ON m.cds_id = cds.cds_id
+			INNER JOIN appraisal_period ap ON r.period_id = ap.period_id
+			INNER JOIN system_config sys ON ap.appraisal_year = sys.current_appraisal_year
+			INNER JOIN emp_result er ON r.emp_result_id = er.emp_result_id
+			LEFT OUTER JOIN position po ON r.position_id = po.position_id
+			LEFT OUTER JOIN org ON r.org_id = org.org_id
+			LEFT OUTER JOIN appraisal_level al ON r.level_id = al.level_id
+			LEFT OUTER JOIN cds_result cr ON cds.cds_id = cr.cds_id
+			WHERE
+				cds.is_sql = 0
+			and cr.year = {$request->current_appraisal_year}
+		 	and cr.appraisal_month_no = {$request->month_id}
+		";
+		*/
 		// $qinput[] = $request->current_appraisal_year;
 		// $qinput[] = $request->month_id;
 		
@@ -191,25 +233,19 @@ class CDSResultController extends Controller
 			$qinput[] = $current_date;
 		}
 		
-		empty($request->level_id) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id) ?: ($query .= " And org.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		empty($request->org_id) ?: ($query .= " And cr.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->appraisal_type_id) ?: ($query .= " And er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 		
 		$qfooter = " Order by r.emp_id, cds.cds_id ";
-
-
-
-
-
 		
 		$items = DB::select($query . $qfooter, $qinput);
 		// echo $query;
 		// echo "<br>";
 		// print_r($qinput);
-
-
 		
 		$filename = "CDS_Result";  //. date('dm') .  substr(date('Y') + 543,2,2);
 		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
@@ -271,7 +307,7 @@ class CDSResultController extends Controller
 
 	}
 	//add by nong
-	public function export(Request $request)
+	public function export_bk(Request $request)
 	{
 		$qinput = array();
 
@@ -295,7 +331,6 @@ class CDSResultController extends Controller
 		if (empty($checkyear)) {
 			return 'Appraisal Period not found for the Current Appraisal Year.';
 		}
-		
 		
 		/*
 		$query = "
@@ -321,7 +356,7 @@ class CDSResultController extends Controller
 
 		$query = "
 			select distinct cr.level_id, cr.org_id, al.appraisal_level_name,
-			cr.emp_id,cr.position_id, org.org_name, e.emp_name, po.position_name,
+			cr.emp_id,cr.position_id, org.org_name, e.emp_code, e.emp_name, po.position_name,
 			 cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value,
 			 ap.appraisal_year 
 			from appraisal_item_result r 
@@ -362,6 +397,7 @@ class CDSResultController extends Controller
 		}
 		
 		empty($request->level_id) ?: ($query .= " And cr.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		empty($request->org_id) ?: ($query .= " And cr.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And cr.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->emp_id) ?: ($query .= " And cr.emp_id = ? " AND $qinput[] = $request->emp_id);
@@ -388,7 +424,7 @@ class CDSResultController extends Controller
 			$items =[];
 			$qinput=[]; 
 				$query = "
-					select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
+					select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_name, e.emp_code,r.position_id, po.position_name, cds.cds_id, cds.cds_name, 0.00  as cds_value, ap.appraisal_year
 					from appraisal_item_result r
 					left outer join employee e on r.emp_id = e.emp_id 
 					inner join appraisal_item i on r.item_id = i.item_id
@@ -419,7 +455,8 @@ class CDSResultController extends Controller
 					$qinput[] = $current_date;
 				}
 				
-				empty($request->level_id) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id);
+				empty($request->level_id) ?: ($query .= " And org.level_id = ? " AND $qinput[] = $request->level_id);
+				empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 				empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);
@@ -433,11 +470,11 @@ class CDSResultController extends Controller
 
 				
 				$items = DB::select($query . $qfooter, $qinput);
-				/*
+				   /*
 				   echo $query;
 				   echo "<br>";
 				   print_r($qinput);
-				*/
+				   */
 		}
 		
 		 
@@ -448,7 +485,7 @@ class CDSResultController extends Controller
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 				
 				if ($request->appraisal_type_id == 2) {
-					$sheet->appendRow(array('Appraisal Type ID', 'Level ID', 'Level Name', 'Organization ID', 'Organization Name', 'Employee ID', 'Employee Name', 'Position ID', 'Position Name', 'CDS ID', 'CDS Name', 'Year', 'Month', 'CDS Value'));
+					$sheet->appendRow(array('Appraisal Type ID', 'Level ID', 'Level Name', 'Organization ID', 'Organization Name', 'Employee ID', 'Employee Code', 'Employee Name', 'Position ID', 'Position Name', 'CDS ID', 'CDS Name', 'Year', 'Month', 'CDS Value'));
 
 					foreach ($items as $i) {
 						// empty($i->appraisal_year) ? $appraisal_year = $request->current_appraisal_year : $appraisal_year = $i->appraisal_year;
@@ -461,7 +498,8 @@ class CDSResultController extends Controller
 							$i->appraisal_level_name,
 							$i->org_id,
 							$i->org_name,
-							$i->emp_id, 
+							$i->emp_id,
+							$i->emp_code,
 							$i->emp_name,
 							$i->position_id,
 							$i->position_name,
@@ -559,7 +597,7 @@ class CDSResultController extends Controller
 	public function auto_emp_name(Request $request)
 	{
 		$items = DB::select("
-			Select distinct e.emp_id, e.emp_name
+			Select distinct e.emp_id, e.emp_code, e.emp_name
 			From employee e
 			where e.emp_name like ? and e.is_active = 1
 			Order by e.emp_name		
@@ -573,7 +611,7 @@ class CDSResultController extends Controller
 		$qinput = array();
 		$query = "
 			select r.cds_result_id, r.emp_id, e.emp_code, e.emp_name, r.org_id, o.org_code, o.org_name, l.appraisal_level_name, r.cds_id, s.cds_name, r.year, m.month_name, r.cds_value
-			From cds_result r 
+			From cds_result r
 			left outer join employee e
 			on r.emp_id = e.emp_id
 			left outer join cds s
@@ -590,10 +628,11 @@ class CDSResultController extends Controller
 			and l.is_hr = 0
 		";
 				
-		empty($request->current_appraisal_year) ?: ($query .= " AND year = ? " AND $qinput[] = $request->current_appraisal_year);
+		empty($request->current_appraisal_year) ?: ($query .= " AND r.year = ? " AND $qinput[] = $request->current_appraisal_year);
 		empty($request->appraisal_type_id) ?: ($query .= " AND r.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 		empty($request->month_id) ?: ($query .= " And r.appraisal_month_no = ? " AND $qinput[] = $request->month_id);
-		empty($request->level_id) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);

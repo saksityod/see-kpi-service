@@ -19,6 +19,6 @@ class DatabaseConnection extends Model
 	public $incrementing = true;
 	//public $timestamps = false;
 	//protected $guarded = array();
-	protected $fillable = array('connection_name', 'database_type_id', 'ip_address', 'port', 'database_name', 'user_name', 'password');
+	protected $fillable = array('connection_name', 'database_type_id', 'ip_address', 'port', 'database_name', 'user_name', 'password','is_report_connection');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }
