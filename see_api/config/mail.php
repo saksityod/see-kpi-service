@@ -54,7 +54,8 @@ return [
     |
     */
 
-    'from' => ['address' => null, 'name' => null],
+
+    'from' => ['address' => 'Administrator@tfg.co.th', 'name' => 'TFG KPI Winner'],
 
     /*
     |--------------------------------------------------------------------------

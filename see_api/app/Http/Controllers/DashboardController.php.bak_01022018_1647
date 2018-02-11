@@ -1839,7 +1839,7 @@ class DashboardController extends Controller
 			if ($request->appraisal_type_id == 2) {
 				$emp = Employee::where('emp_id',$request->emp_id)->first();
 				$org_list = DB::select("
-					SELECT a.org_id, a.emp_id, g.emp_name org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(b.etl_dttm) etl_dttm
+					SELECT a.org_id, a.emp_id, g.emp_name org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(a.etl_dttm) etl_dttm
 					FROM monthly_appraisal_item_result a
 					left outer join appraisal_item_result b
 					on a.item_id = b.item_id
@@ -1865,7 +1865,7 @@ class DashboardController extends Controller
 				", array($request->item_id,$request->appraisal_type_id,$emp->emp_code, $emp->emp_code, $request->period_id));
 			} else {
 				$org_list = DB::select("
-					SELECT a.org_id, a.emp_id, d.org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(b.etl_dttm) etl_dttm
+					SELECT a.org_id, a.emp_id, d.org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(a.etl_dttm) etl_dttm
 					FROM monthly_appraisal_item_result a
 					left outer join appraisal_item_result b
 					on a.item_id = b.item_id
@@ -2212,7 +2212,7 @@ class DashboardController extends Controller
 				$emp = Employee::where('emp_id',$request->emp_id)->first();
 				$period = AppraisalPeriod::find($request->period_id);
 				$org_list = DB::select("
-					select e.org_id, d.emp_id, i.emp_name org_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name, max(d.etl_dttm) etl_dttm
+					select e.org_id, d.emp_id, i.emp_name org_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name, max(a.etl_dttm) etl_dttm
 					from monthly_appraisal_item_result a
 					left outer join appraisal_period b
 					on a.period_id = b.period_id
@@ -2248,7 +2248,7 @@ class DashboardController extends Controller
 				$org = Org::find($request->org_id);
 				$period = AppraisalPeriod::find($request->period_id);
 				$org_list = DB::select("
-					select e.org_id, d.emp_id, e.org_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name, max(d.etl_dttm) etl_dttm
+					select e.org_id, d.emp_id, e.org_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name, max(a.etl_dttm) etl_dttm
 					from monthly_appraisal_item_result a
 					left outer join appraisal_period b
 					on a.period_id = b.period_id
@@ -2283,7 +2283,7 @@ class DashboardController extends Controller
 
 				if ($request->appraisal_type_id == 2) {
 					$query = "
-						select a.emp_id, a.org_id, a.item_id, a.appraisal_month_no, a.appraisal_month_name, a.actual_value, d.forecast_value ,a.target_value, a.period_id, d.item_result_id, d.percent_achievement
+						select a.emp_id, a.org_id, a.item_id, a.appraisal_month_no, a.appraisal_month_name, a.actual_value, d.forecast_value ,a.target_value, a.period_id, d.item_result_id
 						from monthly_appraisal_item_result a
 						left outer join appraisal_period b
 						on a.period_id = b.period_id
@@ -2309,7 +2309,7 @@ class DashboardController extends Controller
 					$qinput[] = $o->emp_id;
 
 				$dual_chart = DB::select("
-					select a.target_value, a.actual_value, a.forecast_value, a.percent_achievement
+					select a.target_value, a.actual_value, a.forecast_value
 					from appraisal_item_result a
 					left outer join emp_result b
 					on a.emp_result_id = b.emp_result_id
@@ -2322,7 +2322,7 @@ class DashboardController extends Controller
 				} else {
 
 					$query = "
-						select a.org_id, a.item_id, a.appraisal_month_no, a.appraisal_month_name, a.actual_value, d.forecast_value ,a.target_value, a.period_id, d.item_result_id, d.percent_achievement
+						select a.org_id, a.item_id, a.appraisal_month_no, a.appraisal_month_name, a.actual_value, d.forecast_value ,a.target_value, a.period_id, d.item_result_id
 						from monthly_appraisal_item_result a
 						left outer join appraisal_period b
 						on a.period_id = b.period_id
@@ -2348,7 +2348,7 @@ class DashboardController extends Controller
 					$qinput[] = $o->org_id;
 
 					$dual_chart = DB::select("
-						select a.target_value, a.actual_value, a.forecast_value, a.percent_achievement
+						select a.target_value, a.actual_value, a.forecast_value
 						from appraisal_item_result a
 						left outer join emp_result b
 						on a.emp_result_id = b.emp_result_id
@@ -2408,8 +2408,7 @@ class DashboardController extends Controller
 					'data' => [
 					"target" => $dual_chart[0]->target_value,
 					"forecast" => $dual_chart[0]->forecast_value,
-					"actual_value" => $dual_chart[0]->actual_value,
-					"percent_achievement" => $dual_chart[0]->percent_achievement
+					"actual_value" => $dual_chart[0]->actual_value
 					],
 					'color_range' => $color
 				];

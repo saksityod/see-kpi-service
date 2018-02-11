@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlsrv'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -54,10 +54,10 @@ return [
 
         'mysql' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_HOST', 'localhost'),
-            'database'  => env('DB_DATABASE', 'elos'),
+            'host'      => env('DB_HOST', '10.0.1.58'),
+            'database'  => env('DB_DATABASE', 'see-kpi-bk'),
             'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', 'init1234'),
+            'password'  => env('DB_PASSWORD', 'P@ssw0rd'),
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix'    => '',
@@ -75,15 +75,7 @@ return [
             'schema'   => 'public',
         ],
 
-        'sqlsrv' => [
-            'driver'   => 'sqlsrv',
-            'host'     => env('DB_HOST', '10.22.51.240,1433'),
-            'database' => env('DB_DATABASE', 'dqs_central'),
-            'username' => env('DB_USERNAME', 'dqs_central'),
-            'password' => env('DB_PASSWORD', '1234567890'),
-            'charset'  => 'utf8',
-            'prefix'   => '',
-        ],
+       
 
     ],
 

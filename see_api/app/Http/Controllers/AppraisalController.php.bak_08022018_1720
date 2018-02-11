@@ -890,7 +890,7 @@ class AppraisalController extends Controller
 				left join uom on  b.uom_id= uom.uom_id
 				where a.emp_result_id = ?
 				and d.form_id != 2
-				order by c.seq_no, b.item_id
+				order by b.item_id
 				", array($emp_result_id));
 		} else {
 			$items = DB::select("
@@ -917,7 +917,7 @@ class AppraisalController extends Controller
 				on a.emp_result_id = h.emp_result_id
 				left join uom on  b.uom_id= uom.uom_id
 				where a.emp_result_id = ?
-				order by c.seq_no asc, b.item_id
+				order by b.item_id
 				", array($emp_result_id));
 		}
 
@@ -2048,24 +2048,24 @@ class AppraisalController extends Controller
     $empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
 		$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
-		$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}" ;
+
 		if ($empLevInfo["is_all"]) {
 	      $result = DB::select("
-	        SELECT distinct org.level_id, lev.appraisal_level_name
-					FROM monthly_appraisal_item_result emp
+	        SELECT org.level_id, lev.appraisal_level_name
+					FROM employee emp
 					INNER JOIN org ON org.org_id = emp.org_id
 					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
-					WHERE 1 = 1
+					WHERE emp.is_active = 1
 					".$levelStr."
-					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					GROUP BY org.level_id");
 	    } else {
 	      $result = DB::select("
-		      SELECT distinct org.level_id, lev.appraisal_level_name
-					FROM monthly_appraisal_item_result emp
+		      SELECT org.level_id, lev.appraisal_level_name
+					FROM employee emp
 					INNER JOIN org ON org.org_id = emp.org_id
 					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
-					WHERE 1 = 1
+					WHERE emp.is_active = 1
 					AND (
 						emp.emp_code = '{$empCode}'
 						OR emp.chief_emp_code = '{$empCode}'
@@ -2081,8 +2081,8 @@ class AppraisalController extends Controller
 						)
 					)
 					".$levelStr."
-					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					GROUP BY org.level_id");
 	    }
 
 		return response()->json($result);
@@ -2091,14 +2091,12 @@ class AppraisalController extends Controller
 	//add by toto
 	public function org_level_by_empname(Request $request) {
 		$emp_id = (empty($request->emp_id)) ? " " : "WHERE emp.emp_id = {$request->emp_id}";
-		$period_id = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}";
 		$items = DB::select("
-	        SELECT distinct lev.level_id, lev.appraisal_level_name
-	        FROM monthly_appraisal_item_result emp
+	        SELECT lev.level_id, lev.appraisal_level_name
+	        FROM employee emp
 			INNER JOIN org ON org.org_id = emp.org_id
 			INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
 			".$emp_id."
-			".$period_id."
 		");
 		return response()->json($items);
 	}
@@ -2106,16 +2104,11 @@ class AppraisalController extends Controller
 	//add by toto
 	public function organization_by_empname(Request $request) {
 		$emp_id = (empty($request->emp_id)) ? " " : "WHERE emp.emp_id = {$request->emp_id}";
-		$org_level = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level}";
-		$period_id = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}";
-		
 		$items = DB::select("
-	        SELECT distinct org.org_id, org.org_name
-	        FROM monthly_appraisal_item_result emp
+	        SELECT org.org_id, org.org_name
+	        FROM employee emp
 			INNER JOIN org ON org.org_id = emp.org_id
 			".$emp_id."
-			".$org_level."
-			".$period_id."
 		");
 		return response()->json($items);
 	}
@@ -2141,17 +2134,14 @@ class AppraisalController extends Controller
   //   } else {
 			$orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
 			$empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
-			$empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
-			$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
       $result = DB::select("
-				SELECT distinct org.org_id, org.org_name
+				SELECT org.org_id, org.org_name
 				FROM org
-				INNER JOIN monthly_appraisal_item_result emp ON emp.org_id = org.org_id
+				INNER JOIN employee emp ON emp.org_id = org.org_id
 				WHERE org.is_active = 1
+				AND emp.is_active = 1
 				".$orgLevelStr."
 				".$empLevelStr."
-				".$empIdStr."
-				".$periodStr."
 				GROUP BY org.org_id ");
     //}
 

@@ -41,7 +41,8 @@ class DatabaseConnectionController extends Controller
 		$items = DB::select("
 			select *
 			from database_type
-			order by database_type asc
+			where database_type_id != 0
+			order by database_type_id asc
 		");
 		return response()->json($items);
 	}
@@ -49,36 +50,62 @@ class DatabaseConnectionController extends Controller
 	
 	public function store(Request $request)
 	{
-		$validator = Validator::make($request->all(), [
-			'connection_name' => 'required|max:100|unique:database_connection',
-			'database_type_id' => 'required|integer',
-			'ip_address' => 'required|max:100',
-			'database_name' => 'required|max:100',
-			'user_name' => 'required|max:100',
-			'password' => 'required|max:100'
-		]);
+		if($request->access_type=="ODBC") {
+			$validator = Validator::make($request->all(), [
+				'connection_name' => 'required|max:100|unique:database_connection',
+				'user_name' => 'required|max:100',
+				'password' => 'required|max:100'
+			]);
 
-		if ($validator->fails()) {
-			return response()->json(['status' => 400, 'data' => $validator->errors()]);
-		}
-
-		if(!empty($request->is_report_connection)) {
-			$irc = DB::select("
-				Select is_report_connection
-				from database_connection
-				where is_report_connection = 1
-			");
-			if(!empty($irc)) {
-				$irc_errors = array('is_report_connection'=>'is report connection has already');
-				return response()->json(['status' => 400, 'data' => $irc_errors]);
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			}
-		}
 
-		$item = new DatabaseConnection;
-		$item->fill($request->all());
-		$item->created_by = Auth::id();
-		$item->updated_by = Auth::id();
-		$item->save();
+			$item = new DatabaseConnection;
+			$item->connection_name = $request->connection_name;
+			$item->user_name = $request->user_name;
+			$item->password = $request->password;
+			$item->database_type_id = 0;
+			$item->ip_address = 'NA';
+			$item->port = 0;
+			$item->database_name = 'NA';
+			$item->is_report_connection = 0;
+			$item->created_by = Auth::id();
+			$item->updated_by = Auth::id();
+			$item->save();
+			
+		} else {
+			$validator = Validator::make($request->all(), [
+				'connection_name' => 'required|max:100|unique:database_connection',
+				'database_type_id' => 'required|integer',
+				'ip_address' => 'required|max:100',
+				'database_name' => 'required|max:100',
+				'user_name' => 'required|max:100',
+				'password' => 'required|max:100'
+			]);
+
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			}
+
+			if(!empty($request->is_report_connection)) {
+				$irc = DB::select("
+					Select is_report_connection
+					from database_connection
+					where is_report_connection = 1
+				");
+				if(!empty($irc)) {
+					$irc_errors = array('is_report_connection'=>'is report connection has already');
+					return response()->json(['status' => 400, 'data' => $irc_errors]);
+				}
+			}
+
+			$item = new DatabaseConnection;
+			$item->fill($request->all());
+			$item->created_by = Auth::id();
+			$item->updated_by = Auth::id();
+			$item->save();
+		}
 	
 		return response()->json(['status' => 200, 'data' => $item]);	
 	}
@@ -100,38 +127,62 @@ class DatabaseConnectionController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Database Connection not found.']);
 		}
-		
-		$validator = Validator::make($request->all(), [
-			'connection_name' => 'required|max:100|unique:database_connection,connection_name,' . $connection_id . ',connection_id',
-			'database_type_id' => 'required|integer',
-			'ip_address' => 'required|max:100',
-			'database_name' => 'required|max:100',
-			'user_name' => 'required|max:100',
-			'password' => 'required|max:100'
-		]);
 
-		if ($validator->fails()) {
-			return response()->json(['status' => 400, 'data' => $validator->errors()]);
-		}
+		if($request->access_type=="ODBC") {
+			$validator = Validator::make($request->all(), [
+				'connection_name' => 'required|max:100|unique:database_connection,connection_name,' . $connection_id . ',connection_id',
+				'user_name' => 'required|max:100',
+				'password' => 'required|max:100'
+			]);
 
-		if(!empty($request->is_report_connection)) {
-			$irc = DB::select("
-				Select is_report_connection
-				from database_connection
-				where is_report_connection = 1
-				");
-			if(!empty($irc)) {
-				$irc_errors = array('is_report_connection'=>'is report connection has already');
-				return response()->json(['status' => 400, 'data' => $irc_errors]);
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			}
-		}
 
-		$item->fill($request->all());
-		$item->updated_by = Auth::id();
-		$item->save();
+			$item = DatabaseConnection::find($request->connection_id);
+			$item->connection_name = $request->connection_name;
+			$item->user_name = $request->user_name;
+			$item->password = $request->password;
+			$item->database_type_id = 0;
+			$item->ip_address = 'NA';
+			$item->port = 0;
+			$item->database_name = 'NA';
+			$item->is_report_connection = 0;
+			$item->updated_by = Auth::id();
+			$item->save();
+		} else {
+			$validator = Validator::make($request->all(), [
+				'connection_name' => 'required|max:100|unique:database_connection,connection_name,' . $connection_id . ',connection_id',
+				'database_type_id' => 'required|integer',
+				'ip_address' => 'required|max:100',
+				'database_name' => 'required|max:100',
+				'user_name' => 'required|max:100',
+				'password' => 'required|max:100'
+			]);
 	
-		return response()->json(['status' => 200, 'data' => $item]);
-				
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			}
+
+			if(!empty($request->is_report_connection)) {
+				$irc = DB::select("
+					Select is_report_connection
+					from database_connection
+					where is_report_connection = 1
+					and connection_id != '{$request->connection_id}'
+					");
+				if(!empty($irc)) {
+					$irc_errors = array('is_report_connection'=>'is report connection has already');
+					return response()->json(['status' => 400, 'data' => $irc_errors]);
+				}
+			}
+
+			$item->fill($request->all());
+			$item->updated_by = Auth::id();
+			$item->save();
+		}
+	
+		return response()->json(['status' => 200, 'data' => $item]);		
 	}
 	
 	public function destroy($connection_id)

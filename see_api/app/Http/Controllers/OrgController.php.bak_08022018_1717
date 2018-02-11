@@ -63,7 +63,6 @@ class OrgController extends Controller
 				FROM org o
 				INNER JOIN employee e ON e.org_id = o.org_id
 				WHERE o.level_id = '{$level_id}'
-				AND e.level_id = '{$level_id_emp}'
 				GROUP BY o.org_id
 				ORDER BY o.org_code ASC
 				");

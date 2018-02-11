@@ -932,10 +932,10 @@ class AppraisalAssignmentController extends Controller
 										GROUP  BY appraisal_year,
 												  appraisal_frequency_id) z
 								WHERE  er.emp_id = e.emp_id
+									   AND e.org_id = o.org_id
 									   AND er.period_id = p.period_id
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
-									   AND er.org_id = e.org_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -959,8 +959,8 @@ class AppraisalAssignmentController extends Controller
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
-					and er.org_id = o.org_id
-					and er.position_id = po.position_id
+					and e.org_id = o.org_id
+					and e.position_id = po.position_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1089,7 +1089,7 @@ class AppraisalAssignmentController extends Controller
 										GROUP  BY appraisal_year,
 												  appraisal_frequency_id) z
 								WHERE  er.emp_id = e.emp_id
-									   AND er.org_id = e.org_id
+									   AND e.org_id = o.org_id
 									   AND er.period_id = p.period_id
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
@@ -1121,8 +1121,8 @@ class AppraisalAssignmentController extends Controller
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
-					and er.org_id = o.org_id
-					and er.position_id = po.position_id
+					and e.org_id = o.org_id
+					and e.position_id = po.position_id
 					and (e.chief_emp_code = ?
 					or e.emp_code = ?)
 				";
@@ -1255,9 +1255,6 @@ class AppraisalAssignmentController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
-
-	//	$org_join = (empty($request->org_id)) ? " " : "left outer join appraisal_item_org o on a.item_id = o.item_id";
-
 		$qinput = array();
 		$query = "
 			select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
@@ -1272,24 +1269,18 @@ class AppraisalAssignmentController extends Controller
 			on b.structure_id = c.structure_id
 			left outer join appraisal_item_level d
 			on a.item_id = d.item_id
-			and d.level_id = ?
-			left outer join appraisal_item_org o 
-			on a.item_id = o.item_id
-			and o.org_id =?
 			left outer join appraisal_level e
 			on d.level_id = e.level_id
 			left join uom on  a.uom_id= uom.uom_id
 			left outer join appraisal_item_result ar
 			on a.item_id = ar.item_id
+
 			and ar.emp_result_id = ?
 			where a.is_active = 1
 			and e.is_active = 1
 		";
-		$qinput[] = $request->appraisal_level_id;
-		$qinput[] = $request->org_id;
 		$qinput[] = $request->emp_result_id;
-		empty($request->org_id) ?: ($query .= " and (o.org_id = ? or ar.org_id = ?) " AND $qinput[] = $request->org_id AND $qinput[] = $request->org_id);
-		empty($request->appraisal_level_id) ?: ($query .= "and (d.level_id = ? or ar.level_id = ?) " AND $qinput[] = $request->appraisal_level_id AND $qinput[] = $request->appraisal_level_id);
+		empty($request->appraisal_level_id) ?: ($query .= " and d.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 		empty($request->appraisal_level_id) ?: ($query .= " and c.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
 		$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
@@ -1677,12 +1668,10 @@ class AppraisalAssignmentController extends Controller
 							 select emp_id
 							 from emp_result
 							 where emp_id = ?
-							  and org_id = ?
 							 and period_id = ?
 							 and appraisal_type_id = 2
 						";
 						$qinput[] = $e['emp_id'];
-						$qinput[] = $e['org_id'];
 
 					} else {
 						$query_unassign = "
@@ -1882,12 +1871,10 @@ class AppraisalAssignmentController extends Controller
 						 select emp_id
 						 from emp_result
 						 Where emp_id = ?
-						 and org_id = ?
 						 and period_id = ?
 						 and appraisal_type_id = 2
 					";
 					$qinput[] = $e['emp_id'];
-					$qinput[] = $e['org_id'];
 				} else {
 					$query_unassign = "
 						 select org_id

@@ -391,6 +391,10 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list');
 	Route::get('appraisal/parameter/org_level_individual', 'AppraisalController@org_level_list_individual');
 	Route::get('appraisal/parameter/org_individual', 'AppraisalController@org_individual');
+	
+	//add by toto
+	Route::get('appraisal/parameter/org_level_by_empname', 'AppraisalController@org_level_by_empname');
+	Route::get('appraisal/parameter/organization_by_empname', 'AppraisalController@organization_by_empname');
 
 	// Import Employee //
 	Route::get('import_employee/assign/appraisal_level','ImportEmployeeController@appraisal_level');

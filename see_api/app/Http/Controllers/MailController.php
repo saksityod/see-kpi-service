@@ -44,6 +44,7 @@ class MailController extends Controller
 		Config::set('mail.encryption',$config->mail_encryption);
 		Config::set('mail.username',$config->mail_username);
 		Config::set('mail.password',$config->mail_password);
+		$from = Config::get('mail.from');
 		
 		$emp_list = DB::select("
 			SELECT distinct c.emp_id, c.emp_name, c.email, e.email chief_email
@@ -99,7 +100,7 @@ class MailController extends Controller
 			try {
 				$data = ['items' => $items, 'emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
 				
-				$from = 'gjtestmail2017@gmail.com';
+				//$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
 				$cc = [$e->chief_email];
 				
@@ -109,7 +110,7 @@ class MailController extends Controller
 				
 				Mail::send('emails.remind', $data, function($message) use ($from, $to, $cc)
 				{
-					$message->from($from, 'SEE-KPI System');
+					$message->from($from['address'], $from['name']);
 					$message->to($to);
 					$message->cc($cc);
 					$message->subject('Action Plan Required');
@@ -140,6 +141,7 @@ class MailController extends Controller
 		Config::set('mail.encryption',$config->mail_encryption);
 		Config::set('mail.username',$config->mail_username);
 		Config::set('mail.password',$config->mail_password);	
+		$from = Config::get('mail.from');
 		
 		$check_quarter = DB::select("
 			select date_format(date_add(current_date,interval - 1 month),'%b') remind_month, a.*
@@ -203,7 +205,7 @@ class MailController extends Controller
 					try {
 						$data = ['items' => $items, 'emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
 						
-						$from = 'gjtestmail2017@gmail.com';
+		//				$from = 'gjtestmail2017@gmail.com';
 						$to = [$e->email];
 						$cc = [$e->chief_email];
 						foreach ($admin_emails as $ae) {
@@ -211,7 +213,7 @@ class MailController extends Controller
 						}						
 						Mail::send('emails.remind', $data, function($message) use ($from, $to, $cc)
 						{
-							$message->from($from, 'SEE-KPI System');
+							$message->from($from['address'], $from['name']);
 							$message->to($to);
 							$message->cc($cc);
 							$message->subject('Action Plan Required');
@@ -249,6 +251,7 @@ class MailController extends Controller
 		Config::set('mail.encryption',$config->mail_encryption);
 		Config::set('mail.username',$config->mail_username);
 		Config::set('mail.password',$config->mail_password);
+		$from = Config::get('mail.from');
 		
 		$emp_list = DB::select("
 			select c.emp_code, c.email, c.emp_name
@@ -277,7 +280,7 @@ class MailController extends Controller
 			try {
 				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
 				
-				$from = 'gjtestmail2017@gmail.com';
+			//	$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
 			//	$cc = [$e->chief_email];
 				
@@ -287,7 +290,7 @@ class MailController extends Controller
 				
 				Mail::send('emails.remind_workflow', $data, function($message) use ($from, $to)
 				{
-					$message->from($from, 'SEE-KPI System');
+					$message->from($from['address'], $from['name']);
 					$message->to($to);
 					//$message->cc($cc);
 					$message->subject('Please Update Workflow');
@@ -318,7 +321,7 @@ class MailController extends Controller
 		Config::set('mail.encryption',$config->mail_encryption);
 		Config::set('mail.username',$config->mail_username);
 		Config::set('mail.password',$config->mail_password);
-		
+		$from = Config::get('mail.from');
 		$emp_list = DB::select("
 			select c.emp_code, c.email, c.emp_name
 			from emp_result a
@@ -346,7 +349,7 @@ class MailController extends Controller
 			try {
 				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
 				
-				$from = 'gjtestmail2017@gmail.com';
+			//	$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
 			//	$cc = [$e->chief_email];
 				
@@ -356,7 +359,7 @@ class MailController extends Controller
 				
 				Mail::send('emails.remind_workflow', $data, function($message) use ($from, $to)
 				{
-					$message->from($from, 'SEE-KPI System');
+					$message->from($from['address'], $from['name']);
 					$message->to($to);
 					//$message->cc($cc);
 					$message->subject('Please Update Workflow');
@@ -387,6 +390,8 @@ class MailController extends Controller
 		Config::set('mail.encryption',$config->mail_encryption);
 		Config::set('mail.username',$config->mail_username);
 		Config::set('mail.password',$config->mail_password);
+		$from = Config::get('mail.from');
+		
 		
 		$mail_body = "
 			Hello from SEE KPI,
@@ -401,12 +406,12 @@ class MailController extends Controller
 		try {
 			$data = ["chief_emp_name" => "the boss", "emp_name" => "the bae", "status" => "excellent"];
 			
-			$from = 'gjtestmail2017@gmail.com';
-			$to = ['msuksang@gmail.com','methee@goingjesse.com'];
+			//$from = 'gjtestmail2017@gmail.com';
+			$to = ['saksit@goingjesse.com','methee@goingjesse.com'];
 			
 			Mail::send('emails.status', $data, function($message) use ($from, $to)
 			{
-				$message->from($from, 'SEE-KPI System');
+				$message->from($from['address'], $from['name']);
 				$message->to($to)->subject('คุณได้รับการประเมิน!');
 			});			
 		} catch (Exception $e) {

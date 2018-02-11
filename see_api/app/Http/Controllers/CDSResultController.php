@@ -181,6 +181,7 @@ class CDSResultController extends Controller
 			left outer join org on r.org_id = org.org_id
 			left outer join appraisal_level al on r.level_id = al.level_id
 			left outer join cds_result cr on cds.cds_id = cr.cds_id
+			and cr.emp_id = e.emp_id
 			and cr.year = {$request->current_appraisal_year}
 			and cr.appraisal_month_no = {$request->month_id}
 			where cds.is_sql = 0	
