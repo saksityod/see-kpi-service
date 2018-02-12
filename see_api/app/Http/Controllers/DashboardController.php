@@ -791,6 +791,9 @@ class DashboardController extends Controller
 			$qinput[] = $request->period_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
+			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
+			empty($request->org_level_id) ?: ($query .= " and c.level_id = ? " AND $qinput[] = $request->org_level_id);
+
 
 
 
@@ -835,6 +838,8 @@ class DashboardController extends Controller
 			$qinput[] = $request->period_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
+			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
+			empty($request->org_level_id) ?: ($query .= " and c.level_id = ? " AND $qinput[] = $request->org_level_id);			
 
 
 			}else{ // (GHB)
@@ -874,6 +879,8 @@ class DashboardController extends Controller
 			$qinput[] = $request->period_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
+			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
+			empty($request->org_level_id) ?: ($query .= " and c.level_id = ? " AND $qinput[] = $request->org_level_id);			
 
 			}
 
@@ -1289,6 +1296,8 @@ class DashboardController extends Controller
 
 		if ($request->appraisal_type_id == 2) {
 			empty($request->emp_id) ?: ($query .= " and c.emp_id = ? " AND $qinput[] = $request->emp_id);
+			empty($request->org_id) ?: ($query .= " and d.org_id = ? " AND $qinput[] = $request->org_id);
+			empty($request->org_level_id) ?: ($query .= " and d.level_id = ? " AND $qinput[] = $request->org_level_id);			
 		} else {
 			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
 		}
