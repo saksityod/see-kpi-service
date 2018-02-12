@@ -47,7 +47,7 @@ class MailController extends Controller
 		$from = Config::get('mail.from');
 		
 		$emp_list = DB::select("
-			SELECT distinct c.emp_id, c.emp_name, c.email, e.email chief_email
+			SELECT distinct c.emp_id, c.emp_name, c.email, e.email chief_email, org.org_name
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
 			on a.emp_result_id = b.emp_result_id
@@ -57,6 +57,8 @@ class MailController extends Controller
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
+			left outer join org
+			on c.org_id = org.org_id			
 			where d.remind_condition_id = 1
 			and a.actual_value < a.target_value
 			and b.appraisal_type_id = 2
@@ -98,7 +100,7 @@ class MailController extends Controller
 			");				
 				
 			try {
-				$data = ['items' => $items, 'emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
+				$data = ['items' => $items, 'emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'org_name' => $e->org_name];
 				
 				//$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
