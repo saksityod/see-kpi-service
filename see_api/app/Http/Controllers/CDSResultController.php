@@ -182,6 +182,9 @@ class CDSResultController extends Controller
 			left outer join appraisal_level al on r.level_id = al.level_id
 			left outer join cds_result cr on cds.cds_id = cr.cds_id
 			and cr.emp_id = e.emp_id
+		";
+		empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
+		$query .= "
 			and cr.year = {$request->current_appraisal_year}
 			and cr.appraisal_month_no = {$request->month_id}
 			where cds.is_sql = 0	
@@ -236,7 +239,7 @@ class CDSResultController extends Controller
 		
 		empty($request->level_id) ?: ($query .= " And org.level_id = ? " AND $qinput[] = $request->level_id);
 		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
-		empty($request->org_id) ?: ($query .= " And cr.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->appraisal_type_id) ?: ($query .= " And er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
