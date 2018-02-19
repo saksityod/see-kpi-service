@@ -365,8 +365,9 @@ Route::group(['middleware' => 'cors'], function()
 	// Import Assignment //
 	Route::get('import_assignment/level_list', 'ImportAssignmentController@level_list');
 	Route::get('import_assignment/org_list', 'ImportAssignmentController@org_list');
-	Route::get('import_assignment/item_list','ImportAssignmentController@item_list');
-	Route::post('import_assignment/export','ImportAssignmentController@export_template');
+	Route::post('import_assignment/item_list','ImportAssignmentController@item_list');
+	Route::post('import_assignment/export_individual','ImportAssignmentController@export_template_individual');
+	Route::post('import_assignment/export_organization','ImportAssignmentController@export_template_organization');
 	Route::post('import_assignment/import','ImportAssignmentController@import_template');
 	Route::get('import_assignment/emp_name_list', 'ImportAssignmentController@emp_name_list');
 
