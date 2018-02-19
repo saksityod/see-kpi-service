@@ -165,30 +165,55 @@ class CDSResultController extends Controller
 		}
 		
 		
+		if ($request->appraisal_type_id == 2) {
+			$query = "
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
+				from appraisal_item_result r
+				left outer join employee e on r.emp_id = e.emp_id 
+				inner join appraisal_item i on r.item_id = i.item_id
+				left outer join appraisal_item_position p on i.item_id = p.item_id
+				inner join kpi_cds_mapping m on i.item_id = m.item_id
+				inner join cds on m.cds_id = cds.cds_id
+				inner join appraisal_period ap on r.period_id = ap.period_id
+				inner join system_config sys on ap.appraisal_year = sys.current_appraisal_year
+				inner join emp_result er on r.emp_result_id = er.emp_result_id	
+				left outer join position po on r.position_id = po.position_id
+				left outer join org on r.org_id = org.org_id
+				left outer join appraisal_level al on r.level_id = al.level_id
+				left outer join cds_result cr on cds.cds_id = cr.cds_id
+				and cr.emp_id = e.emp_id
+			";
+			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
+			$query .= "
+				and cr.year = {$request->current_appraisal_year}
+				and cr.appraisal_month_no = {$request->month_id}
+				where cds.is_sql = 0	
+			";
+		} else {
+			$query = "
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
+				from appraisal_item_result r
+				inner join appraisal_item i on r.item_id = i.item_id
+				left outer join appraisal_item_position p on i.item_id = p.item_id
+				inner join kpi_cds_mapping m on i.item_id = m.item_id
+				inner join cds on m.cds_id = cds.cds_id
+				inner join appraisal_period ap on r.period_id = ap.period_id
+				inner join system_config sys on ap.appraisal_year = sys.current_appraisal_year
+				inner join emp_result er on r.emp_result_id = er.emp_result_id	
+				left outer join position po on r.position_id = po.position_id
+				left outer join org on r.org_id = org.org_id
+				left outer join appraisal_level al on r.level_id = al.level_id
+				left outer join cds_result cr on cds.cds_id = cr.cds_id
+				and cr.org_id = org.org_id
+			";
+			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
+			$query .= "
+				and cr.year = {$request->current_appraisal_year}
+				and cr.appraisal_month_no = {$request->month_id}
+				where cds.is_sql = 0	
+			";
 		
-		$query = "
-			select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
-			from appraisal_item_result r
-			left outer join employee e on r.emp_id = e.emp_id 
-			inner join appraisal_item i on r.item_id = i.item_id
-			left outer join appraisal_item_position p on i.item_id = p.item_id
-			inner join kpi_cds_mapping m on i.item_id = m.item_id
-			inner join cds on m.cds_id = cds.cds_id
-			inner join appraisal_period ap on r.period_id = ap.period_id
-			inner join system_config sys on ap.appraisal_year = sys.current_appraisal_year
-			inner join emp_result er on r.emp_result_id = er.emp_result_id	
-			left outer join position po on r.position_id = po.position_id
-			left outer join org on r.org_id = org.org_id
-			left outer join appraisal_level al on r.level_id = al.level_id
-			left outer join cds_result cr on cds.cds_id = cr.cds_id
-			and cr.emp_id = e.emp_id
-		";
-		empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
-		$query .= "
-			and cr.year = {$request->current_appraisal_year}
-			and cr.appraisal_month_no = {$request->month_id}
-			where cds.is_sql = 0	
-		";
+		}
 /* 
 	-- TOTO --
 		$query ="
