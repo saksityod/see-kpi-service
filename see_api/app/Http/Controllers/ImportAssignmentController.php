@@ -104,7 +104,15 @@ class ImportAssignmentController extends Controller
    public function item_list(Request $request){
      $levelStr = (empty($request->level_id)) ? "' '" : "'".implode("','", $request->level_id)."'";
      $orgIdStr = (empty($request->org_id)) ? "' '" : "'".implode("','", $request->org_id)."'" ;
-     $positionStr = (empty($request->position_id)) ? " " : "AND post.position_id = '{$request->position_id}'" ;
+
+     // In case, do not specify a position for retrieval by ignoring position.
+     if(empty($request->position_id)){
+       $positionJoinStr = " ";
+       $positionStr = " ";
+     } else {
+       $positionJoinStr = "INNER JOIN appraisal_item_position post ON post.item_id = ai.item_id";
+       $positionStr = "AND post.position_id = '{$request->position_id}'";
+     }
 
      $items = DB::select("
       SELECT distinct ai.structure_id, strc.structure_name, ai.item_id, ai.item_name, strc.form_id
@@ -112,7 +120,7 @@ class ImportAssignmentController extends Controller
       INNER JOIN appraisal_structure strc ON strc.structure_id = ai.structure_id
       INNER JOIN appraisal_item_level vel ON vel.item_id = ai.item_id
       INNER JOIN appraisal_item_org iorg ON iorg.item_id = ai.item_id
-      INNER JOIN appraisal_item_position post ON post.item_id = ai.item_id
+      ".$positionJoinStr."
       WHERE strc.is_active = 1
       AND vel.level_id IN({$levelStr})
       AND iorg.org_id IN({$orgIdStr})
@@ -142,13 +150,13 @@ class ImportAssignmentController extends Controller
         ]);
       }
     }
-
     return response()->json(['status' => 200, 'data' => $groupData]);
   }
 
 
+
    /**
-    * Assignment export to Excel.
+    * Assignment export to Excel (Individual).
     *
     * @author P.Wirun (GJ)
     * @param  \Illuminate\Http\Request
@@ -156,24 +164,11 @@ class ImportAssignmentController extends Controller
     *                   frequency_id, org_id[], appraisal_item_id[], appraisal_level_id[])
     * @return \Illuminate\Http\Response
     */
-    public function export_template(Request $request){
+    public function export_template_individual(Request $request){
 
       // Set file name and directory.
       $extension = "xlsx";
       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
-      //$outpath = public_path()."/export_file";
-      //File::isDirectory($outpath) or File::makeDirectory($outpath, 0777, true, true);
-
-      // Set Input parameter for test
-      //$appraisal_type_id = "1";
-      //$appraisal_level_id = "'".implode("','", ["8","9", "10"] )."'";
-      //$org_id = "'".implode("','", ["294","295"] )."'";
-      //$appraisal_item_id = "'".implode("','", ["47","48","49","50","51","52","53","54","55"] )."'";
-      //$position_id = "";
-      //$emp_id = "";
-      //$period_id = "";
-      //$appraisal_year = "2017";
-      //$frequency_id = "2";
 
       // Set Input parameter
       $appraisal_type_id = $request->appraisal_type_id;
@@ -181,14 +176,14 @@ class ImportAssignmentController extends Controller
       $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
       $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
       $position_id = $request->position_id;
-      $emp_id = $request->emp_id;
+      $emp_code = $request->emp_id;
       $period_id = $request->period_id;
       $appraisal_year = $request->appraisal_year;
       $frequency_id = $request->frequency_id;
 
-      // Set parameter string in where clause
+      // Set parameter string in sql where clause
       $positionStr = (empty($position_id)) ? "" : " emp.position_id = '{$position_id}'";
-      $empStr = (empty($emp_id)) ? "" : " emp.emp_id = '{$emp_id}'";
+      $empStr = (empty($emp_code)) ? "" : " emp.emp_code = '{$emp_code}'";
       if (!empty($positionStr) && !empty($empStr)) {
         $empContStr = " or ";
       } else if(empty($positionStr) && empty($empStr)) {
@@ -201,12 +196,11 @@ class ImportAssignmentController extends Controller
           AND prd.appraisal_year = '{$appraisal_year}'
           AND prd.appraisal_frequency_id = '{$frequency_id}'"
         : "AND prd.period_id = '{$period_id}'" ;
-      $orgOrEmp = ($appraisal_type_id == "1") ? "org" : "emp";
 
       $items = DB::select("
         SELECT
         	prd.period_id, prd.year, prd.start_date, prd.end_date,
-        	typ.appraisal_type_id, typ.appraisal_type_name, typ.stage_id, typ.status,
+        	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, typ.status,
         	emp.level_id, emp.appraisal_level_name level_name, emp.org_id,
         	emp.org_name, emp.position_id, emp.position_name, emp.chief_emp_id,
         	emp.chief_emp_code, emp.chief_emp_name, emp.emp_id, emp.emp_code,
@@ -216,8 +210,8 @@ class ImportAssignmentController extends Controller
         	item.structure_name, item.form_id, item.nof_target_score
         FROM(
         	SELECT
-        		{$orgOrEmp}.level_id, vel.appraisal_level_name,
-        		{$orgOrEmp}.org_id, org.org_name,
+        		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
+        		emp.org_id, org.org_name,
         		emp.position_id, pos.position_name,
         		emp.emp_id, emp.emp_code, emp.emp_name,
         		chf.emp_id chief_emp_id, chf.emp_code chief_emp_code, chf.emp_name chief_emp_name
@@ -229,9 +223,9 @@ class ImportAssignmentController extends Controller
         	WHERE vel.is_active = 1
         	AND org.is_active = 1
         	AND pos.is_active = 1
-          AND {$orgOrEmp}.is_active = 1
-        	AND {$orgOrEmp}.level_id IN({$appraisal_level_id})
-        	AND {$orgOrEmp}.org_id IN({$org_id})
+          AND emp.is_active = 1
+        	AND emp.level_id IN({$appraisal_level_id})
+        	AND emp.org_id IN({$org_id})
         	AND (".$positionStr.$empContStr.$empStr.")
         )emp
         LEFT JOIN (
@@ -268,13 +262,48 @@ class ImportAssignmentController extends Controller
         )prd
       ");
 
-      // Generate Excel from query result.
-      // Return 404, If not found data.
+      // Generate Excel from query result. Return 404, If not found data.
       if(!empty($items)){
         // Set grouped to create sheets.
         $itemList = [];
         $form1Key = 0; $form2Key = 0; $form3Key = 0;
         foreach($items as $value) {
+          // Get assigned value //
+          $assignedInfo = [];
+          $assignedQry = DB::select("
+            SELECT target_value, weight_percent,
+            	score0, score1, score2, score3, score4, score5
+            FROM appraisal_item_result
+            WHERE period_id = {$value->period_id}
+            AND emp_id = {$value->emp_id}
+            AND org_id = {$value->org_id}
+            AND position_id = {$value->position_id}
+            AND item_id = {$value->appraisal_item_id}
+            AND level_id = {$value->level_id}
+            LIMIT 1
+          ");
+          if (empty($assignedQry)) {
+            $assignedInfo["target_value"] = "";
+            $assignedInfo["weight_percent"] = "";
+            $assignedInfo["score0"] = "";
+            $assignedInfo["score1"] = "";
+            $assignedInfo["score2"] = "";
+            $assignedInfo["score3"] = "";
+            $assignedInfo["score4"] = "";
+            $assignedInfo["score5"] = "";
+          } else {
+            foreach ($assignedQry as $asVal) {
+              $assignedInfo["target_value"] = $asVal->target_value;
+              $assignedInfo["weight_percent"] = $asVal->weight_percent;
+              $assignedInfo["score0"] = $asVal->score0;
+              $assignedInfo["score1"] = $asVal->score1;
+              $assignedInfo["score2"] = $asVal->score2;
+              $assignedInfo["score3"] = $asVal->score3;
+              $assignedInfo["score4"] = $asVal->score4;
+              $assignedInfo["score5"] = $asVal->score5;
+            }
+          }
+
           if ($value->form_id == "1") {
             $itemList[$value->structure_name][$form1Key] = [
               "period_id" => $value->period_id,
@@ -300,16 +329,15 @@ class ImportAssignmentController extends Controller
               "appraisal_item_id" => $value->appraisal_item_id,
               "appraisal_item_name" => $value->appraisal_item_name,
               "uom_name" => $value->uom_name,
-              "target" => "",
-              "weight" => ""
+              "target" => $assignedInfo["target_value"],
+              "weight" => $assignedInfo["weight_percent"]
               //range by appraisal_structure.nof_target_score
-              //"range?" => "",
             ];
 
             // Generate range by appraisal_structure.nof_target_score
             $rangekey = 0;
             while($rangekey <= $value->nof_target_score) {
-              $itemList[$value->structure_name][$form1Key]["range".$rangekey] = "";
+              $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
               $rangekey = $rangekey+1;
             }
             $form1Key = $form1Key+1;
@@ -338,8 +366,8 @@ class ImportAssignmentController extends Controller
               "emp_name" => $value->emp_name,
               "appraisal_item_id" => $value->appraisal_item_id,
               "appraisal_item_name" => $value->appraisal_item_name,
-              "target" => "",
-              "weight" => ""
+              "target" => $assignedInfo["target_value"],
+              "weight" => $assignedInfo["weight_percent"]
             ];
             $form2Key = $form2Key + 1;
 
@@ -372,10 +400,8 @@ class ImportAssignmentController extends Controller
               "value_get_zero" => $value->value_get_zero
             ];
             $form3Key = $form3Key + 1;
-
           }
         }
-        //return response()->json($itemList);
 
         Excel::create($fileName, function($excel) use ($itemList) {
 
@@ -393,6 +419,227 @@ class ImportAssignmentController extends Controller
         return response()->json(['status' => 404, 'data' => 'Assignment Item Result not found.']);
       }
     }
+
+
+
+    /**
+     * Assignment export to Excel (Organization).
+     *
+     * @author P.Wirun (GJ)
+     * @param  \Illuminate\Http\Request
+     *         $request (appraisal_type_id, position_id, emp_id, period_id, appraisal_year,
+     *                   frequency_id, org_id[], appraisal_item_id[], appraisal_level_id[])
+     * @return \Illuminate\Http\Response
+     */
+     public function export_template_organization(Request $request){
+
+       // Set file name and directory.
+       $extension = "xlsx";
+       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
+
+       // Set Input parameter
+       $appraisal_type_id = $request->appraisal_type_id;
+       $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
+       $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
+       $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
+       $period_id = $request->period_id;
+       $appraisal_year = $request->appraisal_year;
+       $frequency_id = $request->frequency_id;
+
+       // Set parameter string in sql where clause
+       $periodStr = (empty($period_id))
+         ? "
+           AND prd.appraisal_year = '{$appraisal_year}'
+           AND prd.appraisal_frequency_id = '{$frequency_id}'"
+         : "AND prd.period_id = '{$period_id}'" ;
+
+       $items = DB::select("
+         SELECT
+         	prd.period_id, prd.year, prd.start_date, prd.end_date,
+          typ.appraisal_type_id, typ.appraisal_type_name, org.default_stage_id as stage_id, typ.status,
+          org.level_id, org.appraisal_level_name level_name, org.org_id,
+          org.org_name, item.item_id appraisal_item_id,
+          item.item_name appraisal_item_name, item.uom_name,
+          item.max_value, item.unit_deduct_score, item.value_get_zero,
+          item.structure_name, item.form_id, item.nof_target_score
+         FROM(
+         	SELECT
+         		org.level_id, vel.appraisal_level_name, vel.default_stage_id,
+            org.org_id, org.org_name
+         	FROM org
+         	INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+         	WHERE vel.is_active = 1
+         	AND org.is_active = 1
+         	AND org.level_id IN({$appraisal_level_id})
+         	AND org.org_id IN({$org_id})
+         )org
+         LEFT JOIN (
+         	SELECT ail.level_id, aio.org_id,
+         		itm.item_id, itm.item_name, uom.uom_name,
+             itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
+         		strc.structure_name, strc.form_id, strc.nof_target_score
+         	FROM appraisal_item itm
+         	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
+         	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
+         	LEFT JOIN appraisal_structure strc ON strc.structure_id = itm.structure_id
+         	LEFT JOIN uom ON uom.uom_id = itm.uom_id
+         	WHERE itm.item_id IN({$appraisal_item_id})
+         	AND ail.level_id IN({$appraisal_level_id})
+         	AND aio.org_id IN({$org_id})
+         )item ON item.level_id = org.level_id AND item.org_id = org.org_id
+         CROSS JOIN(
+         	SELECT apt.appraisal_type_id, apt.appraisal_type_name,
+         		aps.stage_id, aps.status
+         	FROM appraisal_type apt
+         	LEFT JOIN appraisal_stage aps
+         		ON aps.appraisal_type_id = apt.appraisal_type_id
+         		AND aps.stage_id = (
+         			SELECT MIN(stage_id) FROM appraisal_stage
+         			WHERE appraisal_type_id = apt.appraisal_type_id
+         		)
+         	WHERE apt.appraisal_type_id = '{$appraisal_type_id}'
+         )typ
+         CROSS JOIN(
+         	SELECT prd.period_id, prd.appraisal_year year, prd.start_date, prd.end_date
+         	FROM appraisal_period prd
+         	WHERE 1 = 1
+         	".$periodStr."
+         )prd
+       ");
+
+       // Generate Excel from query result. Return 404, If not found data.
+       if(!empty($items)){
+         // Set grouped to create sheets.
+         $itemList = [];
+         $form1Key = 0; $form2Key = 0; $form3Key = 0;
+         foreach($items as $value) {
+           // Get assigned value //
+           $assignedInfo = [];
+           $assignedQry = DB::select("
+             SELECT target_value, weight_percent,
+             	score0, score1, score2, score3, score4, score5
+             FROM appraisal_item_result
+             WHERE period_id = {$value->period_id}
+             AND emp_id is null
+             AND org_id = {$value->org_id}
+             AND position_id is null
+             AND item_id = {$value->appraisal_item_id}
+             AND level_id = {$value->level_id}
+             LIMIT 1
+           ");
+           if (empty($assignedQry)) {
+             $assignedInfo["target_value"] = "";
+             $assignedInfo["weight_percent"] = "";
+             $assignedInfo["score0"] = "";
+             $assignedInfo["score1"] = "";
+             $assignedInfo["score2"] = "";
+             $assignedInfo["score3"] = "";
+             $assignedInfo["score4"] = "";
+             $assignedInfo["score5"] = "";
+           } else {
+             foreach ($assignedQry as $asVal) {
+               $assignedInfo["target_value"] = $asVal->target_value;
+               $assignedInfo["weight_percent"] = $asVal->weight_percent;
+               $assignedInfo["score0"] = $asVal->score0;
+               $assignedInfo["score1"] = $asVal->score1;
+               $assignedInfo["score2"] = $asVal->score2;
+               $assignedInfo["score3"] = $asVal->score3;
+               $assignedInfo["score4"] = $asVal->score4;
+               $assignedInfo["score5"] = $asVal->score5;
+             }
+           }
+
+           if ($value->form_id == "1") {
+             $itemList[$value->structure_name][$form1Key] = [
+               "period_id" => $value->period_id,
+               "year" => $value->year,
+               "start_date" => $value->start_date,
+               "end_date" => $value->end_date,
+               "appraisal_type_id" => $value->appraisal_type_id,
+               "appraisal_type_name" => $value->appraisal_type_name,
+               "stage_id" => $value->stage_id,
+               "status" => $value->status,
+               "level_id" => $value->level_id,
+               "level_name" => $value->level_name,
+               "org_id" => $value->org_id,
+               "org_name" => $value->org_name,
+               "appraisal_item_id" => $value->appraisal_item_id,
+               "appraisal_item_name" => $value->appraisal_item_name,
+               "uom_name" => $value->uom_name,
+               "target" => $assignedInfo["target_value"],
+               "weight" => $assignedInfo["weight_percent"]
+               //-- Generate range by appraisal_structure.nof_target_score --//
+             ];
+
+             // Generate range by appraisal_structure.nof_target_score
+             $rangekey = 0;
+             while($rangekey <= $value->nof_target_score) {
+               $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+               $rangekey = $rangekey+1;
+             }
+             $form1Key = $form1Key+1;
+
+           } else if($value->form_id == "2") {
+              $itemList[$value->structure_name][$form2Key] = [
+                "period_id" => $value->period_id,
+                "year" => $value->year,
+                "start_date" => $value->start_date,
+                "end_date" => $value->end_date,
+                "appraisal_type_id" => $value->appraisal_type_id,
+                "appraisal_type_name" => $value->appraisal_type_name,
+                "stage_id" => $value->stage_id,
+                "status" => $value->status,
+                "level_id" => $value->level_id,
+                "level_name" => $value->level_name,
+                "org_id" => $value->org_id,
+                "org_name" => $value->org_name,
+                "appraisal_item_id" => $value->appraisal_item_id,
+                "appraisal_item_name" => $value->appraisal_item_name,
+                "target" => $assignedInfo["target_value"],
+                "weight" => $assignedInfo["weight_percent"]
+              ];
+              $form2Key = $form2Key + 1;
+
+           }else if($value->form_id == "3"){
+             $itemList[$value->structure_name][$form3Key] = [
+               "period_id" => $value->period_id,
+               "year" => $value->year,
+               "start_date" => $value->start_date,
+               "end_date" => $value->end_date,
+               "appraisal_type_id" => $value->appraisal_type_id,
+               "appraisal_type_name" => $value->appraisal_type_name,
+               "stage_id" => $value->stage_id,
+               "status" => $value->status,
+               "level_id" => $value->level_id,
+               "level_name" => $value->level_name,
+               "org_id" => $value->org_id,
+               "org_name" => $value->org_name,
+               "appraisal_item_id" => $value->appraisal_item_id,
+               "appraisal_item_name" => $value->appraisal_item_name,
+               "max_value" => $value->max_value,
+               "score_per_unit" => $value->unit_deduct_score,
+               "value_get_zero" => $value->value_get_zero
+             ];
+             $form3Key = $form3Key + 1;
+           }
+         }
+
+         Excel::create($fileName, function($excel) use ($itemList) {
+
+           foreach ($itemList as $key => $group) {
+
+             $excel->sheet($key, function($sheet) use ($key, $itemList){
+               $sheet->fromArray($itemList[$key]);
+             });
+
+           }
+
+         })->download($extension); //->store($extension, $outpath);
+         //return response()->download($outpath."/".$fileName.".".$extension, $fileName.".".$extension);
+       }else{
+         return response()->json(['status' => 404, 'data' => 'Assignment Item Result not found.']);
+       }
+     }
 
 
 
@@ -419,59 +666,55 @@ class ImportAssignmentController extends Controller
         $thresholdGroupId = $value->result_threshold_group_id;
       }
 
-  		foreach ($request->file() as $f) {
-        DB::beginTransaction();
+      // Get file from parameter
+      foreach ($request->file() as $f) {
 
-        $items = Excel::load($f, function($reader){})->get();
+        // Sheet to array
+        $sheetArr = Excel::load($f)->getSheetNames();
 
-        // Fetch value by sheets
-  			foreach ($items as $key => $sheets) {
+        // Loop through all sheets
+        for ($i=0; $i < count($sheetArr); $i++) {
+          $sheets = Excel::selectSheets($sheetArr[$i])->load($f, function($reader){})->get();
+          $sheetError = false;
+          DB::beginTransaction();
 
-          // Fetch value by rows
+          // Loop through all rows
           foreach ($sheets as $key => $row) {
-
-            // Validate data from excel file
             $validator = Validator::make($row->all(), [
                "period_id" => "required|numeric",
                "year" => "numeric",
                "start_date" => "date",
                "end_date" => "date",
                "appraisal_type_id" => "required|numeric",
-               //"appraisal_type_name" => "",
                "stage_id" => "required|numeric",
                "status" => "required",
                "level_id" => "required|numeric",
-               //"level_name" => "",
                "org_id" => "required|numeric",
-               //"org_name" => "",
                "position_id" => "numeric",
-               //"position_name" => "",
                "chief_emp_id" => "numeric",
-               //"chief_emp_code" => "",
-               //"chief_emp_name" => "",
                "emp_id" => "numeric",
-               //"emp_code" => "",
-               //"emp_name" => "",
                "appraisal_item_id" => "required|numeric",
                "appraisal_item_name" => "required",
             ]);
 
             if ($validator->fails()) {
-        			$errors[] = [
+              $errors[] = [
+                "title"=>"Sheet:".$sheetArr[$i],
                 "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
                 "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
-                "data" => $validator->errors()
+                "error_desc" => $validator->errors()
               ];
-        		} else {
+              $sheetError = true;
+            } else {
 
               // Get appraisal_item info.
               $itemInfo = [];
               $itemInfoQry = DB::select("
                 SELECT item_id, unit_deduct_score, value_get_zero, structure_id
                 FROM appraisal_item
-                WHERE item_id = ?
-                LIMIT 1
-              ", array($row->appraisal_item_id));
+                WHERE item_id = {$row->appraisal_item_id}
+                LIMIT 1"
+              );
               foreach ($itemInfoQry as $item) {
                 $itemInfo["unit_deduct_score"] = $item->unit_deduct_score;
                 $itemInfo["value_get_zero"] = $item->value_get_zero;
@@ -482,25 +725,27 @@ class ImportAssignmentController extends Controller
               $criteriaInfoQry = DB::select("
                 SELECT weight_percent
                 FROM appraisal_criteria
-                WHERE appraisal_level_id = ?
-                AND structure_id = ?
-                LIMIT 1
-              ", array($row->level_id, $itemInfo["structure_id"]));
+                WHERE appraisal_level_id = {$row->level_id}
+                AND structure_id = {$itemInfo["structure_id"]}
+                LIMIT 1"
+              );
 
-
-              // Insert/Update @emp_result
+              // -- Insert/Update @emp_result --------------------------------//
               $existEmpResultId = 0;
               $currentEmpResultId = 0;
+              $existEmpStr = ($row->appraisal_type_id == "1") ? "AND emp_id is null" : "AND emp_id = {$row->emp_id}" ;
+              $existPositionStr = ($row->appraisal_type_id == "1") ? "AND position_id is null" : "AND position_id = {$row->position_id}" ;
               $empResultExist = DB::select("
                 SELECT emp_result_id
                 FROM emp_result
-                WHERE period_id = ?
-                AND appraisal_type_id = ?
-                AND level_id = ?
-                AND org_id = ?
-                AND emp_id = ?
-                LIMIT 1
-              ", array($row->period_id, $row->appraisal_type_id, $row->level_id, $row->org_id, $row->emp_id));
+                WHERE period_id = {$row->period_id}
+                AND appraisal_type_id = {$row->appraisal_type_id}
+                AND level_id = {$row->level_id}
+                AND org_id = {$row->org_id}
+                ".$existEmpStr."
+                ".$existPositionStr."
+                LIMIT 1"
+              );
               foreach ($empResultExist as $value) {
                 $existEmpResultId = $value->emp_result_id;
               }
@@ -514,7 +759,6 @@ class ImportAssignmentController extends Controller
                 $empResult->level_id = $row->level_id;
                 $empResult->org_id = $row->org_id;
                 $empResult->emp_id = $row->emp_id;
-                // --------------------------------------------------- //
     						$empResult->position_id = $row->position_id;
                 $empResult->chief_emp_id = $row->chief_emp_id;
                 $empResult->result_score = "0";
@@ -528,15 +772,20 @@ class ImportAssignmentController extends Controller
                 $empResult->created_by = Auth::id();
                 $empResult->updated_by = Auth::id();
                 try {
+                  // Insert @emp_result
     							$empResult->save();
                   $currentEmpResultId = $empResult->emp_result_id;
     						} catch (Exception $e) {
-    							$errors[] = ["table_name"=>"appraisal_item_result", "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
-                  "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
-                  "errors" => substr($e,0,254)];
+                  $errors[] = [
+                    "title"=>"Sheet:".$sheetArr[$i],
+                    "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
+                    "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
+                    "error_desc" => array(substr($e,0,254))
+                  ];
+                  $sheetError = true;
     						}
               } else {
-                //---- Update @emp_result
+                // Update @emp_result
                 $updateStatus = EmpResult::where(
                   "emp_result_id", $existEmpResultId
                 )->update([
@@ -550,20 +799,21 @@ class ImportAssignmentController extends Controller
                 ]);
                 $currentEmpResultId = $existEmpResultId;
               }
+              // -- End -- Insert/Update @emp_result -------------------------//
 
 
-              // Insert/Update @appraisal_item_result
+              // -- Start -- Insert/Update @appraisal_item_result ------------//
               $existItemResultId = 0;
               $itemResultExist = DB::select("
                 SELECT item_result_id
                 FROM appraisal_item_result
-                WHERE emp_result_id = ?
-                AND item_id = ?
-                AND period_id = ?
-                AND level_id = ?
-                AND org_id = ?
-                LIMIT 1
-              ", array($currentEmpResultId, $row->appraisal_item_id, $row->period_id, $row->level_id, $row->org_id));
+                WHERE emp_result_id = {$currentEmpResultId}
+                AND item_id = {$row->appraisal_item_id}
+                AND period_id = {$row->period_id}
+                AND level_id = {$row->level_id}
+                AND org_id = {$row->org_id}
+                LIMIT 1"
+              );
               foreach ($itemResultExist as $value) {
                 $existItemResultId = $value->item_result_id;
               }
@@ -582,7 +832,6 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->position_id = $row->position_id;
                 $appraisalItemResult->item_name = $row->appraisal_item_name;
                 $appraisalItemResult->chief_emp_id = $row->chief_emp_id;
-                //$appraisalItemResult->kpi_type_id = $row->???; Not use
                 $appraisalItemResult->score0 = $row->range0;
                 $appraisalItemResult->score1 = $row->range1;
                 $appraisalItemResult->score2 = $row->range2;
@@ -607,9 +856,13 @@ class ImportAssignmentController extends Controller
                 try {
     							$appraisalItemResult->save();
     						} catch (Exception $e) {
-    							$errors[] = ["table_name"=>"appraisal_item_result", "emp_result_id"=>$currentEmpResultId, "item_id"=>$row->appraisal_item_id,
-                  "period_id"=>$row->period_id, "level_id"=>$row->level_id, "org_id"=>$row->org_id,
-                  "errors" => substr($e,0,254)];
+                  $errors[] = [
+                    "title"=>"Sheet:".$sheetArr[$i],
+                    "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
+                    "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
+                    "error_desc" => array(substr($e,0,254))
+                  ];
+                  $sheetError = true;
     						}
               } else {
                 //---- Update @appraisal_item_result
@@ -620,7 +873,6 @@ class ImportAssignmentController extends Controller
                   "position_id" => $row->position_id,
                   "item_name" => $row->appraisal_item_name,
                   "chief_emp_id" => $row->chief_emp_id,
-                  //"kpi_type_id" => $row->???,
                   "score0" => $row->range0,
                   "score1" => $row->range1,
                   "score2" => $row->range2,
@@ -628,13 +880,7 @@ class ImportAssignmentController extends Controller
                   "score4" => $row->range4,
                   "score5" => $row->range5,
                   "target_value" => $row->target,
-                  //"forecast_value" => $row->???,
-                  //"actual_value" => $row->???,
-                  //"percent_achievement" => $row->???,
                   "max_value" => $row->max_value,
-                  //"deduct_score_unit" => $row->???,
-                  //"over_value" => $row->???,
-                  //"score" => $row->???,
                   "threshold_group_id" => $thresholdGroupId,
                   "weight_percent" => (empty($row->weight)) ? "0": $row->weight,
                   "weigh_score" => "0",
@@ -643,13 +889,44 @@ class ImportAssignmentController extends Controller
                   "updated_dttm" => date("Y-m-d H:i:s")
                 ]);
               }
-
-            } // End validate
-          }// End fetch value by rows
-        }// End fetch value by sheets
+              // -- End -- Insert/Update @appraisal_item_result --------------//
 
 
-        // Insert/Update @emp_result_stage
+              // -- Check weight percent -------------------------------------//
+              $weightPercent = DB::select("
+                SELECT air.period_id, air.emp_id, ai.structure_id, air.level_id,
+                	sum(air.weight_percent) weight_percent,
+                	max(air.structure_weight_percent) structure_weight_percent
+                FROM appraisal_item_result air
+                INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+                WHERE ai.structure_id = {$itemInfo["structure_id"]}
+                AND air.level_id = {$row->level_id}
+                GROUP BY air.period_id, air.emp_id, ai.structure_id, air.level_id
+                HAVING sum(air.weight_percent) > max(air.structure_weight_percent)
+              ");
+              if (!empty($weightPercent)) {
+                $errors[] = [
+                  "title"=>"Sheet:".$sheetArr[$i],
+                  "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
+                  "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
+                  "error_desc" => Array("The percentage of overweight or not set.")
+                ];
+                $sheetError = true;
+              }
+            }//End Validate is true
+          }//End Row
+
+          if ($sheetError) {
+            // Something went wrong
+            DB::rollback();
+          } else {
+            // All transaction good
+            DB::commit();
+          }
+
+        }//End Sheet
+
+        // -- Start -- Insert/Update @emp_result_stage -----------------------//
         $empResultStageId = 0;
         $empResultStage = DB::select("
           SELECT emp_result_id, stage_id
@@ -676,11 +953,11 @@ class ImportAssignmentController extends Controller
               $empResultStage->save();
               $empResultStageId = $empResultStage->emp_result_stage_id;
             } catch (Exception $e) {
-              $errors[] = ["table_name"=>"emp_result_stage",
-              "emp_result_id"=>$value->emp_result_id,
-              "errors" => substr($e,0,254)];
+              $errors[] = [
+                "title"=>"Table:emp_result_stage",
+                "error_desc" => Array(substr($e,0,254))
+              ];
             }
-
           } else {
             //---- Update @emp_result_stage
             EmpResultStage::where(
@@ -692,20 +969,11 @@ class ImportAssignmentController extends Controller
             ]);
           }
         }
-
-
-        if (empty($errors)) {
-          // All transaction good
-          DB::commit();
-        } else {
-          // Something went wrong
-          DB::rollback();
-        }
-
-  		}// End fetch by file
+        // -- End -- Insert/Update @emp_result_stage -------------------------//
+      }//End File
 
       $retVal = (empty($errors)) ? $status_ = 200 : $status_ = 400 ;
 
   		return response()->json(['status' => $status_, 'errors' => $errors]);
-  	}
+    }
 }
