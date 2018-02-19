@@ -189,6 +189,10 @@ class CDSResultController extends Controller
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
 			";
+			
+			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
+			
 		} else {
 			$query = "
 				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
@@ -263,10 +267,8 @@ class CDSResultController extends Controller
 		}
 		
 		empty($request->level_id) ?: ($query .= " And org.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
-		empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->appraisal_type_id) ?: ($query .= " And er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 		
 		$qfooter = " Order by r.emp_id, cds.cds_id ";
