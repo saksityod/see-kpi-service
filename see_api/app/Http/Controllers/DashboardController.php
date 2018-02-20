@@ -1215,8 +1215,8 @@ class DashboardController extends Controller
 			$subtotal_score = number_format((float)$subtotal_score,2,'.','');
 			$subtotal_weight_pct = number_format((float)$subtotal_weight_pct,2,'.','');
 			$subtotal_result_score = number_format((float)round($subtotal_score/$subtotal_weight_pct,2),2,'.','');
-			
-			$cat1[] = ['label' => $e->name . ' ' . $subtotal_score /*$e->total_weigh_score*/ .'%', 'color' => '#2aaae6', 'value' => $subtotal_result_score /*$e->result_score*/, 'category' => $cat2,
+			/*$e->color_code*/
+			$cat1[] = ['label' => $e->name . ' ' . $subtotal_score /*$e->total_weigh_score*/ .'%', 'color' => "#2aaae6", 'value' => $subtotal_result_score /*$e->result_score*/, 'category' => $cat2,
 			'tooltext' => "<div id='nameDiv'>" . $e->full_name . "</div>{br}" . $subtotal_score/*$e->total_weigh_score*/."% of " . $subtotal_weight_pct/*$e->total_weight_percent*/ . "%"];
 			$header = $e->name;
 		}
@@ -1827,7 +1827,7 @@ class DashboardController extends Controller
 
 	}
 
-	public function performance_trend(Request $request)
+	public function performance_trend(Request $request)# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	{
 		$period = AppraisalPeriod::find($request->period_id);
 		$frequency = AppraisalFrequency::find($period->appraisal_frequency_id);
@@ -2505,14 +2505,17 @@ class DashboardController extends Controller
 					[
 						"seriesName" => "Forecast",
 						"renderAs" => "line",
+						"anchorRadius"=> "4",
 						"data" => $forecast_data
 					],
 					[
 						"seriesName" => "Target",
-						"renderAs" => "area",
-						"anchorRadius"=> "0",
-						"anchorBorderThickness"=> "0",
-						"alpha" => "30",
+						"renderAs" => "line",
+						"anchorSides"=> "4",
+						"anchorRadius"=> "4",
+						#"anchorRadius"=> "0",
+						#"anchorBorderThickness"=> "0",
+						#"alpha" => "30",
 						"data" => $target_data
 					]
 				];
