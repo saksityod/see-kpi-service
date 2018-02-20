@@ -377,7 +377,7 @@ class AppraisalAssignmentController extends Controller
 		return response()->json($items);
 	}
 
-	public function auto_position_name(Request $request)
+	public function auto_position_name2(Request $request)
 	{
 		$emp = Employee::find(Auth::id());
 		$all_emp = DB::select("
@@ -388,6 +388,8 @@ class AppraisalAssignmentController extends Controller
 			where emp_code = ?
 		", array(Auth::id()));
 
+		empty($request->org_id) ? $org = "" : $org = " and a.org_id = " . $request->org_id . " ";
+		
 		if ($all_emp[0]->count_no > 0) {
 			$items = DB::select("
 				Select distinct b.position_id, b.position_name
@@ -396,6 +398,7 @@ class AppraisalAssignmentController extends Controller
 				Where position_name like ?
 				and a.is_active = 1
 				and b.is_active = 1
+			" . $org . "
 				Order by position_name
 				limit 10
 			",array('%'.$request->position_name.'%'));
@@ -404,18 +407,19 @@ class AppraisalAssignmentController extends Controller
 				Select distinct b.position_id, b.position_name
 				From employee a left outer join position b
 				on a.position_id = b.position_id
-				Where a.chief_emp_code = ?
+				Where (a.chief_emp_code = ? or a.emp_code = ?)
 				and position_name like ?
 				and a.is_active = 1
+			" . $org . "
 				and b.is_active = 1
 				Order by position_name
 				limit 10
-			", array($emp->emp_code,'%'.$request->position_name.'%'));
+			", array($emp->emp_code, $emp->emp_code,'%'.$request->position_name.'%'));
 		}
 		return response()->json($items);
 	}
 
-	public function auto_position_name2(Request $request)
+	public function auto_position_name2_bak(Request $request)
 	{
 		$items = DB::select("
 				Select distinct b.position_id, b.position_name
@@ -833,7 +837,7 @@ class AppraisalAssignmentController extends Controller
 		return response()->json($items);
 	}
 
-	public function auto_employee_name(Request $request)
+	public function auto_employee_name2(Request $request)
 	{
 		$emp = Employee::find(Auth::id());
 		$all_emp = DB::select("
@@ -844,28 +848,32 @@ class AppraisalAssignmentController extends Controller
 			where emp_code = ?
 		", array(Auth::id()));
 
+		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		
 		if ($all_emp[0]->count_no > 0) {
 			$items = DB::select("
 				Select emp_code, emp_name
 				From employee
 				Where emp_name like ?
 				and is_active = 1
+			" . $org . "
 				Order by emp_name
 			", array('%'.$request->emp_name.'%'));
 		} else {
 			$items = DB::select("
 				Select emp_code, emp_name
 				From employee
-				Where chief_emp_code = ?
+				Where (chief_emp_code = ? or emp_code = ?)
 				And emp_name like ?
+			" . $org . "				
 				and is_active = 1
 				Order by emp_name
-			", array($emp->emp_code,'%'.$request->emp_name.'%'));
+			", array($emp->emp_code, $emp->emp_code,'%'.$request->emp_name.'%'));
 		}
 		return response()->json($items);
 	}
 
-	public function auto_employee_name2(Request $request)
+	public function auto_employee_name2_bak(Request $request)
 	{
 			$items = DB::select("
 				Select emp_code, emp_name

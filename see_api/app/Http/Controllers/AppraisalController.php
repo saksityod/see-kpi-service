@@ -1954,12 +1954,15 @@ class AppraisalController extends Controller
   public function auto_emp_list(Request $request){
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
-
+		
+		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
 				SELECT emp_id, emp_code, emp_name
 				FROM employee
 				WHERE is_active = 1
+				" . $org . "
 				AND emp_name like '%{$request->emp_name}%' ");
 		} else {
 			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
@@ -1967,6 +1970,7 @@ class AppraisalController extends Controller
 				SELECT emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp
 				WHERE emp.is_active = 1
+				" . $org . "
 				AND (
 					emp.emp_code = '{$empCode}'
 					OR emp.chief_emp_code = '{$empCode}'
@@ -2000,12 +2004,15 @@ class AppraisalController extends Controller
   public function auto_position_list(Request $request){
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
-
+		
+		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
 				SELECT position_id, position_code, position_name
 				FROM position
 				WHERE is_active = 1
+				" . $org . "
 				AND position_name LIKE '%{$request->position_name}%' ");
 		} else {
 			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
@@ -2014,6 +2021,7 @@ class AppraisalController extends Controller
 				FROM employee emp
 				INNER JOIN position pos ON pos.position_id = emp.position_id
 				WHERE emp.is_active = 1
+				" . $org . "
 				AND (
 					emp.emp_code = '{$empCode}'
 					OR emp.chief_emp_code = '{$empCode}'

@@ -6,6 +6,7 @@ use App\CDS;
 use App\CDSResult;
 use App\PeriodMonth;
 use App\SystemConfiguration;
+use App]Employee;
 
 use Auth;
 use DB;
@@ -44,7 +45,7 @@ class CDSResultController extends Controller
 						'year' => 'required|integer',
 						'month' => 'required|integer',
 						'level_id' => 'required|integer',
-						'cds_value' => 'required|numeric|digits_between:1,15',
+						'cds_value' => 'required|numeric',
 					]);
 
 					if ($validator->fails()) {
@@ -95,7 +96,7 @@ class CDSResultController extends Controller
 						'year' => 'required|integer',
 						'month' => 'required|integer',
 						'level_id' => 'required|integer',
-						'cds_value' => 'required|numeric|digits_between:1,15',
+						'cds_value' => 'required|numeric',
 					]);
 
 					if ($validator->fails()) {
@@ -627,12 +628,44 @@ class CDSResultController extends Controller
 	
 	public function auto_emp_name(Request $request)
 	{
-		$items = DB::select("
-			Select distinct e.emp_id, e.emp_code, e.emp_name
-			From employee e
-			where e.emp_name like ? and e.is_active = 1
-			Order by e.emp_name		
-		", array('%'.$request->emp_name.'%'));
+		// $items = DB::select("
+			// Select distinct e.emp_id, e.emp_code, e.emp_name
+			// From employee e
+			// where e.emp_name like ? and e.is_active = 1
+			// Order by e.emp_name		
+		// ", array('%'.$request->emp_name.'%'));
+		
+		$emp = Employee::find(Auth::id());
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+
+		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		
+		if ($all_emp[0]->count_no > 0) {
+			$items = DB::select("
+				Select emp_id, emp_code, emp_name
+				From employee
+				Where emp_name like ?
+				and is_active = 1
+			" . $org . "
+				Order by emp_name
+			", array('%'.$request->emp_name.'%'));
+		} else {
+			$items = DB::select("
+				Select emp_id, emp_code, emp_name
+				From employee
+				Where (chief_emp_code = ? or emp_code = ?)
+				And emp_name like ?
+			" . $org . "				
+				and is_active = 1
+				Order by emp_name
+			", array($emp->emp_code, $emp->emp_code,'%'.$request->emp_name.'%'));
+		}		
 		return response()->json($items);
 	}
 	
