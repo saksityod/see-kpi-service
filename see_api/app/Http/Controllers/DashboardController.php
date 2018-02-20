@@ -1827,7 +1827,7 @@ class DashboardController extends Controller
 
 	}
 
-	public function performance_trend(Request $request)
+	public function performance_trend(Request $request)# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	{
 		$period = AppraisalPeriod::find($request->period_id);
 		$frequency = AppraisalFrequency::find($period->appraisal_frequency_id);
@@ -2505,14 +2505,17 @@ class DashboardController extends Controller
 					[
 						"seriesName" => "Forecast",
 						"renderAs" => "line",
+						"anchorRadius"=> "4",
 						"data" => $forecast_data
 					],
 					[
 						"seriesName" => "Target",
-						"renderAs" => "area",
-						"anchorRadius"=> "0",
-						"anchorBorderThickness"=> "0",
-						"alpha" => "30",
+						"renderAs" => "line",
+						"anchorSides"=> "4",
+						"anchorRadius"=> "4",
+						#"anchorRadius"=> "0",
+						#"anchorBorderThickness"=> "0",
+						#"alpha" => "30",
 						"data" => $target_data
 					]
 				];
