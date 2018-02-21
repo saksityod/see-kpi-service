@@ -2037,7 +2037,8 @@ class AppraisalController extends Controller
 					)
 				)
 				".$levelStr."
-				AND pos.position_name LIKE '%{$request->position_name}%' ");
+				AND pos.position_name LIKE '%{$request->position_name}%' 
+				AND emp.employee_name LIKE '%{$request->employee_name}%' ");
 		}
 
 		return response()->json($result);
