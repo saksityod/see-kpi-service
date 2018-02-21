@@ -251,21 +251,26 @@ class AppraisalDataController extends Controller
 		$qinput = array();
 		$query = "
 			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id
-			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er
+			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
 			and r.item_id = i.item_id
 			and i.structure_id = s.structure_id
 			and r.emp_result_id = er.emp_result_id
 			and s.form_id = f.form_id
-			and f.form_name = 'Deduct Score'			
+			and r.org_id = o.org_id
+			and f.form_name = 'Deduct Score'	
+			and r.appraisal_type_id = 2
 		";
 			
-		empty($request->structure_id) ?: ($query .= " AND i.structure_id = ? " AND $qinput[] = $request->structure_id);
-		empty($request->level_id) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
+		empty($request->current_appraisal_year) ?: ($query .= " AND p.appraisal_year = ? " AND $qinput[] = $request->current_appraisal_year);
 		empty($request->period_id) ?: ($query .= " And r.period_id = ? " AND $qinput[] = $request->period_id);
+		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+		//empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
 		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
+		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->position_id) ?: ($query .= " And r.position_id = ? " AND $qinput[] = $request->position_id);
 		
 		$qfooter = " Order by r.period_id, s.structure_name, i.item_name, e.emp_code ";
 		
@@ -304,25 +309,30 @@ class AppraisalDataController extends Controller
 	
 	public function index(Request $request)
 	{
-
+	
 		$qinput = array();
 		$query = "
 			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id
-			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er
+			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
 			and r.item_id = i.item_id
 			and i.structure_id = s.structure_id
 			and r.emp_result_id = er.emp_result_id
 			and s.form_id = f.form_id			
+			and r.org_id = o.org_id
 			and f.form_name = 'Deduct Score'
+			and r.appraisal_type_id = 2
 		"; 
 			
-		empty($request->structure_id) ?: ($query .= " AND i.structure_id = ? " AND $qinput[] = $request->structure_id);
-		empty($request->level_id) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
+		empty($request->current_appraisal_year) ?: ($query .= " AND p.appraisal_year = ? " AND $qinput[] = $request->current_appraisal_year);
 		empty($request->period_id) ?: ($query .= " And r.period_id = ? " AND $qinput[] = $request->period_id);
+		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+		//empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
 		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
+		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->position_id) ?: ($query .= " And r.position_id = ? " AND $qinput[] = $request->position_id);
 		
 		$qfooter = " Order by r.period_id, s.structure_name, i.item_name, e.emp_code ";
 		
