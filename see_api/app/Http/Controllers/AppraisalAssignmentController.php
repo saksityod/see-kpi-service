@@ -396,13 +396,13 @@ class AppraisalAssignmentController extends Controller
 				From employee a left outer join position b
 				on a.position_id = b.position_id
 				Where position_name like ?
-				and employee_name like ?
+				and emp_name like ?
 				and a.is_active = 1
 				and b.is_active = 1
 			" . $org . "
 				Order by position_name
 				limit 10
-			",array('%'.$request->position_name.'%','%'.$request->employee_name.'%'));
+			",array('%'.$request->position_name.'%','%'.$request->emp_name.'%'));
 		} else {
 			$items = DB::select("
 				Select distinct b.position_id, b.position_name
@@ -410,13 +410,13 @@ class AppraisalAssignmentController extends Controller
 				on a.position_id = b.position_id
 				Where (a.chief_emp_code = ? or a.emp_code = ?)
 				and position_name like ?
-				and employee_name like ?
+				and emp_name like ?
 				and a.is_active = 1
 			" . $org . "
 				and b.is_active = 1
 				Order by position_name
 				limit 10
-			", array($emp->emp_code, $emp->emp_code,'%'.$request->position_name.'%','%'.$request->employee_name.'%'));
+			", array($emp->emp_code, $emp->emp_code,'%'.$request->position_name.'%','%'.$request->emp_name.'%'));
 		}
 		return response()->json($items);
 	}

@@ -2365,7 +2365,7 @@ class DashboardController extends Controller
 						and b.appraisal_type_id = ?
 						and a.period_id = ?
 						and a.item_id = ?
-					", array($request->org_id, $request->appraisal_type_id, $request->period_id, $request->item_id));
+					", array($o->org_id, $request->appraisal_type_id, $request->period_id, $request->item_id));
 				}
 
 
