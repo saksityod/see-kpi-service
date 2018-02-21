@@ -6,7 +6,7 @@ use App\CDS;
 use App\CDSResult;
 use App\PeriodMonth;
 use App\SystemConfiguration;
-use App]Employee;
+use App\Employee;
 
 use Auth;
 use DB;
