@@ -2009,7 +2009,7 @@ class AppraisalController extends Controller
 		
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
-				SELECT p.position_id, p.position_code, p.position_name
+				SELECT distinct p.position_id, p.position_code, p.position_name
 				FROM position p left outer join employee e
 				on p.position_id = e.position_id
 				WHERE p.is_active = 1
@@ -2019,7 +2019,7 @@ class AppraisalController extends Controller
 		} else {
 			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
 			$result = DB::select("
-				SELECT emp.position_id, pos.position_code, pos.position_name
+				SELECT distinct emp.position_id, pos.position_code, pos.position_name
 				FROM employee emp
 				INNER JOIN position pos ON pos.position_id = emp.position_id
 				WHERE emp.is_active = 1
