@@ -228,7 +228,7 @@ class ImportAssignmentController extends Controller
         	AND emp.org_id IN({$org_id})
         	AND (".$positionStr.$empContStr.$empStr.")
         )emp
-        LEFT JOIN (
+        INNER JOIN (
         	SELECT ail.level_id, aio.org_id,
         		itm.item_id, itm.item_name, uom.uom_name,
             itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
@@ -473,7 +473,7 @@ class ImportAssignmentController extends Controller
          	AND org.level_id IN({$appraisal_level_id})
          	AND org.org_id IN({$org_id})
          )org
-         LEFT JOIN (
+         INNER JOIN (
          	SELECT ail.level_id, aio.org_id,
          		itm.item_id, itm.item_name, uom.uom_name,
              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
