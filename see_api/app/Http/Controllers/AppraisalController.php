@@ -2009,11 +2009,13 @@ class AppraisalController extends Controller
 		
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
-				SELECT position_id, position_code, position_name
-				FROM position
-				WHERE is_active = 1
+				SELECT p.position_id, p.position_code, p.position_name
+				FROM position p left outer join employee e
+				on p.position_id = e.position_id
+				WHERE p.is_active = 1
 				" . $org . "
-				AND position_name LIKE '%{$request->position_name}%' ");
+				AND p.position_name LIKE '%{$request->position_name}%' 
+				AND e.emp_name LIKE '%{$request->emp_name}%' ");
 		} else {
 			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
 			$result = DB::select("
