@@ -2074,12 +2074,15 @@ class AppraisalController extends Controller
 					FROM monthly_appraisal_item_result emp
 					INNER JOIN org ON org.org_id = emp.org_id
 					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					left outer join employee e on emp.emp_id = e.emp_id
+					left outer join employee c on emp.chief_emp_id = c.emp_id
+					left outer join employee d on emp.dotline_id = d.emp_id
 					WHERE 1 = 1
 					AND (
-						emp.emp_code = '{$empCode}'
-						OR emp.chief_emp_code = '{$empCode}'
-						OR emp.dotline_code = '{$empCode}'
-						OR emp.emp_code IN(
+						e.emp_code = '{$empCode}'
+						OR c.chief_emp_code = '{$empCode}'
+						OR d.dotline_code = '{$empCode}'
+						OR e.emp_code IN(
 							SELECT de.emp_code
 							FROM employee de
 							INNER JOIN employee ce ON ce.emp_code = de.chief_emp_code
