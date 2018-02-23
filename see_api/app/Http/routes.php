@@ -390,6 +390,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal/parameter/emp_level', 'AppraisalController@emp_level_list');
 	Route::get('appraisal/parameter/auto_emp_list', 'AppraisalController@auto_emp_list');
 	Route::get('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list');
+	Route::post('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list');
 	Route::get('appraisal/parameter/org_level_individual', 'AppraisalController@org_level_list_individual');
 	Route::get('appraisal/parameter/org_individual', 'AppraisalController@org_individual');
 	
