@@ -672,40 +672,129 @@ class CDSResultController extends Controller
 	public function index(Request $request)
 	{
 
-		$qinput = array();
-		$query = "
-			select r.cds_result_id, r.emp_id, e.emp_code, e.emp_name, r.org_id, o.org_code, o.org_name, l.appraisal_level_name, r.cds_id, s.cds_name, r.year, m.month_name, r.cds_value
-			From cds_result r
-			left outer join employee e
-			on r.emp_id = e.emp_id
-			left outer join cds s
-			on r.cds_id = s.cds_id
-			left outer join appraisal_level l
-			on r.level_id = l.level_id
-			left outer join period_month m
-			on r.appraisal_month_no = m.month_id
-			left outer join org o
-			on r.org_id = o.org_id
-			left outer join position p
-			on r.position_id = p.position_id
-			where 1 = 1
-			and l.is_hr = 0
-		";
+		// $qinput = array();
+		// $query = "
+			// select r.cds_result_id, r.emp_id, e.emp_code, e.emp_name, r.org_id, o.org_code, o.org_name, l.appraisal_level_name, r.cds_id, s.cds_name, r.year, m.month_name, r.cds_value
+			// From cds_result r
+			// left outer join employee e
+			// on r.emp_id = e.emp_id
+			// left outer join cds s
+			// on r.cds_id = s.cds_id
+			// left outer join appraisal_level l
+			// on r.level_id = l.level_id
+			// left outer join period_month m
+			// on r.appraisal_month_no = m.month_id
+			// left outer join org o
+			// on r.org_id = o.org_id
+			// left outer join position p
+			// on r.position_id = p.position_id
+			// where 1 = 1
+			// and l.is_hr = 0
+		// ";
 				
-		empty($request->current_appraisal_year) ?: ($query .= " AND r.year = ? " AND $qinput[] = $request->current_appraisal_year);
-		empty($request->appraisal_type_id) ?: ($query .= " AND r.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-		empty($request->month_id) ?: ($query .= " And r.appraisal_month_no = ? " AND $qinput[] = $request->month_id);
-		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
-		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
-		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
-		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
+		// empty($request->current_appraisal_year) ?: ($query .= " AND r.year = ? " AND $qinput[] = $request->current_appraisal_year);
+		// empty($request->appraisal_type_id) ?: ($query .= " AND r.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+		// empty($request->month_id) ?: ($query .= " And r.appraisal_month_no = ? " AND $qinput[] = $request->month_id);
+		// empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
+		// empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
+		// empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
+		// empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
+		// empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
 		
-		$qfooter = " Order by l.appraisal_level_name, e.emp_name, r.cds_id ";
+		// $qfooter = " Order by l.appraisal_level_name, e.emp_name, r.cds_id ";
 
 		// echo $query . $qfooter;
 		// echo"<br>";
 		// print_r($qinput);
+		
+		$qinput = array();
+
+		try {
+			$config = SystemConfiguration::firstOrFail();
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
+		}		
+		
+		
+		$checkyear = DB::select("
+			select 1
+			from appraisal_period
+			where appraisal_year = ?
+			and date(?) between start_date and end_date		
+		", array($config->current_appraisal_year, $request->current_appraisal_year . str_pad($request->month_id,2,'0',STR_PAD_LEFT) . '01'));
+		
+		if (empty($checkyear)) {
+			return 'Appraisal Period not found for the Current Appraisal Year.';
+		}
+		
+		
+		if ($request->appraisal_type_id == 2) {
+			$query = "
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				from appraisal_item_result r
+				left outer join employee e on r.emp_id = e.emp_id 
+				inner join appraisal_item i on r.item_id = i.item_id
+				left outer join appraisal_item_position p on i.item_id = p.item_id
+				inner join kpi_cds_mapping m on i.item_id = m.item_id
+				inner join cds on m.cds_id = cds.cds_id
+				inner join appraisal_period ap on r.period_id = ap.period_id
+				inner join system_config sys on ap.appraisal_year = sys.current_appraisal_year
+				inner join emp_result er on r.emp_result_id = er.emp_result_id	
+				left outer join position po on r.position_id = po.position_id
+				left outer join org on r.org_id = org.org_id
+				left outer join appraisal_level al on r.level_id = al.level_id
+				left outer join cds_result cr on cds.cds_id = cr.cds_id
+				and cr.emp_id = e.emp_id
+			";
+			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
+			$query .= "
+				and cr.year = {$request->current_appraisal_year}
+				and cr.appraisal_month_no = {$request->month_id}
+				where cds.is_sql = 0	
+			";
+			
+			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
+			
+		} else {
+			$query = "
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				from appraisal_item_result r
+				inner join appraisal_item i on r.item_id = i.item_id
+				left outer join appraisal_item_position p on i.item_id = p.item_id
+				inner join kpi_cds_mapping m on i.item_id = m.item_id
+				inner join cds on m.cds_id = cds.cds_id
+				inner join appraisal_period ap on r.period_id = ap.period_id
+				inner join system_config sys on ap.appraisal_year = sys.current_appraisal_year
+				inner join emp_result er on r.emp_result_id = er.emp_result_id	
+				left outer join position po on r.position_id = po.position_id
+				left outer join org on r.org_id = org.org_id
+				left outer join appraisal_level al on r.level_id = al.level_id
+				left outer join cds_result cr on cds.cds_id = cr.cds_id
+				and cr.org_id = org.org_id
+			";
+			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
+			$query .= "
+				and cr.year = {$request->current_appraisal_year}
+				and cr.appraisal_month_no = {$request->month_id}
+				where cds.is_sql = 0	
+			";
+		
+		}
+		
+		if (!empty($request->current_appraisal_year) && !empty($request->month_id)) {
+			$current_date = $request->current_appraisal_year . str_pad($request->month_id,2,'0',STR_PAD_LEFT) . '01';
+			$query .= " and date(?) between ap.start_date and ap.end_date ";
+			$qinput[] = $current_date;
+		}
+		
+		empty($request->level_id) ?: ($query .= " And org.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->position_id) ?: ($query .= " And p.position_id = ? " AND $qinput[] = $request->position_id);
+		empty($request->appraisal_type_id) ?: ($query .= " And er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+		
+		$qfooter = " Order by r.emp_id, cds.cds_id ";
+			
 		
 		$items = DB::select($query . $qfooter, $qinput);
 		
