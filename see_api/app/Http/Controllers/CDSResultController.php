@@ -8,6 +8,7 @@ use App\PeriodMonth;
 use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
+use App\CDSFile;
 
 use Auth;
 use DB;
@@ -975,6 +976,63 @@ class CDSResultController extends Controller
 		
 		return response()->json(['status' => 200]);
 		
-	}		
+	}	
+
+	public function cds_result_upload_files(Request $request,$cds_result_id )
+	{
+
+
+
+		$result = array();
+
+			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/cds_result_files/' . $item_result_id . '/';
+			foreach ($request->file() as $f) {
+				$filename = iconv('UTF-8','windows-874',$f->getClientOriginalName());
+				//$f->move($path,$filename);
+				$f->move($path,$f->getClientOriginalName());
+				//echo $filename;
+
+				$item = CDSFile::firstOrNew(array('doc_path' => 'cds_result_files/' . $item_result_id . '/' . $f->getClientOriginalName()));
+
+				$item->cds_result_id = $item_result_id;
+				$item->created_by = Auth::id();
+
+				//print_r($item);
+				$item->save();
+				$result[] = $item;
+				//echo "hello".$f->getClientOriginalName();
+
+			}
+
+		return response()->json(['status' => 200, 'data' => $result]);
+	}
+
+	public function cds_result_files_list(Request $request)
+	{
+		$items = DB::select("
+			SELECT cds_result_doc_id,doc_path
+			FROM cds_result_doc
+			where  cds_result_id=?
+			order by cds_result_doc_id;
+		", array($request->cds_result_id));
+
+		return response()->json($items);
+	}
+
+
+	public function delete_file(Request $request){
+
+		try {
+			$item = CDSFile::findOrFail($request->cds_result_doc_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'File not found.']);
+		}
+		           //$_SERVER['DOCUMENT_ROOT'] . '/see_api/public/attach_files/' . $item_result_id . '/';
+		File::Delete($_SERVER['DOCUMENT_ROOT'] . '/see_api/public/'.$item->doc_path);
+		$item->delete();
+
+		return response()->json(['status' => 200]);
+
+	}	
 	
 }

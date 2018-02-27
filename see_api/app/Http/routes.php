@@ -85,6 +85,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('cds_result', 'CDSResultController@import');
 	Route::patch('cds_result', 'CDSResultController@update');
 	Route::delete('cds_result/{cds_result_id}','CDSResultController@destroy');
+	Route::post('cds_result/upload_file/{cds_result_id}', 'CDSResultController@cds_result_upload_files');
+	Route::get('cds_result/upload_file/{cds_result_id}','CDSResultController@cds_result_files_list');
+	Route::get('cds_result/delete_file/{cds_result_doc_id}','CDSResultController@delete_file');	
 
 	// Appraisal Data //
 	Route::get('appraisal_data/structure_list','AppraisalDataController@structure_list');
