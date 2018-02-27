@@ -83,7 +83,11 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('cds_result', 'CDSResultController@index');
 	Route::post('cds_result/export', 'CDSResultController@export');
 	Route::post('cds_result', 'CDSResultController@import');
+	Route::patch('cds_result', 'CDSResultController@update');
 	Route::delete('cds_result/{cds_result_id}','CDSResultController@destroy');
+	Route::post('cds_result/upload_file/{cds_result_id}', 'CDSResultController@cds_result_upload_files');
+	Route::get('cds_result/upload_file/{cds_result_id}','CDSResultController@cds_result_files_list');
+	Route::get('cds_result/delete_file/{cds_result_doc_id}','CDSResultController@delete_file');	
 
 	// Appraisal Data //
 	Route::get('appraisal_data/structure_list','AppraisalDataController@structure_list');
@@ -370,6 +374,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('import_assignment/export_organization','ImportAssignmentController@export_template_organization');
 	Route::post('import_assignment/import','ImportAssignmentController@import_template');
 	Route::get('import_assignment/emp_name_list', 'ImportAssignmentController@emp_name_list');
+	Route::post('import_assignment/auto_employee_name', 'ImportAssignmentController@auto_employee_name');
 
 	// benchmark data //
 	Route::get('benchmark_data/select_list_search/', 'BenchmarkDataController@select_list_search');

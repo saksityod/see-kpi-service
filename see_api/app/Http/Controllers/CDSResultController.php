@@ -7,6 +7,9 @@ use App\CDSResult;
 use App\PeriodMonth;
 use App\SystemConfiguration;
 use App\Employee;
+use App\Org;
+use App\CDSFile;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -154,6 +157,34 @@ class CDSResultController extends Controller
 			// return response()->json(['status' => 400, 'data' => 'Selected Year does not match Current Appraisal Year in System Configuration']);
 		// }
 		
+		$emp = Employee::find(Auth::id());
+		$level = AppraisalLevel::find($emp->level_id);
+		$is_hr = $level->is_hr;
+		$org = Org::find($emp->org_id);
+		
+		
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+
+		
+		if ($all_emp[0]->count_no > 0) {
+			$is_all_sql = "";
+		} else {
+			$is_all_sql = " and (e.emp_code = '{$emp->emp_code}' or e.chief_emp_code = '{$emp->emp_code}') ";
+			$is_all_sql_org = " and (org.org_code = '{$org->org_code}' or org.parent_org_code = '{$org->org_code}') ";
+		}
+		
+		if ($is_hr == 0) {
+			$is_hr_sql = " and cds.is_hr = 0 ";
+		} else {
+			$is_hr_sql = "";
+		}		
+		
 		$checkyear = DB::select("
 			select 1
 			from appraisal_period
@@ -189,7 +220,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql . $is_hr_sql;
 			
 			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
@@ -216,7 +247,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql_org . $is_hr_sql;
 		
 		}
 /* 
@@ -671,7 +702,35 @@ class CDSResultController extends Controller
 	
 	public function index(Request $request)
 	{
+		$emp = Employee::find(Auth::id());
+		$level = AppraisalLevel::find($emp->level_id);
+		$is_hr = $level->is_hr;
+		$org = Org::find($emp->org_id);
+		
+		
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
 
+		
+		if ($all_emp[0]->count_no > 0) {
+			$is_all_sql = "";
+		} else {
+			$is_all_sql = " and (e.emp_code = '{$emp->emp_code}' or e.chief_emp_code = '{$emp->emp_code}') ";
+			$is_all_sql_org = " and (org.org_code = '{$org->org_code}' or org.parent_org_code = '{$org->org_code}') ";
+		}
+		
+		if ($is_hr == 0) {
+			$is_hr_sql = " and cds.is_hr = 0 ";
+		} else {
+			$is_hr_sql = "";
+		}
+		
+		
 		// $qinput = array();
 		// $query = "
 			// select r.cds_result_id, r.emp_id, e.emp_code, e.emp_name, r.org_id, o.org_code, o.org_name, l.appraisal_level_name, r.cds_id, s.cds_name, r.year, m.month_name, r.cds_value
@@ -730,7 +789,7 @@ class CDSResultController extends Controller
 		
 		if ($request->appraisal_type_id == 2) {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
 				from appraisal_item_result r
 				left outer join employee e on r.emp_id = e.emp_id 
 				inner join appraisal_item i on r.item_id = i.item_id
@@ -751,14 +810,14 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql . $is_hr_sql;
 			
 			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
 			
 		} else {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
 				from appraisal_item_result r
 				inner join appraisal_item i on r.item_id = i.item_id
 				left outer join appraisal_item_position p on i.item_id = p.item_id
@@ -778,7 +837,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql_org . $is_hr_sql;
 		
 		}
 		
@@ -817,6 +876,126 @@ class CDSResultController extends Controller
 		return response()->json($result);
 	}
 	
+	public function update(Request $request)
+	{
+		$errors = array();
+		foreach ($request->cds_results as $i) {
+			
+			if ($i['appraisal_type_id'] == 2) {
+				$validator = Validator::make($i, [
+					'emp_id' => 'required|max:50',
+					'appraisal_type_id' => 'integer',
+					'org_id' => 'required|integer',
+					'position_id' => 'required|integer',
+					'cds_id' => 'required|integer',
+					'year' => 'required|integer',
+					'month' => 'required|integer',
+					'level_id' => 'required|integer',
+				]);
+
+				if ($validator->fails()) {
+					$errors[] = ['emp_id' => $i['emp_id'], 'errors' => $validator->errors()];
+				} else {
+					$month_name = PeriodMonth::find($i['month']);
+					$a_date = $i['year']."-".$i['month']."-01";
+					if (empty($month_name)) {
+						$errors[] = ['emp_id' => $i['emp_id'], 'errors' => 'Invalid Month.'];
+					} else {
+						try {
+						//	$result_check = CDSResult::where("emp_id",$i->emp_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
+							if ($i['cds_value'] != '') {
+								if (empty($i['cds_result_id'])) {
+									
+									//echo date("Y-m-t", strtotime($a_date));
+									$cds_result = new CDSResult;
+									$cds_result->appraisal_type_id = $i['appraisal_type_id'];
+									$cds_result->emp_id = $i['emp_id'];
+									$cds_result->cds_id = $i['cds_id'];
+									$cds_result->year = $i['year'];
+									$cds_result->org_id = $i['org_id'];
+									$cds_result->position_id = $i['position_id'];
+									$cds_result->level_id = $i['level_id'];
+									$cds_result->appraisal_month_no = $i['month'];
+									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->created_by = Auth::id();
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();							
+								} else {
+									// CDSResult::where("emp_id",$i->emp_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
+										// 'updated_by' => Auth::id()]);		
+									$cds_result = CDSResult::find($i['cds_result_id']);
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();										
+								}
+							} 
+
+						} catch (Exception $e) {
+							$errors[] = ['emp_id' => $i['emp_id'], 'errors' => substr($e,0,254)];
+						}
+					}
+				}					
+			} else {
+			
+				$validator = Validator::make($i, [
+					'org_id' => 'required|integer',
+					'appraisal_type_id' => 'required|integer',
+					'cds_id' => 'required|integer',
+					'year' => 'required|integer',
+					'month' => 'required|integer',
+					'level_id' => 'required|integer',
+				]);
+
+				if ($validator->fails()) {
+					$errors[] = ['org_id' => $i['org_id'], 'errors' => $validator->errors()];
+				} else {
+					$month_name = PeriodMonth::find($i['month']);
+					$a_date = $i['year']."-".$i['month']."-01";
+					if (empty($month_name)) {
+						$errors[] = ['org_id' => $i['org_id'], 'errors' => 'Invalid Month.'];
+					} else {
+						try {
+							//$result_check = CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
+							
+							if ($i['cds_value'] != '') {
+								if (empty($i['cds_result_id'])) {
+									
+									$cds_result = new CDSResult;
+									$cds_result->appraisal_type_id = $i['appraisal_type_id'];
+									$cds_result->org_id = $i['org_id'];
+									$cds_result->cds_id = $i['cds_id'];
+									$cds_result->year = $i['year'];
+									$cds_result->level_id = $i['level_id'];
+									$cds_result->appraisal_month_no = $i['month'];
+									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->created_by = Auth::id();
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();							
+								} else {
+									// CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)), 'updated_by' => Auth::id()]);		
+									$cds_result = CDSResult::find($i['cds_result_id']);
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();										
+								}
+							}
+							
+						} catch (Exception $e) {
+							$errors[] = ['org_id' => $i['org_id'], 'errors' => substr($e,0,254)];
+						}
+					}
+				}						
+			}
+		}
+		return response()->json(['status' => 200, 'errors' => $errors]);
+	}
+	
 	public function destroy($cds_result_id)
 	{
 		try {
@@ -837,6 +1016,63 @@ class CDSResultController extends Controller
 		
 		return response()->json(['status' => 200]);
 		
-	}		
+	}	
+
+	public function cds_result_upload_files(Request $request,$cds_result_id )
+	{
+
+
+
+		$result = array();
+
+			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/cds_result_files/' . $cds_result_id . '/';
+			foreach ($request->file() as $f) {
+				$filename = iconv('UTF-8','windows-874',$f->getClientOriginalName());
+				//$f->move($path,$filename);
+				$f->move($path,$f->getClientOriginalName());
+				//echo $filename;
+
+				$item = CDSFile::firstOrNew(array('doc_path' => 'cds_result_files/' . $cds_result_id . '/' . $f->getClientOriginalName()));
+
+				$item->cds_result_id = $cds_result_id;
+				$item->created_by = Auth::id();
+
+				//print_r($item);
+				$item->save();
+				$result[] = $item;
+				//echo "hello".$f->getClientOriginalName();
+
+			}
+
+		return response()->json(['status' => 200, 'data' => $result]);
+	}
+
+	public function cds_result_files_list(Request $request)
+	{
+		$items = DB::select("
+			SELECT cds_result_doc_id,doc_path
+			FROM cds_result_doc
+			where  cds_result_id=?
+			order by cds_result_doc_id;
+		", array($request->cds_result_id));
+
+		return response()->json($items);
+	}
+
+
+	public function delete_file(Request $request){
+
+		try {
+			$item = CDSFile::findOrFail($request->cds_result_doc_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'File not found.']);
+		}
+		           //$_SERVER['DOCUMENT_ROOT'] . '/see_api/public/attach_files/' . $item_result_id . '/';
+		File::Delete($_SERVER['DOCUMENT_ROOT'] . '/see_api/public/'.$item->doc_path);
+		$item->delete();
+
+		return response()->json(['status' => 200]);
+
+	}	
 	
 }
