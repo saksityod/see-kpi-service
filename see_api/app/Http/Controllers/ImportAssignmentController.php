@@ -6,6 +6,7 @@ use App\KPIType;
 use App\EmpResult;
 use App\AppraisalItemResult;
 use App\EmpResultStage;
+use App\Employee;
 
 use Illuminate\Http\Request;
 use DB;
@@ -90,6 +91,52 @@ class ImportAssignmentController extends Controller
     }
 
 		return response()->json($orgs);
+	}
+
+
+
+  /**
+   * Get Employee list filter by org_id, emp_code, emp_name
+   *
+   * @author P.Wirun (GJ)
+   * @param  \Illuminate\Http\Request   $request( org_id[], emp_code, emp_name)
+   * @return \Illuminate\Http\Response
+   */
+  public function auto_employee_name(Request $request)
+	{
+		$emp = Employee::find(Auth::id());
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+
+    $orgIdStr = (empty($request->org_id)) ? "' '" : "'".implode("','", $request->org_id)."'" ;
+		empty($request->org_id) ? $org = "" : $org = " and org_id in({$orgIdStr}) ";
+
+		if ($all_emp[0]->count_no > 0) {
+			$items = DB::select("
+				Select emp_code, emp_name
+				From employee
+				Where emp_name like ?
+				and is_active = 1
+			" . $org . "
+				Order by emp_name
+			", array('%'.$request->emp_name.'%'));
+		} else {
+			$items = DB::select("
+				Select emp_code, emp_name
+				From employee
+				Where (chief_emp_code = ? or emp_code = ?)
+				And emp_name like ?
+			" . $org . "
+				and is_active = 1
+				Order by emp_name
+			", array($emp->emp_code, $emp->emp_code,'%'.$request->emp_name.'%'));
+		}
+		return response()->json($items);
 	}
 
 
@@ -185,7 +232,7 @@ class ImportAssignmentController extends Controller
       $positionStr = (empty($position_id)) ? "" : " emp.position_id = '{$position_id}'";
       $empStr = (empty($emp_code)) ? "" : " emp.emp_code = '{$emp_code}'";
       if (!empty($positionStr) && !empty($empStr)) {
-        $empContStr = " or ";
+        $empContStr = " and ";
       } else if(empty($positionStr) && empty($empStr)) {
         $empContStr = " 1=1 ";
       } else {
@@ -200,7 +247,7 @@ class ImportAssignmentController extends Controller
       $items = DB::select("
         SELECT
         	prd.period_id, prd.year, prd.start_date, prd.end_date,
-        	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, typ.status,
+        	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, emp.status,
         	emp.level_id, emp.appraisal_level_name level_name, emp.org_id,
         	emp.org_name, emp.position_id, emp.position_name, emp.chief_emp_id,
         	emp.chief_emp_code, emp.chief_emp_name, emp.emp_id, emp.emp_code,
@@ -214,12 +261,14 @@ class ImportAssignmentController extends Controller
         		emp.org_id, org.org_name,
         		emp.position_id, pos.position_name,
         		emp.emp_id, emp.emp_code, emp.emp_name,
-        		chf.emp_id chief_emp_id, chf.emp_code chief_emp_code, chf.emp_name chief_emp_name
+        		chf.emp_id chief_emp_id, chf.emp_code chief_emp_code, chf.emp_name chief_emp_name,
+            stg.status
         	FROM employee emp
         	LEFT OUTER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
         	INNER JOIN appraisal_level vel ON vel.level_id = emp.level_id
         	INNER JOIN org ON org.org_id = emp.org_id
         	INNER JOIN position pos ON pos.position_id = emp.position_id
+          LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = vel.default_stage_id
         	WHERE vel.is_active = 1
         	AND org.is_active = 1
         	AND pos.is_active = 1
@@ -456,7 +505,7 @@ class ImportAssignmentController extends Controller
        $items = DB::select("
          SELECT
          	prd.period_id, prd.year, prd.start_date, prd.end_date,
-          typ.appraisal_type_id, typ.appraisal_type_name, org.default_stage_id as stage_id, typ.status,
+          typ.appraisal_type_id, typ.appraisal_type_name, org.default_stage_id as stage_id, org.status,
           org.level_id, org.appraisal_level_name level_name, org.org_id,
           org.org_name, item.item_id appraisal_item_id,
           item.item_name appraisal_item_name, item.uom_name,
@@ -465,9 +514,10 @@ class ImportAssignmentController extends Controller
          FROM(
          	SELECT
          		org.level_id, vel.appraisal_level_name, vel.default_stage_id,
-            org.org_id, org.org_name
+            org.org_id, org.org_name, stg.status
          	FROM org
          	INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+          LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = vel.default_stage_id
          	WHERE vel.is_active = 1
          	AND org.is_active = 1
          	AND org.level_id IN({$appraisal_level_id})
@@ -680,22 +730,38 @@ class ImportAssignmentController extends Controller
 
           // Loop through all rows
           foreach ($sheets as $key => $row) {
-            $validator = Validator::make($row->all(), [
-               "period_id" => "required|numeric",
-               "year" => "numeric",
-               "start_date" => "date",
-               "end_date" => "date",
-               "appraisal_type_id" => "required|numeric",
-               "stage_id" => "required|numeric",
-               "status" => "required",
-               "level_id" => "required|numeric",
-               "org_id" => "required|numeric",
-               "position_id" => "numeric",
-               "chief_emp_id" => "numeric",
-               "emp_id" => "numeric",
-               "appraisal_item_id" => "required|numeric",
-               "appraisal_item_name" => "required",
-            ]);
+            if($row->appraisal_type_id == "1"){
+              $validator = Validator::make($row->all(), [
+                 "period_id" => "required|numeric",
+                 "year" => "numeric",
+                 "start_date" => "date",
+                 "end_date" => "date",
+                 "appraisal_type_id" => "required|numeric",
+                 "stage_id" => "required|numeric",
+                 "status" => "required",
+                 "level_id" => "required|numeric",
+                 "org_id" => "required|numeric",
+                 "position_id" => "numeric",
+                 "chief_emp_id" => "numeric",
+                 "emp_id" => "numeric",
+                 "appraisal_item_id" => "required|numeric",
+                 "appraisal_item_name" => "required",
+              ]);
+            } else {
+              $validator = Validator::make($row->all(), [
+                 "period_id" => "required|numeric",
+                 "year" => "numeric",
+                 "start_date" => "date",
+                 "end_date" => "date",
+                 "appraisal_type_id" => "required|numeric",
+                 "stage_id" => "required|numeric",
+                 "status" => "required",
+                 "level_id" => "required|numeric",
+                 "org_id" => "required|numeric",
+                 "appraisal_item_id" => "required|numeric",
+                 "appraisal_item_name" => "required",
+              ]);
+            }
 
             if ($validator->fails()) {
               $errors[] = [
@@ -893,14 +959,17 @@ class ImportAssignmentController extends Controller
 
 
               // -- Check weight percent -------------------------------------//
+
               $weightPercent = DB::select("
                 SELECT air.period_id, air.emp_id, ai.structure_id, air.level_id,
                 	sum(air.weight_percent) weight_percent,
                 	max(air.structure_weight_percent) structure_weight_percent
                 FROM appraisal_item_result air
                 INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+                INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
                 WHERE ai.structure_id = {$itemInfo["structure_id"]}
                 AND air.level_id = {$row->level_id}
+                AND str.form_id != 3
                 GROUP BY air.period_id, air.emp_id, ai.structure_id, air.level_id
                 HAVING sum(air.weight_percent) > max(air.structure_weight_percent)
               ");
