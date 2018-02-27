@@ -19,6 +19,6 @@ class AppraisalLevel extends Model
 	public $incrementing = true;
 	//public $timestamps = false;
 	//protected $guarded = array();
-	protected $fillable = array('appraisal_level_name','is_all_employee','is_org','is_individual','is_active','is_hr','is_self_assign','no_weight','parent_id','district_flag');
+	protected $fillable = array('appraisal_level_name','is_all_employee','is_org','is_individual','is_active','is_hr','is_self_assign','no_weight','parent_id','district_flag','default_stage_id');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }
