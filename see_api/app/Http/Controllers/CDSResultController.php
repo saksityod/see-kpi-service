@@ -9,6 +9,7 @@ use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
 use App\CDSFile;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -156,6 +157,34 @@ class CDSResultController extends Controller
 			// return response()->json(['status' => 400, 'data' => 'Selected Year does not match Current Appraisal Year in System Configuration']);
 		// }
 		
+		$emp = Employee::find(Auth::id());
+		$level = AppraisalLevel::find($emp->level_id);
+		$is_hr = $level->is_hr;
+		$org = Org::find($emp->org_id);
+		
+		
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+
+		
+		if ($all_emp[0]->count_no > 0) {
+			$is_all_sql = "";
+		} else {
+			$is_all_sql = " and (e.emp_code = '{$emp->emp_code}' or e.chief_emp_code = '{$emp->emp_code}') ";
+			$is_all_sql_org = " and (org.org_code = '{$org->org_code}' or org.parent_org_code = '{$org->org_code}') ";
+		}
+		
+		if ($is_hr == 0) {
+			$is_hr_sql = " and cds.is_hr = 0 ";
+		} else {
+			$is_hr_sql = "";
+		}		
+		
 		$checkyear = DB::select("
 			select 1
 			from appraisal_period
@@ -191,7 +220,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql . $is_hr_sql;
 			
 			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
@@ -218,7 +247,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			";
+			" . $is_all_sql_org . $is_hr_sql;
 		
 		}
 /* 
@@ -674,8 +703,10 @@ class CDSResultController extends Controller
 	public function index(Request $request)
 	{
 		$emp = Employee::find(Auth::id());
-		
+		$level = AppraisalLevel::find($emp->level_id);
+		$is_hr = $level->is_hr;
 		$org = Org::find($emp->org_id);
+		
 		
 		$all_emp = DB::select("
 			SELECT sum(b.is_all_employee) count_no
@@ -692,6 +723,13 @@ class CDSResultController extends Controller
 			$is_all_sql = " and (e.emp_code = '{$emp->emp_code}' or e.chief_emp_code = '{$emp->emp_code}') ";
 			$is_all_sql_org = " and (org.org_code = '{$org->org_code}' or org.parent_org_code = '{$org->org_code}') ";
 		}
+		
+		if ($is_hr == 0) {
+			$is_hr_sql = " and cds.is_hr = 0 ";
+		} else {
+			$is_hr_sql = "";
+		}
+		
 		
 		// $qinput = array();
 		// $query = "
@@ -772,7 +810,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			" . $is_all_sql;
+			" . $is_all_sql . $is_hr_sql;
 			
 			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
 			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
@@ -799,7 +837,7 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				where cds.is_sql = 0	
-			" . $is_all_sql_org;
+			" . $is_all_sql_org . $is_hr_sql;
 		
 		}
 		
