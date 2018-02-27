@@ -1023,16 +1023,16 @@ class CDSResultController extends Controller
 
 		$result = array();
 
-			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/cds_result_files/' . $item_result_id . '/';
+			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/cds_result_files/' . $cds_result_id . '/';
 			foreach ($request->file() as $f) {
 				$filename = iconv('UTF-8','windows-874',$f->getClientOriginalName());
 				//$f->move($path,$filename);
 				$f->move($path,$f->getClientOriginalName());
 				//echo $filename;
 
-				$item = CDSFile::firstOrNew(array('doc_path' => 'cds_result_files/' . $item_result_id . '/' . $f->getClientOriginalName()));
+				$item = CDSFile::firstOrNew(array('doc_path' => 'cds_result_files/' . $cds_result_id . '/' . $f->getClientOriginalName()));
 
-				$item->cds_result_id = $item_result_id;
+				$item->cds_result_id = $cds_result_id;
 				$item->created_by = Auth::id();
 
 				//print_r($item);
