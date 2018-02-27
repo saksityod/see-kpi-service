@@ -789,7 +789,7 @@ class CDSResultController extends Controller
 		
 		if ($request->appraisal_type_id == 2) {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
 				from appraisal_item_result r
 				left outer join employee e on r.emp_id = e.emp_id 
 				inner join appraisal_item i on r.item_id = i.item_id
@@ -817,7 +817,7 @@ class CDSResultController extends Controller
 			
 		} else {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,0) as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
 				from appraisal_item_result r
 				inner join appraisal_item i on r.item_id = i.item_id
 				left outer join appraisal_item_position p on i.item_id = p.item_id
@@ -890,7 +890,6 @@ class CDSResultController extends Controller
 					'year' => 'required|integer',
 					'month' => 'required|integer',
 					'level_id' => 'required|integer',
-					'cds_value' => 'required|numeric',
 				]);
 
 				if ($validator->fails()) {
@@ -903,34 +902,35 @@ class CDSResultController extends Controller
 					} else {
 						try {
 						//	$result_check = CDSResult::where("emp_id",$i->emp_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
-							
-							if (empty($i['cds_result_id'])) {
-								
-								//echo date("Y-m-t", strtotime($a_date));
-								$cds_result = new CDSResult;
-								$cds_result->appraisal_type_id = $i['appraisal_type_id'];
-								$cds_result->emp_id = $i['emp_id'];
-								$cds_result->cds_id = $i['cds_id'];
-								$cds_result->year = $i['year'];
-								$cds_result->org_id = $i['organization_id'];
-								$cds_result->position_id = $i['position_id'];
-								$cds_result->level_id = $i['level_id'];
-								$cds_result->appraisal_month_no = $i['month'];
-								$cds_result->appraisal_month_name = $month_name->month_name;
-								$cds_result->cds_value = $i['cds_value'];
-								$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
-								$cds_result->created_by = Auth::id();
-								$cds_result->updated_by = Auth::id();						
-								$cds_result->save();							
-							} else {
-								// CDSResult::where("emp_id",$i->emp_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
-									// 'updated_by' => Auth::id()]);		
-								$cds_result = CDSResult::find($i['cds_result_id']);
-								$cds_result->cds_value = $i['cds_value'];
-								$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
-								$cds_result->updated_by = Auth::id();						
-								$cds_result->save();										
-							}
+							if ($i['cds_value'] != '') {
+								if (empty($i['cds_result_id'])) {
+									
+									//echo date("Y-m-t", strtotime($a_date));
+									$cds_result = new CDSResult;
+									$cds_result->appraisal_type_id = $i['appraisal_type_id'];
+									$cds_result->emp_id = $i['emp_id'];
+									$cds_result->cds_id = $i['cds_id'];
+									$cds_result->year = $i['year'];
+									$cds_result->org_id = $i['org_id'];
+									$cds_result->position_id = $i['position_id'];
+									$cds_result->level_id = $i['level_id'];
+									$cds_result->appraisal_month_no = $i['month'];
+									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->created_by = Auth::id();
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();							
+								} else {
+									// CDSResult::where("emp_id",$i->emp_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
+										// 'updated_by' => Auth::id()]);		
+									$cds_result = CDSResult::find($i['cds_result_id']);
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();										
+								}
+							} 
 
 						} catch (Exception $e) {
 							$errors[] = ['emp_id' => $i['emp_id'], 'errors' => substr($e,0,254)];
@@ -946,7 +946,6 @@ class CDSResultController extends Controller
 					'year' => 'required|integer',
 					'month' => 'required|integer',
 					'level_id' => 'required|integer',
-					'cds_value' => 'required|numeric',
 				]);
 
 				if ($validator->fails()) {
@@ -960,30 +959,32 @@ class CDSResultController extends Controller
 						try {
 							//$result_check = CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
 							
-							if (empty($i['cds_result_id'])) {
-								
-								$cds_result = new CDSResult;
-								$cds_result->appraisal_type_id = $i['appraisal_type_id'];
-								$cds_result->org_id = $i['org_id'];
-								$cds_result->cds_id = $i['cds_id'];
-								$cds_result->year = $i['year'];
-								$cds_result->level_id = $i['level_id'];
-								$cds_result->appraisal_month_no = $i['month'];
-								$cds_result->appraisal_month_name = $month_name->month_name;
-								$cds_result->cds_value = $i['cds_value'];
-								$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
-								$cds_result->created_by = Auth::id();
-								$cds_result->updated_by = Auth::id();						
-								$cds_result->save();							
-							} else {
-								// CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)), 'updated_by' => Auth::id()]);		
-								$cds_result = CDSResult::find($i['cds_result_id']);
-								$cds_result->cds_value = $i['cds_value'];
-								$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
-								$cds_result->updated_by = Auth::id();						
-								$cds_result->save();										
+							if ($i['cds_value'] != '') {
+								if (empty($i['cds_result_id'])) {
+									
+									$cds_result = new CDSResult;
+									$cds_result->appraisal_type_id = $i['appraisal_type_id'];
+									$cds_result->org_id = $i['org_id'];
+									$cds_result->cds_id = $i['cds_id'];
+									$cds_result->year = $i['year'];
+									$cds_result->level_id = $i['level_id'];
+									$cds_result->appraisal_month_no = $i['month'];
+									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->created_by = Auth::id();
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();							
+								} else {
+									// CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)), 'updated_by' => Auth::id()]);		
+									$cds_result = CDSResult::find($i['cds_result_id']);
+									$cds_result->cds_value = $i['cds_value'];
+									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
+									$cds_result->updated_by = Auth::id();						
+									$cds_result->save();										
+								}
 							}
-
+							
 						} catch (Exception $e) {
 							$errors[] = ['org_id' => $i['org_id'], 'errors' => substr($e,0,254)];
 						}
