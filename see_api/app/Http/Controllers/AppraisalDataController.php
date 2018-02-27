@@ -312,8 +312,9 @@ class AppraisalDataController extends Controller
 	
 		$qinput = array();
 		$query = "
-			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id
-			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o
+			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id,
+			al.appraisal_level_name, o.org_name, po.position_name
+			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, appraisal_level al, position po
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
 			and r.item_id = i.item_id
@@ -321,6 +322,8 @@ class AppraisalDataController extends Controller
 			and r.emp_result_id = er.emp_result_id
 			and s.form_id = f.form_id			
 			and r.org_id = o.org_id
+			and r.level_id = al.level_id
+			and r.position_id = po.position_id
 			and f.form_name = 'Deduct Score'
 			and er.appraisal_type_id = 2
 		"; 
