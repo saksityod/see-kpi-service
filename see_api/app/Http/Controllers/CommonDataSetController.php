@@ -76,7 +76,7 @@ class CommonDataSetController extends Controller
 	{	
 		$qinput = array();
 		$query = "
-			select cds_id, cds_name, is_sql, is_active
+			select cds_id, cds_name, is_sql, is_hr, is_active
 			from cds
 			where 1 = 1
 		";
@@ -172,6 +172,7 @@ class CommonDataSetController extends Controller
 				$item->cds_desc = $request->cds_desc;
 				$item->connection_id = $request->connection_id;
 				$item->is_sql = $request->is_sql;
+				$item->is_hr = $request->is_hr;
 				$item->cds_sql = $request->cds_sql;
 				$item->is_active = $request->is_active;
 				$item->created_by = Auth::id();
@@ -193,6 +194,7 @@ class CommonDataSetController extends Controller
 				$item->cds_name = $request->cds_name;
 				$item->cds_desc = $request->cds_desc;
 				$item->is_sql = $request->is_sql;
+				$item->is_hr = $request->is_hr;
 				$item->is_active = $request->is_active;
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
@@ -279,6 +281,7 @@ class CommonDataSetController extends Controller
 				$item->cds_desc = $request->cds_desc;
 				$item->connection_id = $request->connection_id;
 				$item->is_sql = $request->is_sql;
+				$item->is_hr = $request->is_hr;
 				$item->cds_sql = $request->cds_sql;
 				$item->is_active = $request->is_active;
 				$item->updated_by = Auth::id();
@@ -298,6 +301,7 @@ class CommonDataSetController extends Controller
 				$item->cds_name = $request->cds_name;
 				$item->cds_desc = $request->cds_desc;
 				$item->is_sql = $request->is_sql;
+				$item->is_hr = $request->is_hr;
 				$item->is_active = $request->is_active;
 				$item->updated_by = Auth::id();
 				$item->save();
