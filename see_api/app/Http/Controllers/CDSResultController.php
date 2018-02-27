@@ -878,7 +878,7 @@ class CDSResultController extends Controller
 	
 	public function update(Request $request)
 	{
-		$error = array();
+		$errors = array();
 		foreach ($request->cds_results as $i) {
 			
 			if ($i['appraisal_type_id'] == 2) {
