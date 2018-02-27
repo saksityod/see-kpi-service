@@ -260,7 +260,7 @@ class AppraisalDataController extends Controller
 			and s.form_id = f.form_id
 			and r.org_id = o.org_id
 			and f.form_name = 'Deduct Score'	
-			and r.appraisal_type_id = 2
+			and er.appraisal_type_id = 2
 		";
 			
 		empty($request->current_appraisal_year) ?: ($query .= " AND p.appraisal_year = ? " AND $qinput[] = $request->current_appraisal_year);
