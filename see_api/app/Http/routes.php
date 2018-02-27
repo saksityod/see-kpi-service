@@ -374,6 +374,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('import_assignment/export_organization','ImportAssignmentController@export_template_organization');
 	Route::post('import_assignment/import','ImportAssignmentController@import_template');
 	Route::get('import_assignment/emp_name_list', 'ImportAssignmentController@emp_name_list');
+	Route::post('import_assignment/auto_employee_name', 'ImportAssignmentController@auto_employee_name');
 
 	// benchmark data //
 	Route::get('benchmark_data/select_list_search/', 'BenchmarkDataController@select_list_search');
