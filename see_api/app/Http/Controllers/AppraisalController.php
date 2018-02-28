@@ -1765,8 +1765,8 @@ class AppraisalController extends Controller
 			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/attach_files/' . $item_result_id . '/';
 			foreach ($request->file() as $f) {
 				$filename = iconv('UTF-8','windows-874',$f->getClientOriginalName());
-				//$f->move($path,$filename);
-				$f->move($path,$f->getClientOriginalName());
+				$f->move($path,$filename);
+				//$f->move($path,$f->getClientOriginalName());
 				//echo $filename;
 
 				$item = AttachFile::firstOrNew(array('doc_path' => 'attach_files/' . $item_result_id . '/' . $f->getClientOriginalName()));
