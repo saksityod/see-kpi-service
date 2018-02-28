@@ -973,7 +973,6 @@ class AppraisalAssignmentController extends Controller
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
-					AND er.level_id = e.level_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1138,7 +1137,6 @@ class AppraisalAssignmentController extends Controller
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
-					AND er.level_id = e.level_id
 					and (e.chief_emp_code = ?
 					or e.emp_code = ?)
 				";
