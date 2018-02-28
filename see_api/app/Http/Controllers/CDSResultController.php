@@ -214,6 +214,7 @@ class CDSResultController extends Controller
 				left outer join appraisal_level al on r.level_id = al.level_id
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.emp_id = e.emp_id
+				and r.org_id = cr.org_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
@@ -241,6 +242,7 @@ class CDSResultController extends Controller
 				left outer join appraisal_level al on r.level_id = al.level_id
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.org_id = org.org_id
+				and r.org_id = cr.org_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
@@ -804,6 +806,7 @@ class CDSResultController extends Controller
 				left outer join appraisal_level al on r.level_id = al.level_id
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.emp_id = e.emp_id
+				and r.org_id = cr.org_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
@@ -831,6 +834,7 @@ class CDSResultController extends Controller
 				left outer join appraisal_level al on r.level_id = al.level_id
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.org_id = org.org_id
+				and r.org_id = cr.org_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
