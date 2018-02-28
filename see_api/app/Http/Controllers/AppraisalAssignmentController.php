@@ -905,7 +905,7 @@ class AppraisalAssignmentController extends Controller
 
 			if ($request->appraisal_type_id == 2) {
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
 					From employee e
 					left outer join org o
 					on e.org_id = o.org_id
@@ -947,6 +947,7 @@ class AppraisalAssignmentController extends Controller
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
 									   AND er.org_id = e.org_id
 									   AND er.position_id = e.position_id
+									   AND er.level_id = e.level_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -964,7 +965,7 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total >= period_total  ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
+					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
 					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po
 					Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
@@ -972,6 +973,7 @@ class AppraisalAssignmentController extends Controller
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
+					AND er.level_id = e.level_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1060,7 +1062,7 @@ class AppraisalAssignmentController extends Controller
 
 			if ($request->appraisal_type_id == 2) {
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, e.emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
 					From employee e left outer join	org o
 					on e.org_id = o.org_id
 					left outer join position p
@@ -1102,6 +1104,7 @@ class AppraisalAssignmentController extends Controller
 								WHERE  er.emp_id = e.emp_id
 									   AND er.org_id = e.org_id
 									   and er.position_id = e.position_id
+									   AND er.level_id = e.level_id
 									   AND er.period_id = p.period_id
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
@@ -1127,7 +1130,7 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total = period_total ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
+					select distinct er.emp_result_id, er.status, e.emp_id, e.emp_code, er.level_id, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
 					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po
 					Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
@@ -1135,6 +1138,7 @@ class AppraisalAssignmentController extends Controller
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
+					AND er.level_id = e.level_id
 					and (e.chief_emp_code = ?
 					or e.emp_code = ?)
 				";
