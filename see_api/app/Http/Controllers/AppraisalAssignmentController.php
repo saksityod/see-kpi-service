@@ -1272,7 +1272,7 @@ class AppraisalAssignmentController extends Controller
 		$query = "
 			select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 			if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
-			a.max_value, a.unit_deduct_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent
+			a.max_value, a.value_get_zero, a.unit_deduct_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent
 			from appraisal_item a
 			left outer join appraisal_structure b
 			on a.structure_id = b.structure_id
@@ -1382,6 +1382,11 @@ class AppraisalAssignmentController extends Controller
 							'column_name' => 'max_value',
 							'data_type' => 'number',
 						],
+						[
+							'column_display' => 'Value Get Zero',
+							'column_name' => 'value_get_zero',
+							'data_type' => 'number',
+						],						
 						[
 							'column_display' => 'Deduct Score/Unit',
 							'column_name' => 'unit_deduct_score',
@@ -2126,7 +2131,7 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 		$head = DB::select("
-			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, b.chief_emp_code, e.emp_name chief_emp_name, c.appraisal_period_desc, d.appraisal_type_name, a.stage_id, f.status, f.edit_flag
+			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, b.chief_emp_code, e.emp_name chief_emp_name, c.appraisal_period_desc, d.appraisal_type_name, a.stage_id, f.status, f.edit_flag, a.position_id, a.org_id
 			FROM emp_result a
 			left outer join employee b
 			on a.emp_id = b.emp_id

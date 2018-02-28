@@ -584,6 +584,9 @@ class AppraisalItemController extends Controller
 			} else {
 				$item = new AppraisalItem;
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				if ($request->value_get_zero = "") {
+					$item->value_get_zero = null;
+				}
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
 				$item->save();
@@ -809,6 +812,9 @@ class AppraisalItemController extends Controller
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			} else {
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				if ($request->value_get_zero = "") {
+					$item->value_get_zero = null;
+				}				
 				$item->updated_by = Auth::id();
 				$item->save();
 				
