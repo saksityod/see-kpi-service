@@ -714,7 +714,7 @@ class AppraisalController extends Controller
 			}
 
 			empty($in_emp) ? $in_emp = "null" : null;
-
+			$dotline_code = Auth::id();
 			if ($request->appraisal_type_id == 2) {
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
@@ -736,7 +736,7 @@ class AppraisalController extends Controller
 					left outer join org po
 					on o.parent_org_code = po.org_code
 					where d.is_hr = 0
-					and b.emp_code in ({$in_emp})
+					and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
