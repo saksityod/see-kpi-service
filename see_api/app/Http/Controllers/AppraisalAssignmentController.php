@@ -1153,7 +1153,7 @@ class AppraisalAssignmentController extends Controller
 				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
 
 			} else {
-				$emp = Employee
+
 				$query_unassign = "
 					Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
 					From org o
