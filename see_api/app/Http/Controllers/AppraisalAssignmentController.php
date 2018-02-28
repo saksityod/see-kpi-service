@@ -946,6 +946,7 @@ class AppraisalAssignmentController extends Controller
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
 									   AND er.org_id = e.org_id
+									   AND er.position_id = e.position_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1100,6 +1101,7 @@ class AppraisalAssignmentController extends Controller
 												  appraisal_frequency_id) z
 								WHERE  er.emp_id = e.emp_id
 									   AND er.org_id = e.org_id
+									   and er.position_id = e.position_id
 									   AND er.period_id = p.period_id
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
@@ -1693,11 +1695,13 @@ class AppraisalAssignmentController extends Controller
 							 from emp_result
 							 where emp_id = ?
 							  and org_id = ?
+							  and position_id = ?
 							 and period_id = ?
 							 and appraisal_type_id = 2
 						";
 						$qinput[] = $e['emp_id'];
 						$qinput[] = $e['org_id'];
+						$qinput[] = $e['position_id'];
 
 					} else {
 						$query_unassign = "
@@ -1898,11 +1902,13 @@ class AppraisalAssignmentController extends Controller
 						 from emp_result
 						 Where emp_id = ?
 						 and org_id = ?
+						 and position_id = ?
 						 and period_id = ?
 						 and appraisal_type_id = 2
 					";
 					$qinput[] = $e['emp_id'];
 					$qinput[] = $e['org_id'];
+					$qinput[] = $e['position_id'];
 				} else {
 					$query_unassign = "
 						 select org_id
