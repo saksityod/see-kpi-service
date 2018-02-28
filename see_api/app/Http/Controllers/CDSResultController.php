@@ -215,6 +215,7 @@ class CDSResultController extends Controller
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.emp_id = e.emp_id
 				and r.org_id = cr.org_id
+				and r.position_id = cr.position_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
@@ -807,6 +808,7 @@ class CDSResultController extends Controller
 				left outer join cds_result cr on cds.cds_id = cr.cds_id
 				and cr.emp_id = e.emp_id
 				and r.org_id = cr.org_id
+				and r.position_id = cr.position_id
 			";
 			empty($request->org_id) ?: ($query .= " And cr.org_id = " . $request->org_id);
 			$query .= "
