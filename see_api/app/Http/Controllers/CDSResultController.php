@@ -722,6 +722,7 @@ class CDSResultController extends Controller
 		
 		if ($all_emp[0]->count_no > 0) {
 			$is_all_sql = "";
+			$is_all_sql_org = "";
 		} else {
 			$is_all_sql = " and (e.emp_code = '{$emp->emp_code}' or e.chief_emp_code = '{$emp->emp_code}') ";
 			$is_all_sql_org = " and (org.org_code = '{$org->org_code}' or org.parent_org_code = '{$org->org_code}') ";
