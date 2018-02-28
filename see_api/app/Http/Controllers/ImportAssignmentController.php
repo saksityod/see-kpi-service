@@ -167,6 +167,7 @@ class ImportAssignmentController extends Controller
       INNER JOIN appraisal_structure strc ON strc.structure_id = ai.structure_id
       INNER JOIN appraisal_item_level vel ON vel.item_id = ai.item_id
       INNER JOIN appraisal_item_org iorg ON iorg.item_id = ai.item_id
+      INNER JOIN appraisal_criteria ac ON ac.appraisal_level_id = vel.level_id AND ac.structure_id = strc.structure_id
       ".$positionJoinStr."
       WHERE strc.is_active = 1
       AND vel.level_id IN({$levelStr})
@@ -911,7 +912,7 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->max_value = $row->max_value;
                 $appraisalItemResult->deduct_score_unit = $itemInfo["unit_deduct_score"];
                 $appraisalItemResult->over_value = 0;
-                $appraisalItemResult->value_get_zero = $itemInfo["value_get_zero"];
+                $appraisalItemResult->value_get_zero = $row->value_get_zero;
                 $appraisalItemResult->score = 0;
                 $appraisalItemResult->threshold_group_id = $thresholdGroupId;
                 $appraisalItemResult->weight_percent = (empty($row->weight)) ? "0": $row->weight;
@@ -947,6 +948,7 @@ class ImportAssignmentController extends Controller
                   "score5" => $row->range5,
                   "target_value" => $row->target,
                   "max_value" => $row->max_value,
+                  "value_get_zero"=>$row->value_get_zero,
                   "threshold_group_id" => $thresholdGroupId,
                   "weight_percent" => (empty($row->weight)) ? "0": $row->weight,
                   "weigh_score" => "0",
@@ -957,33 +959,35 @@ class ImportAssignmentController extends Controller
               }
               // -- End -- Insert/Update @appraisal_item_result --------------//
 
-
-              // -- Check weight percent -------------------------------------//
-
-              $weightPercent = DB::select("
-                SELECT air.period_id, air.emp_id, ai.structure_id, air.level_id,
-                	sum(air.weight_percent) weight_percent,
-                	max(air.structure_weight_percent) structure_weight_percent
-                FROM appraisal_item_result air
-                INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
-                INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
-                WHERE ai.structure_id = {$itemInfo["structure_id"]}
-                AND air.level_id = {$row->level_id}
-                AND str.form_id != 3
-                GROUP BY air.period_id, air.emp_id, ai.structure_id, air.level_id
-                HAVING sum(air.weight_percent) > max(air.structure_weight_percent)
-              ");
-              if (!empty($weightPercent)) {
-                $errors[] = [
-                  "title"=>"Sheet:".$sheetArr[$i],
-                  "period_id"=>$row->period_id, "appraisal_type_id"=>$row->appraisal_type_id,
-                  "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
-                  "error_desc" => Array("The percentage of overweight or not set.")
-                ];
-                $sheetError = true;
-              }
             }//End Validate is true
           }//End Row
+
+
+          // -- Start -- Check weight percent --------------------------------//
+          $weightPercent = DB::select("
+            SELECT air.period_id, air.emp_id, ai.structure_id, air.level_id, air.org_id,
+              sum(air.weight_percent) weight_percent,
+              max(air.structure_weight_percent) structure_weight_percent
+            FROM appraisal_item_result air
+            INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+            INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
+            WHERE ai.structure_id = {$itemInfo["structure_id"]}
+            AND str.structure_name = '{$sheetArr[$i]}'
+            GROUP BY air.period_id, air.emp_id, ai.structure_id, air.level_id, air.org_id
+            HAVING sum(air.weight_percent) > max(air.structure_weight_percent)
+          ");
+          if (!empty($weightPercent)) {
+            foreach ($weightPercent as $wp) {
+              $errors[] = [
+                "title"=>"Sheet:".$sheetArr[$i],
+                "period_id"=>$wp->period_id, "appraisal_type_id"=>"",
+                "level_id"=>$wp->level_id, "org_id"=>$wp->org_id, "emp_id"=>$wp->emp_id,
+                "error_desc" => Array("The percentage of overweight or not set.")
+              ];
+            }
+            $sheetError = true;
+          }
+          // -- End -- Check weight percent --------------------------------//
 
           if ($sheetError) {
             // Something went wrong
