@@ -815,6 +815,7 @@ class CDSResultController extends Controller
 			$query .= "
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
+				and cr.appraisal_type_id = {$request->appraisal_type_id}
 				where cds.is_sql = 0	
 			" . $is_all_sql . $is_hr_sql;
 			
@@ -843,6 +844,7 @@ class CDSResultController extends Controller
 			$query .= "
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
+				and cr.appraisal_type_id = {$request->appraisal_type_id}
 				where cds.is_sql = 0	
 			" . $is_all_sql_org . $is_hr_sql;
 		
