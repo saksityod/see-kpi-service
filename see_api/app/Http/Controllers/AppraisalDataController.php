@@ -250,8 +250,8 @@ class AppraisalDataController extends Controller
 	
 		$qinput = array();
 		$query = "
-			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id
-			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o
+			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id, po.position_name, o.org_name, al.appraisal_level_name
+			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, position po, appraisal_level al
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
 			and r.item_id = i.item_id
@@ -259,6 +259,8 @@ class AppraisalDataController extends Controller
 			and r.emp_result_id = er.emp_result_id
 			and s.form_id = f.form_id
 			and r.org_id = o.org_id
+			and e.position_id = po.position_id
+			and e.level_id = al.level_id
 			and f.form_name = 'Deduct Score'	
 			and er.appraisal_type_id = 2
 		";
@@ -285,12 +287,17 @@ class AppraisalDataController extends Controller
 		$x = Excel::create($filename, function($excel) use($items, $filename) {
 			$excel->sheet($filename, function($sheet) use($items) {
 				
-				$sheet->appendRow(array('Emp Result ID', 'Employee ID', 'Structure ID', 'Structure Name', 'Period ID', 'Period Name', 'Item ID', 'Item Name', 'Data Value'));
+				$sheet->appendRow(array('Emp Result ID', 'Employee ID', 'Employee Code', 'Employee Name', 'Organization Name', 'Position Name', 'Appraisal Level Name', 'Structure ID', 'Structure Name', 'Period ID', 'Period Name', 'Item ID', 'Item Name', 'Data Value'));
 		
 				foreach ($items as $i) {
 					$sheet->appendRow(array(
 						$i->emp_result_id,
 						$i->emp_id, 
+						$i->emp_code,
+						$i->emp_name,
+						$i->org_name,
+						$i->position_name,
+						$i->appraisal_level_name,
 						$i->structure_id, 
 						$i->structure_name, 
 						$i->period_id, 
