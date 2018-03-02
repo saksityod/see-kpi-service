@@ -60,7 +60,7 @@ class CDSResultController extends Controller
 							$errors[] = ['employee_id' => $i->employee_id, 'errors' => 'Invalid Month.'];
 						} else {
 							try {
-								$result_check = CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id);
+								$result_check = CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id)->where('position_id',$i->position_id)->where('org_id',$i->organization_id);
 								
 								if ($result_check->count() == 0) {
 									
@@ -81,7 +81,7 @@ class CDSResultController extends Controller
 									$cds_result->updated_by = Auth::id();						
 									$cds_result->save();							
 								} else {
-									CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
+									CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id)->where('position_id',$i->position_id)->where('org_id',$i->organization_id)->update(['cds_value' => $i->cds_value,'etl_dttm'=>date("Y-m-t", strtotime($a_date)),
 										'updated_by' => Auth::id()]);							
 								}
 
