@@ -1075,7 +1075,7 @@ class AppraisalAssignmentController extends Controller
 				empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and e.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->emp_code) ?: ($query_unassign .= " and emp_code = ? " AND $qinput[] = $request->emp_code);
-				empty($request->appraisal_level_id) ?: ($query_unassign .= " and er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+				empty($request->appraisal_level_id) ?: ($query_unassign .= " and e.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);	
 
 				$query_unassign .= "
