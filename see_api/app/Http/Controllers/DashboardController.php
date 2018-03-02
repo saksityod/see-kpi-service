@@ -3093,18 +3093,19 @@ class DashboardController extends Controller
 							LEFT OUTER JOIN org o ON o.org_id = air.org_id
 							LEFT OUTER JOIN org ON org.org_id = air.org_id
 							WHERE air.period_id = ?
-							#AND o.org_id = ?
+							AND air.org_id = ?
 							AND er.emp_id=?
 							and er.appraisal_type_id = ?
 						";
 
 						$qinput[] = $request->period_id;
-						#$qinput[] = $request->org_id;
+						$qinput[] = $request->org_id;
 						$qinput[] = $request->emp_id;
 						$qinput[] = $request->appraisal_type_id;
 
 						$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, er.emp_id ";
 						empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+						empty($request->position_id) ?: ($query .= " AND air.position_id = ? " AND $qinput[] = $request->position_id);						
 
 			}else{//org
 
