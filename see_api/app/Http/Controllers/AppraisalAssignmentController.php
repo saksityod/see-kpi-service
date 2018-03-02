@@ -946,6 +946,7 @@ class AppraisalAssignmentController extends Controller
 									   AND p.appraisal_year = z.appraisal_year
 									   AND p.appraisal_frequency_id = z.appraisal_frequency_id
 									   AND er.org_id = e.org_id
+									   and e.org_id = o.org_id
 									   AND er.position_id = e.position_id
 									   AND er.level_id = e.level_id
 				";
@@ -1102,6 +1103,7 @@ class AppraisalAssignmentController extends Controller
 												  appraisal_frequency_id) z
 								WHERE  er.emp_id = e.emp_id
 									   AND er.org_id = e.org_id
+									   and e.org_id = o.org_id
 									   and er.position_id = e.position_id
 									   AND er.level_id = e.level_id
 									   AND er.period_id = p.period_id
