@@ -2063,7 +2063,7 @@ class AppraisalController extends Controller
 		if ($empLevInfo["is_all"]) {
 	      $result = DB::select("
 	        SELECT distinct org.level_id, lev.appraisal_level_name
-					FROM monthly_appraisal_item_result emp
+					FROM appraisal_item_result emp
 					INNER JOIN org ON org.org_id = emp.org_id
 					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
 					WHERE 1 = 1
@@ -2073,7 +2073,7 @@ class AppraisalController extends Controller
 	    } else {
 	      $result = DB::select("
 		      SELECT distinct org.level_id, lev.appraisal_level_name
-					FROM monthly_appraisal_item_result emp
+					FROM appraisal_item_result emp
 					INNER JOIN org ON org.org_id = emp.org_id
 					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
 					left outer join employee e on emp.emp_id = e.emp_id
@@ -2108,7 +2108,7 @@ class AppraisalController extends Controller
 		$period_id = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}";
 		$items = DB::select("
 	        SELECT distinct lev.level_id, lev.appraisal_level_name
-	        FROM monthly_appraisal_item_result emp
+	        FROM appraisal_item_result emp
 			INNER JOIN org ON org.org_id = emp.org_id
 			INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
 			".$emp_id."
@@ -2125,7 +2125,7 @@ class AppraisalController extends Controller
 		
 		$items = DB::select("
 	        SELECT distinct org.org_id, org.org_name
-	        FROM monthly_appraisal_item_result emp
+	        FROM appraisal_item_result emp
 			INNER JOIN org ON org.org_id = emp.org_id
 			".$emp_id."
 			".$org_level."
@@ -2160,7 +2160,7 @@ class AppraisalController extends Controller
       $result = DB::select("
 				SELECT distinct org.org_id, org.org_name
 				FROM org
-				INNER JOIN monthly_appraisal_item_result emp ON emp.org_id = org.org_id
+				INNER JOIN appraisal_item_result emp ON emp.org_id = org.org_id
 				WHERE org.is_active = 1
 				".$orgLevelStr."
 				".$empLevelStr."
