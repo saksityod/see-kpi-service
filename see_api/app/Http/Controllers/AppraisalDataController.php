@@ -259,8 +259,8 @@ class AppraisalDataController extends Controller
 			and r.emp_result_id = er.emp_result_id
 			and s.form_id = f.form_id
 			and r.org_id = o.org_id
-			and e.position_id = po.position_id
-			and e.level_id = al.level_id
+			and r.position_id = po.position_id
+			and r.level_id = al.level_id
 			and f.form_name = 'Deduct Score'	
 			and er.appraisal_type_id = 2
 		";
@@ -268,7 +268,7 @@ class AppraisalDataController extends Controller
 		empty($request->current_appraisal_year) ?: ($query .= " AND p.appraisal_year = ? " AND $qinput[] = $request->current_appraisal_year);
 		empty($request->period_id) ?: ($query .= " And r.period_id = ? " AND $qinput[] = $request->period_id);
 		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+		empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		//empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
 		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
@@ -338,7 +338,7 @@ class AppraisalDataController extends Controller
 		empty($request->current_appraisal_year) ?: ($query .= " AND p.appraisal_year = ? " AND $qinput[] = $request->current_appraisal_year);
 		empty($request->period_id) ?: ($query .= " And r.period_id = ? " AND $qinput[] = $request->period_id);
 		empty($request->level_id) ?: ($query .= " And o.level_id = ? " AND $qinput[] = $request->level_id);
-		empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+		empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
 		//empty($request->item_id) ?: ($query .= " And r.item_id = ? " AND $qinput[] = $request->item_id);
 		empty($request->emp_id) ?: ($query .= " And r.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->org_id) ?: ($query .= " And r.org_id = ? " AND $qinput[] = $request->org_id);
