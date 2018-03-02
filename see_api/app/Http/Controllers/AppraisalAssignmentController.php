@@ -1129,7 +1129,7 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total = period_total ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, e.emp_id, e.emp_code, er.level_id, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
+					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
 					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po
 					Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
