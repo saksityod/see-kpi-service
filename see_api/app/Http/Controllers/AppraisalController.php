@@ -474,7 +474,7 @@ class AppraisalController extends Controller
 
 			$emps = DB::select("
 				select distinct emp_code
-				from employee
+				from employee 
 				where chief_emp_code = ?
 			", array(Auth::id()));
 
@@ -557,16 +557,18 @@ class AppraisalController extends Controller
 			empty($in_emp) ? $in_emp = "null" : null;
 			$qinput = array();
 			$query = "
-				Select emp_id, emp_code, emp_name
-				From employee
-				Where emp_name like ?
-				and emp_code in ({$in_emp})
+				Select e.emp_id, e.emp_code, e.emp_name
+				From employee e 
+				inner join appraisal_item_result a
+				on e.emp_id = a.emp_id
+				Where e.emp_name like ?
+				and e.emp_code in ({$in_emp})
 			";
 
 			$qfooter = " Order by emp_name limit 10 ";
 			$qinput[] = '%'.$request->emp_name.'%';
-			empty($request->org_id) ?: ($query .= " and org_id = ? " AND $qinput[] = $request->org_id);
-			empty($request->position_id) ?: ($query .= " and position_id = ? " AND $qinput[] = $request->position_id);
+			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
+			empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 
 			$items = DB::select($query.$qfooter,$qinput);
 		}
