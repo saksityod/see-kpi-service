@@ -3104,7 +3104,8 @@ class DashboardController extends Controller
 
 						$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, er.emp_id ";
 						empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);
-						empty($request->position_id) ?: ($query .= " AND air.position_id = ? " AND $qinput[] = $request->position_id);						
+						empty($request->position_id) ?: ($query .= " AND air.position_id = ? " AND $qinput[] = $request->position_id);		
+						empty($request->level_id) ?: ($query .= " AND air.level_id = ? " AND $qinput[] = $request->level_id);									
 
 			}else{//org
 
