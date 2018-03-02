@@ -223,10 +223,11 @@ class CDSResultController extends Controller
 				and cr.year = {$request->current_appraisal_year}
 				and cr.appraisal_month_no = {$request->month_id}
 				and cr.appraisal_type_id = {$request->appraisal_type_id}
+				and cr.level_id = {$request->level_id_emp}				
 				where cds.is_sql = 0	
 			" . $is_all_sql . $is_hr_sql;
 			
-			empty($request->level_id_emp) ?: ($query .= " And e.level_id = ? " AND $qinput[] = $request->level_id_emp);
+			empty($request->level_id_emp) ?: ($query .= " And r.level_id = ? " AND $qinput[] = $request->level_id_emp);
 			empty($request->emp_id) ?: ($query .= " And e.emp_id = ? " AND $qinput[] = $request->emp_id);					
 			
 		} else {
