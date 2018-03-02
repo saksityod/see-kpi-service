@@ -1028,7 +1028,7 @@ class AppraisalAssignmentController extends Controller
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 				//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-				empty($request->appraisal_level_id) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
 				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
@@ -1050,7 +1050,7 @@ class AppraisalAssignmentController extends Controller
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 				//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-				empty($request->appraisal_level_id) ?: ($query_unassign .= " And er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
 				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
@@ -1197,7 +1197,7 @@ class AppraisalAssignmentController extends Controller
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 				//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-				empty($request->appraisal_level_id) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
 				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
@@ -1219,7 +1219,7 @@ class AppraisalAssignmentController extends Controller
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 				//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-				empty($request->appraisal_level_id) ?: ($query_unassign .= " And er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
 				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
