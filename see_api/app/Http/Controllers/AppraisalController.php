@@ -2082,8 +2082,8 @@ class AppraisalController extends Controller
 					WHERE 1 = 1
 					AND (
 						e.emp_code = '{$empCode}'
-						OR c.chief_emp_code = '{$empCode}'
-						OR d.dotline_code = '{$empCode}'
+						OR c.emp_code = '{$empCode}'
+						OR d.emp_code = '{$empCode}'
 						OR e.emp_code IN(
 							SELECT de.emp_code
 							FROM employee de
