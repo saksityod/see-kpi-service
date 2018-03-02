@@ -2144,30 +2144,79 @@ class AppraisalController extends Controller
    * @return \Illuminate\Http\Response
    */
   public function org_individual(Request $request){
-    $empCode = Auth::id();
-		$empLevInfo = $this->is_all_employee($empCode);
+    // $empCode = Auth::id();
+		// $empLevInfo = $this->is_all_employee($empCode);
 
-		// if ($empLevInfo["is_all"]) {
-  //     $result = DB::select("
-  //       SELECT org.org_id, org.org_name
-		// 		FROM org
-		// 		WHERE org.is_active = 1");
-  //   } else {
+		// // if ($empLevInfo["is_all"]) {
+  // //     $result = DB::select("
+  // //       SELECT org.org_id, org.org_name
+		// // 		FROM org
+		// // 		WHERE org.is_active = 1");
+  // //   } else {
+			// $orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
+			// $empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
+			// $empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
+			// $periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
+      // $result = DB::select("
+				// SELECT distinct org.org_id, org.org_name
+				// FROM org
+				// INNER JOIN appraisal_item_result emp ON emp.org_id = org.org_id
+				// WHERE org.is_active = 1
+				// ".$orgLevelStr."
+				// ".$empLevelStr."
+				// ".$empIdStr."
+				// ".$periodStr."
+				// GROUP BY org.org_id ");
+    // //}
+	
+		$empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
 			$orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
 			$empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
 			$empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
 			$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
-      $result = DB::select("
-				SELECT distinct org.org_id, org.org_name
-				FROM org
-				INNER JOIN appraisal_item_result emp ON emp.org_id = org.org_id
-				WHERE org.is_active = 1
-				".$orgLevelStr."
-				".$empLevelStr."
-				".$empIdStr."
-				".$periodStr."
-				GROUP BY org.org_id ");
-    //}
+		if ($empLevInfo["is_all"]) {
+	      $result = DB::select("
+	        SELECT distinct emp.org_id, org.org_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					WHERE 1 = 1
+					".$orgLevelStr."
+					".$empLevelStr."
+					".$empIdStr."
+					".$periodStr."
+					AND lev.is_org = 1");
+	    } else {
+	      $result = DB::select("
+		      SELECT distinct emp.org_id, org.org_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					left outer join employee e on emp.emp_id = e.emp_id
+					left outer join employee c on emp.chief_emp_id = c.emp_id
+					left outer join employee d on emp.dotline_id = d.emp_id
+					WHERE 1 = 1
+					AND (
+						e.emp_code = '{$empCode}'
+						OR c.emp_code = '{$empCode}'
+						OR d.emp_code = '{$empCode}'
+						OR e.emp_code IN(
+							SELECT de.emp_code
+							FROM employee de
+							INNER JOIN employee ce ON ce.emp_code = de.chief_emp_code
+							WHERE de.has_second_line = 1
+							AND de.is_active = 1
+							AND ce.is_active = 1
+							AND ce.chief_emp_code = '{$empCode}'
+						)
+					)
+					".$orgLevelStr."
+					".$empLevelStr."
+					".$empIdStr."
+					".$periodStr."
+					AND lev.is_org = 1");
+	    }	
 
 		return response()->json($result);
 	}
