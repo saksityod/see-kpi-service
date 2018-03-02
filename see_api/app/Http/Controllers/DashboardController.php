@@ -259,6 +259,7 @@ class DashboardController extends Controller
 		$qinput = array();
 		$levelId = (empty($request->appraisal_level)) ? "0" : $request->appraisal_level;
 		$OrgId = (empty($request->org_id)) ? "0" : $request->org_id;
+		$PeriodId = (empty($request->period)) ? " " : " and air.period_id = " . $request->period;
 		$EmpIdStr = (empty($request->emp_id)) ? " " : " AND air.emp_id = {$request->emp_id}";
 
 		$query = "
@@ -269,6 +270,7 @@ class DashboardController extends Controller
 			WHERE aps.form_id = 1
 			AND air.level_id = {$levelId}
 			AND air.org_id = {$OrgId}
+			".$PeriodId."
 			".$EmpIdStr."
 			GROUP BY air.item_id
 			ORDER BY air.item_id";
