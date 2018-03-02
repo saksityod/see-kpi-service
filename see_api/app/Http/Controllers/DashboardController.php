@@ -3079,7 +3079,7 @@ class DashboardController extends Controller
 			if ($request->appraisal_type_id == 2) {//emp
 
 					$query = "
-							SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
+							SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, o.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
 								air.target_value, air.forecast_value, ifnull(air.actual_value, 0) actual_value,
 								#ifnull(if(air.target_value = 0, 0, (air.actual_value/air.target_value)*100), 0) percent_target,
 								air.percent_achievement percent_target,
@@ -3091,7 +3091,6 @@ class DashboardController extends Controller
 							INNER JOIN emp_result er on air.emp_result_id = er.emp_result_id
 							LEFT OUTER JOIN uom u ON u.uom_id = ai.uom_id
 							LEFT OUTER JOIN org o ON o.org_id = air.org_id
-							LEFT OUTER JOIN org ON org.org_id = air.org_id
 							WHERE air.period_id = ?
 							AND air.org_id = ?
 							AND er.emp_id=?
