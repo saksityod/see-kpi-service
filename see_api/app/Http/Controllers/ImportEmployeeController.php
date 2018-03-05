@@ -29,7 +29,11 @@ class ImportEmployeeController extends Controller
 
 	public function import(Request $request)
 	{
+		set_time_limit(0);
+		ini_set('memory_limit', '1024M');
+
 		$errors = array();
+		$newEmp = array();
 		foreach ($request->file() as $f) {
 			$items = Excel::load($f, function($reader){})->get();
 			foreach ($items as $i) {
@@ -80,6 +84,9 @@ class ImportEmployeeController extends Controller
 						$emp->updated_by = Auth::id();
 						try {
 							$emp->save();
+
+							// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+							$newEmp[] = ["emp_code"=> $i->employee_code, "emp_name"=>$i->employee_name, "email"=>$i->email];
 						} catch (Exception $e) {
 							$errors[] = ['employee_code' => $i->employee_code, 'errors' => substr($e,0,254)];
 						}
@@ -107,7 +114,7 @@ class ImportEmployeeController extends Controller
 				}
 			}
 		}
-		return response()->json(['status' => 200, 'errors' => $errors]);
+		return response()->json(['status' => 200, 'errors' => $errors, "emp"=>$newEmp]);
 	}
 
 	public function index(Request $request)
@@ -372,7 +379,7 @@ class ImportEmployeeController extends Controller
 			LEFT OUTER JOIN appraisal_level b ON a.parent_id = b.level_id
 			WHERE a.is_individual = 1
 			ORDER BY a.level_id ASC");
-			
+
 		return response()->json($items);
 	}
 }
