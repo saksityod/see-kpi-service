@@ -46,8 +46,34 @@ class MailController extends Controller
 		Config::set('mail.password',$config->mail_password);
 		$from = Config::get('mail.from');
 		
-		$emp_list = DB::select("
-			SELECT distinct c.emp_id, c.emp_name, c.email, e.email chief_email, org.org_name
+		// $emp_list = DB::select("
+			// SELECT distinct c.emp_id, c.emp_name, c.email, e.email chief_email, org.org_name
+			// FROM monthly_appraisal_item_result a
+			// left outer join emp_result b
+			// on a.emp_result_id = b.emp_result_id
+			// inner join employee c
+			// on b.emp_id = c.emp_id
+			// left outer join appraisal_item d
+			// on a.item_id = d.item_id
+			// left outer join employee e
+			// on c.chief_emp_code = e.emp_code
+			// left outer join org
+			// on c.org_id = org.org_id			
+			// where d.remind_condition_id = 1
+			// and a.actual_value < a.target_value
+			// and b.appraisal_type_id = 2
+			// and a.year = date_format(current_date,'%Y')		
+		// ");
+		
+
+		$error = [];
+		
+		$member_mail = [];
+		$chief_mail = [];
+		
+		$items = DB::select("
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email,
+			sum(a.actual_value) actual_value, sum(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
 			on a.emp_result_id = b.emp_result_id
@@ -57,70 +83,106 @@ class MailController extends Controller
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
-			left outer join org
-			on c.org_id = org.org_id			
 			where d.remind_condition_id = 1
-			and a.actual_value < a.target_value
 			and b.appraisal_type_id = 2
-			and a.year = date_format(current_date,'%Y')		
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no <= date_format(current_date,'%c')
+			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email
+			having sum(a.actual_value) < sum(a.target_value)
+			order by d.item_name asc
 		");
+		$groups = [];
+		foreach ($items as $i) {
+			$key1 = $i->email;
+			$key2 = $i->emp_name;
+			if (!isset($groups[$key1][$key2])) {
+				$groups[$key1][$key2] = array(
+					'items' => array($i),
+					'email' => $i->email,
+					'emp_name' => $i->emp_name,
+					'count' => 1,
+				);
+			} else {
+				$groups[$key1][$key2]['items'][] = $i;
+				$groups[$key1][$key2]['count'] += 1;
+			}
+		}		
 		
+		$chief_groups = [];
+		foreach ($items as $i) {
+			$key1 = $i->chief_email;
+			$key2 = $i->emp_name;
+			if (!isset($chief_groups[$key1][$key2])) {
+				$chief_groups[$key1][$key2] = array(
+					'items' => array($i),
+					'email' => $i->chief_email,
+					'emp_name' => $i->emp_name,
+					'count' => 1,
+				);
+			} else {
+				$chief_groups[$key1][$key2]['items'][] = $i;
+				$chief_groups[$key1][$key2]['count'] += 1;
+			}
+		}			
+			
+		$admin_emails = DB::select("
+			select a.email
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where is_hr = 1			
+		");				
+		
+		$cc = [];
+		
+		foreach ($groups as $k => $items) {
 
-		$error = [];
-		
-		foreach ($emp_list as $e) {
-			$items = DB::select("
-				SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email,
-				sum(a.actual_value) actual_value, sum(a.target_value) target_value
-				FROM monthly_appraisal_item_result a
-				left outer join emp_result b
-				on a.emp_result_id = b.emp_result_id
-				inner join employee c
-				on b.emp_id = c.emp_id
-				left outer join appraisal_item d
-				on a.item_id = d.item_id
-				left outer join employee e
-				on c.chief_emp_code = e.emp_code
-				where d.remind_condition_id = 1
-				and b.appraisal_type_id = 2
-				and a.year = date_format(current_date,'%Y')
-				and a.appraisal_month_no <= date_format(current_date,'%c')
-				and c.emp_id = ?
-				group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email
-				having sum(a.actual_value) < sum(a.target_value)
-				order by d.item_name asc
-			", array($e->emp_id));
-				
-			$admin_emails = DB::select("
-				select a.email
-				from employee a
-				left outer join appraisal_level b
-				on a.level_id = b.level_id
-				where is_hr = 1			
-			");				
-				
 			try {
-				$data = ['items' => $items, 'emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'org_name' => $e->org_name];
+				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
 				
-				//$from = 'gjtestmail2017@gmail.com';
-				$to = [$e->email];
-				$cc = [$e->chief_email];
+				$to = [$k];
+				//$cc = [$e->chief_email];
 				
 				foreach ($admin_emails as $ae) {
 					$cc[] = $ae->email;
 				}				
 				
-				Mail::send('emails.remind', $data, function($message) use ($from, $to, $cc)
+				Mail::send('emails.remind_group', $data, function($message) use ($from, $to, $cc)
 				{
 					$message->from($from['address'], $from['name']);
 					$message->to($to);
-					$message->cc($cc);
+				//	$message->cc($cc);
 					$message->subject('Action Plan Required');
 				});			
 			} catch (Exception $e) {
 				$error[] = $e->getMessage();
-			}		
+			}	
 		}
+		
+		foreach ($chief_groups as $k => $items) {
+
+			try {
+				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
+				
+				$to = [$k];
+				//$cc = [$e->chief_email];
+				
+				foreach ($admin_emails as $ae) {
+					$cc[] = $ae->email;
+				}				
+				
+				Mail::send('emails.remind_chief', $data, function($message) use ($from, $to, $cc)
+				{
+					$message->from($from['address'], $from['name']);
+					$message->to($to);
+				//	$message->cc($cc);
+					$message->subject('Action Plan Required Summary');
+				});			
+			} catch (Exception $e) {
+				$error[] = $e->getMessage();
+			}	
+		}
+		
 		//return view('emails.remind',['items' => $items, 'emp_name' => 'hello', 'web_domain' => $config->web_domain]);
 		return response()->json(['status' => 200, 'error' => $error]);
 	}
