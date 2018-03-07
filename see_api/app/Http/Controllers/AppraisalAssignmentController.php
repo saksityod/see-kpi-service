@@ -905,12 +905,14 @@ class AppraisalAssignmentController extends Controller
 
 			if ($request->appraisal_type_id == 2) {
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 					From employee e
 					left outer join org o
 					on e.org_id = o.org_id
 					left outer join position p
 					on e.position_id = p.position_id
+					left outer join appraisal_level al
+					on e.level_id = al.level_id
 					Where e.is_active = 1
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
@@ -966,14 +968,15 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total >= period_total  ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
-					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po
+					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al
 					Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
+					and er.level_id = al.level_id
 				";
 				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -990,8 +993,10 @@ class AppraisalAssignmentController extends Controller
 			} else {
 
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 					From org o
+					left outer join appraisal_level al
+					on o.level_id = al.level_id
 					Where o.is_active = 1
 				";
 				//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
@@ -1040,12 +1045,13 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total >= period_total  ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
-					From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p
+					select distinct er.emp_result_id, er.status, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+					From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al
 					Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
+					and o.level_id = al.level_id
 				";
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1062,11 +1068,13 @@ class AppraisalAssignmentController extends Controller
 
 			if ($request->appraisal_type_id == 2) {
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 					From employee e left outer join	org o
 					on e.org_id = o.org_id
 					left outer join position p
 					on e.position_id = p.position_id
+					left outer join appraisal_level al
+					on e.level_id = al.level_id
 					Where e.is_active = 1
 					and (chief_emp_code = ?
 					or emp_code = ?)
@@ -1131,14 +1139,15 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total = period_total ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
-					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po
+					select distinct er.emp_result_id, er.status, er.level_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+					From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al
 					Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
 					and er.org_id = o.org_id
 					and er.position_id = po.position_id
+					and er.level_id = al.level_id
 					and (e.chief_emp_code = ?
 					or e.emp_code = ?)
 				";
@@ -1159,8 +1168,10 @@ class AppraisalAssignmentController extends Controller
 			} else {
 
 				$query_unassign = "
-					Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc
+					Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 					From org o
+					left outer join appraisal_level al
+					on o.level_id = al.level_id
 					Where o.is_active = 1
 				";
 				//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
@@ -1209,12 +1220,13 @@ class AppraisalAssignmentController extends Controller
 						WHERE  assigned_total >= period_total  ) union all ";
 
 				$query_unassign .= "
-					select distinct er.emp_result_id, er.status, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc
-					From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p
+					select distinct er.emp_result_id, er.status, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+					From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al
 					Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 					And er.emp_result_id = ir.emp_result_id
 					and ir.item_id = I.item_id
 					and er.period_id = p.period_id
+					and o.level_id = al.level_id
 				";
 				//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
