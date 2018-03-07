@@ -1957,18 +1957,19 @@ class AppraisalController extends Controller
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
 		
-		empty($request->org_id) ? $org_all = "" : $org_all = " and emp.org_id = " . $request->org_id . " ";
-		empty($request->org_id) ? $org = "" : $org = " and a.org_id = " . $request->org_id . " ";
+		empty($request->org_id) ? $org = " " : $org = " and a.org_id = " . $request->org_id . " ";
+		$levelStr = (empty($request->level_id)) ? " " : " AND a.level_id = {$request->level_id} " ;
 		
 		if ($empLevInfo["is_all"]) {
+			
 			$result = DB::select("
-				SELECT emp.emp_id, emp.emp_code, emp.emp_name
-				FROM employee emp
+				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
+				FROM employee emp inner join appraisal_item_result a
+				on a.emp_id = emp.emp_id
 				WHERE emp.is_active = 1
-				" . $org_all . "
+				" . $org . $levelStr ."
 				AND emp.emp_name like '%{$request->emp_name}%' ");
 		} else {
-			$levelStr = (empty($request->level_id)) ? " " : "AND a.level_id = {$request->level_id}" ;
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp inner join appraisal_item_result a
