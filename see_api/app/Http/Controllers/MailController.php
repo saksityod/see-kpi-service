@@ -166,7 +166,7 @@ class MailController extends Controller
 			}
 		}			
 		
-		return response()->json($chief_groups);
+
 		$admin_emails = DB::select("
 			select a.email
 			from employee a
