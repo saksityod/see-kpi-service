@@ -73,7 +73,7 @@ class MailController extends Controller
 		
 		$items = DB::select("
 			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
-			sum(a.actual_value) actual_value, sum(a.target_value) target_value
+			sum(a.actual_value) actual_value, max(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
 			on a.emp_result_id = b.emp_result_id
@@ -90,7 +90,7 @@ class MailController extends Controller
 			and a.year = date_format(current_date,'%Y')
 			and a.appraisal_month_no <= date_format(current_date,'%c')
 			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
-			having sum(a.actual_value) < sum(a.target_value)
+			having sum(a.actual_value) < max(a.target_value)
 			union all
 			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
 			a.actual_value actual_value, a.target_value target_value
@@ -112,7 +112,7 @@ class MailController extends Controller
 			and a.actual_value < a.target_value
 			union all
 			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
-			avg(a.actual_value) actual_value, avg(a.target_value) target_value
+			avg(a.actual_value) actual_value, max(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
 			on a.emp_result_id = b.emp_result_id
@@ -129,7 +129,7 @@ class MailController extends Controller
 			and a.year = date_format(current_date,'%Y')
 			and a.appraisal_month_no <= date_format(current_date,'%c')
 			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
-			having avg(a.actual_value) < avg(a.target_value)
+			having avg(a.actual_value) < max(a.target_value)
 			order by item_name asc			
 		");
 		$groups = [];
@@ -165,7 +165,8 @@ class MailController extends Controller
 				$chief_groups[$key1][$key2]['count'] += 1;
 			}
 		}			
-			
+		
+		return response()->json($chief_groups);
 		$admin_emails = DB::select("
 			select a.email
 			from employee a
@@ -179,7 +180,7 @@ class MailController extends Controller
 		foreach ($groups as $k => $items) {
 
 			try {
-				$data = ['items' => $items, 'emp_name' => $items['emp_name'], 'web_domain' => $config->web_domain];
+				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
 				
 				$to = [$k];
 				//$cc = [$e->chief_email];
