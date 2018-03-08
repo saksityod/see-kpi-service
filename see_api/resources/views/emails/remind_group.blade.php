@@ -11,8 +11,6 @@ th, td {
 </style>
 </head>
 <body>
-<p>เรียน {{$emp_name}}</p>
-
 <p>กรุณาคลิก Link เพื่อไปเพิ่ม Action Plan สำหรับ KPI ที่ต่ำกว่าเกณฑ์</p>
 
 @foreach ($items as $k => $item)

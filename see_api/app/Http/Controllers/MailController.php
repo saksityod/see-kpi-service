@@ -72,24 +72,65 @@ class MailController extends Controller
 		$chief_mail = [];
 		
 		$items = DB::select("
-			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email,
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
 			sum(a.actual_value) actual_value, sum(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
 			on a.emp_result_id = b.emp_result_id
 			inner join employee c
 			on b.emp_id = c.emp_id
+			and a.org_id = c.org_id
 			left outer join appraisal_item d
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
 			where d.remind_condition_id = 1
 			and b.appraisal_type_id = 2
+			and d.function_type = 1
 			and a.year = date_format(current_date,'%Y')
 			and a.appraisal_month_no <= date_format(current_date,'%c')
-			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email
+			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
 			having sum(a.actual_value) < sum(a.target_value)
-			order by d.item_name asc
+			union all
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
+			a.actual_value actual_value, a.target_value target_value
+			FROM monthly_appraisal_item_result a
+			left outer join emp_result b
+			on a.emp_result_id = b.emp_result_id
+			inner join employee c
+			on b.emp_id = c.emp_id
+			and a.org_id = c.org_id
+			left outer join appraisal_item d
+			on a.item_id = d.item_id
+			left outer join employee e
+			on c.chief_emp_code = e.emp_code
+			where d.remind_condition_id = 1
+			and b.appraisal_type_id = 2
+			and d.function_type = 2
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no = date_format(current_date,'%c')
+			and a.actual_value < a.target_value
+			union all
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
+			avg(a.actual_value) actual_value, avg(a.target_value) target_value
+			FROM monthly_appraisal_item_result a
+			left outer join emp_result b
+			on a.emp_result_id = b.emp_result_id
+			inner join employee c
+			on b.emp_id = c.emp_id
+			and a.org_id = c.org_id
+			left outer join appraisal_item d
+			on a.item_id = d.item_id
+			left outer join employee e
+			on c.chief_emp_code = e.emp_code
+			where d.remind_condition_id = 1
+			and b.appraisal_type_id = 2
+			and d.function_type = 3
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no <= date_format(current_date,'%c')
+			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
+			having avg(a.actual_value) < avg(a.target_value)
+			order by item_name asc			
 		");
 		$groups = [];
 		foreach ($items as $i) {
@@ -116,7 +157,7 @@ class MailController extends Controller
 				$chief_groups[$key1][$key2] = array(
 					'items' => array($i),
 					'email' => $i->chief_email,
-					'emp_name' => $i->emp_name,
+					'emp_name' => $i->chief_name,
 					'count' => 1,
 				);
 			} else {
@@ -138,7 +179,7 @@ class MailController extends Controller
 		foreach ($groups as $k => $items) {
 
 			try {
-				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
+				$data = ['items' => $items, 'emp_name' => $items['emp_name'], 'web_domain' => $config->web_domain];
 				
 				$to = [$k];
 				//$cc = [$e->chief_email];
