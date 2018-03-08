@@ -204,7 +204,7 @@ class MailController extends Controller
 		foreach ($chief_groups as $k => $items) {
 
 			try {
-				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
+				$data = ['items' => $items, 'emp_name' => $items['chief_name'], 'web_domain' => $config->web_domain];
 				
 				$to = [$k];
 				//$cc = [$e->chief_email];
