@@ -160,6 +160,7 @@ class MailController extends Controller
 					'emp_name' => $i->chief_name,
 					'count' => 1,
 				);
+				$chief_groups[$key1]['chief_name'] = $i->chief_name;
 			} else {
 				$chief_groups[$key1][$key2]['items'][] = $i;
 				$chief_groups[$key1][$key2]['count'] += 1;
