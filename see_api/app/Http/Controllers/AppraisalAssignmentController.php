@@ -92,46 +92,91 @@ class AppraisalAssignmentController extends Controller
 			$hr_see = null;
 		}
 
-		if ($request->emp_code == Auth::id()) {
-			$self_see = 1;
-		} else {
-			$self_see = null;
-		};
-
-		$employee = Employee::find($request->emp_code);
-
-		if (empty($employee)) {
-			$chief_emp_code = null;
-		} else {
-			$chief_emp_code = $employee->chief_emp_code;
-			if ($chief_emp_code == Auth::id()) {
-				$first_see = 1;
+		if (empty($request->org_code)) {
+			if ($request->emp_code == Auth::id()) {
+				$self_see = 1;
 			} else {
-				$first_see = null;
-			}
+				$self_see = null;
+			};
 
-			if ($employee->has_second_line == 1) {
-				$has_second = 1;
-				$check_second = DB::select("
-					select chief_emp_code
-					from employee
-					where emp_code = ?
-				", array($chief_emp_code));
-				if (empty($check_second)) {
-					$second_see = null;
+			$employee = Employee::find($request->emp_code);
+
+			if (empty($employee)) {
+				$chief_emp_code = null;
+			} else {
+				$chief_emp_code = $employee->chief_emp_code;
+				if ($chief_emp_code == Auth::id()) {
+					$first_see = 1;
 				} else {
-					if ($check_second[0]->chief_emp_code == Auth::id()) {
-						$second_see = 1;
-					} else {
-						$second_see = null;
-					}
+					$first_see = null;
 				}
-			} else {
-				$second_see = null;
-				$has_second = 0;
-			}
-		}
 
+				if ($employee->has_second_line == 1) {
+					$has_second = 1;
+					$check_second = DB::select("
+						select chief_emp_code
+						from employee
+						where emp_code = ?
+					", array($chief_emp_code));
+					if (empty($check_second)) {
+						$second_see = null;
+					} else {
+						if ($check_second[0]->chief_emp_code == Auth::id()) {
+							$second_see = 1;
+						} else {
+							$second_see = null;
+						}
+					}
+				} else {
+					$second_see = null;
+					$has_second = 0;
+				}
+			}
+		} else {
+			$cu = Employee::find(Auth::id());
+			$co = Org::find($cu->org_id);
+			
+			if ($request->org_code == $co->org_code) {
+				$self_see = 1;
+			} else {
+				$self_see = null;
+			};
+
+			$org = Org::find($request->org_code);
+
+			if (empty($org)) {
+				$parent_org_code = null;
+			} else {
+				$parent_org_code = $org->parent_org_code;
+				if ($parent_org_code == $co->org_code) {
+					$first_see = 1;
+				} else {
+					$first_see = null;
+				}
+
+				// if ($employee->has_second_line == 1) {
+					// $has_second = 1;
+					// $check_second = DB::select("
+						// select chief_emp_code
+						// from employee
+						// where emp_code = ?
+					// ", array($chief_emp_code));
+					// if (empty($check_second)) {
+						// $second_see = null;
+					// } else {
+						// if ($check_second[0]->chief_emp_code == Auth::id()) {
+							// $second_see = 1;
+						// } else {
+							// $second_see = null;
+						// }
+					// }
+				// } else {
+					// $second_see = null;
+					// $has_second = 0;
+				// }
+			}		
+		}
+		
 		$items = DB::select("
 			select stage_id, to_action
 			from appraisal_stage
@@ -256,46 +301,92 @@ class AppraisalAssignmentController extends Controller
 			$hr_see = null;
 		}
 
-		if ($request->emp_code == Auth::id()) {
-			$self_see = 1;
-		} else {
-			$self_see = null;
-		};
-
-		$employee = Employee::find($request->emp_code);
-
-		if (empty($employee)) {
-			$chief_emp_code = null;
-		} else {
-			$chief_emp_code = $employee->chief_emp_code;
-			if ($chief_emp_code == Auth::id()) {
-				$first_see = 1;
+		if (empty($request->org_code)) {
+		
+			if ($request->emp_code == Auth::id()) {
+				$self_see = 1;
 			} else {
-				$first_see = null;
-			}
+				$self_see = null;
+			};
 
-			if ($employee->has_second_line == 1) {
-				$has_second = 1;
-				$check_second = DB::select("
-					select chief_emp_code
-					from employee
-					where emp_code = ?
-				", array($chief_emp_code));
-				if (empty($check_second)) {
-					$second_see = null;
+			$employee = Employee::find($request->emp_code);
+
+			if (empty($employee)) {
+				$chief_emp_code = null;
+			} else {
+				$chief_emp_code = $employee->chief_emp_code;
+				if ($chief_emp_code == Auth::id()) {
+					$first_see = 1;
 				} else {
-					if ($check_second[0]->chief_emp_code == Auth::id()) {
-						$second_see = 1;
-					} else {
-						$second_see = null;
-					}
+					$first_see = null;
 				}
-			} else {
-				$second_see = null;
-				$has_second = 0;
-			}
-		}
 
+				if ($employee->has_second_line == 1) {
+					$has_second = 1;
+					$check_second = DB::select("
+						select chief_emp_code
+						from employee
+						where emp_code = ?
+					", array($chief_emp_code));
+					if (empty($check_second)) {
+						$second_see = null;
+					} else {
+						if ($check_second[0]->chief_emp_code == Auth::id()) {
+							$second_see = 1;
+						} else {
+							$second_see = null;
+						}
+					}
+				} else {
+					$second_see = null;
+					$has_second = 0;
+				}
+			}
+		} else {
+			
+			$cu = Employee::find(Auth::id());
+			$co = Org::find($cu->org_id);
+			
+			if ($request->org_code == $co->org_code) {
+				$self_see = 1;
+			} else {
+				$self_see = null;
+			};
+
+			$org = Org::find($request->org_code);
+
+			if (empty($org)) {
+				$parent_org_code = null;
+			} else {
+				$parent_org_code = $org->parent_org_code;
+				if ($parent_org_code == $co->org_code) {
+					$first_see = 1;
+				} else {
+					$first_see = null;
+				}
+
+				// if ($employee->has_second_line == 1) {
+					// $has_second = 1;
+					// $check_second = DB::select("
+						// select chief_emp_code
+						// from employee
+						// where emp_code = ?
+					// ", array($chief_emp_code));
+					// if (empty($check_second)) {
+						// $second_see = null;
+					// } else {
+						// if ($check_second[0]->chief_emp_code == Auth::id()) {
+							// $second_see = 1;
+						// } else {
+							// $second_see = null;
+						// }
+					// }
+				// } else {
+					// $second_see = null;
+					// $has_second = 0;
+				// }
+			}		
+		}
 		if ($has_second == 1) {
 			$items = DB::select("
 				select stage_id, to_action
