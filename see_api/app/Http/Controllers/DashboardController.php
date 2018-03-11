@@ -1849,6 +1849,7 @@ class DashboardController extends Controller
 
 			if ($request->appraisal_type_id == 2) {
 				$emp = Employee::where('emp_id',$request->emp_id)->first();
+				empty($request->position_id) ? $position_query = "" : $position_query = " and a.position_id = " . $request->position_id . " ";
 				$org_list = DB::select("
 					SELECT a.org_id, a.emp_id, g.emp_name org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(b.etl_dttm) etl_dttm
 					FROM monthly_appraisal_item_result a
@@ -1871,9 +1872,12 @@ class DashboardController extends Controller
 					and c.appraisal_type_id = ?
 					and (g.emp_code = ? or g.chief_emp_code = ?)
 					and c.period_id = ?
+					and a.level_id = ?
+					and a.org_id = ?
+					" . $position_query . "
 					group by a.org_id, a.emp_id, g.emp_name ,org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, e.is_show_variance
 					order by a.org_id asc, a.appraisal_month_no asc
-				", array($request->item_id,$request->appraisal_type_id,$emp->emp_code, $emp->emp_code, $request->period_id));
+				", array($request->item_id,$request->appraisal_type_id,$emp->emp_code, $emp->emp_code, $request->period_id, $request->level_id, $request->org_id));
 			} else {
 				$org_list = DB::select("
 					SELECT a.org_id, a.emp_id, d.org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, b.threshold_group_id, e.is_show_variance, max(b.etl_dttm) etl_dttm
@@ -1928,12 +1932,16 @@ class DashboardController extends Controller
 						and c.appraisal_type_id = ?
 						and b.emp_id = ?
 						and c.period_id = ?
+						and a.level_id = ?
+						and a.org_id = ?
 					";
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
 					$qinput[] = $request->period_id;
-
+					$qinput[] = $request->level_id;
+					$qinput[] = $request->org_id;
+					empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);					
 				} else {
 					$query = "
 						SELECT a.org_id, d.org_name, a.appraisal_month_name, a.appraisal_month_no, a.target_value monthly_target, b.target_value yearly_target, b.forecast_value, b.actual_value,b.percent_achievement, a.actual_value sum_actual_value
@@ -2222,6 +2230,7 @@ class DashboardController extends Controller
 			if ($request->appraisal_type_id == 2) {
 				$emp = Employee::where('emp_id',$request->emp_id)->first();
 				$period = AppraisalPeriod::find($request->period_id);
+				empty($request->position_id) ? $position_query = " " : $position_query = " and a.position_id = " . $request->position_id . " ";
 				$org_list = DB::select("
 					select e.org_id, d.emp_id, i.emp_name org_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name, max(d.etl_dttm) etl_dttm
 					from monthly_appraisal_item_result a
@@ -2251,8 +2260,11 @@ class DashboardController extends Controller
 					and b.appraisal_year = ?
 					and f.appraisal_type_id = ?
 					and (i.emp_code = ? or i.chief_emp_code = ?)
+					and a.level_id = ?
+					and a.org_id = ?
+					" . $position_query . "
 					group by e.org_id, d.emp_id, i.emp_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name
-				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $emp->emp_code));
+				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $emp->emp_code, $request->level_id, $request->org_id));
 
 			} else {
 
@@ -2312,13 +2324,21 @@ class DashboardController extends Controller
 						and b.appraisal_year = ?
 						and e.appraisal_type_id = ?
 						and a.emp_id = ?
+						and a.level_id = ?
+						and a.org_id = ?
 					";
 					$qinput[] = $period->period_no;
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->year_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
-
+					$qinput[] = $request->level_id;
+					$qinput[] = $request->org_id;
+					
+					empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				
+				empty($request->position_id) ? $position_query = " " : $position_query = " and a.position_id = ". $request->position_id ." ";
+				
 				$dual_chart = DB::select("
 					select a.target_value, a.actual_value, a.forecast_value, a.percent_achievement
 					from appraisal_item_result a
@@ -2328,7 +2348,10 @@ class DashboardController extends Controller
 					and b.appraisal_type_id = ?
 					and a.period_id = ?
 					and a.item_id = ?
-				", array($o->emp_id, $request->appraisal_type_id, $request->period_id, $request->item_id));
+					and a.level_id = ?
+					and a.org_id = ?
+					" . $position_query . "
+				", array($o->emp_id, $request->appraisal_type_id, $request->period_id, $request->item_id, $request->level_id, $request->org_id));
 
 				} else {
 
