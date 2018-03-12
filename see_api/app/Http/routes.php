@@ -122,6 +122,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal_assignment/new_action_to', 'AppraisalAssignmentController@new_action_to');
 	Route::get('appraisal_assignment/edit_assign_to', 'AppraisalAssignmentController@edit_assign_to');
 	Route::get('appraisal_assignment/edit_action_to', 'AppraisalAssignmentController@edit_action_to');
+	Route::post('appraisal_assignment/edit_action_to', 'AppraisalAssignmentController@edit_action_to');
 	Route::get('appraisal_assignment/{emp_result_id}', 'AppraisalAssignmentController@show');
 	Route::patch('appraisal_assignment/{emp_result_id}', 'AppraisalAssignmentController@update');
 	Route::delete('appraisal_assignment/{emp_result_id}', 'AppraisalAssignmentController@destroy');
@@ -139,6 +140,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal','AppraisalController@index');
 	Route::get('appraisal/edit_assign_to', 'AppraisalController@edit_assign_to');
 	Route::get('appraisal/edit_action_to', 'AppraisalController@edit_action_to');
+	Route::post('appraisal/edit_action_to', 'AppraisalController@edit_action_to');
 	Route::get('appraisal/{emp_result_id}','AppraisalController@show');
 	Route::patch('appraisal/{emp_result_id}','AppraisalController@update');
 	Route::get('appraisal/action_plan/auto_employee_name','AppraisalController@auto_action_employee_name');
