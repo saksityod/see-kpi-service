@@ -1899,7 +1899,7 @@ class DashboardController extends Controller
 					and g.chief_emp_code = ?
 					and c.period_id = ?
 					group by a.org_id, a.emp_id, g.emp_name ,org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, e.is_show_variance
-					order by org_id asc, appraisal_month_no asc					
+					order by org_id asc			
 				", array($request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id, $request->level_id, $request->org_id,$request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id));
 			} else {
 				$org_list = DB::select("
@@ -1923,7 +1923,7 @@ class DashboardController extends Controller
 					and (d.org_code = ? or d.parent_org_code = ?)
 					and c.period_id = ?
 					group by a.org_id, a.emp_id, d.org_name, e.item_name, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.item_result_id, e.is_show_variance
-					order by a.org_id asc, a.appraisal_month_no asc
+					order by a.org_id asc
 				", array($request->item_id,$request->appraisal_type_id,$org->org_code, $org->org_code, $request->period_id));
 			}
 
