@@ -1884,14 +1884,15 @@ class DashboardController extends Controller
 					and a.emp_result_id = b.emp_result_id
 					left outer join emp_result c
 					on a.emp_result_id = c.emp_result_id
-					left outer join org d
-					on a.org_id = d.org_id
 					left outer join appraisal_item e
 					on a.item_id = e.item_id
 					left outer join perspective f
 					on e.perspective_id = f.perspective_id
 					left outer join employee g
 					on b.emp_id = g.emp_id
+					and b.org_id = g.org_id
+					left outer join org d
+					on g.org_id = d.org_id					
 					left outer join uom u
 					on e.uom_id = u.uom_id
 					where a.item_id = ?
@@ -2296,8 +2297,6 @@ class DashboardController extends Controller
 					on a.period_id = d.period_id
 					and a.item_id = d.item_id
 					and a.emp_result_id = d.emp_result_id
-					left outer join org e
-					on a.org_id = e.org_id
 					left outer join emp_result f
 					on d.emp_result_id = f.emp_result_id
 					left outer join appraisal_item g
@@ -2306,6 +2305,9 @@ class DashboardController extends Controller
 					on g.perspective_id = h.perspective_id
 					left outer join employee i
 					on d.emp_id = i.emp_id
+					and d.org_id = i.org_id
+					left outer join org e
+					on i.org_id = e.org_id					
 					left outer join uom u
 					on g.uom_id = u.uom_id
 					where c.frequency_month_value = 1
