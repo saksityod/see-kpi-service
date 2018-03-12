@@ -1271,13 +1271,14 @@ class AppraisalController extends Controller
 				from appraisal_stage 
 				where from_stage_id = ?
 				and appraisal_flag = 1
+				and appraisal_type_id = ?
 				and (
 					hr_see = ?
 					or self_see = ?
 					or first_see = ?
 					or second_see = ?
 				)
-			", array($request->stage_id,$hr_see,$self_see,$first_see,$second_see));
+			", array($request->stage_id,$request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
 			
 			if (empty($items)) {
 				$workflow = WorkflowStage::find($request->stage_id);
@@ -1287,13 +1288,14 @@ class AppraisalController extends Controller
 					from appraisal_stage a
 					where stage_id in ({$to_stage_id})
 					and appraisal_flag = 1
+					and appraisal_type_id = ?
 					and (
 						hr_see = ?
 						or self_see = ?
 						or first_see = ?
 						or second_see = ?
 					)
-				",array($hr_see,$self_see,$first_see,$second_see));
+				",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
 			}
 		} else {
 			$workflow = WorkflowStage::find($request->stage_id);
@@ -1303,13 +1305,14 @@ class AppraisalController extends Controller
 					from appraisal_stage 
 					where from_stage_id = ?
 					and appraisal_flag = 1
+					and appraisal_type_id = ?
 					and (
 						hr_see = ?
 						or self_see = ?
 						or first_see = ?
 						or second_see = ?
 					)
-				", array($request->stage_id,$hr_see,$self_see,$first_see,$second_see));			
+				", array($request->stage_id,$request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));			
 				if (empty($items)) {
 					$workflow = WorkflowStage::find($request->stage_id);
 					empty($workflow->to_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->to_stage_id;
@@ -1318,13 +1321,14 @@ class AppraisalController extends Controller
 						from appraisal_stage a
 						where stage_id in ({$to_stage_id})
 						and appraisal_flag = 1
+						and appraisal_type_id = ?
 						and (
 							hr_see = ?
 							or self_see = ?
 							or first_see = ?
 							or second_see = ?
 						)
-					",array($hr_see,$self_see,$first_see,$second_see));
+					",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
 				}				
 			} else {
 				empty($workflow->no_second_line_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->no_second_line_stage_id;
@@ -1333,13 +1337,14 @@ class AppraisalController extends Controller
 					from appraisal_stage a
 					where stage_id in ({$to_stage_id})
 					and appraisal_flag = 1
+					and appraisal_type_id = ?
 					and (
 						hr_see = ?
 						or self_see = ?
 						or first_see = ?
 						or second_see = ?
 					)
-				",array($hr_see,$self_see,$first_see,$second_see));			
+				",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));			
 			}
 		}
 		//return response()->json(['items'=>$items,'hr_see'=>$hr_see,'self_see'=>$self_see,'first_see'=>$first_see,'second_see'=>$second_see,'chief_emp_code'=>$chief_emp_code,'auth_id'=>Auth::id()]);
