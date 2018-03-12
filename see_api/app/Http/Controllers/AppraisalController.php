@@ -12,6 +12,7 @@ use App\Reason;
 use App\AttachFile;
 use App\SystemConfiguration;
 use App\Employee;
+use App\Org;
 
 use Auth;
 use DB;
@@ -1184,44 +1185,84 @@ class AppraisalController extends Controller
 			$hr_see = null;
 		}
 		
-		if ($request->emp_code == Auth::id()) {
-			$self_see = 1;
-		} else {
-			$self_see = null;
-		};
-		
-		$employee = Employee::find($request->emp_code);
-		
-		if (empty($employee)) { 
-			$chief_emp_code = null;
-		} else {		
-			$chief_emp_code = $employee->chief_emp_code;
-			if ($chief_emp_code == Auth::id()) {
-				$first_see = 1;
+		if ($request->appraisal_type_id == 2) {
+			if ($request->emp_code == Auth::id()) {
+				$self_see = 1;
 			} else {
-				$first_see = null;
-			}			
+				$self_see = null;
+			};
 			
-			if ($employee->has_second_line == 1) {
-				$has_second = 1;
+			$employee = Employee::find($request->emp_code);
+			
+			if (empty($employee)) { 
+				$chief_emp_code = null;
+			} else {		
+				$chief_emp_code = $employee->chief_emp_code;
+				if ($chief_emp_code == Auth::id()) {
+					$first_see = 1;
+				} else {
+					$first_see = null;
+				}			
+				
+				if ($employee->has_second_line == 1) {
+					$has_second = 1;
+					$check_second = DB::select("
+						select chief_emp_code
+						from employee
+						where emp_code = ?
+					", array($chief_emp_code));
+					if (empty($check_second)) {
+						$second_see = null;
+					} else {
+						if ($check_second[0]->chief_emp_code == Auth::id()) {
+							$second_see = 1;
+						} else {
+							$second_see = null;
+						}
+					}
+				} else {
+					$second_see = null;
+					$has_second = 0;
+				}			
+			}
+		} else {
+		
+			$cu = Employee::find(Auth::id());
+			$co = Org::find($cu->org_id);		
+		
+			if ($request->org_code == $co->org_code) {
+				$self_see = 1;
+			} else {
+				$self_see = null;
+			};
+			
+			$org = Org::where('org_code',$request->org_code)->first();
+			
+			if (empty($org)) { 
+				$parent_org_code = null;
+			} else {		
+				$parent_org_code = $org->parent_org_code;
+				if ($parent_org_code == $co->org_code) {
+					$first_see = 1;
+				} else {
+					$first_see = null;
+				}			
 				$check_second = DB::select("
-					select chief_emp_code
-					from employee
-					where emp_code = ?
-				", array($chief_emp_code));
+					select parent_org_code
+					from org
+					where org_code = ?
+				", array($parent_org_code));
 				if (empty($check_second)) {
 					$second_see = null;
 				} else {
-					if ($check_second[0]->chief_emp_code == Auth::id()) {
+					if ($check_second[0]->parent_org_code == $co->org_code) {
 						$second_see = 1;
 					} else {
 						$second_see = null;
 					}
-				}
-			} else {
-				$second_see = null;
-				$has_second = 0;
-			}			
+				}	
+			}
+		
 		}
 		
 		if ($has_second == 1) {
