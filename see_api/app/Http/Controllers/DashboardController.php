@@ -1956,11 +1956,13 @@ class DashboardController extends Controller
 						and c.appraisal_type_id = ?
 						and b.emp_id = ?
 						and c.period_id = ?
+						and a.org_id = ?
 					";
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
 					$qinput[] = $request->period_id;
+					$qinput[] = $o->org_id;
 					// $qinput[] = $request->level_id;
 					// $qinput[] = $request->org_id;
 					// empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);					
@@ -2377,12 +2379,14 @@ class DashboardController extends Controller
 						and b.appraisal_year = ?
 						and e.appraisal_type_id = ?
 						and a.emp_id = ?
+						and a.org_id = ?
 					";
 					$qinput[] = $period->period_no;
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->year_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
+					$qinput[] = $o->org_id;
 					// $qinput[] = $request->level_id;
 					// $qinput[] = $request->org_id;
 					
