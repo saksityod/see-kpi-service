@@ -150,4 +150,9 @@ return [
 
     'secure' => false,
 
+    'license_assign' => 5000,
+    'license_mail_sender_name' => "TFG Server",
+    'license_mail_to' => ['seekpi@goingjesse.com'],
+    'license_mail_subject' => "[TFG Server]: License Verification",
+
 ];

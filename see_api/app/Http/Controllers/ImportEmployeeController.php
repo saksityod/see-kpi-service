@@ -114,6 +114,17 @@ class ImportEmployeeController extends Controller
 				}
 			}
 		}
+
+		// License Verification //
+		try{
+			$empAssign = Config::get("session.license_assign");
+			if((!empty($empAssign))&&$empAssign!=0){
+				$mail = new MailController();
+				$result = $mail->LicenseVerification();
+			}
+		} catch (Exception $e) {
+		}
+
 		return response()->json(['status' => 200, 'errors' => $errors, "emp"=>$newEmp]);
 	}
 
