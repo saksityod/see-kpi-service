@@ -42,7 +42,7 @@ class ImportAssignmentController extends Controller
         FROM appraisal_level
         WHERE is_active = 1
         AND is_org = 1
-        ORDER BY level_id
+        ORDER BY level_id desc
       ");
     } else if($request->appraisal_type_id == "2"){
       $levels = DB::select("
@@ -50,7 +50,7 @@ class ImportAssignmentController extends Controller
         FROM appraisal_level
         WHERE is_active = 1
         AND is_individual = 1
-        ORDER BY level_id
+        ORDER BY level_id desc
       ");
     } else {
       $levels = [];
