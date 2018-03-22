@@ -2319,7 +2319,7 @@ class DashboardController extends Controller
 					and f.appraisal_type_id = ?
 					and i.chief_emp_code = ?
 					group by e.org_id, d.emp_id, i.emp_name, d.item_result_id, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name					
-				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $emp->emp_code, $request->level_id, $request->org_id,$period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $emp->emp_code));
+				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $request->level_id, $request->org_id,$period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code));
 
 			} else {
 
