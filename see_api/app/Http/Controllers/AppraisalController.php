@@ -1957,10 +1957,12 @@ class AppraisalController extends Controller
 
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
-        SELECT level_id, appraisal_level_name
+        		SELECT level_id, appraisal_level_name
 				FROM appraisal_level
 				WHERE is_active = 1
-				AND is_individual = 1");
+				AND is_individual = 1
+				ORDER BY level_id DESC
+			");
 		} else {
 			$result = DB::select("
 				SELECT lev.level_id, lev.appraisal_level_name
@@ -1984,6 +1986,7 @@ class AppraisalController extends Controller
 					)
 				)
 				GROUP BY lev.level_id
+				ORDER BY lev.level_id DESC
 			");
 		}
 

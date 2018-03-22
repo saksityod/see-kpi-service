@@ -41,7 +41,7 @@ class AppraisalAssignmentController extends Controller
 		$items = DB::select("
 			Select appraisal_type_id, appraisal_type_name
 			From appraisal_type
-			Order by appraisal_type_id
+			Order by appraisal_type_id DESC
 		");
 		return response()->json($items);
 	}
@@ -799,7 +799,7 @@ class AppraisalAssignmentController extends Controller
 				From appraisal_level
 				Where is_active = 1
 				and is_individual = 1 
-				Order by level_id
+				Order by level_id desc
 			");
 		} else {
 			$items = DB::select("
@@ -811,7 +811,7 @@ class AppraisalAssignmentController extends Controller
 			and l.is_individual = 1
 			and l.is_active = 1
 			and e.is_active = 1
-			group by l.level_id
+			group by l.level_id desc
 			", array($request->emp_code, $request->emp_code));
 		}
 
