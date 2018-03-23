@@ -28,9 +28,12 @@ class OrgController extends Controller
 	public function index(Request $request)
 	{
 		empty($request->level_id) ? $level = "" : $level = " and a.level_id = " . $request->level_id . " ";
-		empty($request->org_code) ? $org = "" : $org = " and a.org_code = " . $request->org_code . " ";
+		empty($request->org_code) ? $org = "" : $org = " and a.org_code = '" . $request->org_code . "' ";
 		$items = DB::select("
-			select a.org_id, a.org_code, a.org_name, a.org_abbr, a.is_active, b.org_name parent_org_name, a.parent_org_code, a.level_id, c.appraisal_level_name, a.longitude, a.latitude, a.province_code, d.province_name
+			SELECT a.org_id, a.org_code, a.org_name, a.org_abbr, a.is_active, b.org_name parent_org_name, a.parent_org_code, a.level_id, c.appraisal_level_name,
+			case when a.longitude = 0 then '' else a.longitude end  longitude,
+			case when a.latitude = 0 then '' else a.latitude end  latitude,
+			a.province_code, d.province_name
 			from org a left outer join
 			org b on b.org_code = a.parent_org_code
 			left outer join appraisal_level c
@@ -226,6 +229,9 @@ class OrgController extends Controller
 	{
 		try {
 			$item = Org::findOrFail($org_id);
+
+			($item->longitude == 0) ? $item->longitude = "" : $item->longitude;
+			($item->latitude == 0) ? $item->latitude = "" : $item->latitude;
 
 			$parent = DB::select("
 				select org_name
