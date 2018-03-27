@@ -113,6 +113,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('appraisal_assignment/auto_employee_name2', 'AppraisalAssignmentController@auto_employee_name2');
 	Route::post('appraisal_assignment/auto_position_name2', 'AppraisalAssignmentController@auto_position_name2');
 
+	Route::get('appraisal_assignment/email_link_assignment', 'AppraisalAssignmentController@email_link_assignment');
+
 	Route::get('appraisal_assignment/period_list', 'AppraisalAssignmentController@period_list');
 	Route::get('appraisal_assignment/frequency_list', 'AppraisalAssignmentController@frequency_list');
 	Route::post('appraisal_assignment/auto_employee_name', 'AppraisalAssignmentController@auto_employee_name');
