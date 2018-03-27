@@ -1078,7 +1078,7 @@ class AppraisalAssignmentController extends Controller
 				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
 				empty($request->appraisal_level_id) ?: ($query_unassign .= " And er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
-				empty($request->appraisal_level_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_org);
+				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
 				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
@@ -1894,7 +1894,7 @@ class AppraisalAssignmentController extends Controller
 						$emp_stage->updated_by = Auth::id();
 						$emp_stage->save();
 
-						$mail_error = [];
+						$mail_error = '';
 						if ($config->email_reminder_flag == 1) {
 							if ($request->head_params['appraisal_type_id'] == 2) {
 								try {
@@ -1911,8 +1911,8 @@ class AppraisalAssignmentController extends Controller
 										$message->to($to)->subject('ระบบได้ทำการประเมิน');
 									});
 								} catch (Exception $e) {
-									$mail_error[] = $e->getMessage();
-								//	$mail_error = 'has error';
+								//	$mail_error[] = $e->getMessage();
+									$mail_error = 'has error';
 								}
 							}
 						}
@@ -2123,7 +2123,7 @@ class AppraisalAssignmentController extends Controller
 					$emp_stage->updated_by = Auth::id();
 					$emp_stage->save();
 
-					$mail_error = [];
+					$mail_error = '';
 					
 					if ($config->email_reminder_flag == 1) {
 						if ($request->head_params['appraisal_type_id'] == 2) {
@@ -2141,8 +2141,10 @@ class AppraisalAssignmentController extends Controller
 									$message->to($to)->subject('ระบบได้ทำการประเมิน');
 								});
 							} catch (Exception $e) {
-								$mail_error[] = $e->getMessage();
-							//	$mail_error = 'has error';
+								//$mail_error = $e->getMessage();
+								
+								//return response()->json($e->getMessage());
+								$mail_error = 'has error';
 							}
 						}
 					}
