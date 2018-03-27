@@ -2263,7 +2263,7 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 		$head = DB::select("
-			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, b.chief_emp_code, e.emp_name chief_emp_name, c.appraisal_period_desc, d.appraisal_type_name, a.stage_id, f.status, f.edit_flag, a.position_id, a.org_id
+			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, b.chief_emp_code, e.emp_name chief_emp_name, c.period_id, c.appraisal_period_desc, d.appraisal_type_name, a.stage_id, f.status, f.edit_flag, a.position_id, a.org_id
 			FROM emp_result a
 			left outer join employee b
 			on a.emp_id = b.emp_id
