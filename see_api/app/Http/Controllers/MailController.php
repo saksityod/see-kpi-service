@@ -370,7 +370,7 @@ class MailController extends Controller
 		$from = Config::get('mail.from');
 
 		$emp_list = DB::select("
-			select c.emp_code, c.email, c.emp_name
+			select c.emp_code, c.email, c.emp_name, a.emp_result_id, a.appraisal_type_id
 			from emp_result a
 			left outer join appraisal_stage b
 			on a.stage_id = b.stage_id
@@ -394,7 +394,7 @@ class MailController extends Controller
 			// ");
 
 			try {
-				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
+				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'emp_result_id' => $e->emp_result_id, 'appraisal_type_id' => $e->appraisal_type_id];
 
 			//	$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
@@ -439,7 +439,7 @@ class MailController extends Controller
 		Config::set('mail.password',$config->mail_password);
 		$from = Config::get('mail.from');
 		$emp_list = DB::select("
-			select c.emp_code, c.email, c.emp_name
+			select c.emp_code, c.email, c.emp_name, a.emp_result_id, a.appraisal_type_id 
 			from emp_result a
 			left outer join appraisal_stage b
 			on a.stage_id = b.stage_id
@@ -463,7 +463,7 @@ class MailController extends Controller
 			// ");
 
 			try {
-				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain];
+				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'emp_result_id' => $e->emp_result_id, 'appraisal_type_id' => $e->appraisal_type_id];
 
 			//	$from = 'gjtestmail2017@gmail.com';
 				$to = [$e->email];
