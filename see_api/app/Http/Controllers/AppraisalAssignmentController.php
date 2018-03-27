@@ -36,18 +36,6 @@ class AppraisalAssignmentController extends Controller
 	   $this->middleware('jwt.auth');
 	}
 
-	public function email_link_assignment(Request $request) {
-		$items = DB::select("
-			select air.org_id, air.level_id as level_id_emp, o.level_id as level_id
-			from appraisal_item_result air
-			left join org o
-			on o.org_id = air.org_id
-			where air.emp_result_id = {$request->emp_result_id}
-			limit 0,1
-		");
-		return response()->json($items);
-	}
-
 	public function appraisal_type_list()
 	{
 		$items = DB::select("
