@@ -2,7 +2,7 @@ To {{$chief_emp_name}}
 <br/>
 <br/>
 	<p>ข้อมูลของคุณ {{$emp_name}} อยู่ที่สถานะ "{{$status}}" กรุณา Click Link
-	<a href="{{$web_domain}}assignment-popup/?emp_result_id=9&appraisal_type_id=2">{{$web_domain}}assignment-popup/?emp_result_id={{$emp_result_id}}&appraisal_type_id={{$appraisal_type_id}}</a>
+	<a href="{{$web_domain}}assignment-popup/?emp_result_id={{$emp_result_id}}&appraisal_type_id={{$appraisal_type_id}}">{{$web_domain}}assignment-popup/?emp_result_id={{$emp_result_id}}&appraisal_type_id={{$appraisal_type_id}}</a>
 	ระบบเพื่อทำการประเมิน</p>
 <br/>
 <br/>
