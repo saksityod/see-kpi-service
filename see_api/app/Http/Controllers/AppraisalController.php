@@ -1437,7 +1437,7 @@ class AppraisalController extends Controller
 					$employee = Employee::where('emp_id',$emp->emp_id)->first();
 					$chief_emp = Employee::where('emp_code',$employee->chief_emp_code)->first();
 
-					$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, 'emp_result_id' => $emp->emp_result_id, 'appraisal_type_id' => $emp->appraisal_type_id];
+					$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, "web_domain" => $config->web_domain,  'emp_result_id' => $emp->emp_result_id, 'appraisal_type_id' => $emp->appraisal_type_id];
 					$to = [$employee->email, $chief_emp->email];
 
 					//$from = $config->mail_username;
