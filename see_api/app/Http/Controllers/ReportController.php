@@ -73,7 +73,7 @@ class ReportController extends Controller
 			$qinput[] = $request->usage_start_date;
 			$qinput[] = $request->usage_end_date;				
 		}
-		empty($request->emp_id) ?: ($query .= " and b.emp_code = ? " AND $qinput[] = $request->emp_id);
+		empty($request->emp_id) ?: ($query .= " and b.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->position_id) ?: ($query .= " and b.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->level_id) ?: ($query .= " and b.level_id = ? " AND $qinput[] = $request->level_id);
 		empty($request->org_id) ?: ($query .= " and b.org_id = ? " AND $qinput[] = $request->org_id);
