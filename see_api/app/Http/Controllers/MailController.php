@@ -520,7 +520,7 @@ class MailController extends Controller
 		";
 		$error = '';
 		try {
-			$data = ["chief_emp_name" => "the boss", "emp_name" => "the bae", "status" => "excellent"];
+			$data = ["chief_emp_name" => "the boss", "emp_name" => "the bae", "status" => "excellent", "web_domain" => $config->web_domain];
 
 			//$from = 'gjtestmail2017@gmail.com';
 			$to = ['saksit@goingjesse.com','methee@goingjesse.com'];
