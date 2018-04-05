@@ -286,6 +286,25 @@ class OrgController extends Controller
 		return response()->json(['status' => 200, 'data' => $item]);
 
 	}
+	
+	public function batch_role(Request $request)
+	{
+		if (empty($request->orgs)) {
+		} else {
+			foreach ($request->orgs as $o) {
+				$org = Org::find($o);
+				if (empty($request->roles)) {
+				} else {
+					foreach ($request->roles as $r) {
+						$org->level_id = $r;
+						$org->updated_by = Auth::id();
+						$org->save();
+					}				
+				}
+			}
+		}
+		return response()->json(['status' => 200]);
+	}		
 
 	public function destroy($org_id)
 	{
