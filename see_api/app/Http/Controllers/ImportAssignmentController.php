@@ -35,29 +35,88 @@ class ImportAssignmentController extends Controller
    * @param  \Illuminate\Http\Request   $request( appraisal_type_id )
    * @return \Illuminate\Http\Response
    */
-  public function level_list(Request $request){
-    if ($request->appraisal_type_id == "1") {
-      $levels = DB::select("
-        SELECT level_id, appraisal_level_name
-        FROM appraisal_level
-        WHERE is_active = 1
-        AND is_org = 1
-        ORDER BY level_id desc
-      ");
-    } else if($request->appraisal_type_id == "2"){
-      $levels = DB::select("
-        SELECT level_id, appraisal_level_name
-        FROM appraisal_level
-        WHERE is_active = 1
-        AND is_individual = 1
-        ORDER BY level_id desc
-      ");
-    } else {
-      $levels = [];
-    }
+ //  public function level_list(Request $request){
+ //    if ($request->appraisal_type_id == "1") {
+ //      $levels = DB::select("
+ //        SELECT level_id, appraisal_level_name
+ //        FROM appraisal_level
+ //        WHERE is_active = 1
+ //        AND is_org = 1
+ //        ORDER BY level_id desc
+ //      ");
+ //    } else if($request->appraisal_type_id == "2"){
+ //      $levels = DB::select("
+ //        SELECT level_id, appraisal_level_name
+ //        FROM appraisal_level
+ //        WHERE is_active = 1
+ //        AND is_individual = 1
+ //        ORDER BY level_id desc
+ //      ");
+ //    } else {
+ //      $levels = [];
+ //    }
 
-		return response()->json($levels);
-	}
+	// 	return response()->json($levels);
+	// }
+
+  //add by toto 2018-04-06 17:36
+  public function level_list(Request $request){
+      $all_emp = DB::select("
+        SELECT sum(b.is_all_employee) count_no
+        from employee a
+        left outer join appraisal_level b
+        on a.level_id = b.level_id
+        where emp_code = '".Auth::id()."'
+      ");
+
+      if ($request->appraisal_type_id == "1") {
+        if ($all_emp[0]->count_no > 0) {
+          $items = DB::select("
+            Select level_id, appraisal_level_name
+            From appraisal_level
+            Where is_active = 1
+            and is_org = 1
+            Order by level_id desc
+          ");
+        } else {
+          $items = DB::select("
+          select l.level_id, l.appraisal_level_name
+          from appraisal_level l
+          inner join org e
+          on e.level_id = l.level_id
+          inner join employee ee
+          on ee.org_id = e.org_id
+          where (ee.chief_emp_code = ? or ee.emp_code = ?)
+          and l.is_org = 1
+          group by l.level_id desc
+          ", array(Auth::id(), Auth::id()));
+        }
+      } else if($request->appraisal_type_id == "2") {
+        if ($all_emp[0]->count_no > 0) {
+          $items = DB::select("
+            Select level_id, appraisal_level_name
+            From appraisal_level
+            Where is_active = 1
+            and is_individual = 1
+            Order by level_id desc
+          ");
+        } else {
+          $items = DB::select("
+          select l.level_id, l.appraisal_level_name
+          from appraisal_level l
+          inner join employee ee
+          on l.level_id = ee.level_id
+          where (ee.chief_emp_code = ? or ee.emp_code = ?)
+          and l.is_individual = 1
+          group by l.level_id desc
+          ", array(Auth::id(), Auth::id()));
+        }
+      } else {
+        $items = [];
+      }
+
+    return response()->json($items);
+  }
 
 
 
@@ -68,30 +127,94 @@ class ImportAssignmentController extends Controller
    * @param  \Illuminate\Http\Request   $request( appraisal_type_id, level_id[] )
    * @return \Illuminate\Http\Response
    */
+ //  public function org_list(Request $request){
+ //    $levelStr = (empty($request->level_id)) ? "''" : "'".implode("','", $request->level_id)."'" ;
+ //    if ($request->appraisal_type_id == "1") {
+ //      $orgs = DB::select("
+ //  			SELECT org_id, org_name
+ //  			FROM org
+ //  			WHERE is_active = 1
+ //  			AND level_id IN({$levelStr})
+ //  			ORDER BY org_id
+ //  		");
+ //    } else if($request->appraisal_type_id == "2") {
+ //      $orgs = DB::select("
+ //        SELECT emp.org_id, org.org_name
+ //        FROM employee emp, org
+ //        WHERE emp.org_id = org.org_id
+ //        GROUP BY emp.org_id
+ //        ORDER BY emp.org_id
+ //      ");
+ //    } else {
+ //      $orgs = [];
+ //    }
+
+	// 	return response()->json($orgs);
+	// }
+
+  //add by toto 2018-04-06 17:36
   public function org_list(Request $request){
     $levelStr = (empty($request->level_id)) ? "''" : "'".implode("','", $request->level_id)."'" ;
-    if ($request->appraisal_type_id == "1") {
-      $orgs = DB::select("
-  			SELECT org_id, org_name
-  			FROM org
-  			WHERE is_active = 1
-  			AND level_id IN({$levelStr})
-  			ORDER BY org_id
-  		");
-    } else if($request->appraisal_type_id == "2") {
-      $orgs = DB::select("
-        SELECT emp.org_id, org.org_name
-        FROM employee emp, org
-        WHERE emp.org_id = org.org_id
-        GROUP BY emp.org_id
-        ORDER BY emp.org_id
+
+    $all_emp = DB::select("
+        SELECT sum(b.is_all_employee) count_no
+        from employee a
+        left outer join appraisal_level b
+        on a.level_id = b.level_id
+        where emp_code = '".Auth::id()."'
       ");
+
+    if ($request->appraisal_type_id == "1") {
+      if ($all_emp[0]->count_no > 0) {
+          $orgs = DB::select("
+            SELECT org_id, org_name
+            FROM org
+            WHERE is_active = 1
+            AND level_id IN({$levelStr})
+            ORDER BY org_id
+          ");
+        } else {
+          $orgs = DB::select("
+          SELECT org.org_id, org.org_name
+          FROM org
+          left join employee ee
+          on ee.org_id = org.org_id
+          where org.is_active = 1
+          and org.level_id IN({$levelStr})
+          and (ee.chief_emp_code = ? or ee.emp_code = ?)
+          and org.is_active = 1
+          GROUP BY ee.org_id
+          ORDER BY ee.org_id
+          ", array(Auth::id(), Auth::id()));
+        }
+    } else if($request->appraisal_type_id == "2") {
+
+      if ($all_emp[0]->count_no > 0) {
+          $orgs = DB::select("
+            SELECT emp.org_id, org.org_name
+            FROM employee emp, org
+            WHERE emp.org_id = org.org_id
+            GROUP BY emp.org_id
+            ORDER BY emp.org_id
+          ");
+        } else {
+          $orgs = DB::select("
+          SELECT org.org_id, org.org_name
+          FROM org
+          left join employee ee
+          on ee.org_id = org.org_id
+          WHERE (ee.chief_emp_code = ? or ee.emp_code = ?)
+          and org.is_active = 1
+          GROUP BY ee.org_id
+          ORDER BY ee.org_id
+          ", array(Auth::id(), Auth::id()));
+        }
     } else {
       $orgs = [];
     }
 
-		return response()->json($orgs);
-	}
+    return response()->json($orgs);
+  }
 
 
 
