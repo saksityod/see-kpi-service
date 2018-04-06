@@ -38,7 +38,7 @@ class AppraisalStructureController extends Controller
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			SELECT structure_id, seq_no, structure_name, nof_target_score, a.form_id, b.form_name, a.is_unlimited_deduction, a.is_active
+			SELECT structure_id, seq_no, structure_name, nof_target_score, a.form_id, b.form_name, a.is_unlimited_deduction, a.is_value_get_zero, a.is_active
 			FROM appraisal_structure a
 			left outer join form_type b
 			on a.form_id = b.form_id
@@ -62,6 +62,7 @@ class AppraisalStructureController extends Controller
 			'nof_target_score' => 'required|integer|min:0|max:5',
 			'form_id' => 'required|integer',
 			'is_unlimited_deduction' => 'boolean',
+			'is_value_get_zero' => 'boolean',
 			'is_active' => 'required|boolean',					
 		]);
 
