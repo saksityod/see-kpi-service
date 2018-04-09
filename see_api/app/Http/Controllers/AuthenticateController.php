@@ -41,7 +41,7 @@ class AuthenticateController extends Controller
 		}		
 		
 		$emp = DB::select("
-			select b.is_hr, b.is_self_assign, b.is_all_employee, a.emp_code, a.emp_name, a.emp_id, p.position_id, p.position_name
+			select b.is_hr, b.is_self_assign, b.is_all_employee, a.emp_code, a.emp_name, a.emp_id, p.position_id, p.position_name, a.level_id
 			from employee a
 			inner join appraisal_level b
 			on a.level_id = b.level_id
@@ -57,7 +57,7 @@ class AuthenticateController extends Controller
 
 		
 		
-		return response()->json(['status' => 200, 'theme_color' => $config->theme_color, 'is_hr' => $emp[0]->is_hr, 'is_self_assign' => $emp[0]->is_self_assign, 'is_all_employee' => $emp[0]->is_all_employee,'emp_code' => $emp[0]->emp_code, 'emp_id' => $emp[0]->emp_id, 'emp_name' => $emp[0]->emp_name, 'position_id' => $emp[0]->position_id, 'position_name' => $emp[0]->position_name]);
+		return response()->json(['status' => 200, 'theme_color' => $config->theme_color, 'is_hr' => $emp[0]->is_hr, 'is_self_assign' => $emp[0]->is_self_assign, 'is_all_employee' => $emp[0]->is_all_employee,'emp_code' => $emp[0]->emp_code, 'emp_id' => $emp[0]->emp_id, 'emp_name' => $emp[0]->emp_name, 'position_id' => $emp[0]->position_id, 'position_name' => $emp[0]->position_name, 'level_id' => $emp[0]->level_id]);
     }    
 	
 	public function debug(Request $request)

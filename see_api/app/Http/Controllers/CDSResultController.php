@@ -683,7 +683,8 @@ class CDSResultController extends Controller
 		", array(Auth::id()));
 
 		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
-		
+		empty($request->level_id) ? $level_id = "" : $level_id = " and level_id = " . $request->level_id . " ";
+
 		if ($all_emp[0]->count_no > 0) {
 			$items = DB::select("
 				Select emp_id, emp_code, emp_name
@@ -691,6 +692,7 @@ class CDSResultController extends Controller
 				Where emp_name like ?
 				and is_active = 1
 			" . $org . "
+			" . $level_id . "
 				Order by emp_name
 			", array('%'.$request->emp_name.'%'));
 		} else {
@@ -699,7 +701,8 @@ class CDSResultController extends Controller
 				From employee
 				Where (chief_emp_code = ? or emp_code = ?)
 				And emp_name like ?
-			" . $org . "				
+			" . $org . "
+			" . $level_id . "			
 				and is_active = 1
 				Order by emp_name
 			", array($emp->emp_code, $emp->emp_code,'%'.$request->emp_name.'%'));
