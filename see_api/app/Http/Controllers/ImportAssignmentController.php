@@ -378,7 +378,7 @@ class ImportAssignmentController extends Controller
         	emp.emp_name, item.item_id appraisal_item_id,
         	item.item_name appraisal_item_name, item.uom_name,
           item.max_value, item.unit_deduct_score, item.value_get_zero,
-        	item.structure_name, item.form_id, item.nof_target_score
+        	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
         FROM(
         	SELECT
         		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
@@ -405,7 +405,7 @@ class ImportAssignmentController extends Controller
         	SELECT ail.level_id, aio.org_id,
         		itm.item_id, itm.item_name, uom.uom_name,
             itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
-        		strc.structure_name, strc.form_id, strc.nof_target_score
+        		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
         	FROM appraisal_item itm
         	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
         	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
@@ -545,6 +545,15 @@ class ImportAssignmentController extends Controller
             $form2Key = $form2Key + 1;
 
           }else if($value->form_id == "3"){
+
+            if($value->is_value_get_zero==1) {
+              $column_value_get_zero = "value_get_zero";
+              $value_get_zero = $value->value_get_zero;
+            } else {
+              $column_value_get_zero = "";
+              $value_get_zero = "";
+            }
+
             $itemList[$value->structure_name][$form3Key] = [
               "period_id" => $value->period_id,
               "year" => $value->year,
@@ -570,7 +579,7 @@ class ImportAssignmentController extends Controller
               "appraisal_item_name" => $value->appraisal_item_name,
               "max_value" => $value->max_value,
               "score_per_unit" => $value->unit_deduct_score,
-              "value_get_zero" => $value->value_get_zero
+              "".$column_value_get_zero."" => $value_get_zero
             ];
             $form3Key = $form3Key + 1;
           }
@@ -634,7 +643,7 @@ class ImportAssignmentController extends Controller
           org.org_name, item.item_id appraisal_item_id,
           item.item_name appraisal_item_name, item.uom_name,
           item.max_value, item.unit_deduct_score, item.value_get_zero,
-          item.structure_name, item.form_id, item.nof_target_score
+          item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
          FROM(
          	SELECT
          		org.level_id, vel.appraisal_level_name, vel.default_stage_id,
@@ -651,7 +660,7 @@ class ImportAssignmentController extends Controller
          	SELECT ail.level_id, aio.org_id,
          		itm.item_id, itm.item_name, uom.uom_name,
              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
-         		strc.structure_name, strc.form_id, strc.nof_target_score
+         		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
          	FROM appraisal_item itm
          	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
          	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
@@ -775,6 +784,15 @@ class ImportAssignmentController extends Controller
               $form2Key = $form2Key + 1;
 
            }else if($value->form_id == "3"){
+
+            if($value->is_value_get_zero==1) {
+              $column_value_get_zero = "value_get_zero";
+              $value_get_zero = $value->value_get_zero;
+            } else {
+              $column_value_get_zero = "";
+              $value_get_zero = "";
+            }
+
              $itemList[$value->structure_name][$form3Key] = [
                "period_id" => $value->period_id,
                "year" => $value->year,
@@ -792,7 +810,7 @@ class ImportAssignmentController extends Controller
                "appraisal_item_name" => $value->appraisal_item_name,
                "max_value" => $value->max_value,
                "score_per_unit" => $value->unit_deduct_score,
-               "value_get_zero" => $value->value_get_zero
+               "".$column_value_get_zero."" => $value_get_zero
              ];
              $form3Key = $form3Key + 1;
            }
