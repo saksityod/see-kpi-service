@@ -214,7 +214,7 @@ class AppraisalPeriodController extends Controller
 			$next_s_date = date("Y-m-d", strtotime("+" . $sf  . " months", strtotime($a_date)));
 			$next_b_end_date = date("Y-m-t", strtotime("+" . $bf - 1 . " months", strtotime($a_date)));
 			$next_s_end_date = date("Y-m-t", strtotime("+" . $sf - 1 . " months", strtotime($a_date)));
-			
+
 			foreach (range(1,$a_range,1) as $p) {
 				$b_flag = 0;
 				$s_flag = 0;
@@ -240,12 +240,15 @@ class AppraisalPeriodController extends Controller
 				if ($s_date == $next_s_date) {
 					$sp += 1;
 					$next_s_date = date("Y-m-d", strtotime("+" . $sf - 1 . " months", strtotime($a_date)));
-				}					
+				}				
 				
 				$item = new AppraisalPeriod;
 				$item->appraisal_year = $request->appraisal_year;
 				$item->period_no = $p;
-				$item->appraisal_period_desc = $request->appraisal_period_desc . ' ' . $p;
+
+				$pNew = ($a_range==1) ? '' : $p;
+
+				$item->appraisal_period_desc = $request->appraisal_period_desc . ' ' . $pNew;
 				$item->appraisal_frequency_id = $request->appraisal_frequency_id;
 				$item->bonus_period_desc = $request->bonus_period_desc . ' ' . $bp;
 				$item->bonus_frequency_id = $request->bonus_frequency_id;

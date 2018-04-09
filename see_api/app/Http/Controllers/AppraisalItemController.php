@@ -101,7 +101,7 @@ class AppraisalItemController extends Controller
 		// $result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);			
 		
 		$structure_template = DB::select("
-			select a.structure_id, a.structure_name, b.*
+			select a.structure_id, a.structure_name, b.*, a.is_value_get_zero
 			from appraisal_structure a
 			left outer join form_type b
 			on a.form_id = b.form_id		
@@ -155,41 +155,72 @@ class AppraisalItemController extends Controller
 						],									
 					];
 				} elseif ($s->form_name == 'Deduct Score') {
-					$columns = [
-						[
-							'column_display' => 'KPI Name',
-							'column_name' => 'item_name',
-							'data_type' => 'text',
-						],
-						[
-							'column_display' => 'Max Value',
-							'column_name' => 'max_value',
-							'data_type' => 'number',
-						],						
-						[
-							'column_display' => 'Deduct Score/Unit',
-							'column_name' => 'unit_deduct_score',
-							'data_type' => 'number',
-						],
-						[
-							'column_display' => 'Value Get Zero',
-							'column_name' => 'value_get_zero',
-							'data_type' => 'number',
-						],									
-						[
-							'column_display' => 'IsActive',
-							'column_name' => 'is_active',
-							'data_type' => 'checkbox',
-						],									
-					];
+
+					if($s->is_value_get_zero==1) {
+
+						$columns = [
+							[
+								'column_display' => 'KPI Name',
+								'column_name' => 'item_name',
+								'data_type' => 'text',
+							],
+							[
+								'column_display' => 'Max Value',
+								'column_name' => 'max_value',
+								'data_type' => 'number',
+							],						
+							[
+								'column_display' => 'Deduct Score/Unit',
+								'column_name' => 'unit_deduct_score',
+								'data_type' => 'number',
+							],
+							[
+								'column_display' => 'Value Get Zero',
+								'column_name' => 'value_get_zero',
+								'data_type' => 'number',
+							],									
+							[
+								'column_display' => 'IsActive',
+								'column_name' => 'is_active',
+								'data_type' => 'checkbox',
+							],									
+						];
+
+					} else {
+
+						$columns = [
+							[
+								'column_display' => 'KPI Name',
+								'column_name' => 'item_name',
+								'data_type' => 'text',
+							],
+							[
+								'column_display' => 'Max Value',
+								'column_name' => 'max_value',
+								'data_type' => 'number',
+							],						
+							[
+								'column_display' => 'Deduct Score/Unit',
+								'column_name' => 'unit_deduct_score',
+								'data_type' => 'number',
+							],								
+							[
+								'column_display' => 'IsActive',
+								'column_name' => 'is_active',
+								'data_type' => 'checkbox',
+							],									
+						];
+					}
 				}
+
 				$groups[$key] = array(
 					'items' => array(),
 					'count' => 0,
 					'columns' => $columns,
 					'structure_id' => $s->structure_id,
 					'form_id' => $s->form_id,
-					'form_url' => $s->app_url
+					'form_url' => $s->app_url,
+					'is_value_get_zero' => $s->is_value_get_zero
 				);
 			}
 		}		
@@ -239,41 +270,72 @@ class AppraisalItemController extends Controller
 						],									
 					];
 				} elseif ($item->form_name == 'Deduct Score') {
-					$columns = [
-						[
-							'column_display' => 'KPI Name',
-							'column_name' => 'item_name',
-							'data_type' => 'text',
-						],
-						[
-							'column_display' => 'Max Value',
-							'column_name' => 'max_value',
-							'data_type' => 'number',
-						],						
-						[
-							'column_display' => 'Deduct Score/Unit',
-							'column_name' => 'unit_deduct_score',
-							'data_type' => 'number',
-						],
-						[
-							'column_display' => 'Value Get Zero',
-							'column_name' => 'value_get_zero',
-							'data_type' => 'number',
-						],									
-						[
-							'column_display' => 'IsActive',
-							'column_name' => 'is_active',
-							'data_type' => 'checkbox',
-						],									
-					];
+
+					if($item->is_value_get_zero==1) {
+						$columns = [
+							[
+								'column_display' => 'KPI Name',
+								'column_name' => 'item_name',
+								'data_type' => 'text',
+							],
+							[
+								'column_display' => 'Max Value',
+								'column_name' => 'max_value',
+								'data_type' => 'number',
+							],						
+							[
+								'column_display' => 'Deduct Score/Unit',
+								'column_name' => 'unit_deduct_score',
+								'data_type' => 'number',
+							],
+							[
+								'column_display' => 'Value Get Zero',
+								'column_name' => 'value_get_zero',
+								'data_type' => 'number',
+							],									
+							[
+								'column_display' => 'IsActive',
+								'column_name' => 'is_active',
+								'data_type' => 'checkbox',
+							],									
+						];
+
+					} else {
+
+						$columns = [
+							[
+								'column_display' => 'KPI Name',
+								'column_name' => 'item_name',
+								'data_type' => 'text',
+							],
+							[
+								'column_display' => 'Max Value',
+								'column_name' => 'max_value',
+								'data_type' => 'number',
+							],						
+							[
+								'column_display' => 'Deduct Score/Unit',
+								'column_name' => 'unit_deduct_score',
+								'data_type' => 'number',
+							],								
+							[
+								'column_display' => 'IsActive',
+								'column_name' => 'is_active',
+								'data_type' => 'checkbox',
+							],									
+						];
+					}
+
 				}
+
 				$groups[$key] = array(
 					'items' => array($item),
 					'count' => 1,
 					'columns' => $columns,
 					'structure_id' => $item->structure_id,
 					'form_id' => $item->form_id,
-					'form_url' => $item->app_url
+					'form_url' => $item->app_url,
+					'is_value_get_zero' => $item->is_value_get_zero
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
@@ -393,7 +455,17 @@ class AppraisalItemController extends Controller
 			$cds_name_ar = array();
 			$item = AppraisalItem::find($item_id);
 			$structure = AppraisalStructure::find($item->structure_id);
-			empty($structure) ? $item->structure_name = '' : $item->structure_name = $structure->structure_name;
+
+			if(empty($structure)) {
+				$item->structure_name = '';
+				$item->is_value_get_zero = null;
+			} else {
+				$item->structure_name = $structure->structure_name;
+				$item->is_value_get_zero = $structure->is_value_get_zero;
+			}
+
+			//empty($structure) ? $item->structure_name = '' : $item->structure_name = $structure->structure_name;
+			
 			$cds = DB::select("
 				select a.cds_id, b.cds_name
 				from kpi_cds_mapping a left outer join cds b

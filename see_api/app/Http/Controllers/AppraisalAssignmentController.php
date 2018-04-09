@@ -1401,7 +1401,7 @@ class AppraisalAssignmentController extends Controller
 		$query = "
 			select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 			if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
-			a.max_value, a.value_get_zero, a.unit_deduct_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent
+			a.max_value, a.value_get_zero, a.unit_deduct_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
 			from appraisal_item a
 			left outer join appraisal_structure b
 			on a.structure_id = b.structure_id
@@ -1569,6 +1569,7 @@ class AppraisalAssignmentController extends Controller
 					'structure_id' => $item->structure_id,
 					'form_id' => $item->form_id,
 					'form_url' => $item->app_url,
+					'is_value_get_zero' => $item->is_value_get_zero,
 					'nof_target_score' => $item->nof_target_score,
 					'total_weight' => $total_weight,
 					'no_weight' => $item->no_weight,
