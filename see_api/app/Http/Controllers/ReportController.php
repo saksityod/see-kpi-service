@@ -50,14 +50,28 @@ class ReportController extends Controller
 			
 		$limit = " limit " . $perPage . " offset " . $offset;
 		
+		// $query ="			
+		// 	select SQL_CALC_FOUND_ROWS a.created_dttm, b.emp_code, b.emp_name, d.org_name, e.appraisal_level_name, c.friendlyURL url
+		// 	from usage_log a,
+		// 	employee b,
+		// 	lportal.Layout c,
+		// 	org d,
+		// 	appraisal_level e
+		// 	where a.emp_code = b.emp_code
+		// 	and a.plid = c.plid
+		// 	and b.org_id = d.org_id
+		// 	and b.level_id = e.level_id
+		// ";
+
 		$query ="			
 			select SQL_CALC_FOUND_ROWS a.created_dttm, b.emp_code, b.emp_name, d.org_name, e.appraisal_level_name, c.friendlyURL url
-			from usage_log a, employee b, lportal.Layout c, org d, appraisal_level e
-			where a.emp_code = b.emp_code
-			and a.plid = c.plid
-			and b.org_id = d.org_id
-			and b.level_id = e.level_id
-		";			
+			from usage_log a
+			inner join employee b on a.emp_code = b.emp_code
+			inner join lportal.Layout c on a.plid = c.plid
+			left join org d on b.org_id = d.org_id
+			left join appraisal_level e on b.level_id = e.level_id
+			where 1=1
+		";
 			
 		$qfooter = " order by e.appraisal_level_name asc, a.created_dttm desc, a.emp_code asc, url asc " . $limit;		
 		$qinput = array();
@@ -76,8 +90,8 @@ class ReportController extends Controller
 		empty($request->emp_id) ?: ($query .= " and b.emp_id = ? " AND $qinput[] = $request->emp_id);
 		empty($request->position_id) ?: ($query .= " and b.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->level_id) ?: ($query .= " and b.level_id = ? " AND $qinput[] = $request->level_id);
+		empty($request->level_id_org) ?: ($query .= " and d.level_id = ? " AND $qinput[] = $request->level_id_org);
 		empty($request->org_id) ?: ($query .= " and b.org_id = ? " AND $qinput[] = $request->org_id);
-		
 	
 		$items = DB::select($query . $qfooter, $qinput);
 		$count = DB::select("select found_rows() as total_count");
@@ -85,7 +99,9 @@ class ReportController extends Controller
 	
 		$groups = array();
 		foreach ($items as $item) {
-			$key = $item->appraisal_level_name;
+
+			$key = ($request->appraisal_type==1) ? $item->org_name : $item->appraisal_level_name;
+
 			if (!isset($groups[$key])) {
 				$groups[$key] = array(
 					'items' => array($item),
