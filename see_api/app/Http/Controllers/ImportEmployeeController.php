@@ -117,7 +117,7 @@ class ImportEmployeeController extends Controller
 
 		// License Verification //
 		try{
-			$empAssign = Config::get("session.license_assign");
+			$empAssign = config("session.license_assign");
 			if((!empty($empAssign))&&$empAssign!=0){
 				$mail = new MailController();
 				$result = $mail->LicenseVerification();
