@@ -34,7 +34,61 @@ class ReportController extends Controller
 			order by appraisal_level_name
 		");
 		return response()->json($items);
-    }	
+    }
+
+    public function emp_list_level(Request $request)
+    {
+    	$items = DB::select("
+			select al.level_id, al.appraisal_level_name
+			from appraisal_level al
+			inner join employee e
+			on al.level_id = e.level_id
+			inner join usage_log ul
+			on e.emp_code = ul.emp_code
+			where al.is_active = 1
+			group by al.level_id
+		");
+		return response()->json($items);
+    }
+
+    public function org_list_individual(Request $request)
+    {
+    	$level_id = empty($request->level_id) ? "" : "where e.level_id = {$request->level_id}";
+
+    	$items = DB::select("
+			select DISTINCT o.level_id, al.appraisal_level_name
+			from org o
+			inner join appraisal_level al
+			on o.level_id = al.level_id
+			inner join employee e
+			on o.org_id = e.org_id
+			inner join usage_log ul
+			on e.emp_code = ul.emp_code
+			".$level_id."
+			");
+		return response()->json($items);
+    }
+
+    public function org_individual(Request $request)
+    {
+    	$emp_level = empty($request->emp_level) ? "" : "and e.level_id = {$request->emp_level}";
+    	$org_level = empty($request->org_level) ? "" : "and o.level_id = {$request->org_level}";
+
+    	$items = DB::select("
+    		select o.org_id, o.org_name
+    		from org o
+    		inner join employee e
+    		on e.org_id = o.org_id
+    		inner join usage_log ul
+			on e.emp_code = ul.emp_code
+    		where 1=1
+    		".$emp_level."
+    		".$org_level."
+    		group by o.org_id
+    		order by o.org_name asc
+    	");
+		return response()->json($items);
+    }
 	
 	public function usage_log(Request $request) 
 	{

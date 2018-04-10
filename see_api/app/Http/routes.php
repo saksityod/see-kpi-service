@@ -370,6 +370,9 @@ Route::group(['middleware' => 'cors'], function()
 	// Report //
 	Route::get('report/usage_log','ReportController@usage_log');
 	Route::get('report/al_list','ReportController@al_list');
+	Route::get('report/emp_list_level','ReportController@emp_list_level');
+	Route::get('report/org_list_individual','ReportController@org_list_individual');
+	Route::get('report/org_individual','ReportController@org_individual');
 
 	// Import Assignment //
 	Route::get('import_assignment/level_list', 'ImportAssignmentController@level_list');
