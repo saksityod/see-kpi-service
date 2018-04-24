@@ -504,7 +504,7 @@ class ImportAssignmentController extends Controller
               "uom_name" => $value->uom_name,
               "target" => $assignedInfo["target_value"],
               "weight" => $assignedInfo["weight_percent"]
-              //range by appraisal_structure.nof_target_score
+              // Range by appraisal_structure.nof_target_score
             ];
 
             // Generate range by appraisal_structure.nof_target_score
@@ -590,7 +590,8 @@ class ImportAssignmentController extends Controller
           foreach ($itemList as $key => $group) {
 
             $excel->sheet($key, function($sheet) use ($key, $itemList){
-              $sheet->fromArray($itemList[$key]);
+              // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
+              $sheet->fromArray($itemList[$key], null, 'A1', true);
             });
 
           }
@@ -821,7 +822,8 @@ class ImportAssignmentController extends Controller
            foreach ($itemList as $key => $group) {
 
              $excel->sheet($key, function($sheet) use ($key, $itemList){
-               $sheet->fromArray($itemList[$key]);
+              // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
+              $sheet->fromArray($itemList[$key], null, 'A1', true);
              });
 
            }
@@ -1114,6 +1116,7 @@ class ImportAssignmentController extends Controller
             INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
             WHERE ai.structure_id = {$itemInfo["structure_id"]}
             AND str.structure_name = '{$sheetArr[$i]}'
+            AND air.emp_result_id = {$currentEmpResultId}
             GROUP BY air.period_id, air.emp_id, ai.structure_id, air.level_id, air.org_id
             HAVING sum(air.weight_percent) > max(air.structure_weight_percent)
           ");
