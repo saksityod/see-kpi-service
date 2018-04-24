@@ -2625,7 +2625,7 @@ class AppraisalAssignmentController extends Controller
 		}
 
 		try {
-			if ($item->status == 'Assigned' || $item->status == 'Reject' || $item->status == 'Draft') {
+			if ($item->status == 'Assigned' || strpos(strtolower($item->status),'reject') !== false || $item->status == 'Draft') {
 				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
 				AppraisalItemResult::where('emp_result_id',$item->emp_result_id)->delete();
 				$item->delete();
