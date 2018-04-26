@@ -36,6 +36,46 @@ class ReportController extends Controller
 		return response()->json($items);
     }
 
+    public function al_list_emp()
+    {
+    	$items = DB::select("
+    		Select level_id, appraisal_level_name
+    		From appraisal_level
+    		Where is_active = 1
+    		and is_individual = 1 
+    		Order by level_id desc
+    	");
+		return response()->json($items);
+    }
+
+    public function al_list_org(Request $request)
+    {
+    	if(empty($request->level_id)) {
+    	$items = DB::select("
+				Select level_id, appraisal_level_name
+				From appraisal_level
+				Where is_active = 1
+				Order by level_id
+			");
+    	} else {
+    		$items = DB::select("
+    			select l.level_id, l.appraisal_level_name
+    			from appraisal_level l
+    			inner join org o
+    			on l.level_id = o.level_id
+    			inner join employee e
+    			on o.org_id = e.org_id
+    			where e.level_id = ?
+    			and l.is_org = 1
+    			and l.is_active = 1
+    			and o.is_active = 1
+    			and e.is_active = 1
+    			group by l.level_id
+    			", array($request->level_id));
+    	}
+    	return response()->json($items);
+    }
+
     public function emp_list_level(Request $request)
     {
     	$items = DB::select("
