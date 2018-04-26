@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\AppraisalPeriod;
 use App\AppraisalFrequency;
+use App\AppraisalPeriodMonth;
 
 use Auth;
 use DB;
@@ -165,7 +166,20 @@ class AppraisalPeriodController extends Controller
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
-	
+		
+		$begin = new DateTime($request->start_date);
+		$end = new DateTime($request->end_date);
+
+		$interval = DateInterval::createFromDateString('1 month');
+		$period = new DatePeriod($begin, $interval, $end);
+
+		foreach ($period as $dt) {
+			$period_month = new AppraisalPeriodMonth;
+			$period_month->period_id = $item->period_id;
+			$period_month->month_id = $dt->format("n");
+			$period_month->save();
+		}		
+		
 		return response()->json(['status' => 200, 'data' => $item]);	
 	}
 	
@@ -262,6 +276,18 @@ class AppraisalPeriodController extends Controller
 				$item->updated_by = Auth::id();
 				$item->save();
 				
+				$begin = $s_date;
+				$end = $e_date;
+
+				$interval = DateInterval::createFromDateString('1 month');
+				$period = new DatePeriod($begin, $interval, $end);
+
+				foreach ($period as $dt) {
+					$period_month = new AppraisalPeriodMonth;
+					$period_month->period_id = $item->period_id;
+					$period_month->month_id = $dt->format("n");
+					$period_month->save();
+				}					
 			//	echo $p . ' = ' . $s_date . ':' . $e_date . "|bp = " . $bp . " |b_flag = " . $b_flag . "|sp = " . $sp . "|s_flag = " . $s_flag . "\n";
 			}
 		}
@@ -301,6 +327,21 @@ class AppraisalPeriodController extends Controller
 			$item->fill($request->all());
 			$item->updated_by = Auth::id();
 			$item->save();
+			
+			AppraisalPeriodMonth::where('period_id',$item->period_id)->delete();
+			
+			$begin = new DateTime($request->start_date);
+			$end = new DateTime($request->end_date);
+
+			$interval = DateInterval::createFromDateString('1 month');
+			$period = new DatePeriod($begin, $interval, $end);
+
+			foreach ($period as $dt) {
+				$period_month = new AppraisalPeriodMonth;
+				$period_month->period_id = $item->period_id;
+				$period_month->month_id = $dt->format("n");
+				$period_month->save();
+			}								
 		}
 	
 		return response()->json(['status' => 200, 'data' => $item]);
@@ -316,6 +357,7 @@ class AppraisalPeriodController extends Controller
 		}	
 
 		try {
+			AppraisalPeriodMonth::where('period_id',$item->period_id)->delete();
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {

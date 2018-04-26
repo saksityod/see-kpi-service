@@ -62,6 +62,13 @@ class CDSResultController extends Controller
 							try {
 								$result_check = CDSResult::where("emp_id",$i->employee_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id)->where('position_id',$i->position_id)->where('org_id',$i->organization_id);
 								
+								$period = DB::select("
+									select period_id
+									from appraisal_period
+									where date('{$a_date}') between start_date and end_date
+								");
+							
+								empty($period) ? $period_id = null : $period_id = $period[0]->period_id;									
 								if ($result_check->count() == 0) {
 									
 									//echo date("Y-m-t", strtotime($a_date));
@@ -75,6 +82,7 @@ class CDSResultController extends Controller
 									$cds_result->level_id = $i->level_id;
 									$cds_result->appraisal_month_no = $i->month;
 									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->period_id = $period_id;
 									$cds_result->cds_value = $i->cds_value;
 									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
@@ -113,6 +121,14 @@ class CDSResultController extends Controller
 							try {
 								$result_check = CDSResult::where("org_id",$i->organization_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month)->where('appraisal_type_id',$i->appraisal_type_id);
 								
+								$period = DB::select("
+									select period_id
+									from appraisal_period
+									where date('{$a_date}') between start_date and end_date
+								");
+								
+								empty($period) ? $period_id = null : $period_id = $period[0]->period_id;									
+								
 								if ($result_check->count() == 0) {
 									
 									$cds_result = new CDSResult;
@@ -123,6 +139,7 @@ class CDSResultController extends Controller
 									$cds_result->level_id = $i->level_id;
 									$cds_result->appraisal_month_no = $i->month;
 									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->period_id = $period_id;
 									$cds_result->cds_value = $i->cds_value;
 									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
@@ -923,6 +940,13 @@ class CDSResultController extends Controller
 							if ($i['cds_value'] != '') {
 								if (empty($i['cds_result_id'])) {
 									
+									$period = DB::select("
+										select period_id
+										from appraisal_period
+										where date('{$a_date}') between start_date and end_date
+									");
+									
+									empty($period) ? $period_id = null : $period_id = $period[0]->period_id;										
 									//echo date("Y-m-t", strtotime($a_date));
 									$cds_result = new CDSResult;
 									$cds_result->appraisal_type_id = $i['appraisal_type_id'];
@@ -934,6 +958,7 @@ class CDSResultController extends Controller
 									$cds_result->level_id = $i['level_id'];
 									$cds_result->appraisal_month_no = $i['month'];
 									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->period_id = $period_id;
 									$cds_result->cds_value = $i['cds_value'];
 									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
@@ -977,6 +1002,14 @@ class CDSResultController extends Controller
 						try {
 							//$result_check = CDSResult::where("org_id",$i->org_id)->where("cds_id",$i->cds_id)->where('year',$i->year)->where('appraisal_month_no',$i->month);
 							
+							$period = DB::select("
+								select period_id
+								from appraisal_period
+								where date('{$a_date}') between start_date and end_date
+							");
+							
+							empty($period) ? $period_id = null : $period_id = $period[0]->period_id;								
+							
 							if ($i['cds_value'] != '') {
 								if (empty($i['cds_result_id'])) {
 									
@@ -988,6 +1021,7 @@ class CDSResultController extends Controller
 									$cds_result->level_id = $i['level_id'];
 									$cds_result->appraisal_month_no = $i['month'];
 									$cds_result->appraisal_month_name = $month_name->month_name;
+									$cds_result->period_id = $period_id;
 									$cds_result->cds_value = $i['cds_value'];
 									$cds_result->etl_dttm = date("Y-m-t", strtotime($a_date));
 									$cds_result->created_by = Auth::id();
