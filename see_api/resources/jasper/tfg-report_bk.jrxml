@@ -4,9 +4,9 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-report.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="284"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="705"/>
-	<property name="ireport.zoom" value="1.464100000000014"/>
-	<property name="ireport.x" value="57"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.zoom" value="3.7974983358324477"/>
+	<property name="ireport.x" value="2462"/>
+	<property name="ireport.y" value="367"/>
 	<style name="style1" backcolor="#000000">
 		<pen lineWidth="1.0"/>
 	</style>
@@ -29,17 +29,17 @@
 		<![CDATA[select
 *,
 case when jan_total = jan_count then 1 else null end as jan_value,
-case when jan_total = feb_count then 1 else null end as feb_value,
-case when jan_total = mar_count then 1 else null end as mar_value,
-case when jan_total = apr_count then 1 else null end as apr_value,
-case when jan_total = may_count then 1 else null end as may_value,
-case when jan_total = jun_count then 1 else null end as jun_value,
-case when jan_total = jul_count then 1 else null end as jul_value,
-case when jan_total = aug_count then 1 else null end as aug_value,
-case when jan_total = sep_count then 1 else null end as sep_value,
-case when jan_total = oct_count then 1 else null end as oct_value,
-case when jan_total = nov_count then 1 else null end as nov_value,
-case when jan_total = dec_count then 1 else null end as dec_value
+case when feb_total = feb_count then 1 else null end as feb_value,
+case when mar_total = mar_count then 1 else null end as mar_value,
+case when apr_total = apr_count then 1 else null end as apr_value,
+case when may_total = may_count then 1 else null end as may_value,
+case when jun_total = jun_count then 1 else null end as jun_value,
+case when jul_total = jul_count then 1 else null end as jul_value,
+case when aug_total = aug_count then 1 else null end as aug_value,
+case when sep_total = sep_count then 1 else null end as sep_value,
+case when oct_total = oct_count then 1 else null end as oct_value,
+case when nov_total = nov_count then 1 else null end as nov_value,
+case when dec_total = dec_count then 1 else null end as dec_value
 from (
 select distinct ey.emp_code, ey.emp_name,
 
@@ -55,6 +55,8 @@ on e.stage_id = ast.stage_id
 where a.emp_result_id = e.emp_result_id
 ) status,
 
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 1) jan_flag,
 (
 select count(1)
 from appraisal_item_result ajan
@@ -66,40 +68,160 @@ where a.emp_id = ajan.emp_id
 and atruc.form_id = 1
 and a.period_id = ajan.period_id
 ) jan_total,
-(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 1) jan_flag,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 1) jan_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 2) feb_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) feb_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 2) feb_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 3) mar_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) mar_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 3) mar_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 4) apr_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) apr_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 4) apr_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 5) may_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) may_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 5) may_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 6) jun_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) jun_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 6) jun_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 7) jul_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) jul_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 7) jul_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 8) aug_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) aug_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 8) aug_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 9) sep_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) sep_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 9) sep_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 10) oct_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) oct_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 10) oct_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 11) nov_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) nov_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 11) nov_count,
 
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 12) dec_flag,
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and a.period_id = ajan.period_id
+) dec_total,
 (select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 12) dec_count
 
 from appraisal_item_result a
@@ -147,11 +269,11 @@ and o.level_id = $P{param_org_level}
 		<property name="com.jaspersoft.studio.field.label" value="status"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="jan_total" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="jan_total"/>
-	</field>
 	<field name="jan_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jan_flag"/>
+	</field>
+	<field name="jan_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jan_total"/>
 	</field>
 	<field name="jan_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jan_count"/>
@@ -159,11 +281,17 @@ and o.level_id = $P{param_org_level}
 	<field name="feb_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="feb_flag"/>
 	</field>
+	<field name="feb_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="feb_total"/>
+	</field>
 	<field name="feb_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="feb_count"/>
 	</field>
 	<field name="mar_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="mar_flag"/>
+	</field>
+	<field name="mar_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="mar_total"/>
 	</field>
 	<field name="mar_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="mar_count"/>
@@ -171,11 +299,17 @@ and o.level_id = $P{param_org_level}
 	<field name="apr_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="apr_flag"/>
 	</field>
+	<field name="apr_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="apr_total"/>
+	</field>
 	<field name="apr_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="apr_count"/>
 	</field>
 	<field name="may_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="may_flag"/>
+	</field>
+	<field name="may_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="may_total"/>
 	</field>
 	<field name="may_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="may_count"/>
@@ -183,11 +317,17 @@ and o.level_id = $P{param_org_level}
 	<field name="jun_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jun_flag"/>
 	</field>
+	<field name="jun_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jun_total"/>
+	</field>
 	<field name="jun_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jun_count"/>
 	</field>
 	<field name="jul_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jul_flag"/>
+	</field>
+	<field name="jul_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jul_total"/>
 	</field>
 	<field name="jul_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jul_count"/>
@@ -195,11 +335,17 @@ and o.level_id = $P{param_org_level}
 	<field name="aug_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="aug_flag"/>
 	</field>
+	<field name="aug_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="aug_total"/>
+	</field>
 	<field name="aug_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="aug_count"/>
 	</field>
 	<field name="sep_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="sep_flag"/>
+	</field>
+	<field name="sep_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="sep_total"/>
 	</field>
 	<field name="sep_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="sep_count"/>
@@ -207,17 +353,26 @@ and o.level_id = $P{param_org_level}
 	<field name="oct_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="oct_flag"/>
 	</field>
+	<field name="oct_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="oct_total"/>
+	</field>
 	<field name="oct_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="oct_count"/>
 	</field>
 	<field name="nov_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="nov_flag"/>
 	</field>
+	<field name="nov_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="nov_total"/>
+	</field>
 	<field name="nov_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="nov_count"/>
 	</field>
 	<field name="dec_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="dec_flag"/>
+	</field>
+	<field name="dec_total" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="dec_total"/>
 	</field>
 	<field name="dec_count" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="dec_count"/>
@@ -767,14 +922,14 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{feb_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{feb_flag}==1) ? $F{feb_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="491" y="0" width="17" height="30" uuid="e2b8d28b-9fdc-49b9-afae-6b43c43fb2e7"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{mar_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{mar_flag}==1) ? $F{mar_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="508" y="0" width="16" height="30" uuid="c9eb36b5-dc87-4293-b3e4-54340b9f138d"/>
@@ -788,7 +943,7 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{apr_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{apr_flag}==1) ? $F{apr_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="541" y="0" width="16" height="30" uuid="a52d3fed-4a5d-4245-b1c8-5812ac14b670"/>
@@ -802,7 +957,7 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{may_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{may_flag}==1) ? $F{may_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="574" y="0" width="16" height="30" uuid="049cfd88-a657-425c-b67f-d193d568c516"/>
@@ -816,7 +971,7 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jun_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jun_flag}==1) ? $F{jun_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="607" y="0" width="16" height="30" uuid="9b9d4e97-4b7f-4e1c-98a5-66e6a641b6d3"/>
@@ -844,7 +999,7 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sep_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sep_flag}==1) ? $F{sep_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="772" y="0" width="16" height="30" uuid="dfb5e76e-8fce-4074-8b33-dd3345a08bd9"/>
@@ -865,21 +1020,21 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{dec_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{dec_flag}==1) ? $F{dec_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="722" y="0" width="17" height="30" uuid="239de2aa-99cf-4a36-87fe-b5fca1b6f59f"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{oct_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{oct_flag}==1) ? $F{oct_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="656" y="0" width="17" height="30" uuid="27265a49-ae75-4af6-ba2b-3ba676177f74"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{aug_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{aug_flag}==1) ? $F{aug_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="805" y="0" width="17" height="30" uuid="d70f8eb2-df7f-414b-95e7-4d1f5a9d38c5"/>
@@ -907,14 +1062,14 @@ and o.level_id = $P{param_org_level}
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jul_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jul_flag}==1) ? $F{jul_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="table_TD" x="755" y="0" width="17" height="30" uuid="ea28e767-3ee9-476f-9344-91b3f0c08e58"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{nov_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nov_flag}==1) ? $F{nov_total} : "N/A"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
