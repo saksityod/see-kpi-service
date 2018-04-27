@@ -5,7 +5,7 @@
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="284"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="705"/>
 	<property name="ireport.zoom" value="1.464100000000014"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.x" value="57"/>
 	<property name="ireport.y" value="0"/>
 	<style name="style1" backcolor="#000000">
 		<pen lineWidth="1.0"/>
@@ -23,7 +23,7 @@
 	<parameter name="param_year" class="java.lang.Integer"/>
 	<parameter name="param_period" class="java.lang.Integer"/>
 	<parameter name="param_emp_level" class="java.lang.Integer"/>
-	<parameter name="param_org_id" class="java.lang.String"/>
+	<parameter name="param_org_id" class="java.lang.Integer"/>
 	<parameter name="param_org_level" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[select
@@ -114,7 +114,7 @@ on a.org_id = o.org_id
 where a.period_id = $P{param_period}
 and cr.`year` = $P{param_year}
 and a.level_id = $P{param_emp_level}
-and (a.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
+and a.org_id = $P{param_org_id}
 and o.level_id = $P{param_org_level}
 ) main_query]]>
 	</queryString>
