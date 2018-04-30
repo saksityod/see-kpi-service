@@ -60,15 +60,10 @@ select count(1)
 from appraisal_item_result ajan
 inner join appraisal_item aitem
 on ajan.item_id = aitem.item_id
-inner join kpi_cds_mapping kcm
-on aitem.item_id = kcm.item_id
-inner join cds
-on kcm.cds_id = cds.cds_id
 inner join appraisal_structure atruc
 on aitem.structure_id = atruc.structure_id
 where a.emp_id = ajan.emp_id
 and atruc.form_id = 1
-and cds.is_hr != 1
 and a.period_id = ajan.period_id
 ) jan_total,
 (select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 1) jan_flag,
