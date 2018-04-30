@@ -50,11 +50,12 @@ class ReportController extends Controller
 
     public function al_list_org(Request $request)
     {
-    	if(empty($request->level_id)) {
+    	if(empty($request->level_id) || $request->level_id == 'All') {
     	$items = DB::select("
 				Select level_id, appraisal_level_name
 				From appraisal_level
 				Where is_active = 1
+				and is_org = 1
 				Order by level_id
 			");
     	} else {
@@ -74,6 +75,27 @@ class ReportController extends Controller
     			", array($request->level_id));
     	}
     	return response()->json($items);
+    }
+
+    public function org_list(Request $request)
+    {
+    	if(empty($request->appraisal_level) || $request->appraisal_level =='All') {
+    		$items = DB::select("
+			SELECT org_id, org_name
+			FROM org
+			WHERE is_active = 1
+			ORDER BY org_id
+		");
+    	} else {
+    		$items = DB::select("
+			SELECT org_id, org_name
+			FROM org
+			WHERE is_active = 1
+			AND level_id = ?
+			ORDER BY org_id
+		", array($request->appraisal_level));
+    	}
+		return response()->json($items);
     }
 
     public function emp_list_level(Request $request)

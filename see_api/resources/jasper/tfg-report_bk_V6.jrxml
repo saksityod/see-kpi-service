@@ -40,121 +40,106 @@
 	</style>
 	<parameter name="param_year" class="java.lang.Integer"/>
 	<parameter name="param_period" class="java.lang.Integer"/>
-	<parameter name="param_emp_level" class="java.lang.String"/>
+	<parameter name="param_emp_level" class="java.lang.Integer"/>
 	<parameter name="param_org_id" class="java.lang.String"/>
 	<parameter name="param_org_level" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT a.emp_code,
-	a.emp_name,
-	a.appraisal_level_name,
-	a.position_name,
-	a.chief_emp_name,
-	a.org_name,
-	a.to_action status,
-	a.cnt_total jan_total,
-	b.jan_count, b.feb_count, b.mar_count,
-	b.apr_count, b.may_count, b.jun_count,
-	b.jul_count, b.aug_count, b.sep_count,
-	b.oct_count, b.nov_count, b.dec_count,
-	b.jan_flag, b.feb_flag, b.mar_flag, b.apr_flag, b.may_flag, b.jun_flag,
-	b.jul_flag, b.aug_flag, b.sep_flag, b.oct_flag, b.nov_flag, b.dec_flag,
-	case when a.cnt_total <= b.jan_count then 1 else null end as jan_value,
-	case when a.cnt_total <= b.feb_count then 1 else null end as feb_value,
-	case when a.cnt_total <= b.mar_count then 1 else null end as mar_value,
-	case when a.cnt_total <= b.apr_count then 1 else null end as apr_value,
-	case when a.cnt_total <= b.may_count then 1 else null end as may_value,
-	case when a.cnt_total <= b.jun_count then 1 else null end as jun_value,
-	case when a.cnt_total <= b.jul_count then 1 else null end as jul_value,
-	case when a.cnt_total <= b.aug_count then 1 else null end as aug_value,
-	case when a.cnt_total <= b.sep_count then 1 else null end as sep_value,
-	case when a.cnt_total <= b.oct_count then 1 else null end as oct_value,
-	case when a.cnt_total <= b.nov_count then 1 else null end as nov_value,
-	case when a.cnt_total <= b.dec_count then 1 else null end as dec_value
-FROM (
-	SELECT air.emp_id, emp.emp_code, emp.emp_name,
-		air.level_id, al.appraisal_level_name,
-		air.position_id, pos.position_name,
-		air.org_id, org.org_name,
-		chf.emp_name chief_emp_name,
-		ast.to_action, air.period_id,
-		org.level_id level_org, count(1) cnt_total
-	FROM appraisal_item_result air
-	INNER JOIN emp_result er ON er.emp_result_id = air.emp_result_id
-	INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
-	INNER JOIN employee emp ON emp.emp_id = air.emp_id
-	INNER JOIN appraisal_level al ON al.level_id = air.level_id
-	INNER JOIN position pos ON pos.position_id = air.position_id
-	INNER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
-	INNER JOIN org ON org.org_id = air.org_id
-	INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-	INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
-	INNER JOIN kpi_cds_mapping kdm ON kdm.item_id = air.item_id
-	INNER JOIN cds ON cds.cds_id = kdm.cds_id
-	WHERE str.form_id = 1
-	AND cds.is_hr != 1
-	AND air.period_id = $P{param_period}
-	AND (air.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
-	AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
-	AND (air.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-	GROUP BY air.emp_id, emp.emp_code, emp.emp_name,
-		air.level_id, al.appraisal_level_name,
-		air.position_id, pos.position_name,
-		air.org_id, org.org_name, chf.emp_name,
-		ast.to_action, air.period_id
-)a
-INNER JOIN (
-	SELECT emp_id, level_id, org_id, position_id, period_id, year,
-		sum(jan_cnt) jan_count, sum(feb_cnt) feb_count, sum(mar_cnt) mar_count,
-		sum(apr_cnt) apr_count, sum(may_cnt) may_count, sum(jun_cnt) jun_count,
-		sum(jul_cnt) jul_count, sum(aug_cnt) aug_count, sum(sep_cnt) sep_count,
-		sum(oct_cnt) oct_count, sum(nov_cnt) nov_count, sum(dec_cnt) dec_count,
-		jan_flag, feb_flag, mar_flag, apr_flag, may_flag, jun_flag,
-		jul_flag, aug_flag, sep_flag, oct_flag, nov_flag, dec_flag
-	FROM (
-		SELECT cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year,
-			IF(appraisal_month_no = 1, count(1) , 0) jan_cnt,
-			IF(appraisal_month_no = 2, count(1) , 0) feb_cnt,
-			IF(appraisal_month_no = 3, count(1) , 0) mar_cnt,
-			IF(appraisal_month_no = 4, count(1) , 0) apr_cnt,
-			IF(appraisal_month_no = 5, count(1) , 0) may_cnt,
-			IF(appraisal_month_no = 6, count(1) , 0) jun_cnt,
-			IF(appraisal_month_no = 7, count(1) , 0) jul_cnt,
-			IF(appraisal_month_no = 8, count(1) , 0) aug_cnt,
-			IF(appraisal_month_no = 9, count(1) , 0) sep_cnt,
-			IF(appraisal_month_no = 10, count(1) , 0) oct_cnt,
-			IF(appraisal_month_no = 11, count(1) , 0) nov_cnt,
-			IF(appraisal_month_no = 12, count(1) , 0) dec_cnt,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 1) jan_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 2) feb_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 3) mar_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 4) apr_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 5) may_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 6) jun_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 7) jul_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 8) aug_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 9) sep_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 10) oct_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 11) nov_flag,
-			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 12) dec_flag
-		FROM cds_result cr
-		INNER JOIN org ON org.org_id = cr.org_id
-		WHERE cr.period_id = $P{param_period}
-		AND cr.`year` = $P{param_year}
-		AND (cr.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
-		AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
-		AND (cr.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-		AND EXISTS (
-			select 1 From appraisal_item_result
-			where item_id in(
-				SELECT item_id FROM kpi_cds_mapping
-				where cds_id = cr.cds_id
-			)
-			and emp_id = cr.emp_id
-		)
-		GROUP BY cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year, cr.appraisal_month_no
-	)qry
-	GROUP BY emp_id, level_id, org_id, position_id, period_id, year
-)b ON b.emp_id = a.emp_id AND b.level_id = a.level_id AND b.org_id = a.org_id AND b.position_id = a.position_id AND b.period_id = a.period_id]]>
+		<![CDATA[select
+*,
+case when jan_total = jan_count then 1 else null end as jan_value,
+case when jan_total = feb_count then 1 else null end as feb_value,
+case when jan_total = mar_count then 1 else null end as mar_value,
+case when jan_total = apr_count then 1 else null end as apr_value,
+case when jan_total = may_count then 1 else null end as may_value,
+case when jan_total = jun_count then 1 else null end as jun_value,
+case when jan_total = jul_count then 1 else null end as jul_value,
+case when jan_total = aug_count then 1 else null end as aug_value,
+case when jan_total = sep_count then 1 else null end as sep_value,
+case when jan_total = oct_count then 1 else null end as oct_value,
+case when jan_total = nov_count then 1 else null end as nov_value,
+case when jan_total = dec_count then 1 else null end as dec_value
+from (
+select distinct ey.emp_code, ey.emp_name,
+
+(select appraisal_level_name from appraisal_level e where a.level_id = e.level_id) appraisal_level_name,
+(select position_name from position e where a.position_id = e.position_id) position_name,
+(select emp_name from employee e where a.chief_emp_id = e.emp_id) chief_emp_name,
+(select org_name from org e where a.org_id = e.org_id) org_name,
+(
+select ast.to_action as status
+from emp_result e
+inner join appraisal_stage ast
+on e.stage_id = ast.stage_id
+where a.emp_result_id = e.emp_result_id
+) status,
+
+(
+select count(1)
+from appraisal_item_result ajan
+inner join appraisal_item aitem
+on ajan.item_id = aitem.item_id
+inner join kpi_cds_mapping kcm
+on aitem.item_id = kcm.item_id
+inner join cds
+on kcm.cds_id = cds.cds_id
+inner join appraisal_structure atruc
+on aitem.structure_id = atruc.structure_id
+where a.emp_id = ajan.emp_id
+and atruc.form_id = 1
+and cds.is_hr != 1
+and a.period_id = ajan.period_id
+) jan_total,
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 1) jan_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 1) jan_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 2) feb_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 2) feb_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 3) mar_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 3) mar_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 4) apr_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 4) apr_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 5) may_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 5) may_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 6) jun_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 6) jun_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 7) jul_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 7) jul_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 8) aug_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 8) aug_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 9) sep_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 9) sep_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 10) oct_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 10) oct_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 11) nov_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 11) nov_count,
+
+(select count(1) from appraisal_period_month pm where a.period_id = pm.period_id and pm.month_id = 12) dec_flag,
+(select count(1) from cds_result cjan where a.emp_id = cjan.emp_id and a.period_id = cjan.period_id and cjan.appraisal_month_no = 12) dec_count
+
+from appraisal_item_result a
+inner join appraisal_period p
+on a.period_id = p.period_id
+inner join employee ey
+on a.emp_id = ey.emp_id
+inner join cds_result cr
+on a.period_id = cr.period_id
+inner join org o
+on a.org_id = o.org_id
+where a.period_id = $P{param_period}
+and cr.`year` = $P{param_year}
+and a.level_id = $P{param_emp_level}
+and (a.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
+and (o.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
+) main_query]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
@@ -188,77 +173,77 @@ INNER JOIN (
 	<field name="jan_total" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jan_total"/>
 	</field>
-	<field name="jan_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="jan_count"/>
-	</field>
-	<field name="feb_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="feb_count"/>
-	</field>
-	<field name="mar_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="mar_count"/>
-	</field>
-	<field name="apr_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="apr_count"/>
-	</field>
-	<field name="may_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="may_count"/>
-	</field>
-	<field name="jun_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="jun_count"/>
-	</field>
-	<field name="jul_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="jul_count"/>
-	</field>
-	<field name="aug_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="aug_count"/>
-	</field>
-	<field name="sep_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="sep_count"/>
-	</field>
-	<field name="oct_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="oct_count"/>
-	</field>
-	<field name="nov_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="nov_count"/>
-	</field>
-	<field name="dec_count" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="dec_count"/>
-	</field>
 	<field name="jan_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jan_flag"/>
+	</field>
+	<field name="jan_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jan_count"/>
 	</field>
 	<field name="feb_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="feb_flag"/>
 	</field>
+	<field name="feb_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="feb_count"/>
+	</field>
 	<field name="mar_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="mar_flag"/>
+	</field>
+	<field name="mar_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="mar_count"/>
 	</field>
 	<field name="apr_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="apr_flag"/>
 	</field>
+	<field name="apr_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="apr_count"/>
+	</field>
 	<field name="may_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="may_flag"/>
+	</field>
+	<field name="may_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="may_count"/>
 	</field>
 	<field name="jun_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jun_flag"/>
 	</field>
+	<field name="jun_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jun_count"/>
+	</field>
 	<field name="jul_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="jul_flag"/>
+	</field>
+	<field name="jul_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="jul_count"/>
 	</field>
 	<field name="aug_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="aug_flag"/>
 	</field>
+	<field name="aug_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="aug_count"/>
+	</field>
 	<field name="sep_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="sep_flag"/>
+	</field>
+	<field name="sep_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="sep_count"/>
 	</field>
 	<field name="oct_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="oct_flag"/>
 	</field>
+	<field name="oct_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="oct_count"/>
+	</field>
 	<field name="nov_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="nov_flag"/>
 	</field>
+	<field name="nov_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="nov_count"/>
+	</field>
 	<field name="dec_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="dec_flag"/>
+	</field>
+	<field name="dec_count" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="dec_count"/>
 	</field>
 	<field name="jan_value" class="java.lang.Long"/>
 	<field name="feb_value" class="java.lang.Long"/>
@@ -314,7 +299,7 @@ INNER JOIN (
 	<variable name="feb_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{feb_value}]]></variableExpression>
 	</variable>
-	<group name="org_name" minHeightToStartNewPage="150">
+	<group name="org_name">
 		<groupExpression><![CDATA[$F{org_name}]]></groupExpression>
 		<groupHeader>
 			<band height="60">
