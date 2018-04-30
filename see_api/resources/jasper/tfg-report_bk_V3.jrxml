@@ -4,7 +4,7 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-report.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="284"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="705"/>
-	<property name="ireport.zoom" value="1.4641000000000144"/>
+	<property name="ireport.zoom" value="1.464100000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="style1" backcolor="#000000">
@@ -332,19 +332,257 @@ and o.level_id = $P{param_org_level}
 					</textElement>
 					<text><![CDATA[สถานะ]]></text>
 				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="788" y="20" width="34" height="40" uuid="86112260-25d0-4b86-aafe-088a111de653"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Dec]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="788" y="37" width="17" height="23" uuid="bfa2d394-aed6-47ff-ac58-5e8d3d55bb68"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="805" y="37" width="17" height="23" uuid="b2de3c1f-25a5-4837-bb21-299236336e5d"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement style="table_TR" x="755" y="20" width="33" height="40" uuid="b542f62f-5077-417c-afee-0d46519d04ab"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Nov]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="722" y="20" width="33" height="40" uuid="4e5b40be-a97d-4e9f-b492-186600a1561a"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Oct]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="689" y="20" width="33" height="40" uuid="12436082-b82e-4032-bdd3-bc9e49dae062"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Sep]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="656" y="20" width="33" height="40" uuid="7583c8c8-3d11-44ba-ac0f-e54e0a7488eb"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Aug]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="623" y="20" width="33" height="40" uuid="008ac1ba-c2c0-4ade-af2b-62808c7fa639"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jul]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="590" y="20" width="33" height="40" uuid="bc890883-c6fa-4a0c-8b63-a6e8c058ed0d"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jun]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="557" y="20" width="33" height="40" uuid="7a308dbf-ccd2-4126-9e41-8922ee4eb04d"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[May]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="524" y="20" width="33" height="40" uuid="0ea1df0d-fcee-4f5b-aca2-b295229ca133"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Apr]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="491" y="20" width="33" height="40" uuid="e4697c9b-bc35-4bf6-b290-72aa9bbdd77e"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Mar]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="458" y="20" width="33" height="40" uuid="f4ddfbdb-7ce1-4a80-b1c1-5d7af83b4097"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Feb]]></text>
+				</staticText>
+				<staticText>
+					<reportElement style="table_TR" x="425" y="20" width="33" height="40" uuid="ed51b43c-609e-48d6-a786-d5a6c6de8efb"/>
+					<textElement textAlignment="Center">
+						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jan]]></text>
+				</staticText>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="772" y="37" width="16" height="23" uuid="b8ff8032-9c9d-4a98-ab8d-62d718793b7b"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="755" y="37" width="17" height="23" uuid="00138367-3bc3-471b-996d-97e2cedd0961"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="739" y="37" width="16" height="23" uuid="337e4801-ef22-4917-a521-308a5840af6a"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="722" y="37" width="17" height="23" uuid="d750a394-28a1-4885-afe9-a9cfa70ffbf4"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="689" y="37" width="17" height="23" uuid="40309f38-ecde-400e-b141-58830b03881a"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="706" y="37" width="16" height="23" uuid="91e6f9ca-4cd4-4d85-8d9e-d9754b312831"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="656" y="37" width="17" height="23" uuid="640ddf99-28d4-4e15-bf53-04439a28c2fd"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="673" y="37" width="16" height="23" uuid="52a24974-24ca-4271-9742-68c20fafd2a8"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="623" y="37" width="17" height="23" uuid="c7bdedfb-418b-410f-a356-1648b9683286"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="640" y="37" width="16" height="23" uuid="cc1f667d-1fd3-45f8-90f9-16fa88632e06"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="590" y="37" width="17" height="23" uuid="c3f9a9c7-51df-45df-82a2-4536065298dc"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="607" y="37" width="16" height="23" uuid="ec08cdc1-ac33-4d3e-abf6-254c5bd2eaf9"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="557" y="37" width="17" height="23" uuid="f3665051-dd24-42a8-a7fc-c66c5d073f25"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="574" y="37" width="16" height="23" uuid="4f05ce2c-81d3-433e-a8eb-49bd17a655ba"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="524" y="37" width="17" height="23" uuid="54c291c3-201f-45da-9ab8-69a000261f1c"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="541" y="37" width="16" height="23" uuid="f2aeaa2c-9aca-4c72-8829-fbeda14c3ea3"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="491" y="37" width="17" height="23" uuid="e62bc258-5fbc-4e67-a6bc-c6fd12aa43f8"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="508" y="37" width="16" height="23" uuid="468d081d-f76f-4564-aefa-bfa648508138"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="458" y="37" width="17" height="23" uuid="ced04b5e-19cf-4097-b76c-caa8ea220e03"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="org_name">
+					<reportElement style="table_TR" x="475" y="37" width="16" height="23" uuid="008dbb8e-1a8f-47c0-8bda-4c9862de6573"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_TR" x="425" y="37" width="17" height="23" uuid="c0b6ceba-5cc2-4a54-8f82-19c7410fd11f"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_TR" x="442" y="37" width="16" height="23" uuid="e83ca3aa-2f7c-43ef-a1fc-2736926a71d9"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_TR" x="623" y="0" width="33" height="20" uuid="98fbb99e-4ceb-46b1-a2bc-209277182294"/>
@@ -437,252 +675,14 @@ and o.level_id = $P{param_org_level}
 					</textElement>
 					<textFieldExpression><![CDATA["รหัส\nพนักงาน"]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="425" y="20" width="33" height="17" uuid="9ca0b25b-3d03-435a-83f8-0cab0edebe98"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "Jan" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="458" y="20" width="33" height="17" uuid="3625ddb4-c503-4bd7-bf85-9524ade6da01"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "Feb" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="491" y="20" width="33" height="17" uuid="bf983ec5-3ea8-490e-976f-ca6e16c7c0cf"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "Mar" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="524" y="20" width="33" height="17" uuid="b493969d-6710-4e4a-ba1d-ef83ce0c3cec"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "Apr" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="557" y="20" width="33" height="17" uuid="e3bd7fdb-fa77-4064-a889-2a34453b027a"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "May" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="590" y="20" width="33" height="17" uuid="ff1087c3-eaca-439f-9a1c-aa3b310f0fb4"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "Jun" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="623" y="20" width="33" height="17" uuid="d864d29e-8e7a-4bb0-b76d-d258049ac15c"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "Jul" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="656" y="20" width="33" height="17" uuid="399b5ad0-623c-483b-b1b9-2a2c0f8e85b6"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "Aug" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="689" y="20" width="33" height="17" uuid="d7d4ba6e-f603-414c-8891-33b69ab5eb8d"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "Sep" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="722" y="20" width="33" height="17" uuid="5df65b52-5b6b-487a-9244-452235e1cd7a"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "Oct" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="755" y="20" width="33" height="17" uuid="f62c4dbf-bf4e-43be-98db-24eb4faa31b3"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "Nov" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="788" y="20" width="34" height="17" uuid="2a35ece3-be36-4e28-b44e-ceca6abfa5cc"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "Dec" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="458" y="37" width="17" height="23" uuid="2ba5391a-792c-4b53-99df-7bbcd2df3cbd"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="491" y="37" width="17" height="23" uuid="29773edc-3365-4d02-a664-186110ec0f36"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="524" y="37" width="17" height="23" uuid="c97a7dd7-061f-46db-b66d-f125f73a99fd"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="557" y="37" width="17" height="23" uuid="a1daff2d-6dfa-45d7-87ca-2be273e4b31e"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="590" y="37" width="17" height="23" uuid="4dacf63e-e8c4-4c07-afae-8f8312b1cf87"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="623" y="37" width="17" height="23" uuid="9e945e2e-5d30-41b4-bc5e-14bd4b284d9b"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="656" y="37" width="17" height="23" uuid="53e90e82-6423-4329-8112-6edf87fb45b3"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="689" y="37" width="17" height="23" uuid="f41b0fb0-461b-4d9d-96e1-4c3fb490e71f"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="722" y="37" width="17" height="23" uuid="08bc9e4b-a213-4951-9282-15b6cb337892"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="755" y="37" width="17" height="23" uuid="c8e05efd-3f65-4b9f-baff-8bc7e920bcd9"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="788" y="37" width="17" height="23" uuid="510c3017-6f5b-4596-97d5-b1cc9840a0e4"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="475" y="37" width="16" height="23" uuid="e9ab76bf-c003-44a5-b761-a493680beffa"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="508" y="37" width="16" height="23" uuid="549221f3-5a82-4b43-b960-5ae45c1fcf42"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="541" y="37" width="16" height="23" uuid="dc68c236-f106-49da-92a1-a2557ecc7321"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="574" y="37" width="16" height="23" uuid="2da5c55e-c5d2-443b-842a-a52a4f022f8e"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="607" y="37" width="16" height="23" uuid="a3fc337f-4874-4d2a-a56c-bd3e121fb001"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="640" y="37" width="16" height="23" uuid="17a3eda5-b2bd-4131-87a4-c3dd64f6ef23"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="673" y="37" width="16" height="23" uuid="0f8a982a-d583-478a-b092-9bfe61fa169e"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="706" y="37" width="16" height="23" uuid="c51d9866-f74f-4419-ac2a-80469bd3e767"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="739" y="37" width="16" height="23" uuid="16567150-e26c-4522-89b2-ba2ada2db545"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="772" y="37" width="16" height="23" uuid="e33f5459-87cf-4228-9585-26f1db8dc98b"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_TR" x="805" y="37" width="17" height="23" uuid="e2038c69-3bed-4382-a6f3-7b12462d26e4"/>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
-				</textField>
 			</band>
 		</groupHeader>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<pageHeader>
-		<band height="72">
+	<title>
+		<band height="72" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="0" width="822" height="72" uuid="fd74732c-a0aa-4119-9bc7-560bb4332413"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
@@ -692,7 +692,7 @@ and o.level_id = $P{param_org_level}
 "ประจำปี "+$P{param_year}+"  รอบประเมินที่ "+ $P{param_period}]]></textFieldExpression>
 			</textField>
 		</band>
-	</pageHeader>
+	</title>
 	<detail>
 		<band height="30" splitType="Stretch">
 			<textField>
