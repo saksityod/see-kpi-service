@@ -24,7 +24,7 @@
 	<parameter name="param_period" class="java.lang.Integer"/>
 	<parameter name="param_emp_level" class="java.lang.Integer"/>
 	<parameter name="param_org_id" class="java.lang.String"/>
-	<parameter name="param_org_level" class="java.lang.Integer"/>
+	<parameter name="param_org_level" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[select
 *,
@@ -120,7 +120,7 @@ where a.period_id = $P{param_period}
 and cr.`year` = $P{param_year}
 and a.level_id = $P{param_emp_level}
 and (a.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-and o.level_id = $P{param_org_level}
+and (o.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
 ) main_query]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
