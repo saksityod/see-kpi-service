@@ -5,7 +5,7 @@
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="284"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="705"/>
 	<property name="ireport.zoom" value="1.4641000000000144"/>
-	<property name="ireport.x" value="131"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="style1" backcolor="#000000">
 		<pen lineWidth="1.0"/>
@@ -51,24 +51,13 @@
 	a.chief_emp_name,
 	a.org_name,
 	a.to_action status,
-	case when a.cnt_total is null then 0 else a.cnt_total end as jan_total,
-
-	case when b.jan_count is null then 0 else b.jan_count end as jan_count,
-	case when b.feb_count is null then 0 else b.feb_count end as feb_count,
-	case when b.mar_count is null then 0 else b.mar_count end as mar_count,
-	case when b.apr_count is null then 0 else b.apr_count end as apr_count,
-	case when b.may_count is null then 0 else b.may_count end as may_count,
-	case when b.jun_count is null then 0 else b.jun_count end as jun_count,
-	case when b.jul_count is null then 0 else b.jul_count end as jul_count,
-	case when b.aug_count is null then 0 else b.aug_count end as aug_count,
-	case when b.sep_count is null then 0 else b.sep_count end as sep_count,
-	case when b.oct_count is null then 0 else b.oct_count end as oct_count,
-	case when b.nov_count is null then 0 else b.nov_count end as nov_count,
-	case when b.dec_count is null then 0 else b.dec_count end as dec_count,
-
-	a.jan_flag, a.feb_flag, a.mar_flag, a.apr_flag, a.may_flag, a.jun_flag,
-	a.jul_flag, a.aug_flag, a.sep_flag, a.oct_flag, a.nov_flag, a.dec_flag,
-
+	a.cnt_total jan_total,
+	b.jan_count, b.feb_count, b.mar_count,
+	b.apr_count, b.may_count, b.jun_count,
+	b.jul_count, b.aug_count, b.sep_count,
+	b.oct_count, b.nov_count, b.dec_count,
+	b.jan_flag, b.feb_flag, b.mar_flag, b.apr_flag, b.may_flag, b.jun_flag,
+	b.jul_flag, b.aug_flag, b.sep_flag, b.oct_flag, b.nov_flag, b.dec_flag,
 	case when a.cnt_total <= b.jan_count then 1 else null end as jan_value,
 	case when a.cnt_total <= b.feb_count then 1 else null end as feb_value,
 	case when a.cnt_total <= b.mar_count then 1 else null end as mar_value,
@@ -88,19 +77,7 @@ FROM (
 		air.org_id, org.org_name,
 		chf.emp_name chief_emp_name,
 		ast.to_action, air.period_id,
-		org.level_id level_org, count(1) cnt_total,
-		(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 1) jan_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 2) feb_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 3) mar_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 4) apr_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 5) may_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 6) jun_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 7) jul_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 8) aug_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 9) sep_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 10) oct_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 11) nov_flag,
-			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 12) dec_flag
+		org.level_id level_org, count(1) cnt_total
 	FROM appraisal_item_result air
 	INNER JOIN emp_result er ON er.emp_result_id = air.emp_result_id
 	INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
@@ -125,12 +102,14 @@ FROM (
 		air.org_id, org.org_name, chf.emp_name,
 		ast.to_action, air.period_id
 )a
-LEFT JOIN (
+INNER JOIN (
 	SELECT emp_id, level_id, org_id, position_id, period_id, year,
 		sum(jan_cnt) jan_count, sum(feb_cnt) feb_count, sum(mar_cnt) mar_count,
 		sum(apr_cnt) apr_count, sum(may_cnt) may_count, sum(jun_cnt) jun_count,
 		sum(jul_cnt) jul_count, sum(aug_cnt) aug_count, sum(sep_cnt) sep_count,
-		sum(oct_cnt) oct_count, sum(nov_cnt) nov_count, sum(dec_cnt) dec_count
+		sum(oct_cnt) oct_count, sum(nov_cnt) nov_count, sum(dec_cnt) dec_count,
+		jan_flag, feb_flag, mar_flag, apr_flag, may_flag, jun_flag,
+		jul_flag, aug_flag, sep_flag, oct_flag, nov_flag, dec_flag
 	FROM (
 		SELECT cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year,
 			IF(appraisal_month_no = 1, count(1) , 0) jan_cnt,
@@ -144,7 +123,19 @@ LEFT JOIN (
 			IF(appraisal_month_no = 9, count(1) , 0) sep_cnt,
 			IF(appraisal_month_no = 10, count(1) , 0) oct_cnt,
 			IF(appraisal_month_no = 11, count(1) , 0) nov_cnt,
-			IF(appraisal_month_no = 12, count(1) , 0) dec_cnt
+			IF(appraisal_month_no = 12, count(1) , 0) dec_cnt,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 1) jan_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 2) feb_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 3) mar_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 4) apr_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 5) may_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 6) jun_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 7) jul_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 8) aug_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 9) sep_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 10) oct_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 11) nov_flag,
+			(select count(1) from appraisal_period_month apm where cr.period_id = apm.period_id and apm.month_id = 12) dec_flag
 		FROM cds_result cr
 		INNER JOIN org ON org.org_id = cr.org_id
 		WHERE cr.period_id = $P{param_period}
@@ -323,7 +314,7 @@ LEFT JOIN (
 	<variable name="feb_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{feb_value}]]></variableExpression>
 	</variable>
-	<group name="org_name" minHeightToStartNewPage="200">
+	<group name="org_name" minHeightToStartNewPage="150">
 		<groupExpression><![CDATA[$F{org_name}]]></groupExpression>
 		<groupHeader>
 			<band height="60">
@@ -384,14 +375,14 @@ LEFT JOIN (
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="442" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="e83ca3aa-2f7c-43ef-a1fc-2736926a71d9"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="623" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="98fbb99e-4ceb-46b1-a2bc-209277182294"/>
@@ -489,238 +480,238 @@ LEFT JOIN (
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Jan"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? "Jan" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="458" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="3625ddb4-c503-4bd7-bf85-9524ade6da01"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Feb"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "Feb" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="491" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="bf983ec5-3ea8-490e-976f-ca6e16c7c0cf"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Mar"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "Mar" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="524" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="b493969d-6710-4e4a-ba1d-ef83ce0c3cec"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Apr"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "Apr" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="557" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="e3bd7fdb-fa77-4064-a889-2a34453b027a"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["May"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "May" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="590" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="ff1087c3-eaca-439f-9a1c-aa3b310f0fb4"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Jun"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "Jun" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="623" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="d864d29e-8e7a-4bb0-b76d-d258049ac15c"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Jul"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "Jul" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="656" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="399b5ad0-623c-483b-b1b9-2a2c0f8e85b6"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Aug"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "Aug" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="689" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="d7d4ba6e-f603-414c-8891-33b69ab5eb8d"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Sep"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "Sep" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="722" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="5df65b52-5b6b-487a-9244-452235e1cd7a"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Oct"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "Oct" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="755" y="20" width="33" height="17" forecolor="#FFFFFF" uuid="f62c4dbf-bf4e-43be-98db-24eb4faa31b3"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Nov"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "Nov" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="788" y="20" width="34" height="17" forecolor="#FFFFFF" uuid="2a35ece3-be36-4e28-b44e-ceca6abfa5cc"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Dec"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "Dec" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="458" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="2ba5391a-792c-4b53-99df-7bbcd2df3cbd"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="491" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="29773edc-3365-4d02-a664-186110ec0f36"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="524" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="c97a7dd7-061f-46db-b66d-f125f73a99fd"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="557" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="a1daff2d-6dfa-45d7-87ca-2be273e4b31e"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="590" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="4dacf63e-e8c4-4c07-afae-8f8312b1cf87"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="623" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="9e945e2e-5d30-41b4-bc5e-14bd4b284d9b"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="656" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="53e90e82-6423-4329-8112-6edf87fb45b3"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="689" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="f41b0fb0-461b-4d9d-96e1-4c3fb490e71f"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="722" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="08bc9e4b-a213-4951-9282-15b6cb337892"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="755" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="c8e05efd-3f65-4b9f-baff-8bc7e920bcd9"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="788" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="510c3017-6f5b-4596-97d5-b1cc9840a0e4"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ทั้ง\nหมด"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "ทั้ง\nหมด" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="475" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="e9ab76bf-c003-44a5-b761-a493680beffa"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="508" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="549221f3-5a82-4b43-b960-5ae45c1fcf42"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="541" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="dc68c236-f106-49da-92a1-a2557ecc7321"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="574" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="2da5c55e-c5d2-443b-842a-a52a4f022f8e"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{may_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="607" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="a3fc337f-4874-4d2a-a56c-bd3e121fb001"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="640" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="17a3eda5-b2bd-4131-87a4-c3dd64f6ef23"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="673" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="0f8a982a-d583-478a-b092-9bfe61fa169e"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="706" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="c51d9866-f74f-4419-ac2a-80469bd3e767"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="739" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="16567150-e26c-4522-89b2-ba2ada2db545"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="772" y="37" width="16" height="23" forecolor="#FFFFFF" uuid="e33f5459-87cf-4228-9585-26f1db8dc98b"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="805" y="37" width="17" height="23" forecolor="#FFFFFF" uuid="e2038c69-3bed-4382-a6f3-7b12462d26e4"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["บัน\nทึก"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? "บัน\nทึก" : "N/A"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -807,7 +798,7 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jan_flag}==0) ? "N/A" : (($F{jan_flag}==1)? $F{jan_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jan_flag}==1) ? $F{jan_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="458" y="0" width="17" height="30" uuid="067a0943-b21d-4b81-ac46-4e077ad9cc1f"/>
@@ -828,7 +819,7 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{mar_flag}==0) ? "N/A" : (($F{mar_flag}==1)? $F{mar_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{mar_flag}==1) ? $F{mar_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="524" y="0" width="17" height="30" uuid="5901d6ad-16f3-4483-8e98-331875011cea"/>
@@ -842,7 +833,7 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{apr_flag}==0) ? "N/A" : (($F{apr_flag}==1)? $F{apr_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{apr_flag}==1) ? $F{apr_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="557" y="0" width="17" height="30" uuid="862678ae-068b-4803-a404-8bbd6ee87153"/>
@@ -856,7 +847,7 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{may_flag}==0) ? "N/A" : (($F{may_flag}==1)? $F{may_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{may_flag}==1) ? $F{may_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="590" y="0" width="17" height="30" uuid="daabce7b-abe3-4f86-bb4e-42ac06aa45c5"/>
@@ -870,21 +861,21 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jun_flag}==0) ? "N/A" : (($F{jun_flag}==1)? $F{jun_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jun_flag}==1) ? $F{jun_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="475" y="0" width="16" height="30" uuid="169899ef-ee19-4245-bff6-29c6293a3c54"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{feb_flag}==0) ? "N/A" : (($F{feb_flag}==1)? $F{feb_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{feb_flag}==1) ? $F{feb_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="673" y="0" width="16" height="30" uuid="e4c8a2a1-4d55-4c48-9ba6-cd5e67e855bb"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{aug_flag}==0) ? "N/A" : (($F{aug_flag}==1)? $F{aug_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{aug_flag}==1) ? $F{aug_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="689" y="0" width="17" height="30" uuid="856d8749-fd16-4a22-a349-7468ba4fa289"/>
@@ -898,14 +889,14 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{nov_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nov_flag}==1) ? $F{nov_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="640" y="0" width="16" height="30" uuid="eb698043-b5c1-469f-826a-b62ed80a09e3"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jul_flag}==0) ? "N/A" : (($F{jul_flag}==1)? $F{jul_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jul_flag}==1) ? $F{jul_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="788" y="0" width="17" height="30" uuid="b18f67c4-7afc-4af5-909c-2aef604327a0"/>
@@ -933,21 +924,21 @@ LEFT JOIN (
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{nov_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{dec_flag}==1) ? $F{dec_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="739" y="0" width="16" height="30" uuid="74a34bf8-24df-443d-95b7-85db8d204cf1"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{oct_flag}==0) ? "N/A" : (($F{oct_flag}==1)? $F{oct_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{oct_flag}==1) ? $F{oct_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="706" y="0" width="16" height="30" uuid="e64f24f1-de63-4d0e-9603-6177feb71dab"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sep_flag}==0) ? "N/A" : (($F{sep_flag}==1)? $F{sep_count} : 0)]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sep_flag}==1) ? $F{sep_count} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="623" y="0" width="17" height="30" uuid="e7947838-557b-4265-84cc-7b8064fc235f"/>
