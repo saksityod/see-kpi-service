@@ -278,8 +278,8 @@ class AppraisalPeriodController extends Controller
 				$item->updated_by = Auth::id();
 				$item->save();
 				
-				$begin = $s_date;
-				$end = $e_date;
+				$begin = new DateTime($s_date);
+				$end = new DateTime($e_date);
 
 				$interval = DateInterval::createFromDateString('1 month');
 				$period = new DatePeriod($begin, $interval, $end);
