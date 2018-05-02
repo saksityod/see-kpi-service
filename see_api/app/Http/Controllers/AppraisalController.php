@@ -45,6 +45,17 @@ class AppraisalController extends Controller
 		return response()->json($items);
 	}
 
+	public function year_list_assignment()
+	{
+		$items = DB::select("
+			SELECT DISTINCT appraisal_year appraisal_year_id,
+			appraisal_year
+			from appraisal_period
+			LEFT OUTER JOIN system_config on system_config.current_appraisal_year = appraisal_period.appraisal_year
+		");
+		return response()->json($items);
+	}
+
 	public function period_list(Request $request)
 	{
 		$items = DB::select("

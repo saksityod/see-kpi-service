@@ -132,6 +132,7 @@ Route::group(['middleware' => 'cors'], function()
 
 	// Appraisal //
 	Route::get('appraisal/year_list', 'AppraisalController@year_list');
+	Route::get('appraisal/year_list_assignment', 'AppraisalController@year_list_assignment');
 	Route::get('appraisal/period_list', 'AppraisalController@period_list');
 	Route::get('appraisal/al_list', 'AppraisalController@al_list');
 	Route::get('appraisal/phase_list/{item_result_id}','AppraisalController@phase_list');
