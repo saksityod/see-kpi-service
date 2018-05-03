@@ -119,10 +119,11 @@ FROM (
 	AND (air.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
 	AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
 	AND (air.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-	GROUP BY air.org_id, air.emp_id, emp.emp_code, emp.emp_name,
+	GROUP BY air.emp_id, emp.emp_code, emp.emp_name,
 		air.level_id, al.appraisal_level_name,
 		air.position_id, pos.position_name,
-		chf.emp_name, ast.to_action, air.period_id
+		air.org_id, org.org_name, chf.emp_name,
+		ast.to_action, air.period_id
 )a
 LEFT JOIN (
 	SELECT emp_id, level_id, org_id, position_id, period_id, year,
@@ -161,7 +162,7 @@ LEFT JOIN (
 		)
 		GROUP BY cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year, cr.appraisal_month_no
 	)qry
-	GROUP BY org_id, emp_id, level_id, position_id, period_id, year
+	GROUP BY emp_id, level_id, org_id, position_id, period_id, year
 )b ON b.emp_id = a.emp_id AND b.level_id = a.level_id AND b.org_id = a.org_id AND b.position_id = a.position_id AND b.period_id = a.period_id]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
