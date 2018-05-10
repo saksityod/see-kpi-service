@@ -98,6 +98,17 @@ class ReportController extends Controller
 		return response()->json($items);
     }
 
+    public function status_list(Request $request)
+    {
+    	$items = DB::select("
+    		select DISTINCT to_action, to_action 
+    		from appraisal_stage
+    		where appraisal_type_id = 2
+    		order by to_action asc
+		");
+		return response()->json($items);
+    }
+
     public function emp_list_level(Request $request)
     {
     	$items = DB::select("

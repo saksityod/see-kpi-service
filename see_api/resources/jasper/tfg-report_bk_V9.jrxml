@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tfg-report" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoPages" columnWidth="822" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" uuid="d087308b-9e13-4856-9cc0-017e2ece53e6">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="tfg-report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="822" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" uuid="d087308b-9e13-4856-9cc0-017e2ece53e6">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-tfg12"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-report.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="284"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="705"/>
 	<property name="ireport.zoom" value="1.4641000000000144"/>
 	<property name="ireport.x" value="131"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="626"/>
-	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="360"/>
 	<style name="style1" backcolor="#000000">
 		<pen lineWidth="1.0"/>
 	</style>
-	<style name="table_head1" mode="Opaque" backcolor="#21618C" fill="Solid" hTextAlign="Left" hImageAlign="Left" vTextAlign="Top" vImageAlign="Top">
+	<style name="table_head1" mode="Opaque" backcolor="#21618C" fill="Solid" hAlign="Left" vAlign="Top">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="table_head2" mode="Opaque" backcolor="#2E86C1" fill="Solid" hTextAlign="Left" hImageAlign="Left" vTextAlign="Top" vImageAlign="Top">
+	<style name="table_head2" mode="Opaque" backcolor="#2E86C1" fill="Solid" hAlign="Left" vAlign="Top">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 		</box>
@@ -46,216 +43,150 @@
 	<parameter name="param_emp_level" class="java.lang.String"/>
 	<parameter name="param_org_id" class="java.lang.String"/>
 	<parameter name="param_org_level" class="java.lang.String"/>
-	<parameter name="param_status" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT emp.emp_name,
-emp.emp_code, 
-al.appraisal_level_name, 
-pos.position_name, 
-chf.emp_name chief_emp_name, 
-org.org_name,
+		<![CDATA[SELECT a.emp_code,
+	a.emp_name,
+	a.appraisal_level_name,
+	a.position_name,
+	a.chief_emp_name,
+	a.org_name,
+	a.to_action status,
+	case when a.cnt_total is null then 0 else a.cnt_total end as jan_total,
 
-ifnull(toto.status,'Unassign') status,
-ifnull(toto.jan_total,0) jan_total,
+	case when b.jan_count is null then 0 else b.jan_count end as jan_count,
+	case when b.feb_count is null then 0 else b.feb_count end as feb_count,
+	case when b.mar_count is null then 0 else b.mar_count end as mar_count,
+	case when b.apr_count is null then 0 else b.apr_count end as apr_count,
+	case when b.may_count is null then 0 else b.may_count end as may_count,
+	case when b.jun_count is null then 0 else b.jun_count end as jun_count,
+	case when b.jul_count is null then 0 else b.jul_count end as jul_count,
+	case when b.aug_count is null then 0 else b.aug_count end as aug_count,
+	case when b.sep_count is null then 0 else b.sep_count end as sep_count,
+	case when b.oct_count is null then 0 else b.oct_count end as oct_count,
+	case when b.nov_count is null then 0 else b.nov_count end as nov_count,
+	case when b.dec_count is null then 0 else b.dec_count end as dec_count,
 
-ifnull(toto.jan_count,0) jan_count,
-ifnull(toto.feb_count,0) feb_count,
-ifnull(toto.mar_count,0) mar_count,
-ifnull(toto.apr_count,0) apr_count,
-ifnull(toto.may_count,0) may_count,
-ifnull(toto.jun_count,0) jun_count,
-ifnull(toto.jul_count,0) jul_count,
-ifnull(toto.aug_count,0) aug_count,
-ifnull(toto.sep_count,0) sep_count,
-ifnull(toto.oct_count,0) oct_count,
-ifnull(toto.nov_count,0) nov_count,
-ifnull(toto.dec_count,0) dec_count,
+	a.jan_flag, a.feb_flag, a.mar_flag, a.apr_flag, a.may_flag, a.jun_flag,
+	a.jul_flag, a.aug_flag, a.sep_flag, a.oct_flag, a.nov_flag, a.dec_flag,
 
-ifnull(toto.jan_flag,2) jan_flag,
-ifnull(toto.feb_flag,2) feb_flag,
-ifnull(toto.mar_flag,2) mar_flag,
-ifnull(toto.apr_flag,2) apr_flag,
-ifnull(toto.may_flag,2) may_flag,
-ifnull(toto.jun_flag,2) jun_flag,
-ifnull(toto.jul_flag,2) jul_flag,
-ifnull(toto.aug_flag,2) aug_flag,
-ifnull(toto.sep_flag,2) sep_flag,
-ifnull(toto.oct_flag,2) oct_flag,
-ifnull(toto.nov_flag,2) nov_flag,
-ifnull(toto.dec_flag,2) dec_flag,
-
-ifnull(toto.jan_value,0) jan_value,
-ifnull(toto.feb_value,0) feb_value,
-ifnull(toto.mar_value,0) mar_value,
-ifnull(toto.apr_value,0) apr_value,
-ifnull(toto.may_value,0) may_value,
-ifnull(toto.jun_value,0) jun_value,
-ifnull(toto.jul_value,0) jul_value,
-ifnull(toto.aug_value,0) aug_value,
-ifnull(toto.sep_value,0) sep_value,
-ifnull(toto.oct_value,0) oct_value,
-ifnull(toto.nov_value,0) nov_value,
-ifnull(toto.dec_value,0) dec_value
-
-from employee emp
-INNER JOIN appraisal_level al ON al.level_id = emp.level_id
-INNER JOIN position pos ON pos.position_id = emp.position_id
-INNER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
-INNER JOIN org ON org.org_id = emp.org_id
-LEFT OUTER JOIN
-(SELECT a.emp_code,
- a.emp_name,
- a.appraisal_level_name,
- a.position_name,
- a.chief_emp_name,
- a.org_name,
- a.to_action status,
- case when a.cnt_total is null then 0 else a.cnt_total end as jan_total,
-
- case when b.jan_count is null then 0 else b.jan_count end as jan_count,
- case when b.feb_count is null then 0 else b.feb_count end as feb_count,
- case when b.mar_count is null then 0 else b.mar_count end as mar_count,
- case when b.apr_count is null then 0 else b.apr_count end as apr_count,
- case when b.may_count is null then 0 else b.may_count end as may_count,
- case when b.jun_count is null then 0 else b.jun_count end as jun_count,
- case when b.jul_count is null then 0 else b.jul_count end as jul_count,
- case when b.aug_count is null then 0 else b.aug_count end as aug_count,
- case when b.sep_count is null then 0 else b.sep_count end as sep_count,
- case when b.oct_count is null then 0 else b.oct_count end as oct_count,
- case when b.nov_count is null then 0 else b.nov_count end as nov_count,
- case when b.dec_count is null then 0 else b.dec_count end as dec_count,
-
- a.jan_flag, a.feb_flag, a.mar_flag, a.apr_flag, a.may_flag, a.jun_flag,
- a.jul_flag, a.aug_flag, a.sep_flag, a.oct_flag, a.nov_flag, a.dec_flag,
-
- case when a.cnt_total <= b.jan_count then 1 else null end as jan_value,
- case when a.cnt_total <= b.feb_count then 1 else null end as feb_value,
- case when a.cnt_total <= b.mar_count then 1 else null end as mar_value,
- case when a.cnt_total <= b.apr_count then 1 else null end as apr_value,
- case when a.cnt_total <= b.may_count then 1 else null end as may_value,
- case when a.cnt_total <= b.jun_count then 1 else null end as jun_value,
- case when a.cnt_total <= b.jul_count then 1 else null end as jul_value,
- case when a.cnt_total <= b.aug_count then 1 else null end as aug_value,
- case when a.cnt_total <= b.sep_count then 1 else null end as sep_value,
- case when a.cnt_total <= b.oct_count then 1 else null end as oct_value,
- case when a.cnt_total <= b.nov_count then 1 else null end as nov_value,
- case when a.cnt_total <= b.dec_count then 1 else null end as dec_value
+	case when a.cnt_total <= b.jan_count then 1 else null end as jan_value,
+	case when a.cnt_total <= b.feb_count then 1 else null end as feb_value,
+	case when a.cnt_total <= b.mar_count then 1 else null end as mar_value,
+	case when a.cnt_total <= b.apr_count then 1 else null end as apr_value,
+	case when a.cnt_total <= b.may_count then 1 else null end as may_value,
+	case when a.cnt_total <= b.jun_count then 1 else null end as jun_value,
+	case when a.cnt_total <= b.jul_count then 1 else null end as jul_value,
+	case when a.cnt_total <= b.aug_count then 1 else null end as aug_value,
+	case when a.cnt_total <= b.sep_count then 1 else null end as sep_value,
+	case when a.cnt_total <= b.oct_count then 1 else null end as oct_value,
+	case when a.cnt_total <= b.nov_count then 1 else null end as nov_value,
+	case when a.cnt_total <= b.dec_count then 1 else null end as dec_value
 FROM (
- SELECT air.emp_id, emp.emp_code, emp.emp_name,
-  air.level_id, al.appraisal_level_name,
-  air.position_id, pos.position_name,
-  air.org_id, org.org_name,
-  chf.emp_name chief_emp_name,
-  ast.to_action, air.period_id,
-  org.level_id level_org, count(1) cnt_total,
-  (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 1) jan_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 2) feb_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 3) mar_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 4) apr_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 5) may_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 6) jun_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 7) jul_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 8) aug_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 9) sep_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 10) oct_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 11) nov_flag,
-   (select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 12) dec_flag
- FROM appraisal_item_result air
- INNER JOIN emp_result er ON er.emp_result_id = air.emp_result_id
- INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
- INNER JOIN employee emp ON emp.emp_id = air.emp_id
- INNER JOIN appraisal_level al ON al.level_id = air.level_id
- INNER JOIN position pos ON pos.position_id = air.position_id
- INNER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
- INNER JOIN org ON org.org_id = air.org_id
- INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
- INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
- INNER JOIN kpi_cds_mapping kdm ON kdm.item_id = air.item_id
- INNER JOIN cds ON cds.cds_id = kdm.cds_id
- WHERE str.form_id = 1
- AND cds.is_hr != 1
- AND air.period_id = $P{param_period}
- AND (air.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
- AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
- AND (air.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
- GROUP BY air.org_id, air.emp_id, emp.emp_code, emp.emp_name,
-  air.level_id, al.appraisal_level_name,
-  air.position_id, pos.position_name,
-  chf.emp_name, ast.to_action, air.period_id
+	SELECT air.emp_id, emp.emp_code, emp.emp_name,
+		air.level_id, al.appraisal_level_name,
+		air.position_id, pos.position_name,
+		air.org_id, org.org_name,
+		chf.emp_name chief_emp_name,
+		ast.to_action, air.period_id,
+		org.level_id level_org, count(1) cnt_total,
+		(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 1) jan_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 2) feb_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 3) mar_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 4) apr_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 5) may_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 6) jun_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 7) jul_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 8) aug_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 9) sep_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 10) oct_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 11) nov_flag,
+			(select count(1) from appraisal_period_month apm where air.period_id = apm.period_id and apm.month_id = 12) dec_flag
+	FROM appraisal_item_result air
+	INNER JOIN emp_result er ON er.emp_result_id = air.emp_result_id
+	INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+	INNER JOIN employee emp ON emp.emp_id = air.emp_id
+	INNER JOIN appraisal_level al ON al.level_id = air.level_id
+	INNER JOIN position pos ON pos.position_id = air.position_id
+	INNER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
+	INNER JOIN org ON org.org_id = air.org_id
+	INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+	INNER JOIN appraisal_structure str ON str.structure_id = ai.structure_id
+	INNER JOIN kpi_cds_mapping kdm ON kdm.item_id = air.item_id
+	INNER JOIN cds ON cds.cds_id = kdm.cds_id
+	WHERE str.form_id = 1
+	AND cds.is_hr != 1
+	AND air.period_id = $P{param_period}
+	AND (air.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
+	AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
+	AND (air.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
+	GROUP BY air.org_id, air.emp_id, emp.emp_code, emp.emp_name,
+		air.level_id, al.appraisal_level_name,
+		air.position_id, pos.position_name,
+		chf.emp_name, ast.to_action, air.period_id
 )a
 LEFT JOIN (
- SELECT emp_id, level_id, org_id, position_id, period_id, year,
-  sum(jan_cnt) jan_count, sum(feb_cnt) feb_count, sum(mar_cnt) mar_count,
-  sum(apr_cnt) apr_count, sum(may_cnt) may_count, sum(jun_cnt) jun_count,
-  sum(jul_cnt) jul_count, sum(aug_cnt) aug_count, sum(sep_cnt) sep_count,
-  sum(oct_cnt) oct_count, sum(nov_cnt) nov_count, sum(dec_cnt) dec_count
- FROM (
-  SELECT cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year,
-   IF(appraisal_month_no = 1, count(1) , 0) jan_cnt,
-   IF(appraisal_month_no = 2, count(1) , 0) feb_cnt,
-   IF(appraisal_month_no = 3, count(1) , 0) mar_cnt,
-   IF(appraisal_month_no = 4, count(1) , 0) apr_cnt,
-   IF(appraisal_month_no = 5, count(1) , 0) may_cnt,
-   IF(appraisal_month_no = 6, count(1) , 0) jun_cnt,
-   IF(appraisal_month_no = 7, count(1) , 0) jul_cnt,
-   IF(appraisal_month_no = 8, count(1) , 0) aug_cnt,
-   IF(appraisal_month_no = 9, count(1) , 0) sep_cnt,
-   IF(appraisal_month_no = 10, count(1) , 0) oct_cnt,
-   IF(appraisal_month_no = 11, count(1) , 0) nov_cnt,
-   IF(appraisal_month_no = 12, count(1) , 0) dec_cnt
-  FROM cds_result cr
-  INNER JOIN org ON org.org_id = cr.org_id
-  WHERE cr.period_id = $P{param_period}
-  AND cr.`year` = $P{param_year}
-  AND (cr.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
-  AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
-  AND (cr.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-  AND EXISTS (
-   select 1 From appraisal_item_result
-   where item_id in(
-    SELECT item_id FROM kpi_cds_mapping
-    where cds_id = cr.cds_id
-   )
-   and emp_id = cr.emp_id
-  )
-  GROUP BY cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year, cr.appraisal_month_no
- )qry
- GROUP BY org_id, emp_id, level_id, position_id, period_id, year
-)b ON b.emp_id = a.emp_id AND b.level_id = a.level_id AND b.org_id = a.org_id AND b.position_id = a.position_id AND b.period_id = a.period_id ) toto
-ON emp.emp_code = toto.emp_code
-WHERE (emp.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
-AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
-AND  (emp.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
-AND if($P{param_status} = 'All',1=1,ifnull(toto.status,'Unassign') = $P{param_status})
-ORDER BY org.org_name ASC, status ASC]]>
+	SELECT emp_id, level_id, org_id, position_id, period_id, year,
+		sum(jan_cnt) jan_count, sum(feb_cnt) feb_count, sum(mar_cnt) mar_count,
+		sum(apr_cnt) apr_count, sum(may_cnt) may_count, sum(jun_cnt) jun_count,
+		sum(jul_cnt) jul_count, sum(aug_cnt) aug_count, sum(sep_cnt) sep_count,
+		sum(oct_cnt) oct_count, sum(nov_cnt) nov_count, sum(dec_cnt) dec_count
+	FROM (
+		SELECT cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year,
+			IF(appraisal_month_no = 1, count(1) , 0) jan_cnt,
+			IF(appraisal_month_no = 2, count(1) , 0) feb_cnt,
+			IF(appraisal_month_no = 3, count(1) , 0) mar_cnt,
+			IF(appraisal_month_no = 4, count(1) , 0) apr_cnt,
+			IF(appraisal_month_no = 5, count(1) , 0) may_cnt,
+			IF(appraisal_month_no = 6, count(1) , 0) jun_cnt,
+			IF(appraisal_month_no = 7, count(1) , 0) jul_cnt,
+			IF(appraisal_month_no = 8, count(1) , 0) aug_cnt,
+			IF(appraisal_month_no = 9, count(1) , 0) sep_cnt,
+			IF(appraisal_month_no = 10, count(1) , 0) oct_cnt,
+			IF(appraisal_month_no = 11, count(1) , 0) nov_cnt,
+			IF(appraisal_month_no = 12, count(1) , 0) dec_cnt
+		FROM cds_result cr
+		INNER JOIN org ON org.org_id = cr.org_id
+		WHERE cr.period_id = $P{param_period}
+		AND cr.`year` = $P{param_year}
+		AND (cr.level_id = $P{param_emp_level} or 'All' = $P{param_emp_level})
+		AND (org.level_id = $P{param_org_level} or 'All' = $P{param_org_level})
+		AND (cr.org_id = $P{param_org_id} or 'All' = $P{param_org_id})
+		AND EXISTS (
+			select 1 From appraisal_item_result
+			where item_id in(
+				SELECT item_id FROM kpi_cds_mapping
+				where cds_id = cr.cds_id
+			)
+			and emp_id = cr.emp_id
+		)
+		GROUP BY cr.emp_id, cr.level_id, cr.org_id, cr.position_id, cr.period_id, cr.year, cr.appraisal_month_no
+	)qry
+	GROUP BY org_id, emp_id, level_id, position_id, period_id, year
+)b ON b.emp_id = a.emp_id AND b.level_id = a.level_id AND b.org_id = a.org_id AND b.position_id = a.position_id AND b.period_id = a.period_id]]>
 	</queryString>
-	<field name="emp_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
 	<field name="emp_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<field name="emp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="appraisal_level_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_level_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="position_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="position_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="chief_emp_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="chief_emp_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 	</field>
 	<field name="org_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="status" class="java.lang.String">
@@ -337,119 +268,59 @@ ORDER BY org.org_name ASC, status ASC]]>
 	<field name="dec_flag" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="dec_flag"/>
 	</field>
-	<field name="jan_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="jan_value"/>
-	</field>
-	<field name="feb_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="feb_value"/>
-	</field>
-	<field name="mar_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="mar_value"/>
-	</field>
-	<field name="apr_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="apr_value"/>
-	</field>
-	<field name="may_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="may_value"/>
-	</field>
-	<field name="jun_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="jun_value"/>
-	</field>
-	<field name="jul_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="jul_value"/>
-	</field>
-	<field name="aug_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="aug_value"/>
-	</field>
-	<field name="sep_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="sep_value"/>
-	</field>
-	<field name="oct_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="oct_value"/>
-	</field>
-	<field name="nov_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="nov_value"/>
-	</field>
-	<field name="dec_value" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="dec_value"/>
-	</field>
+	<field name="jan_value" class="java.lang.Long"/>
+	<field name="feb_value" class="java.lang.Long"/>
+	<field name="mar_value" class="java.lang.Long"/>
+	<field name="apr_value" class="java.lang.Long"/>
+	<field name="may_value" class="java.lang.Long"/>
+	<field name="jun_value" class="java.lang.Long"/>
+	<field name="jul_value" class="java.lang.Long"/>
+	<field name="aug_value" class="java.lang.Long"/>
+	<field name="sep_value" class="java.lang.Long"/>
+	<field name="oct_value" class="java.lang.Long"/>
+	<field name="nov_value" class="java.lang.Long"/>
+	<field name="dec_value" class="java.lang.Long"/>
 	<variable name="emp_code_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{emp_code}]]></variableExpression>
 	</variable>
 	<variable name="value_set" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[]]></variableExpression>
 	</variable>
-	<variable name="jan_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="jan_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{jan_value}]]></variableExpression>
 	</variable>
-	<variable name="aug_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="aug_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{aug_value}]]></variableExpression>
 	</variable>
-	<variable name="sep_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="sep_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{sep_value}]]></variableExpression>
 	</variable>
-	<variable name="oct_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="oct_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{oct_value}]]></variableExpression>
 	</variable>
-	<variable name="nov_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="nov_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{nov_value}]]></variableExpression>
 	</variable>
-	<variable name="dec_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="dec_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{dec_value}]]></variableExpression>
 	</variable>
-	<variable name="jul_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="jul_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{jul_value}]]></variableExpression>
 	</variable>
-	<variable name="jun_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="jun_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{jun_value}]]></variableExpression>
 	</variable>
-	<variable name="may_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="may_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{may_value}]]></variableExpression>
 	</variable>
-	<variable name="apr_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="apr_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{apr_value}]]></variableExpression>
 	</variable>
-	<variable name="mar_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="mar_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{mar_value}]]></variableExpression>
 	</variable>
-	<variable name="feb_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
+	<variable name="feb_value_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Count">
 		<variableExpression><![CDATA[$F{feb_value}]]></variableExpression>
-	</variable>
-	<variable name="jan_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{jan_flag}]]></variableExpression>
-	</variable>
-	<variable name="feb_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{feb_flag}]]></variableExpression>
-	</variable>
-	<variable name="mar_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{mar_flag}]]></variableExpression>
-	</variable>
-	<variable name="apr_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{apr_flag}]]></variableExpression>
-	</variable>
-	<variable name="may_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{may_flag}]]></variableExpression>
-	</variable>
-	<variable name="jun_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{jun_flag}]]></variableExpression>
-	</variable>
-	<variable name="jul_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{jul_flag}]]></variableExpression>
-	</variable>
-	<variable name="aug_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{aug_flag}]]></variableExpression>
-	</variable>
-	<variable name="sep_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{sep_flag}]]></variableExpression>
-	</variable>
-	<variable name="oct_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{oct_flag}]]></variableExpression>
-	</variable>
-	<variable name="nov_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{nov_flag}]]></variableExpression>
-	</variable>
-	<variable name="dec_flag_1" class="java.lang.Integer" resetType="Group" resetGroup="org_name" calculation="Sum">
-		<variableExpression><![CDATA[$F{dec_flag}]]></variableExpression>
 	</variable>
 	<group name="org_name" minHeightToStartNewPage="200">
 		<groupExpression><![CDATA[$F{org_name}]]></groupExpression>
@@ -526,84 +397,84 @@ ORDER BY org.org_name ASC, status ASC]]>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{jul_flag}==0) ? "N/A" : (($F{jul_flag}==1)? $V{jul_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{jul_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jul_flag}==1) ? $V{jul_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="656" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="befb1555-f8b2-4652-abc0-b2d0ffb4ff9e"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{aug_flag}==0) ? "N/A" : (($F{aug_flag}==1)? $V{aug_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{aug_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{aug_flag}==1) ? $V{aug_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="689" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="22f253a2-811e-404c-945f-dbf7d58fe220"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{sep_flag}==0) ? "N/A" : (($F{sep_flag}==1)? $V{sep_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{sep_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{sep_flag}==1) ? $V{sep_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="722" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="a93ffc49-50f9-4d36-b0c8-be01d527f9a5"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{oct_flag}==0) ? "N/A" : (($F{oct_flag}==1)? $V{oct_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{oct_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{oct_flag}==1) ? $V{oct_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="755" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="e580e392-825c-467e-956b-e49836a69998"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $V{nov_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{nov_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{nov_flag}==1) ? $V{nov_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="788" y="0" width="34" height="20" forecolor="#FFFFFF" uuid="c56e6ac9-c833-4332-b159-ea57e1be5fec"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{dec_flag}==0) ? "N/A" : (($F{dec_flag}==1)? $V{dec_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? "N/A" : $V{dec_value_1}+"/"+$V{emp_code_1} ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{dec_flag}==1) ? $V{dec_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="590" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="c7089c78-4112-4ca1-ac8c-000929fae8ac"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{jun_flag}==0) ? "N/A" : (($F{jun_flag}==1)? $V{jun_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{jun_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jun_flag}==1) ? $V{jun_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="557" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="49eb1a10-27ca-482e-b1c9-c825f5745f50"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{may_flag}==0) ? "N/A" : (($F{may_flag}==1)? $V{may_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{may_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{may_flag}==1) ? $V{may_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="524" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="130f8841-5755-40b7-b66e-71c4a68b5a8f"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{apr_flag}==0) ? "N/A" : (($F{apr_flag}==1)? $V{apr_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{apr_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{apr_flag}==1) ? $V{apr_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="491" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="ddcc6b6b-e1f6-40a2-a3c4-169667abc4ba"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{mar_flag}==0) ? "N/A" : (($F{mar_flag}==1)? $V{mar_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{mar_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{mar_flag}==1) ? $V{mar_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head1" x="458" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="b1c696e9-06f3-4c1b-a94d-b3db9069de31"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{feb_flag}==0) ? "N/A" : (($F{feb_flag}==1)? $V{feb_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{feb_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{feb_flag}==1) ? $V{feb_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
-					<reportElement style="table_head1" positionType="FixRelativeToBottom" x="425" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="0b7d8be2-1bed-4014-b644-e8cac23cc818"/>
+					<reportElement style="table_head1" x="425" y="0" width="33" height="20" forecolor="#FFFFFF" uuid="0b7d8be2-1bed-4014-b644-e8cac23cc818"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{jan_flag}==0) ? "N/A" : (($F{jan_flag}==1)? $V{jan_value_1}+"/"+$V{emp_code_1} : (($P{param_period}==1)? $V{jan_value_1}+"/"+$V{emp_code_1} : "N/A" ))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{jan_flag}==1) ? $V{jan_value_1}+"/"+$V{emp_code_1} : "N/A"]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="org_name">
 					<reportElement style="table_head2" x="0" y="20" width="40" height="40" forecolor="#FFFFFF" uuid="7a05e941-9101-407f-ad4b-0cc017cd5476"/>
@@ -928,168 +799,168 @@ ORDER BY org.org_name ASC, status ASC]]>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jan_flag}==0) ? "N/A" : (($F{jan_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jan_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="442" y="0" width="16" height="30" uuid="c82f6c01-6451-4d3b-a04b-e0b9ed8cba23"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jan_flag}==0) ? "N/A" : (($F{jan_flag}==1)? $F{jan_count} : (($P{param_period}==1)? $F{jan_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jan_flag}==0) ? "N/A" : (($F{jan_flag}==1)? $F{jan_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="458" y="0" width="17" height="30" uuid="067a0943-b21d-4b81-ac46-4e077ad9cc1f"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{feb_flag}==0) ? "N/A" : (($F{feb_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{feb_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="491" y="0" width="17" height="30" uuid="e2b8d28b-9fdc-49b9-afae-6b43c43fb2e7"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{mar_flag}==0) ? "N/A" : (($F{mar_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{mar_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="508" y="0" width="16" height="30" uuid="c9eb36b5-dc87-4293-b3e4-54340b9f138d"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{mar_flag}==0) ? "N/A" : (($F{mar_flag}==1)? $F{mar_count} : (($P{param_period}==1)? $F{mar_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{mar_flag}==0) ? "N/A" : (($F{mar_flag}==1)? $F{mar_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="524" y="0" width="17" height="30" uuid="5901d6ad-16f3-4483-8e98-331875011cea"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{apr_flag}==0) ? "N/A" : (($F{apr_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{apr_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="541" y="0" width="16" height="30" uuid="a52d3fed-4a5d-4245-b1c8-5812ac14b670"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{apr_flag}==0) ? "N/A" : (($F{apr_flag}==1)? $F{apr_count} : (($P{param_period}==1)? $F{apr_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{apr_flag}==0) ? "N/A" : (($F{apr_flag}==1)? $F{apr_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="557" y="0" width="17" height="30" uuid="862678ae-068b-4803-a404-8bbd6ee87153"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{may_flag}==0) ? "N/A" : (($F{may_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{may_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="574" y="0" width="16" height="30" uuid="049cfd88-a657-425c-b67f-d193d568c516"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{may_flag}==0) ? "N/A" : (($F{may_flag}==1)? $F{may_count} : (($P{param_period}==1)? $F{may_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{may_flag}==0) ? "N/A" : (($F{may_flag}==1)? $F{may_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="590" y="0" width="17" height="30" uuid="daabce7b-abe3-4f86-bb4e-42ac06aa45c5"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jun_flag}==0) ? "N/A" : (($F{jun_flag}==1)? $F{jan_total} : (($P{param_period}==1)? $F{jan_total} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jun_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="607" y="0" width="16" height="30" uuid="9b9d4e97-4b7f-4e1c-98a5-66e6a641b6d3"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jun_flag}==0) ? "N/A" : (($F{jun_flag}==1)? $F{jun_count} : (($P{param_period}==1)? $F{jun_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jun_flag}==0) ? "N/A" : (($F{jun_flag}==1)? $F{jun_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="475" y="0" width="16" height="30" uuid="169899ef-ee19-4245-bff6-29c6293a3c54"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{feb_flag}==0) ? "N/A" : (($F{feb_flag}==1)? $F{feb_count} : (($P{param_period}==1)? $F{feb_count} : "N/A" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{feb_flag}==0) ? "N/A" : (($F{feb_flag}==1)? $F{feb_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="673" y="0" width="16" height="30" uuid="e4c8a2a1-4d55-4c48-9ba6-cd5e67e855bb"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{aug_flag}==0) ? "N/A" : (($F{aug_flag}==1)? $F{aug_count} : (($P{param_period}==1)? "N/A" : $F{aug_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{aug_flag}==0) ? "N/A" : (($F{aug_flag}==1)? $F{aug_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="689" y="0" width="17" height="30" uuid="856d8749-fd16-4a22-a349-7468ba4fa289"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sep_flag}==0) ? "N/A" : (($F{sep_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sep_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="772" y="0" width="16" height="30" uuid="dfb5e76e-8fce-4074-8b33-dd3345a08bd9"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{nov_count} : (($P{param_period}==1)? "N/A" : $F{nov_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{nov_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="640" y="0" width="16" height="30" uuid="eb698043-b5c1-469f-826a-b62ed80a09e3"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jul_flag}==0) ? "N/A" : (($F{jul_flag}==1)? $F{jul_count} : (($P{param_period}==1)? "N/A" : $F{jul_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jul_flag}==0) ? "N/A" : (($F{jul_flag}==1)? $F{jul_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="788" y="0" width="17" height="30" uuid="b18f67c4-7afc-4af5-909c-2aef604327a0"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{dec_flag}==0) ? "N/A" : (($F{dec_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{dec_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="722" y="0" width="17" height="30" uuid="239de2aa-99cf-4a36-87fe-b5fca1b6f59f"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{oct_flag}==0) ? "N/A" : (($F{oct_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{oct_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="656" y="0" width="17" height="30" uuid="27265a49-ae75-4af6-ba2b-3ba676177f74"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{aug_flag}==0) ? "N/A" : (($F{aug_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{aug_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="805" y="0" width="17" height="30" uuid="d70f8eb2-df7f-414b-95e7-4d1f5a9d38c5"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{dec_flag}==0) ? "N/A" : (($F{dec_flag}==1)? $F{dec_count} : (($P{param_period}==1)? "N/A" : $F{dec_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{nov_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="739" y="0" width="16" height="30" uuid="74a34bf8-24df-443d-95b7-85db8d204cf1"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{oct_flag}==0) ? "N/A" : (($F{oct_flag}==1)? $F{oct_count} : (($P{param_period}==1)? "N/A" : $F{oct_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{oct_flag}==0) ? "N/A" : (($F{oct_flag}==1)? $F{oct_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="706" y="0" width="16" height="30" uuid="e64f24f1-de63-4d0e-9603-6177feb71dab"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{sep_flag}==0) ? "N/A" : (($F{sep_flag}==1)? $F{sep_count} : (($P{param_period}==1)? "N/A" : $F{sep_count} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{sep_flag}==0) ? "N/A" : (($F{sep_flag}==1)? $F{sep_count} : 0)]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="623" y="0" width="17" height="30" uuid="e7947838-557b-4265-84cc-7b8064fc235f"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{jul_flag}==0) ? "N/A" : (($F{jul_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{jul_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="tableMosIs1" x="755" y="0" width="17" height="30" uuid="ea28e767-3ee9-476f-9344-91b3f0c08e58"/>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="11"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{nov_flag}==0) ? "N/A" : (($F{nov_flag}==1)? $F{jan_total} : (($P{param_period}==1)? "N/A" : $F{jan_total} ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{nov_flag}==1) ? $F{jan_total} : "N/A"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
