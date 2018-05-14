@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\CDS;
 use App\DatabaseConnection;
 use App\AppraisalLevel;
+use mysqli;
 
 use Auth;
 use DB;
@@ -60,12 +61,46 @@ class CommonDataSetController extends Controller
 					} while ( sqlsrv_next_result($result) );
 					
 					sqlsrv_free_stmt($result);
-					sqlsrv_close($con); 	
+					sqlsrv_close($con);	
 					
 					return response()->json(['status' => 200 , 'data' => $json]);
 				}
 			} else {
 				return response()->json(['status' => 200, 'data' => sqlsrv_errors()]);
+			}
+		} else if($dbcon->database_type_id == 2) {
+
+			if (empty($dbcon->port)) {
+				$hostport = $dbcon->ip_address;
+			} else {
+				$hostport = $dbcon->ip_address.':'.$dbcon->port;
+			}
+
+			$con = mysqli_connect($hostport, $dbcon->user_name, $dbcon->password, $dbcon->database_name);
+			
+			if (mysqli_connect_errno()) {
+			    return response()->json(['status' => 400 , 'data' => "Connection failed: " .mysqli_connect_error(). " "]);
+			}
+
+			$result = $con->query($request->sql);
+
+			if (!$result) {
+				return response()->json(['status' => 400 , 'data' => mysqli_error()]);
+			} else {
+
+				$json = array();
+				$count = 0;
+
+				while (($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) && $count < 10) {
+					foreach ($row as $key => $value) {
+						$row[$key] = $value; 
+					} 							 
+					$json[] = $row;
+					$count++;
+				}
+
+				mysqli_close($con);
+				return response()->json(['status' => 200 , 'data' => $json]);
 			}
 		} else {
 			return response()->json(['status' => 400 , 'data' => 'DB Connection is not available for this database type.']);
