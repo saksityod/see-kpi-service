@@ -1421,8 +1421,8 @@ class AppraisalAssignmentController extends Controller
 			left outer join appraisal_item_result ar
 			on a.item_id = ar.item_id
 			and ar.emp_result_id = ?
-			where a.is_active = 1
-			and e.is_active = 1
+			where e.is_active = 1
+			and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
 		$qinput[] = $request->appraisal_level_id;
 		$qinput[] = $request->org_id;

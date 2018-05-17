@@ -28,11 +28,11 @@ class AppraisalLevelController extends Controller
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			SELECT a.level_id, a.appraisal_level_name, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
+			SELECT a.level_id, a.seq_no, a.appraisal_level_name, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
 			FROM appraisal_level a
 			left outer join appraisal_level b
 			on a.parent_id = b.level_id
-			order by a.level_id asc
+			order by a.seq_no asc, a.level_id asc
 		");
 		return response()->json($items);
 	}
@@ -42,6 +42,7 @@ class AppraisalLevelController extends Controller
 	
 		$validator = Validator::make($request->all(), [
 			'appraisal_level_name' => 'required|max:100|unique:appraisal_level',
+			'seq_no' => 'required|integer',
 			'is_all_employee' => 'required|boolean',
 			'is_org' => 'boolean',
 			'is_individual' => 'boolean',
@@ -86,6 +87,7 @@ class AppraisalLevelController extends Controller
 		
 		$validator = Validator::make($request->all(), [
 			'appraisal_level_name' => 'required|max:100|unique:appraisal_level,appraisal_level_name,' . $level_id . ',level_id',
+			'seq_no' => 'required|integer',
 			'is_all_employee' => 'required|boolean',
 			'is_org' => 'boolean',
 			'is_individual' => 'boolean',
