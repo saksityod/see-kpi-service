@@ -2636,18 +2636,23 @@ class AppraisalAssignmentController extends Controller
 				$cds = DB::select("
 					select cds_result_id
 					from cds_result 
-					where emp_id = '".$air[0]->emp_id."'
-					and level_id = '".$air[0]->level_id."'
-					and position_id = '".$air[0]->position_id."
-					and org_id = '".$air[0]->org_id."'
-					and period_id = '".$air[0]->period_id."'
+					where emp_id = ".$air[0]->emp_id."
+					and level_id = ".$air[0]->level_id."
+					and position_id = ".$air[0]->position_id."
+					and org_id = ".$air[0]->org_id."
+					and period_id = ".$air[0]->period_id."
 				");
 				
 				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
 				AppraisalItemResult::where('emp_result_id',$item->emp_result_id)->delete();
 				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-				DB::table('cds_result')->where('cds_result_id', '=', $cds[0]->cds_result_id)->delete();
+				DB::table('cds_result')
+				->where('emp_id', '=', $air[0]->emp_id)
+				->where('level_id', '=', $air[0]->level_id)
+				->where('position_id', '=', $air[0]->position_id)
+				->where('org_id', '=', $air[0]->org_id)
+				->where('period_id', '=', $air[0]->period_id)->delete();
 				DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $air[0]->item_result_id)->delete();
 				DB::table('cds_result_doc')->where('cds_result_id', '=', $cds[0]->cds_result_id)->delete();
 				$item->delete();
