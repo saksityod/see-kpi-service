@@ -32,7 +32,7 @@ class AppraisalLevelController extends Controller
 			FROM appraisal_level a
 			left outer join appraisal_level b
 			on a.parent_id = b.level_id
-			order by a.seq_no asc, a.level_id asc
+			order by FIELD(a.level_id, 1) desc, is_org asc, is_individual asc, a.seq_no asc, a.level_id asc
 		");
 		return response()->json($items);
 	}
