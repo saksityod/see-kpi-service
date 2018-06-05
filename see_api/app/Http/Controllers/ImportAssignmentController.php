@@ -890,6 +890,14 @@ class ImportAssignmentController extends Controller
                  "emp_id" => "numeric",
                  "appraisal_item_id" => "required|numeric",
                  "appraisal_item_name" => "required",
+                 "target" => "sometimes|required|numeric",
+                 "weight" => "sometimes|required|numeric",
+                 "range0" => "sometimes|required|numeric",
+                 "range1" => "sometimes|required|numeric",
+                 "range2" => "sometimes|required|numeric",
+                 "range3" => "sometimes|required|numeric",
+                 "range4" => "sometimes|required|numeric",
+                 "range5" => "sometimes|required|numeric",
               ]);
             } else {
               $validator = Validator::make($row->all(), [
@@ -904,6 +912,14 @@ class ImportAssignmentController extends Controller
                  "org_id" => "required|numeric",
                  "appraisal_item_id" => "required|numeric",
                  "appraisal_item_name" => "required",
+                 "target" => "sometimes|required|numeric",
+                 "weight" => "sometimes|required|numeric",
+                 "range0" => "sometimes|required|numeric",
+                 "range1" => "sometimes|required|numeric",
+                 "range2" => "sometimes|required|numeric",
+                 "range3" => "sometimes|required|numeric",
+                 "range4" => "sometimes|required|numeric",
+                 "range5" => "sometimes|required|numeric",
               ]);
             }
 
