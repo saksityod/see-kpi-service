@@ -930,7 +930,8 @@ class ImportAssignmentController extends Controller
                 "level_id"=>$row->level_id, "org_id"=>$row->org_id, "emp_id"=>$row->emp_id,
                 "error_desc" => $validator->errors()
               ];
-              $sheetError = true;
+              return response()->json(['status' => 400, 'errors' => $errors]);
+              //$sheetError = true;
             } else {
 
               // Get appraisal_item info.
