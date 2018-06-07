@@ -338,14 +338,18 @@ class ImportAssignmentController extends Controller
     public function export_template_individual(Request $request){
 
       // Set file name and directory.
+      set_time_limit(1000); //
       $extension = "xlsx";
       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
 
       // Set Input parameter
       $appraisal_type_id = $request->appraisal_type_id;
-      $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
-      $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
-      $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
+      $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
+      $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
+      $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
+      // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
+      // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
+      // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
       $position_id = $request->position_id;
       $emp_code = $request->emp_id;
       $period_id = $request->period_id;
@@ -617,14 +621,18 @@ class ImportAssignmentController extends Controller
      public function export_template_organization(Request $request){
 
        // Set file name and directory.
+       set_time_limit(1000); //
        $extension = "xlsx";
        $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
 
        // Set Input parameter
        $appraisal_type_id = $request->appraisal_type_id;
-       $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
-       $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
-       $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
+       $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
+       $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
+       $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
+       // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
+       // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
+       // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
        $period_id = $request->period_id;
        $appraisal_year = $request->appraisal_year;
        $frequency_id = $request->frequency_id;
