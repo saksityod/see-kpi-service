@@ -91,7 +91,13 @@ Route::group(['middleware' => 'cors'], function()
 
 	// Appraisal Data //
 	Route::get('appraisal_data/structure_list','AppraisalDataController@structure_list');
+	Route::get('appraisal_data/structure_list2','AppraisalDataController@structure_list2');
 	Route::get('appraisal_data/al_list','AppraisalDataController@al_list');
+	Route::get('appraisal_data/al_list_emp','AppraisalDataController@al_list_emp');
+	Route::get('appraisal_data/al_list_emp_org', 'AppraisalDataController@al_list_emp_org');
+	Route::get('appraisal_data/list_org_for_emp', 'AppraisalDataController@list_org_for_emp');
+	Route::post('appraisal_data/auto_emp_name_new', 'AppraisalDataController@auto_emp_name_new');
+	Route::post('appraisal_data/auto_position_name2', 'AppraisalDataController@auto_position_name2');
 	Route::get('appraisal_data/period_list','AppraisalDataController@period_list');
 	Route::get('appraisal_data/appraisal_type_list','AppraisalDataController@appraisal_type_list');
 	Route::post('appraisal_data/auto_appraisal_item','AppraisalDataController@auto_appraisal_item');
@@ -117,6 +123,10 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('appraisal_assignment/period_list', 'AppraisalAssignmentController@period_list');
 	Route::get('appraisal_assignment/frequency_list', 'AppraisalAssignmentController@frequency_list');
+	
+	Route::get('appraisal_assignment/status_list', 'AppraisalAssignmentController@status_list');
+	Route::patch('appraisal_assignment/update_action', 'AppraisalAssignmentController@update_action');
+
 	Route::post('appraisal_assignment/auto_employee_name', 'AppraisalAssignmentController@auto_employee_name');
 	Route::get('appraisal_assignment', 'AppraisalAssignmentController@index');
 	Route::get('appraisal_assignment/template', 'AppraisalAssignmentController@assign_template');
