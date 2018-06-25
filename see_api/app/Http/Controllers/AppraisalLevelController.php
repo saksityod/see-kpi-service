@@ -28,7 +28,7 @@ class AppraisalLevelController extends Controller
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			SELECT a.level_id, a.seq_no, a.appraisal_level_name, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
+			SELECT a.level_id, a.seq_no, a.appraisal_level_name, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.is_group_action, a.is_show_quality, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
 			FROM appraisal_level a
 			left outer join appraisal_level b
 			on a.parent_id = b.level_id
@@ -49,6 +49,8 @@ class AppraisalLevelController extends Controller
 			'is_active' => 'required|boolean',
 			'is_hr' => 'required|boolean',
 			'is_self_assign' => 'boolean',
+			'is_group_action' => 'boolean',
+			'is_show_quality' => 'boolean',
 			'district_flag' => 'boolean',
 			'no_weight' => 'required|boolean',
 			'default_stage_id' => 'integer'
@@ -94,6 +96,8 @@ class AppraisalLevelController extends Controller
 			'is_active' => 'required|boolean',
 			'is_hr' => 'required|boolean',
 			'is_self_assign' => 'boolean',
+			'is_group_action' => 'boolean',
+			'is_show_quality' => 'boolean',
 			'district_flag' => 'boolean',
 			'no_weight' => 'required|boolean',
 			'default_stage_id' => 'integer'

@@ -39,7 +39,7 @@ class AppraisalDataController extends Controller
 		return response()->json($items);
 	}
 
-	public function structure_list2()
+	public function structure_list2(Request $request)
 	{
 		$emp = Employee::find(Auth::id());
 		$all_emp = DB::select("
@@ -50,21 +50,37 @@ class AppraisalDataController extends Controller
 			where emp_code = ?
 			", array(Auth::id()));
 
+		$level_show = DB::select("
+			Select sum(is_show_quality) count_no
+			From appraisal_level
+			where level_id = '{$request->level_id}'
+		");
+
 		if ($all_emp[0]->count_no > 0) {
-			$items = DB::select("
+			$result = "
 				Select structure_id, structure_name
 				From appraisal_structure
-				where structure_id = 3
-				or structure_id = 4
-				or structure_id = 5
-				order by structure_id 
-				");
+				where form_id = 3
+			";
+
+			if($level_show[0]->count_no > 0) {
+				$result .= " or form_id = 2";
+			}
+
+			$result .=" order by structure_id";
+			$items = DB::select($result);
+
 		} else {
-			$items = DB::select("
-				Select structure_id, structure_name
-				From appraisal_structure
-				where structure_id = 3
+
+			if($level_show[0]->count_no > 0) {
+				$items = DB::select("
+					Select structure_id, structure_name
+					From appraisal_structure
+					where form_id = 2
 				");
+			} else {
+				$items = "";
+			}
 		}
 
 		return response()->json($items);

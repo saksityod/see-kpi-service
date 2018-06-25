@@ -1004,13 +1004,182 @@ class AppraisalAssignmentController extends Controller
 
 	    public function status_list(Request $request)
 	    {
-	    	$items = DB::select("
-	    		select CONCAT(to_action,'-',from_action) to_action, CONCAT(to_action,' (',from_action,')') status
-	    		from appraisal_stage
-	    		where appraisal_type_id = 2
-	    		and assignment_flag = 1
-	    		order by to_action asc
-	    		");
+	    	$all_emp = DB::select("
+				SELECT sum(b.is_all_employee) count_no
+				from employee a
+				left outer join appraisal_level b
+				on a.level_id = b.level_id
+				where emp_code = ?
+			", array(Auth::id()));
+
+	    	$emp_level = empty($request->emp_level) ? " ": "and e.level_id = {$request->emp_level}";
+	    	$org_level = empty($request->org_level) ? " ": "and o.level_id = {$request->org_level}";
+	    	$org_id = empty($request->org_id) ? " ": "and er.org_id = {$request->org_id}";
+	    	$period_id = empty($request->period_id) ? " ": "and p.period_id = {$request->period_id}";
+	    	$appraisal_frequency_id = empty($request->appraisal_frequency_id) ? " ": "and p.appraisal_frequency_id = {$request->appraisal_frequency_id}";
+	    	$appraisal_year = empty($request->appraisal_year) ? " ": "and p.appraisal_year = {$request->appraisal_year}";
+	    	$appraisal_type_id = empty($request->appraisal_type_id) ? " ": "and er.appraisal_type_id = {$request->appraisal_type_id}";
+
+	    	if($all_emp[0]->count_no > 0) {
+
+				$items = DB::select("
+		    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+					from emp_result er, 	
+					employee e, 
+					appraisal_type t, 
+					appraisal_item_result ir, 
+					appraisal_item I,
+					appraisal_period p, 
+					org o, 
+					appraisal_level al, 
+					appraisal_stage ast
+					Where er.emp_id = e.emp_id 
+					and er.appraisal_type_id = t.appraisal_type_id
+					And er.emp_result_id = ir.emp_result_id
+					and ir.item_id = I.item_id
+					and er.period_id = p.period_id
+					and er.org_id = o.org_id
+					and er.level_id = al.level_id
+					and er.stage_id = ast.stage_id
+					and ast.appraisal_type_id = 2
+					and ast.assignment_flag = 1
+					".$emp_level."
+					".$org_level."
+					".$org_id."
+					".$period_id."
+					".$appraisal_frequency_id."
+					".$appraisal_year."
+					".$appraisal_type_id."
+		    	");
+
+	    	} else {
+	    		$re_emp = array();
+
+				$emp_list = array();
+
+				$emps = DB::select("
+					select distinct emp_code
+					from employee
+					where chief_emp_code = ?
+				", array(Auth::id()));
+
+				foreach ($emps as $e) {
+					$emp_list[] = $e->emp_code;
+					$re_emp[] = $e->emp_code;
+				}
+
+				$emp_list = array_unique($emp_list);
+
+				// Get array keys
+				$arrayKeys = array_keys($emp_list);
+				// Fetch last array key
+				$lastArrayKey = array_pop($arrayKeys);
+				//iterate array
+				$in_emp = '';
+				foreach($emp_list as $k => $v) {
+					if($k == $lastArrayKey) {
+						//during array iteration this condition states the last element.
+						$in_emp .= "'" . $v . "'";
+					} else {
+						$in_emp .= "'" . $v . "'" . ',';
+					}
+				}
+
+				do {
+					empty($in_emp) ? $in_emp = "null" : null;
+
+					$emp_list = array();
+
+					$emp_items = DB::select("
+						select distinct emp_code
+						from employee
+						where chief_emp_code in ({$in_emp})
+						and chief_emp_code != emp_code
+						and is_active = 1
+					");
+
+					foreach ($emp_items as $e) {
+						$emp_list[] = $e->emp_code;
+						$re_emp[] = $e->emp_code;
+					}
+
+					$emp_list = array_unique($emp_list);
+
+					// Get array keys
+					$arrayKeys = array_keys($emp_list);
+					// Fetch last array key
+					$lastArrayKey = array_pop($arrayKeys);
+					//iterate array
+					$in_emp = '';
+					foreach($emp_list as $k => $v) {
+						if($k == $lastArrayKey) {
+							//during array iteration this condition states the last element.
+							$in_emp .= "'" . $v . "'";
+						} else {
+							$in_emp .= "'" . $v . "'" . ',';
+						}
+					}
+				} while (!empty($emp_list));
+
+				$re_emp[] = Auth::id();
+				$re_emp = array_unique($re_emp);
+
+				// Get array keys
+				$arrayKeys = array_keys($re_emp);
+				// Fetch last array key
+				$lastArrayKey = array_pop($arrayKeys);
+				//iterate array
+				$in_emp = '';
+				foreach($re_emp as $k => $v) {
+					if($k == $lastArrayKey) {
+						//during array iteration this condition states the last element.
+						$in_emp .= "'" . $v . "'";
+					} else {
+						$in_emp .= "'" . $v . "'" . ',';
+					}
+				}
+
+				empty($in_emp) ? $in_emp = "null" : null;
+
+				$items = DB::select("
+		    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+					from emp_result er, 	
+					employee e, 
+					appraisal_type t, 
+					appraisal_item_result ir, 
+					appraisal_item I,
+					appraisal_period p, 
+					org o, 
+					appraisal_level al, 
+					appraisal_stage ast
+					Where er.emp_id = e.emp_id 
+					and er.appraisal_type_id = t.appraisal_type_id
+					And er.emp_result_id = ir.emp_result_id
+					and ir.item_id = I.item_id
+					and er.period_id = p.period_id
+					and er.org_id = o.org_id
+					and er.level_id = al.level_id
+					and er.stage_id = ast.stage_id
+					and ast.appraisal_type_id = 2
+					and ast.assignment_flag = 1
+					".$emp_level."
+					".$org_level."
+					".$org_id."
+					".$period_id."
+					".$appraisal_frequency_id."
+					".$appraisal_year."
+					".$appraisal_type_id."
+					and e.emp_code in ($in_emp)
+		    	");
+				// $items = DB::select("
+		  //   		select CONCAT(to_action,'-',from_action) to_action, CONCAT(to_action,' (',from_action,')') status
+		  //   		from appraisal_stage
+		  //   		where appraisal_type_id = 2
+		  //   		and assignment_flag = 1
+		  //   		order by to_action asc
+		  //   	");
+	    	}
+
 	    	return response()->json($items);
 	    }
 
@@ -1035,7 +1204,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, al.is_group_action, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 	    				From employee e
 	    				left outer join org o
 	    				on e.org_id = o.org_id
@@ -1099,7 +1268,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al, appraisal_stage ast
 	    				Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
@@ -1127,7 +1296,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
@@ -1180,7 +1349,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
@@ -1207,7 +1376,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, al.is_group_action, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 	    				From employee e left outer join	org o
 	    				on e.org_id = o.org_id
 	    				left outer join position p
@@ -1279,7 +1448,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al, appraisal_stage ast
 	    				Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
@@ -1312,7 +1481,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign = "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
@@ -1365,7 +1534,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
