@@ -1019,6 +1019,8 @@ class AppraisalAssignmentController extends Controller
 	    	$appraisal_frequency_id = empty($request->appraisal_frequency_id) ? " ": "and p.appraisal_frequency_id = {$request->appraisal_frequency_id}";
 	    	$appraisal_year = empty($request->appraisal_year) ? " ": "and p.appraisal_year = {$request->appraisal_year}";
 	    	$appraisal_type_id = empty($request->appraisal_type_id) ? " ": "and er.appraisal_type_id = {$request->appraisal_type_id}";
+	    	$emp_code = empty($request->emp_code) ? " ": "and e.emp_code = {$request->emp_code}";
+	    	$position_id = empty($request->position_id) ? " ": "and er.position_id = {$request->position_id}";
 
 	    	if($all_emp[0]->count_no > 0) {
 
@@ -1050,6 +1052,8 @@ class AppraisalAssignmentController extends Controller
 					".$appraisal_frequency_id."
 					".$appraisal_year."
 					".$appraisal_type_id."
+					".$emp_code."
+					".$position_id."
 		    	");
 
 	    	} else {
