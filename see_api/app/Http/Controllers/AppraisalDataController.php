@@ -877,43 +877,51 @@ class AppraisalDataController extends Controller
 					'employee_id' => 'required|integer',
 					'period_id' => 'required|integer',
 					'item_id' => 'required|integer',
+					'structure_id' => 'required|integer',
 					'data_value' => 'required|numeric|between:0,'.$data_target.'',
 				]);
 
 				if ($validator->fails()) {
 					$errors[] = ['employee_code' => $i->employee_code, 'errors' => $validator->errors()];
 				} else {
+
 					try {
 
 						$chief_emp = Employee::find($i->employee_code);
-						if($all_emp[0]->count_no > 0) {
-							AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value,'second_score' => $i->data_value, 'score' => $i->data_value, 'updated_by' => Auth::id()]);
-						} else if($chief_emp->chief_emp_code==auth::id()) {
-							// chief first
-							$second = DB::select("
-								select second_score
-								from appraisal_item_result
-								where emp_result_id = {$i->emp_result_id}
-								and emp_id = {$i->employee_id}
-								and period_id = {$i->period_id}
-								and item_id ={$i->item_id}
-							");
-							$score = ($second[0]->second_score + $i->data_value) / 2;
-
-							AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value, 'score' => $score, 'updated_by' => Auth::id()]);
+						
+						if($target_score->form_id==3) {
+							AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['actual_value' => $i->data_value, 'updated_by' => Auth::id()]);
 						} else {
-							// chief second
-							$first = DB::select("
-								select first_score
-								from appraisal_item_result
-								where emp_result_id = {$i->emp_result_id}
-								and emp_id = {$i->employee_id}
-								and period_id = {$i->period_id}
-								and item_id ={$i->item_id}
-							");
-							$score = ($first[0]->first_score + $i->data_value) / 2;
-							
-							AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['second_score' => $i->data_value, 'score' => $score, 'updated_by' => Auth::id()]);
+
+							if($all_emp[0]->count_no > 0) {
+								AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value,'second_score' => $i->data_value, 'score' => $i->data_value, 'updated_by' => Auth::id()]);
+							} else if($chief_emp->chief_emp_code==auth::id()) {
+								// chief first
+								$second = DB::select("
+									select second_score
+									from appraisal_item_result
+									where emp_result_id = {$i->emp_result_id}
+									and emp_id = {$i->employee_id}
+									and period_id = {$i->period_id}
+									and item_id ={$i->item_id}
+								");
+								$score = ($second[0]->second_score + $i->data_value) / 2;
+
+								AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value, 'score' => $score, 'updated_by' => Auth::id()]);
+							} else {
+								// chief second
+								$first = DB::select("
+									select first_score
+									from appraisal_item_result
+									where emp_result_id = {$i->emp_result_id}
+									and emp_id = {$i->employee_id}
+									and period_id = {$i->period_id}
+									and item_id ={$i->item_id}
+								");
+								$score = ($first[0]->first_score + $i->data_value) / 2;
+								
+								AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['second_score' => $i->data_value, 'score' => $score, 'updated_by' => Auth::id()]);
+							}
 						}
 
 						$items = DB::select("

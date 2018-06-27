@@ -19,6 +19,7 @@ use Exception;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 
 class ImportAssignmentController extends Controller
 {
@@ -342,268 +343,273 @@ class ImportAssignmentController extends Controller
       $extension = "xlsx";
       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
 
-      // Set Input parameter
-      $appraisal_type_id = $request->appraisal_type_id;
-      $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
-      $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
-      $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
-      // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
-      // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
-      // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
-      $position_id = $request->position_id;
-      $emp_code = $request->emp_id;
-      $period_id = $request->period_id;
-      $appraisal_year = $request->appraisal_year;
-      $frequency_id = $request->frequency_id;
+      try {
+        // Set Input parameter
+        $appraisal_type_id = $request->appraisal_type_id;
+        $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
+        $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
+        $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
+        // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
+        // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
+        // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
+        $position_id = $request->position_id;
+        $emp_code = $request->emp_id;
+        $period_id = $request->period_id;
+        $appraisal_year = $request->appraisal_year;
+        $frequency_id = $request->frequency_id;
 
-      // Set parameter string in sql where clause
-      $positionStr = (empty($position_id)) ? "" : " emp.position_id = '{$position_id}'";
-      $empStr = (empty($emp_code)) ? "" : " emp.emp_code = '{$emp_code}'";
-      if (!empty($positionStr) && !empty($empStr)) {
-        $empContStr = " and ";
-      } else if(empty($positionStr) && empty($empStr)) {
-        $empContStr = " 1=1 ";
-      } else {
-        $empContStr = "";
-      }
-      $periodStr = (empty($period_id))
-        ? "
-          AND prd.appraisal_year = '{$appraisal_year}'
-          AND prd.appraisal_frequency_id = '{$frequency_id}'"
-        : "AND prd.period_id = '{$period_id}'" ;
+        // Set parameter string in sql where clause
+        $positionStr = (empty($position_id)) ? "" : " emp.position_id = '{$position_id}'";
+        $empStr = (empty($emp_code)) ? "" : " emp.emp_code = '{$emp_code}'";
+        if (!empty($positionStr) && !empty($empStr)) {
+          $empContStr = " and ";
+        } else if(empty($positionStr) && empty($empStr)) {
+          $empContStr = " 1=1 ";
+        } else {
+          $empContStr = "";
+        }
+        $periodStr = (empty($period_id))
+          ? "
+            AND prd.appraisal_year = '{$appraisal_year}'
+            AND prd.appraisal_frequency_id = '{$frequency_id}'"
+          : "AND prd.period_id = '{$period_id}'" ;
 
-      $items = DB::select("
-        SELECT
-        	prd.period_id, prd.year, prd.start_date, prd.end_date,
-        	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, emp.status,
-        	emp.level_id, emp.appraisal_level_name level_name, emp.org_id,
-        	emp.org_name, emp.position_id, emp.position_name, emp.chief_emp_id,
-        	emp.chief_emp_code, emp.chief_emp_name, emp.emp_id, emp.emp_code,
-        	emp.emp_name, item.item_id appraisal_item_id,
-        	item.item_name appraisal_item_name, item.uom_name,
-          item.max_value, item.unit_deduct_score, item.value_get_zero,
-        	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
-        FROM(
-        	SELECT
-        		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
-        		emp.org_id, org.org_name,
-        		emp.position_id, pos.position_name,
-        		emp.emp_id, emp.emp_code, emp.emp_name,
-        		chf.emp_id chief_emp_id, chf.emp_code chief_emp_code, chf.emp_name chief_emp_name,
-            stg.status
-        	FROM employee emp
-        	LEFT OUTER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
-        	INNER JOIN appraisal_level vel ON vel.level_id = emp.level_id
-        	INNER JOIN org ON org.org_id = emp.org_id
-        	INNER JOIN position pos ON pos.position_id = emp.position_id
-          LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = vel.default_stage_id
-        	WHERE vel.is_active = 1
-        	AND org.is_active = 1
-        	AND pos.is_active = 1
-          AND emp.is_active = 1
-        	AND emp.level_id IN({$appraisal_level_id})
-        	AND emp.org_id IN({$org_id})
-        	AND (".$positionStr.$empContStr.$empStr.")
-        )emp
-        INNER JOIN (
-        	SELECT ail.level_id, aio.org_id,
-        		itm.item_id, itm.item_name, uom.uom_name,
-            itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
-        		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
-        	FROM appraisal_item itm
-        	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
-        	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
-        	LEFT JOIN appraisal_structure strc ON strc.structure_id = itm.structure_id
-        	LEFT JOIN uom ON uom.uom_id = itm.uom_id
-        	WHERE itm.item_id IN({$appraisal_item_id})
-        	AND ail.level_id IN({$appraisal_level_id})
-        	AND aio.org_id IN({$org_id})
-        )item ON item.level_id = emp.level_id AND item.org_id = emp.org_id
-        CROSS JOIN(
-        	SELECT apt.appraisal_type_id, apt.appraisal_type_name,
-        		aps.stage_id, aps.status
-        	FROM appraisal_type apt
-        	LEFT JOIN appraisal_stage aps
-        		ON aps.appraisal_type_id = apt.appraisal_type_id
-        		AND aps.stage_id = (
-        			SELECT MIN(stage_id) FROM appraisal_stage
-        			WHERE appraisal_type_id = apt.appraisal_type_id
-        		)
-        	WHERE apt.appraisal_type_id = '{$appraisal_type_id}'
-        )typ
-        CROSS JOIN(
-        	SELECT prd.period_id, prd.appraisal_year year, prd.start_date, prd.end_date
-        	FROM appraisal_period prd
-        	WHERE 1 = 1
-        	".$periodStr."
-        )prd
-      ");
+        $items = DB::select("
+          SELECT
+          	prd.period_id, prd.year, prd.start_date, prd.end_date,
+          	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, emp.status,
+          	emp.level_id, emp.appraisal_level_name level_name, emp.org_id,
+          	emp.org_name, emp.position_id, emp.position_name, emp.chief_emp_id,
+          	emp.chief_emp_code, emp.chief_emp_name, emp.emp_id, emp.emp_code,
+          	emp.emp_name, item.item_id appraisal_item_id,
+          	item.item_name appraisal_item_name, item.uom_name,
+            item.max_value, item.unit_deduct_score, item.value_get_zero,
+          	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
+          FROM(
+          	SELECT
+          		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
+          		emp.org_id, org.org_name,
+          		emp.position_id, pos.position_name,
+          		emp.emp_id, emp.emp_code, emp.emp_name,
+          		chf.emp_id chief_emp_id, chf.emp_code chief_emp_code, chf.emp_name chief_emp_name,
+              stg.status
+          	FROM employee emp
+          	LEFT OUTER JOIN employee chf ON chf.emp_code = emp.chief_emp_code
+          	INNER JOIN appraisal_level vel ON vel.level_id = emp.level_id
+          	INNER JOIN org ON org.org_id = emp.org_id
+          	INNER JOIN position pos ON pos.position_id = emp.position_id
+            LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = vel.default_stage_id
+          	WHERE vel.is_active = 1
+          	AND org.is_active = 1
+          	AND pos.is_active = 1
+            AND emp.is_active = 1
+          	AND emp.level_id IN({$appraisal_level_id})
+          	AND emp.org_id IN({$org_id})
+          	AND (".$positionStr.$empContStr.$empStr.")
+          )emp
+          INNER JOIN (
+          	SELECT ail.level_id, aio.org_id,
+          		itm.item_id, itm.item_name, uom.uom_name,
+              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
+          		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
+          	FROM appraisal_item itm
+          	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
+          	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
+          	LEFT JOIN appraisal_structure strc ON strc.structure_id = itm.structure_id
+          	LEFT JOIN uom ON uom.uom_id = itm.uom_id
+          	WHERE itm.item_id IN({$appraisal_item_id})
+          	AND ail.level_id IN({$appraisal_level_id})
+          	AND aio.org_id IN({$org_id})
+          )item ON item.level_id = emp.level_id AND item.org_id = emp.org_id
+          CROSS JOIN(
+          	SELECT apt.appraisal_type_id, apt.appraisal_type_name,
+          		aps.stage_id, aps.status
+          	FROM appraisal_type apt
+          	LEFT JOIN appraisal_stage aps
+          		ON aps.appraisal_type_id = apt.appraisal_type_id
+          		AND aps.stage_id = (
+          			SELECT MIN(stage_id) FROM appraisal_stage
+          			WHERE appraisal_type_id = apt.appraisal_type_id
+          		)
+          	WHERE apt.appraisal_type_id = '{$appraisal_type_id}'
+          )typ
+          CROSS JOIN(
+          	SELECT prd.period_id, prd.appraisal_year year, prd.start_date, prd.end_date
+          	FROM appraisal_period prd
+          	WHERE 1 = 1
+          	".$periodStr."
+          )prd
+        ");
 
-      // Generate Excel from query result. Return 404, If not found data.
-      if(!empty($items)){
-        // Set grouped to create sheets.
-        $itemList = [];
-        $form1Key = 0; $form2Key = 0; $form3Key = 0;
-        foreach($items as $value) {
-          // Get assigned value //
-          $assignedInfo = [];
-          $assignedQry = DB::select("
-            SELECT target_value, weight_percent,
-            	score0, score1, score2, score3, score4, score5
-            FROM appraisal_item_result
-            WHERE period_id = {$value->period_id}
-            AND emp_id = {$value->emp_id}
-            AND org_id = {$value->org_id}
-            AND position_id = {$value->position_id}
-            AND item_id = {$value->appraisal_item_id}
-            AND level_id = {$value->level_id}
-            LIMIT 1
-          ");
-          if (empty($assignedQry)) {
-            $assignedInfo["target_value"] = "";
-            $assignedInfo["weight_percent"] = "";
-            $assignedInfo["score0"] = "";
-            $assignedInfo["score1"] = "";
-            $assignedInfo["score2"] = "";
-            $assignedInfo["score3"] = "";
-            $assignedInfo["score4"] = "";
-            $assignedInfo["score5"] = "";
-          } else {
-            foreach ($assignedQry as $asVal) {
-              $assignedInfo["target_value"] = $asVal->target_value;
-              $assignedInfo["weight_percent"] = $asVal->weight_percent;
-              $assignedInfo["score0"] = $asVal->score0;
-              $assignedInfo["score1"] = $asVal->score1;
-              $assignedInfo["score2"] = $asVal->score2;
-              $assignedInfo["score3"] = $asVal->score3;
-              $assignedInfo["score4"] = $asVal->score4;
-              $assignedInfo["score5"] = $asVal->score5;
-            }
-          }
-
-          if ($value->form_id == "1") {
-            $itemList[$value->structure_name][$form1Key] = [
-              "period_id" => $value->period_id,
-              "year" => $value->year,
-              "start_date" => $value->start_date,
-              "end_date" => $value->end_date,
-              "appraisal_type_id" => $value->appraisal_type_id,
-              "appraisal_type_name" => $value->appraisal_type_name,
-              "stage_id" => $value->stage_id,
-              "status" => $value->status,
-              "level_id" => $value->level_id,
-              "level_name" => $value->level_name,
-              "org_id" => $value->org_id,
-              "org_name" => $value->org_name,
-              "position_id" => $value->position_id,
-              "position_name" => $value->position_name,
-              "chief_emp_id" => $value->chief_emp_id,
-              "chief_emp_code" => $value->chief_emp_code,
-              "chief_emp_name" => $value->chief_emp_name,
-              "emp_id" => $value->emp_id,
-              "emp_code" => $value->emp_code,
-              "emp_name" => $value->emp_name,
-              "appraisal_item_id" => $value->appraisal_item_id,
-              "appraisal_item_name" => $value->appraisal_item_name,
-              "uom_name" => $value->uom_name,
-              "target" => $assignedInfo["target_value"],
-              "weight" => $assignedInfo["weight_percent"]
-              // Range by appraisal_structure.nof_target_score
-            ];
-
-            // Generate range by appraisal_structure.nof_target_score
-            $rangekey = 0;
-            while($rangekey <= $value->nof_target_score) {
-              $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
-              $rangekey = $rangekey+1;
-            }
-            $form1Key = $form1Key+1;
-
-          } else if($value->form_id == "2") {
-            $itemList[$value->structure_name][$form2Key] = [
-              "period_id" => $value->period_id,
-              "year" => $value->year,
-              "start_date" => $value->start_date,
-              "end_date" => $value->end_date,
-              "appraisal_type_id" => $value->appraisal_type_id,
-              "appraisal_type_name" => $value->appraisal_type_name,
-              "stage_id" => $value->stage_id,
-              "status" => $value->status,
-              "level_id" => $value->level_id,
-              "level_name" => $value->level_name,
-              "org_id" => $value->org_id,
-              "org_name" => $value->org_name,
-              "position_id" => $value->position_id,
-              "position_name" => $value->position_name,
-              "chief_emp_id" => $value->chief_emp_id,
-              "chief_emp_code" => $value->chief_emp_code,
-              "chief_emp_name" => $value->chief_emp_name,
-              "emp_id" => $value->emp_id,
-              "emp_code" => $value->emp_code,
-              "emp_name" => $value->emp_name,
-              "appraisal_item_id" => $value->appraisal_item_id,
-              "appraisal_item_name" => $value->appraisal_item_name,
-              "target" => $assignedInfo["target_value"],
-              "weight" => $assignedInfo["weight_percent"]
-            ];
-            $form2Key = $form2Key + 1;
-
-          }else if($value->form_id == "3"){
-
-            if($value->is_value_get_zero==1) {
-              $column_value_get_zero = "value_get_zero";
-              $value_get_zero = $value->value_get_zero;
+        // Generate Excel from query result. Return 404, If not found data.
+        if(!empty($items)){
+          // Set grouped to create sheets.
+          $itemList = [];
+          $form1Key = 0; $form2Key = 0; $form3Key = 0;
+          foreach($items as $value) {
+            // Get assigned value //
+            $assignedInfo = [];
+            $assignedQry = DB::select("
+              SELECT target_value, weight_percent,
+              	score0, score1, score2, score3, score4, score5
+              FROM appraisal_item_result
+              WHERE period_id = {$value->period_id}
+              AND emp_id = {$value->emp_id}
+              AND org_id = {$value->org_id}
+              AND position_id = {$value->position_id}
+              AND item_id = {$value->appraisal_item_id}
+              AND level_id = {$value->level_id}
+              LIMIT 1
+            ");
+            if (empty($assignedQry)) {
+              $assignedInfo["target_value"] = "";
+              $assignedInfo["weight_percent"] = "";
+              $assignedInfo["score0"] = "";
+              $assignedInfo["score1"] = "";
+              $assignedInfo["score2"] = "";
+              $assignedInfo["score3"] = "";
+              $assignedInfo["score4"] = "";
+              $assignedInfo["score5"] = "";
             } else {
-              $column_value_get_zero = "";
-              $value_get_zero = "";
+              foreach ($assignedQry as $asVal) {
+                $assignedInfo["target_value"] = $asVal->target_value;
+                $assignedInfo["weight_percent"] = $asVal->weight_percent;
+                $assignedInfo["score0"] = $asVal->score0;
+                $assignedInfo["score1"] = $asVal->score1;
+                $assignedInfo["score2"] = $asVal->score2;
+                $assignedInfo["score3"] = $asVal->score3;
+                $assignedInfo["score4"] = $asVal->score4;
+                $assignedInfo["score5"] = $asVal->score5;
+              }
             }
 
-            $itemList[$value->structure_name][$form3Key] = [
-              "period_id" => $value->period_id,
-              "year" => $value->year,
-              "start_date" => $value->start_date,
-              "end_date" => $value->end_date,
-              "appraisal_type_id" => $value->appraisal_type_id,
-              "appraisal_type_name" => $value->appraisal_type_name,
-              "stage_id" => $value->stage_id,
-              "status" => $value->status,
-              "level_id" => $value->level_id,
-              "level_name" => $value->level_name,
-              "org_id" => $value->org_id,
-              "org_name" => $value->org_name,
-              "position_id" => $value->position_id,
-              "position_name" => $value->position_name,
-              "chief_emp_id" => $value->chief_emp_id,
-              "chief_emp_code" => $value->chief_emp_code,
-              "chief_emp_name" => $value->chief_emp_name,
-              "emp_id" => $value->emp_id,
-              "emp_code" => $value->emp_code,
-              "emp_name" => $value->emp_name,
-              "appraisal_item_id" => $value->appraisal_item_id,
-              "appraisal_item_name" => $value->appraisal_item_name,
-              "max_value" => $value->max_value,
-              "score_per_unit" => $value->unit_deduct_score,
-              "".$column_value_get_zero."" => $value_get_zero
-            ];
-            $form3Key = $form3Key + 1;
+            if ($value->form_id == "1") {
+              $itemList[$value->structure_name][$form1Key] = [
+                "period_id" => $value->period_id,
+                "year" => $value->year,
+                "start_date" => $value->start_date,
+                "end_date" => $value->end_date,
+                "appraisal_type_id" => $value->appraisal_type_id,
+                "appraisal_type_name" => $value->appraisal_type_name,
+                "stage_id" => $value->stage_id,
+                "status" => $value->status,
+                "level_id" => $value->level_id,
+                "level_name" => $value->level_name,
+                "org_id" => $value->org_id,
+                "org_name" => $value->org_name,
+                "position_id" => $value->position_id,
+                "position_name" => $value->position_name,
+                "chief_emp_id" => $value->chief_emp_id,
+                "chief_emp_code" => $value->chief_emp_code,
+                "chief_emp_name" => $value->chief_emp_name,
+                "emp_id" => $value->emp_id,
+                "emp_code" => $value->emp_code,
+                "emp_name" => $value->emp_name,
+                "appraisal_item_id" => $value->appraisal_item_id,
+                "appraisal_item_name" => $value->appraisal_item_name,
+                "uom_name" => $value->uom_name,
+                "target" => $assignedInfo["target_value"],
+                "weight" => $assignedInfo["weight_percent"]
+                // Range by appraisal_structure.nof_target_score
+              ];
+
+              // Generate range by appraisal_structure.nof_target_score
+              $rangekey = 0;
+              while($rangekey <= $value->nof_target_score) {
+                $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+                $rangekey = $rangekey+1;
+              }
+              $form1Key = $form1Key+1;
+
+            } else if($value->form_id == "2") {
+              $itemList[$value->structure_name][$form2Key] = [
+                "period_id" => $value->period_id,
+                "year" => $value->year,
+                "start_date" => $value->start_date,
+                "end_date" => $value->end_date,
+                "appraisal_type_id" => $value->appraisal_type_id,
+                "appraisal_type_name" => $value->appraisal_type_name,
+                "stage_id" => $value->stage_id,
+                "status" => $value->status,
+                "level_id" => $value->level_id,
+                "level_name" => $value->level_name,
+                "org_id" => $value->org_id,
+                "org_name" => $value->org_name,
+                "position_id" => $value->position_id,
+                "position_name" => $value->position_name,
+                "chief_emp_id" => $value->chief_emp_id,
+                "chief_emp_code" => $value->chief_emp_code,
+                "chief_emp_name" => $value->chief_emp_name,
+                "emp_id" => $value->emp_id,
+                "emp_code" => $value->emp_code,
+                "emp_name" => $value->emp_name,
+                "appraisal_item_id" => $value->appraisal_item_id,
+                "appraisal_item_name" => $value->appraisal_item_name,
+                "target" => $assignedInfo["target_value"],
+                "weight" => $assignedInfo["weight_percent"]
+              ];
+              $form2Key = $form2Key + 1;
+
+            }else if($value->form_id == "3"){
+
+              if($value->is_value_get_zero==1) {
+                $column_value_get_zero = "value_get_zero";
+                $value_get_zero = $value->value_get_zero;
+              } else {
+                $column_value_get_zero = "";
+                $value_get_zero = "";
+              }
+
+              $itemList[$value->structure_name][$form3Key] = [
+                "period_id" => $value->period_id,
+                "year" => $value->year,
+                "start_date" => $value->start_date,
+                "end_date" => $value->end_date,
+                "appraisal_type_id" => $value->appraisal_type_id,
+                "appraisal_type_name" => $value->appraisal_type_name,
+                "stage_id" => $value->stage_id,
+                "status" => $value->status,
+                "level_id" => $value->level_id,
+                "level_name" => $value->level_name,
+                "org_id" => $value->org_id,
+                "org_name" => $value->org_name,
+                "position_id" => $value->position_id,
+                "position_name" => $value->position_name,
+                "chief_emp_id" => $value->chief_emp_id,
+                "chief_emp_code" => $value->chief_emp_code,
+                "chief_emp_name" => $value->chief_emp_name,
+                "emp_id" => $value->emp_id,
+                "emp_code" => $value->emp_code,
+                "emp_name" => $value->emp_name,
+                "appraisal_item_id" => $value->appraisal_item_id,
+                "appraisal_item_name" => $value->appraisal_item_name,
+                "max_value" => $value->max_value,
+                "score_per_unit" => $value->unit_deduct_score,
+                "".$column_value_get_zero."" => $value_get_zero
+              ];
+              $form3Key = $form3Key + 1;
+            }
           }
+
+          Excel::create($fileName, function($excel) use ($itemList) {
+
+            foreach ($itemList as $key => $group) {
+
+              $excel->sheet($key, function($sheet) use ($key, $itemList){
+                // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
+                $sheet->fromArray($itemList[$key], null, 'A1', true);
+              });
+
+            }
+
+          })->download($extension); //->store($extension, $outpath);
+          //return response()->download($outpath."/".$fileName.".".$extension, $fileName.".".$extension);
+        }else{
+          return response()->json(['status' => 404, 'data' => 'Assignment Item Result not found.']);
         }
 
-        Excel::create($fileName, function($excel) use ($itemList) {
-
-          foreach ($itemList as $key => $group) {
-
-            $excel->sheet($key, function($sheet) use ($key, $itemList){
-              // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
-              $sheet->fromArray($itemList[$key], null, 'A1', true);
-            });
-
-          }
-
-        })->download($extension); //->store($extension, $outpath);
-        //return response()->download($outpath."/".$fileName.".".$extension, $fileName.".".$extension);
-      }else{
-        return response()->json(['status' => 404, 'data' => 'Assignment Item Result not found.']);
+      } catch(QueryException $e) {
+        return response()->json(['status' => 404, 'data' => 'Assignment Item Result is set time limit 1000 sec.']);
       }
     }
 
