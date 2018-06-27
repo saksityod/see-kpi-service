@@ -1033,8 +1033,8 @@ class ImportAssignmentController extends Controller
                   "position_id" => $row->position_id,
                   "chief_emp_id" => $row->chief_emp_id,
                   "result_threshold_group_id" => $thresholdGroupId,
-                  "stage_id" => $row->stage_id,
-                  "status" => $row->status,
+                 // "stage_id" => $row->stage_id,
+                 // "status" => $row->status,
                   "updated_by" => Auth::id(),
                   "updated_dttm" => date("Y-m-d H:i:s")
                 ]);
@@ -1208,13 +1208,13 @@ class ImportAssignmentController extends Controller
             }
           } else {
             //---- Update @emp_result_stage
-            EmpResultStage::where(
-              'emp_result_id', $value->emp_result_id
-            )->update([
-              "stage_id" => $value->stage_id,
-              "updated_by" => Auth::id(),
-              "updated_dttm" => date("Y-m-d H:i:s")
-            ]);
+            // EmpResultStage::where(
+              // 'emp_result_id', $value->emp_result_id
+            // )->update([
+              // "stage_id" => $value->stage_id,
+              // "updated_by" => Auth::id(),
+              // "updated_dttm" => date("Y-m-d H:i:s")
+            // ]);
           }
         }
         // -- End -- Insert/Update @emp_result_stage -------------------------//
