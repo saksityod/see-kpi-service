@@ -1165,7 +1165,7 @@ class AppraisalAssignmentController extends Controller
 					and er.level_id = al.level_id
 					and er.stage_id = ast.stage_id
 					and ast.appraisal_type_id = 2
-					and ast.assignment_flag = 1
+					#and ast.assignment_flag = 1
 					".$emp_level."
 					".$org_level."
 					".$org_id."
