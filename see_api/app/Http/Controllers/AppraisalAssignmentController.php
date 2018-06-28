@@ -1024,85 +1024,85 @@ class AppraisalAssignmentController extends Controller
 
 	    	if($all_emp[0]->count_no > 0) {
 
-				$items = DB::select("
-		    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-					from emp_result er, 	
-					employee e, 
-					appraisal_type t, 
-					appraisal_item_result ir, 
-					appraisal_item I,
-					appraisal_period p, 
-					org o, 
-					appraisal_level al,
-					appraisal_stage ast
-					Where er.emp_id = e.emp_id 
-					and er.appraisal_type_id = t.appraisal_type_id
-					And er.emp_result_id = ir.emp_result_id
-					and ir.item_id = I.item_id
-					and er.period_id = p.period_id
-					and er.org_id = o.org_id
-					and er.level_id = al.level_id
-					and er.stage_id = ast.stage_id
-					and ast.appraisal_type_id = 2
-					#and ast.assignment_flag = 1
-					".$emp_level."
-					".$org_level."
-					".$org_id."
-					".$period_id."
-					".$appraisal_frequency_id."
-					".$appraisal_year."
-					".$appraisal_type_id."
-					".$emp_code."
-					".$position_id."
-		    	");
+	    		if($request->appraisal_type_id==2) {
+					$items = DB::select("
+			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+						from emp_result er, 	
+						employee e, 
+						appraisal_type t, 
+						appraisal_item_result ir, 
+						appraisal_item I,
+						appraisal_period p, 
+						org o, 
+						appraisal_level al,
+						appraisal_stage ast
+						Where er.emp_id = e.emp_id 
+						and er.appraisal_type_id = t.appraisal_type_id
+						And er.emp_result_id = ir.emp_result_id
+						and ir.item_id = I.item_id
+						and er.period_id = p.period_id
+						and er.org_id = o.org_id
+						and er.level_id = al.level_id
+						and er.stage_id = ast.stage_id
+						and ast.appraisal_type_id = 2
+						#and ast.assignment_flag = 1
+						".$emp_level."
+						".$org_level."
+						".$org_id."
+						".$period_id."
+						".$appraisal_frequency_id."
+						".$appraisal_year."
+						".$appraisal_type_id."
+						".$emp_code."
+						".$position_id."
+			    	");
+				} else {
+					$items = DB::select("
+			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+						from emp_result er, 	
+						employee e, 
+						appraisal_type t, 
+						appraisal_item_result ir, 
+						appraisal_item I,
+						appraisal_period p, 
+						org o, 
+						appraisal_level al,
+						appraisal_stage ast
+						Where er.org_id = e.org_id 
+						and er.appraisal_type_id = t.appraisal_type_id
+						And er.emp_result_id = ir.emp_result_id
+						and ir.item_id = I.item_id
+						and er.period_id = p.period_id
+						and er.org_id = o.org_id
+						and er.level_id = al.level_id
+						and er.stage_id = ast.stage_id
+						and ast.appraisal_type_id = 1
+						#and ast.assignment_flag = 1
+						".$org_level."
+						".$org_id."
+						".$period_id."
+						".$appraisal_frequency_id."
+						".$appraisal_year."
+						".$appraisal_type_id."
+						".$emp_code."
+			    	");
+				}
 
 	    	} else {
-	    		$re_emp = array();
 
-				$emp_list = array();
+				if($request->appraisal_type_id==2) {
 
-				$emps = DB::select("
-					select distinct emp_code
-					from employee
-					where chief_emp_code = ?
-				", array(Auth::id()));
-
-				foreach ($emps as $e) {
-					$emp_list[] = $e->emp_code;
-					$re_emp[] = $e->emp_code;
-				}
-
-				$emp_list = array_unique($emp_list);
-
-				// Get array keys
-				$arrayKeys = array_keys($emp_list);
-				// Fetch last array key
-				$lastArrayKey = array_pop($arrayKeys);
-				//iterate array
-				$in_emp = '';
-				foreach($emp_list as $k => $v) {
-					if($k == $lastArrayKey) {
-						//during array iteration this condition states the last element.
-						$in_emp .= "'" . $v . "'";
-					} else {
-						$in_emp .= "'" . $v . "'" . ',';
-					}
-				}
-
-				do {
-					empty($in_emp) ? $in_emp = "null" : null;
+					$re_emp = array();
 
 					$emp_list = array();
 
-					$emp_items = DB::select("
+					$emps = DB::select("
 						select distinct emp_code
 						from employee
-						where chief_emp_code in ({$in_emp})
-						and chief_emp_code != emp_code
-						and is_active = 1
-					");
+						where chief_emp_code = ?
+					", array(Auth::id()));
 
-					foreach ($emp_items as $e) {
+					foreach ($emps as $e) {
 						$emp_list[] = $e->emp_code;
 						$re_emp[] = $e->emp_code;
 					}
@@ -1123,58 +1123,219 @@ class AppraisalAssignmentController extends Controller
 							$in_emp .= "'" . $v . "'" . ',';
 						}
 					}
-				} while (!empty($emp_list));
 
-				$re_emp[] = Auth::id();
-				$re_emp = array_unique($re_emp);
+					do {
+						empty($in_emp) ? $in_emp = "null" : null;
 
-				// Get array keys
-				$arrayKeys = array_keys($re_emp);
-				// Fetch last array key
-				$lastArrayKey = array_pop($arrayKeys);
-				//iterate array
-				$in_emp = '';
-				foreach($re_emp as $k => $v) {
-					if($k == $lastArrayKey) {
-						//during array iteration this condition states the last element.
-						$in_emp .= "'" . $v . "'";
-					} else {
-						$in_emp .= "'" . $v . "'" . ',';
+						$emp_list = array();
+
+						$emp_items = DB::select("
+							select distinct emp_code
+							from employee
+							where chief_emp_code in ({$in_emp})
+							and chief_emp_code != emp_code
+							and is_active = 1
+						");
+
+						foreach ($emp_items as $e) {
+							$emp_list[] = $e->emp_code;
+							$re_emp[] = $e->emp_code;
+						}
+
+						$emp_list = array_unique($emp_list);
+
+						// Get array keys
+						$arrayKeys = array_keys($emp_list);
+						// Fetch last array key
+						$lastArrayKey = array_pop($arrayKeys);
+						//iterate array
+						$in_emp = '';
+						foreach($emp_list as $k => $v) {
+							if($k == $lastArrayKey) {
+								//during array iteration this condition states the last element.
+								$in_emp .= "'" . $v . "'";
+							} else {
+								$in_emp .= "'" . $v . "'" . ',';
+							}
+						}
+					} while (!empty($emp_list));
+
+					$re_emp[] = Auth::id();
+					$re_emp = array_unique($re_emp);
+
+					// Get array keys
+					$arrayKeys = array_keys($re_emp);
+					// Fetch last array key
+					$lastArrayKey = array_pop($arrayKeys);
+					//iterate array
+					$in_emp = '';
+					foreach($re_emp as $k => $v) {
+						if($k == $lastArrayKey) {
+							//during array iteration this condition states the last element.
+							$in_emp .= "'" . $v . "'";
+						} else {
+							$in_emp .= "'" . $v . "'" . ',';
+						}
 					}
+
+					empty($in_emp) ? $in_emp = "null" : null;
+
+					$items = DB::select("
+			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+						from emp_result er, 	
+						employee e, 
+						appraisal_type t, 
+						appraisal_item_result ir, 
+						appraisal_item I,
+						appraisal_period p, 
+						org o, 
+						appraisal_level al, 
+						appraisal_stage ast
+						Where er.emp_id = e.emp_id 
+						and er.appraisal_type_id = t.appraisal_type_id
+						And er.emp_result_id = ir.emp_result_id
+						and ir.item_id = I.item_id
+						and er.period_id = p.period_id
+						and er.org_id = o.org_id
+						and er.level_id = al.level_id
+						and er.stage_id = ast.stage_id
+						and ast.appraisal_type_id = 2
+						#and ast.assignment_flag = 1
+						".$emp_level."
+						".$org_level."
+						".$org_id."
+						".$period_id."
+						".$appraisal_frequency_id."
+						".$appraisal_year."
+						".$appraisal_type_id."
+						".$position_id."
+						and e.emp_code in ($in_emp)
+			    	");
+				} else {
+
+					$emp = Employee::find(Auth::id());
+
+					$co = Org::find($emp->org_id);
+
+					$re_emp = array();
+
+					$emp_list = array();
+
+					$emps = DB::select("
+						select distinct org_code
+						from org
+						where parent_org_code = ?
+						", array($co->org_code));
+
+					foreach ($emps as $e) {
+						$emp_list[] = $e->org_code;
+						$re_emp[] = $e->org_code;
+					}
+
+					$emp_list = array_unique($emp_list);
+					// Get array keys
+					$arrayKeys = array_keys($emp_list);
+					// Fetch last array key
+					$lastArrayKey = array_pop($arrayKeys);
+					//iterate array
+					$in_emp = '';
+					foreach($emp_list as $k => $v) {
+						if($k == $lastArrayKey) {
+									//during array iteration this condition states the last element.
+							$in_emp .= "'" . $v . "'";
+						} else {
+							$in_emp .= "'" . $v . "'" . ',';
+						}
+					}
+
+					do {
+
+						empty($in_emp) ? $in_emp = "null" : null;
+
+						$emp_list = array();
+
+						$emp_items = DB::select("
+							select distinct org_code
+							from org
+							where parent_org_code in ({$in_emp})
+							and parent_org_code != org_code
+							and is_active = 1			
+							");
+
+						foreach ($emp_items as $e) {
+							$emp_list[] = $e->org_code;
+							$re_emp[] = $e->org_code;
+						}
+
+						$emp_list = array_unique($emp_list);
+								// Get array keys
+						$arrayKeys = array_keys($emp_list);
+								// Fetch last array key
+						$lastArrayKey = array_pop($arrayKeys);
+								//iterate array
+						$in_emp = '';
+
+						foreach($emp_list as $k => $v) {
+							if($k == $lastArrayKey) {
+										//during array iteration this condition states the last element.
+								$in_emp .= "'" . $v . "'";
+							} else {
+								$in_emp .= "'" . $v . "'" . ',';
+							}
+						}
+					} while (!empty($emp_list));
+
+					$re_emp[] = $co->org_code;
+
+					$re_emp = array_unique($re_emp);
+							// Get array keys
+					$arrayKeys = array_keys($re_emp);
+							// Fetch last array key
+					$lastArrayKey = array_pop($arrayKeys);
+							//iterate array
+					$in_emp = '';
+
+					foreach($re_emp as $k => $v) {
+						if($k == $lastArrayKey) {
+									//during array iteration this condition states the last element.
+							$in_emp .= "'" . $v . "'";
+						} else {
+							$in_emp .= "'" . $v . "'" . ',';
+						}
+					}
+
+					empty($in_emp) ? $in_emp = "null" : null;
+
+					$items = DB::select("
+			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+						from emp_result er, 	
+						employee e, 
+						appraisal_type t, 
+						appraisal_item_result ir, 
+						appraisal_item I,
+						appraisal_period p, 
+						org o, 
+						appraisal_level al, 
+						appraisal_stage ast
+						Where er.org_id = e.org_id
+						and er.appraisal_type_id = t.appraisal_type_id
+						And er.emp_result_id = ir.emp_result_id
+						and ir.item_id = I.item_id
+						and er.period_id = p.period_id
+						and er.org_id = o.org_id
+						and er.level_id = al.level_id
+						and er.stage_id = ast.stage_id
+						and ast.appraisal_type_id = 1
+						#and ast.assignment_flag = 1
+						".$org_level."
+						".$org_id."
+						".$period_id."
+						".$appraisal_frequency_id."
+						".$appraisal_year."
+						".$appraisal_type_id."
+						and o.org_code in ($in_emp)
+			    	");
 				}
-
-				empty($in_emp) ? $in_emp = "null" : null;
-
-				$items = DB::select("
-		    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-					from emp_result er, 	
-					employee e, 
-					appraisal_type t, 
-					appraisal_item_result ir, 
-					appraisal_item I,
-					appraisal_period p, 
-					org o, 
-					appraisal_level al, 
-					appraisal_stage ast
-					Where er.emp_id = e.emp_id 
-					and er.appraisal_type_id = t.appraisal_type_id
-					And er.emp_result_id = ir.emp_result_id
-					and ir.item_id = I.item_id
-					and er.period_id = p.period_id
-					and er.org_id = o.org_id
-					and er.level_id = al.level_id
-					and er.stage_id = ast.stage_id
-					and ast.appraisal_type_id = 2
-					#and ast.assignment_flag = 1
-					".$emp_level."
-					".$org_level."
-					".$org_id."
-					".$period_id."
-					".$appraisal_frequency_id."
-					".$appraisal_year."
-					".$appraisal_type_id."
-					and e.emp_code in ($in_emp)
-		    	");
 				// $items = DB::select("
 		  //   		select CONCAT(to_action,'-',from_action) to_action, CONCAT(to_action,' (',from_action,')') status
 		  //   		from appraisal_stage
