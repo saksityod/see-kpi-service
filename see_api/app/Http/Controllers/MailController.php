@@ -72,7 +72,7 @@ class MailController extends Controller
 		$chief_mail = [];
 
 		$items = DB::select("
-			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name, p.period_id, p.appraisal_period_desc,
 			sum(a.actual_value) actual_value, max(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
@@ -84,15 +84,17 @@ class MailController extends Controller
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
+			left outer join appraisal_period p
+			on b.period_id = p.period_id
 			where d.remind_condition_id = 1
 			and b.appraisal_type_id = 2
 			and d.function_type = 1
 			and a.year = date_format(current_date,'%Y')
 			and a.appraisal_month_no <= date_format(current_date,'%c')
-			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
+			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name, p.period_id, p.appraisal_period_desc
 			having sum(a.actual_value) < max(a.target_value)
 			union all
-			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name, p.period_id, p.appraisal_period_desc,
 			a.actual_value actual_value, a.target_value target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
@@ -104,6 +106,8 @@ class MailController extends Controller
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
+			left outer join appraisal_period p
+			on b.period_id = p.period_id
 			where d.remind_condition_id = 1
 			and b.appraisal_type_id = 2
 			and d.function_type = 2
@@ -111,7 +115,7 @@ class MailController extends Controller
 			and a.appraisal_month_no = date_format(current_date,'%c')
 			and a.actual_value < a.target_value
 			union all
-			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name,
+			SELECT a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email chief_email, e.emp_name chief_name, p.period_id, p.appraisal_period_desc,
 			avg(a.actual_value) actual_value, max(a.target_value) target_value
 			FROM monthly_appraisal_item_result a
 			left outer join emp_result b
@@ -123,14 +127,16 @@ class MailController extends Controller
 			on a.item_id = d.item_id
 			left outer join employee e
 			on c.chief_emp_code = e.emp_code
+			left outer join appraisal_period p
+			on b.period_id = p.period_id
 			where d.remind_condition_id = 1
 			and b.appraisal_type_id = 2
 			and d.function_type = 3
 			and a.year = date_format(current_date,'%Y')
 			and a.appraisal_month_no <= date_format(current_date,'%c')
-			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name
+			group by a.item_result_id, d.item_name, c.emp_id, c.emp_name, c.email, e.email, e.emp_name, p.period_id, p.appraisal_period_desc
 			having avg(a.actual_value) < max(a.target_value)
-			order by item_name asc
+			order by item_name asc, period_id asc
 		");
 		$groups = [];
 		foreach ($items as $i) {
@@ -520,7 +526,7 @@ class MailController extends Controller
 		";
 		$error = '';
 		try {
-			$data = ["chief_emp_name" => "the boss", "emp_name" => "the bae", "status" => "excellent", "web_domain" => $config->web_domain];
+			$data = ["chief_emp_name" => "the boss", "emp_name" => "the bae", "status" => "excellent", "web_domain" => $config->web_domain, "emp_result_id" => "0", "appraisal_type_id" => "0"];
 
 			//$from = 'gjtestmail2017@gmail.com';
 			$to = ['saksit@goingjesse.com','methee@goingjesse.com'];

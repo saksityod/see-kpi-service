@@ -21,6 +21,7 @@ th, td {
 		<p>KPI ของคุณ {{$k}}</p>
 		<table>
 			<tr>
+				<th>Period</th>
 				<th>Item Name</th>
 				<th>Target Value</th>
 				<th>Actual Value</th>
@@ -28,6 +29,7 @@ th, td {
 			</tr>
 			@foreach ($item['items'] as $i)
 			<tr>
+				<td>{{$i->appraisal_period_desc}}</td>
 				<td>{{$i->item_name}}</td>
 				<td>{{$i->target_value}}</td>
 				<td>{{$i->actual_value}}</td>
