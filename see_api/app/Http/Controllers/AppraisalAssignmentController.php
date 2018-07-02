@@ -1059,32 +1059,19 @@ class AppraisalAssignmentController extends Controller
 				} else {
 					$items = DB::select("
 			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-						from emp_result er, 	
-						employee e, 
-						appraisal_type t, 
-						appraisal_item_result ir, 
-						appraisal_item I,
-						appraisal_period p, 
-						org o, 
-						appraisal_level al,
-						appraisal_stage ast
-						Where er.org_id = e.org_id 
-						and er.appraisal_type_id = t.appraisal_type_id
-						And er.emp_result_id = ir.emp_result_id
-						and ir.item_id = I.item_id
-						and er.period_id = p.period_id
-						and er.org_id = o.org_id
-						and er.level_id = al.level_id
-						and er.stage_id = ast.stage_id
-						and ast.appraisal_type_id = 1
-						#and ast.assignment_flag = 1
+						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
+	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+	    				And er.emp_result_id = ir.emp_result_id
+	    				and ir.item_id = I.item_id
+	    				and er.period_id = p.period_id
+	    				and o.level_id = al.level_id
+	    				and er.stage_id = ast.stage_id
 						".$org_level."
 						".$org_id."
 						".$period_id."
 						".$appraisal_frequency_id."
 						".$appraisal_year."
 						".$appraisal_type_id."
-						".$emp_code."
 			    	");
 				}
 
@@ -1127,25 +1114,13 @@ class AppraisalAssignmentController extends Controller
 
 					$items = DB::select("
 			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-						from emp_result er, 	
-						employee e, 
-						appraisal_type t, 
-						appraisal_item_result ir, 
-						appraisal_item I,
-						appraisal_period p, 
-						org o, 
-						appraisal_level al, 
-						appraisal_stage ast
-						Where er.org_id = e.org_id
-						and er.appraisal_type_id = t.appraisal_type_id
-						And er.emp_result_id = ir.emp_result_id
-						and ir.item_id = I.item_id
-						and er.period_id = p.period_id
-						and er.org_id = o.org_id
-						and er.level_id = al.level_id
-						and er.stage_id = ast.stage_id
-						and ast.appraisal_type_id = 1
-						#and ast.assignment_flag = 1
+						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
+	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+	    				And er.emp_result_id = ir.emp_result_id
+	    				and ir.item_id = I.item_id
+	    				and er.period_id = p.period_id
+	    				and o.level_id = al.level_id
+	    				and er.stage_id = ast.stage_id
 						".$org_level."
 						".$org_id."
 						".$period_id."
