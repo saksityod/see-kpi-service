@@ -894,7 +894,11 @@ class AppraisalDataController extends Controller
 						} else {
 
 							if($all_emp[0]->count_no > 0) {
-								AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value,'second_score' => $i->data_value, 'score' => $i->data_value, 'updated_by' => Auth::id()]);
+								if($chief_emp->has_second_line==1) {
+									AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value,'second_score' => $i->data_value, 'score' => $i->data_value, 'updated_by' => Auth::id()]);
+								} else {
+									AppraisalItemResult::where("emp_result_id",$i->emp_result_id)->where("emp_id",$i->employee_id)->where("period_id",$i->period_id)->where('item_id',$i->item_id)->update(['first_score' => $i->data_value, 'score' => $i->data_value, 'updated_by' => Auth::id()]);
+								}
 							} else if($chief_emp->chief_emp_code==auth::id()) {
 								// chief first
 								$second = DB::select("
@@ -1230,7 +1234,7 @@ class AppraisalDataController extends Controller
 
 		if($all_emp[0]->count_no > 0) {
 			$query = "
-			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id,
+			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.score, er.emp_result_id,
 			al.appraisal_level_name, o.org_name, po.position_name
 			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, appraisal_level al, position po
 			where r.emp_id = e.emp_id 
@@ -1349,15 +1353,16 @@ class AppraisalDataController extends Controller
 			$dotline_code = Auth::id();
 
 			$query = "
-			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id,
+			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name,
+			if(e.chief_emp_code='".Auth::id()."', r.first_score, r.second_score) actual_value, er.emp_result_id,
 			al.appraisal_level_name, o.org_name, po.position_name
 			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, appraisal_level al, position po
-			where r.emp_id = e.emp_id 
+			where r.emp_id = e.emp_id
 			and r.period_id = p.period_id
 			and r.item_id = i.item_id
 			and i.structure_id = s.structure_id
 			and r.emp_result_id = er.emp_result_id
-			and s.form_id = f.form_id			
+			and s.form_id = f.form_id
 			and r.org_id = o.org_id
 			and r.level_id = al.level_id
 			and r.position_id = po.position_id
