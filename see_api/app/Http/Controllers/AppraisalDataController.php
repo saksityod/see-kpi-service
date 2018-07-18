@@ -1035,7 +1035,7 @@ class AppraisalDataController extends Controller
 
 		if($all_emp[0]->count_no > 0) {
 			$query = "
-			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id, po.position_name, o.org_name, al.appraisal_level_name
+			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, if(s.form_id = 3, r.actual_value, r.score) actual_value, er.emp_result_id, po.position_name, o.org_name, al.appraisal_level_name
 			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, position po, appraisal_level al
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
@@ -1153,7 +1153,7 @@ class AppraisalDataController extends Controller
 			$dotline_code = Auth::id();
 
 			$query = "
-			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, r.actual_value, er.emp_result_id, po.position_name, o.org_name, al.appraisal_level_name
+			select p.appraisal_period_desc, p.period_id, s.structure_name, s.structure_id, i.item_id, i.item_name, e.emp_id, e.emp_code, e.emp_name, if(e.chief_emp_code='".Auth::id()."', r.first_score, r.second_score) actual_value, er.emp_result_id, po.position_name, o.org_name, al.appraisal_level_name
 			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, position po, appraisal_level al
 			where r.emp_id = e.emp_id 
 			and r.period_id = p.period_id
@@ -1234,7 +1234,7 @@ class AppraisalDataController extends Controller
 
 		if($all_emp[0]->count_no > 0) {
 			$query = "
-			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, r.score, er.emp_result_id,
+			select p.appraisal_period_desc, s.structure_name, i.item_name, e.emp_code, e.emp_name, if(s.form_id = 3, r.actual_value, r.score) actual_value, er.emp_result_id,
 			al.appraisal_level_name, o.org_name, po.position_name
 			from appraisal_item_result r, employee e, appraisal_period p, appraisal_item i, appraisal_structure s, form_type f, emp_result er, org o, appraisal_level al, position po
 			where r.emp_id = e.emp_id 
