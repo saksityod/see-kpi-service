@@ -407,12 +407,12 @@ GROUP BY lev.appraisal_level_name
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["C:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report KPI.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report KPI.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="27">
 			<subreport>
-				<reportElement x="-20" y="0" width="820" height="20" uuid="e3f4de8d-c7fa-4db8-bb97-bb27dc836f32"/>
+				<reportElement stretchType="ElementGroupBottom" x="-20" y="0" width="820" height="20" uuid="e3f4de8d-c7fa-4db8-bb97-bb27dc836f32"/>
 				<subreportParameter name="two">
 					<subreportParameterExpression><![CDATA[$F{two}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -429,7 +429,7 @@ GROUP BY lev.appraisal_level_name
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["C:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report Learning.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report Learning.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="26">
@@ -451,7 +451,7 @@ GROUP BY lev.appraisal_level_name
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["C:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report TFG DNA.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report TFG DNA.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="20">
@@ -473,7 +473,7 @@ GROUP BY lev.appraisal_level_name
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["C:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report Form Deduct Score.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report Form Deduct Score.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
