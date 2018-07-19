@@ -19,8 +19,8 @@
 , COALESCE(air.deduct_score_unit,0) as deduct_score_unit
 , COALESCE(air.weigh_score,0) as weigh_score_item
 , COALESCE(str.weigh_score,0) as weigh_score_report
-, (CASE WHEN aps.structure_id = 4 THEN 'ผล (วัน)' ELSE 'ผล (ใบ)' END) as name_actual
-, (CASE WHEN aps.structure_id = 4 THEN 'คะแนนรวมด้านสถิติการมาทำงาน' ELSE 'รวมผลหักคะแนน' END) as name_sum
+, (CASE WHEN aps.structure_id = 4 THEN "ผล (วัน)" ELSE "ผล (ใบ)" END) as name_actual
+, (CASE WHEN aps.structure_id = 4 THEN "คะแนนรวมด้านสถิติการมาทำงาน" ELSE "รวมผลหักคะแนน" END) as name_sum
 , COALESCE((select sum(re.weigh_score)
 		from structure_result re
 		where re.structure_id = aps.structure_id

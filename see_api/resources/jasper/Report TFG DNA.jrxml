@@ -13,7 +13,7 @@
 	<queryString>
 		<![CDATA[SELECT aps.structure_name
 , app.appraisal_period_desc
-, 'ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1' as order_name
+, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1" as order_name
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
@@ -63,7 +63,7 @@ AND $P{three} != 0
 AND 1 >= (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
 GROUP BY aps.structure_name
 , app.appraisal_period_desc
-, 'ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1' 
+, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1" 
 , air.item_name
 , COALESCE(air.target_value,0) 
 , COALESCE(air.weight_percent,0) 
@@ -73,7 +73,7 @@ GROUP BY aps.structure_name
 UNION
 SELECT aps.structure_name
 , app.appraisal_period_desc
-, 'ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 2' as order_name
+, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 2" as order_name
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
