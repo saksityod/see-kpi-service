@@ -57,8 +57,9 @@ GROUP BY aps.structure_name
 , COALESCE(air.score,0)
 , COALESCE(air.weigh_score,0)
 , COALESCE(str.weigh_score,0)
-ORDER BY aps.structure_id
-, app.period_no]]>
+ORDER BY aps.structure_id ASC
+, app.period_id ASC
+, air.item_id ASC]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>

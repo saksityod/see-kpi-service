@@ -65,8 +65,9 @@ GROUP BY aps.structure_name
 , COALESCE(air.score,0)
 , COALESCE(air.weigh_score,0)
 , COALESCE(str.weigh_score,0)
-ORDER BY aps.structure_id
-, app.period_no]]>
+ORDER BY aps.structure_id ASC
+, app.period_id ASC
+, air.item_id ASC]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
@@ -200,13 +201,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[ลำดับ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="380" y="45" width="48" height="41" uuid="13f4e21c-605e-4040-a6af-82a428fb53fb"/>
+					<reportElement x="377" y="45" width="52" height="41" uuid="13f4e21c-605e-4040-a6af-82a428fb53fb"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -214,13 +215,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[1]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="428" y="45" width="48" height="41" uuid="57db7592-31e5-4e8f-862d-7f111590c3bc"/>
+					<reportElement x="429" y="45" width="52" height="41" uuid="57db7592-31e5-4e8f-862d-7f111590c3bc"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -228,13 +229,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[2]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="476" y="45" width="48" height="41" uuid="af12fe00-173d-49cd-bee3-74bad23a5f94"/>
+					<reportElement x="481" y="45" width="52" height="41" uuid="af12fe00-173d-49cd-bee3-74bad23a5f94"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -242,13 +243,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[3]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="524" y="45" width="48" height="41" uuid="befb10d7-b1dd-4be4-a23d-c3434599cd35"/>
+					<reportElement x="533" y="45" width="55" height="41" uuid="befb10d7-b1dd-4be4-a23d-c3434599cd35"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -256,13 +257,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[4]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="730" y="45" width="72" height="41" uuid="95e41293-8004-46fd-9f9b-5991909c5d59"/>
+					<reportElement x="744" y="45" width="58" height="41" uuid="95e41293-8004-46fd-9f9b-5991909c5d59"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,14 +271,14 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="2" spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[คะแนนที่ได้ 
 (1)x(2)]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="572" y="45" width="48" height="41" uuid="1d050896-6f90-4104-9a31-6e987208e081"/>
+					<reportElement x="588" y="45" width="55" height="41" uuid="1d050896-6f90-4104-9a31-6e987208e081"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -285,13 +286,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[5]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="282" y="25" width="50" height="61" uuid="5f99541d-3d6b-47f5-9cd7-05bd2a9e0a15"/>
+					<reportElement x="278" y="25" width="49" height="61" uuid="5f99541d-3d6b-47f5-9cd7-05bd2a9e0a15"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -299,7 +300,7 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="2" spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[%น้ำหนัก 
@@ -307,7 +308,7 @@ ORDER BY aps.structure_id
 (1)]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="675" y="45" width="55" height="41" uuid="672e3c3d-89f8-4e51-b391-1df71881c3f8"/>
+					<reportElement x="696" y="45" width="48" height="41" uuid="672e3c3d-89f8-4e51-b391-1df71881c3f8"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -315,14 +316,14 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[ผลคะแนน
 (2)]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="620" y="45" width="55" height="41" uuid="6386e626-7436-42c1-b666-0296c19f8f80"/>
+					<reportElement x="643" y="45" width="53" height="41" uuid="6386e626-7436-42c1-b666-0296c19f8f80"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -330,13 +331,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[ผลงาน]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="29" y="25" width="205" height="61" uuid="c1f8035f-5fd3-4241-8696-efdb6115165b"/>
+					<reportElement x="29" y="25" width="193" height="61" uuid="c1f8035f-5fd3-4241-8696-efdb6115165b"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -344,13 +345,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="234" y="25" width="48" height="61" uuid="1000fbcd-55aa-4190-aa8d-a81fe1f883da"/>
+					<reportElement x="222" y="25" width="56" height="61" uuid="1000fbcd-55aa-4190-aa8d-a81fe1f883da"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -358,13 +359,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[เป้าหมาย]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="332" y="25" width="288" height="20" uuid="e2c19823-03ec-4ada-baeb-b4c6d11c4ec5"/>
+					<reportElement x="327" y="25" width="316" height="20" uuid="e2c19823-03ec-4ada-baeb-b4c6d11c4ec5"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -372,13 +373,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="0"/>
 					</textElement>
 					<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="620" y="25" width="182" height="20" uuid="df398e50-a77a-4ddd-9128-a111f90f9f23"/>
+					<reportElement x="643" y="25" width="159" height="20" uuid="df398e50-a77a-4ddd-9128-a111f90f9f23"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -386,13 +387,13 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="0"/>
 					</textElement>
 					<text><![CDATA[ผลการประเมิน]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="332" y="45" width="48" height="41" uuid="00beda09-0d27-4eaa-b672-19357c5316f1"/>
+					<reportElement x="327" y="45" width="50" height="41" uuid="00beda09-0d27-4eaa-b672-19357c5316f1"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -400,7 +401,7 @@ ORDER BY aps.structure_id
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph spacingBefore="5"/>
 					</textElement>
 					<text><![CDATA[0]]></text>
@@ -418,7 +419,7 @@ ORDER BY aps.structure_id
 					<text><![CDATA[คะแนนรวมของผลงาน (KPIs)]]></text>
 				</staticText>
 				<textField pattern="#,##0.00">
-					<reportElement x="730" y="0" width="72" height="25" uuid="0af03ab1-6a6d-4de0-9daf-76c9859fcb53"/>
+					<reportElement x="744" y="0" width="58" height="25" uuid="0af03ab1-6a6d-4de0-9daf-76c9859fcb53"/>
 					<box>
 						<pen lineWidth="0.5"/>
 						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -438,7 +439,7 @@ ORDER BY aps.structure_id
 	<detail>
 		<band height="20" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="234" y="0" width="48" height="20" uuid="21ba68c0-105f-4c28-ae4e-45897acf5057"/>
+				<reportElement stretchType="RelativeToTallestObject" x="222" y="0" width="56" height="20" uuid="21ba68c0-105f-4c28-ae4e-45897acf5057"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -449,7 +450,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="282" y="0" width="50" height="20" uuid="44a973cd-b9d9-4a8b-9f4a-67442058dbcd"/>
+				<reportElement stretchType="RelativeToTallestObject" x="278" y="0" width="49" height="20" uuid="44a973cd-b9d9-4a8b-9f4a-67442058dbcd"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -460,7 +461,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="380" y="0" width="48" height="20" uuid="04d75ee4-6b81-4f58-b132-65853cc8a32f"/>
+				<reportElement stretchType="RelativeToTallestObject" x="377" y="0" width="52" height="20" uuid="04d75ee4-6b81-4f58-b132-65853cc8a32f"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -471,7 +472,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="428" y="0" width="48" height="20" uuid="13f12b68-d6d2-43ef-b367-3a78a6281ab6"/>
+				<reportElement stretchType="RelativeToTallestObject" x="429" y="0" width="52" height="20" uuid="13f12b68-d6d2-43ef-b367-3a78a6281ab6"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -482,7 +483,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="476" y="0" width="48" height="20" uuid="961ee0ca-7bf5-44ce-8295-9cc306450d6c"/>
+				<reportElement stretchType="RelativeToTallestObject" x="481" y="0" width="52" height="20" uuid="961ee0ca-7bf5-44ce-8295-9cc306450d6c"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -493,7 +494,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="524" y="0" width="48" height="20" uuid="ca10512c-4eb4-451f-933d-6e1aa8fec145"/>
+				<reportElement stretchType="RelativeToTallestObject" x="533" y="0" width="55" height="20" uuid="ca10512c-4eb4-451f-933d-6e1aa8fec145"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -504,7 +505,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="572" y="0" width="48" height="20" uuid="1afd5caf-9a9f-4c41-900a-e25a0c4244e4"/>
+				<reportElement stretchType="RelativeToTallestObject" x="588" y="0" width="55" height="20" uuid="1afd5caf-9a9f-4c41-900a-e25a0c4244e4"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -515,7 +516,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="620" y="0" width="55" height="20" uuid="fde2c6a9-006a-4f2c-a27d-18614507b682"/>
+				<reportElement stretchType="RelativeToTallestObject" x="643" y="0" width="53" height="20" uuid="fde2c6a9-006a-4f2c-a27d-18614507b682"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -526,7 +527,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="675" y="0" width="55" height="20" uuid="34db6dab-ff5e-4774-865e-bd8a52871533"/>
+				<reportElement stretchType="RelativeToTallestObject" x="696" y="0" width="48" height="20" uuid="34db6dab-ff5e-4774-865e-bd8a52871533"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -537,7 +538,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="730" y="0" width="72" height="20" uuid="ab32b5c5-a950-4774-8b9d-275207f32ef2"/>
+				<reportElement stretchType="RelativeToTallestObject" x="744" y="0" width="58" height="20" uuid="ab32b5c5-a950-4774-8b9d-275207f32ef2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 					<rightPen lineWidth="1.0"/>
@@ -549,7 +550,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$F{weigh_score_item}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="RelativeToTallestObject" x="29" y="0" width="205" height="20" uuid="3cb10fec-b498-441a-9f69-0af39e87224d"/>
+				<reportElement stretchType="RelativeToTallestObject" x="29" y="0" width="193" height="20" uuid="3cb10fec-b498-441a-9f69-0af39e87224d"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -572,7 +573,7 @@ ORDER BY aps.structure_id
 				<textFieldExpression><![CDATA[$V{Group1_COUNT}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00">
-				<reportElement stretchType="RelativeToTallestObject" x="332" y="0" width="48" height="20" uuid="03b06da9-f62f-48c5-8f1e-e11651247dba"/>
+				<reportElement stretchType="RelativeToTallestObject" x="327" y="0" width="50" height="20" uuid="03b06da9-f62f-48c5-8f1e-e11651247dba"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>

@@ -121,7 +121,9 @@ AND air.position_id = $P{position_id}
 AND aps.structure_id = 3
 AND $P{three} != 0
 AND 1 = (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
-ORDER BY 2,3,4]]>
+ORDER BY 2 asc
+,3 asc
+,4 asc]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>

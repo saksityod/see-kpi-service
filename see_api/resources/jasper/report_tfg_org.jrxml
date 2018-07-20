@@ -15,7 +15,7 @@
 , (select o.org_name from org o where o.org_code = org.parent_org_code) as parent_org
 , emp.grade
 , emp.appraisal_type_id
-, sum(emp.result_score) as result_score
+, avg(emp.result_score) as result_score
 , stuc.one
 , stuc.two
 , stuc.three

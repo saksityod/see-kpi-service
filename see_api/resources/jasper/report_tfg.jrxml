@@ -22,7 +22,7 @@
 , emp.grade
 , emp1.emp_id
 , emp.appraisal_type_id
-, sum(emp.result_score) as result_score
+, avg(emp.result_score) as result_score
 , stuc.one
 , stuc.two
 , stuc.three
