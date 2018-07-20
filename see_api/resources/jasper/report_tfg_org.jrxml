@@ -13,37 +13,20 @@
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code) as parent_org
-, emp.grade
+, (select distinct g.grade 
+	from appraisal_grade g
+	where avg(emp.result_score) between g.begin_score and g.end_score) as grade
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score
 , stuc.one
-, stuc.two
-, stuc.three
-, stuc.four
-, stuc.num_stucture 
 FROM emp_result emp
 INNER JOIN appraisal_level lev ON emp.level_id = lev.level_id
 INNER JOIN org ON emp.org_id = org.org_id
 INNER JOIN (select max(total.one) as one
-, max(total.two) as two
-, max(total.three) as three
-, max(total.four) as four
 , total.org_id
-, total.num_stucture
 from (
 	select (CASE WHEN api.structure_id = 1 THEN 1 ELSE 0 END) AS one
-	, (CASE WHEN api.structure_id = 2 THEN 2 ELSE 0 END) AS two
-	, (CASE WHEN api.structure_id = 3 THEN 3 ELSE 0 END) AS three
-	, (CASE WHEN api.structure_id = 4 OR api.structure_id = 5 THEN 4 ELSE 0 END) AS four
 	, air.org_id
-	, (select count(distinct api1.structure_id)
-			FROM appraisal_item_result air1
-			INNER JOIN appraisal_item api1 ON api1.item_id = air1.item_id
-			INNER JOIN appraisal_structure aps1 ON aps1.structure_id = api1.structure_id
-			INNER JOIN (select org_id from emp_result where appraisal_type_id = 1) org ON  org.org_id = air1.org_id
-			where air1.org_id = air.org_id
-		  and air1.level_id = air.level_id	
-			group by air1.org_id) as num_stucture
 	FROM appraisal_item_result air
 	INNER JOIN appraisal_item api ON api.item_id = air.item_id
 	INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
@@ -53,15 +36,15 @@ from (
 	group by total.org_id) stuc ON org.org_id = stuc.org_id 
 WHERE (org.org_id =  $P{org_id}  OR '' = $P{org_id}  OR  ISNULL($P{org_id}) = 1 )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
-AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 )
+AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 ) 
 GROUP BY lev.level_id
-, lev.appraisal_level_name 
+, lev.appraisal_level_name
 , org.org_id
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code)
-, emp.grade
-, emp.appraisal_type_id]]>
+, emp.appraisal_type_id
+]]>
 	</queryString>
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
@@ -100,18 +83,6 @@ GROUP BY lev.level_id
 	</field>
 	<field name="one" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="one"/>
-	</field>
-	<field name="two" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="two"/>
-	</field>
-	<field name="three" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="three"/>
-	</field>
-	<field name="four" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="four"/>
-	</field>
-	<field name="num_stucture" class="java.lang.Long">
-		<property name="com.jaspersoft.studio.field.label" value="num_stucture"/>
 	</field>
 	<group name="Group1" isStartNewPage="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{org_id}]]></groupExpression>
@@ -219,7 +190,7 @@ GROUP BY lev.level_id
 						<font fontName="TH SarabunPSK" size="24" isBold="true"/>
 						<paragraph rightIndent="0"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{grade} == null)? "D" : $F{grade}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="371" y="73" width="218" height="40" uuid="6cc0bdd5-8159-4689-92fb-08bcf9fd39c2"/>

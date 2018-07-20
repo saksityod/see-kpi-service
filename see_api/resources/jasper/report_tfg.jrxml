@@ -19,7 +19,9 @@
 , (select e1.emp_name from employee e1 WHERE e1.emp_code = emp1.chief_emp_code) as commander
 , emp1.emp_name as emp_name
 , emp1.emp_code as emp_code
-, emp.grade
+, (select distinct g.grade 
+	from appraisal_grade g
+	where avg(emp.result_score) between g.begin_score and g.end_score) as grade
 , emp1.emp_id
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score
@@ -271,7 +273,7 @@ GROUP BY lev.appraisal_level_name
 						<font fontName="TH SarabunPSK" size="24" isBold="true"/>
 						<paragraph rightIndent="0"/>
 					</textElement>
-					<textFieldExpression><![CDATA[($F{grade} == null)? "D" : $F{grade}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="366" y="67" width="220" height="40" uuid="6cc0bdd5-8159-4689-92fb-08bcf9fd39c2"/>
