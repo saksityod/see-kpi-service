@@ -19,9 +19,10 @@
 , (select e1.emp_name from employee e1 WHERE e1.emp_code = emp1.chief_emp_code) as commander
 , emp1.emp_name as emp_name
 , emp1.emp_code as emp_code
-, (select distinct g.grade 
+, (select g.grade 
 	from appraisal_grade g
-	where avg(emp.result_score) between g.begin_score and g.end_score) as grade
+	where avg(emp.result_score) between g.begin_score and g.end_score
+	and g.appraisal_level_id = lev.level_id) as grade
 , emp1.emp_id
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score

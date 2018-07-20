@@ -13,9 +13,10 @@
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code) as parent_org
-, (select distinct g.grade 
+, (select g.grade 
 	from appraisal_grade g
-	where avg(emp.result_score) between g.begin_score and g.end_score) as grade
+	where avg(emp.result_score) between g.begin_score and g.end_score
+	and g.appraisal_level_id = lev.level_id) as grade
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score
 , stuc.one
@@ -43,8 +44,7 @@ GROUP BY lev.level_id
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code)
-, emp.appraisal_type_id
-]]>
+, emp.appraisal_type_id]]>
 	</queryString>
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
