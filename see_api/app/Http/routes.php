@@ -431,6 +431,11 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('report/al_list_org','ReportController@al_list_org');
 	Route::get('report/org_list','ReportController@org_list');
 	Route::get('report/status_list','ReportController@status_list');
+	
+	Route::get('job_log', 'JobLogController@index');
+	Route::get('job_log/{job_log_id}', 'JobLogController@show');
+	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
+	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
