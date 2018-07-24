@@ -48,11 +48,13 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<parameter name="param_period" class="java.lang.Integer"/>
-	<parameter name="param_org_id" class="java.lang.Integer"/>
-	<parameter name="param_year" class="java.lang.Integer"/>
-	<parameter name="param_level_emp" class="java.lang.Integer"/>
-	<parameter name="param_level_org" class="java.lang.Integer"/>
+	<parameter name="param_period" class="java.lang.String"/>
+	<parameter name="param_org_id" class="java.lang.String"/>
+	<parameter name="param_year" class="java.lang.String"/>
+	<parameter name="param_level_emp" class="java.lang.String"/>
+	<parameter name="param_level_org" class="java.lang.String"/>
+	<parameter name="param_position" class="java.lang.String"/>
+	<parameter name="param_emp" class="java.lang.String"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT emp.emp_code
 , emp.emp_name
@@ -60,18 +62,18 @@
 , po.position_name
 , (select emp1.emp_name from employee emp1 WHERE emp1.emp_code = emp.chief_emp_code ) as chief_emp_name
 , (case when emp.has_second_line = 0 then ''
-	else (select emp_name from employee e1 where e1.emp_code = (
-		select e.chief_emp_code 
-		from employee e
-		where e.emp_code = emp.chief_emp_code)
-	)end) as chief_second
+ else (select emp_name from employee e1 where e1.emp_code = (
+  select e.chief_emp_code 
+  from employee e
+  where e.emp_code = emp.chief_emp_code)
+ )end) as chief_second
 , org.org_name
 , i.item_name
 , s.structure_name
 , (CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN 'Target Value' ELSE 'Max Value' END)AS name_one
-, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.target_value ELSE air.max_value END),'') AS one
+, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.target_value ELSE air.max_value END),0) AS one
 , (CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN 'Actual Value' ELSE 'First Score' END) AS name_two
-, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN air.actual_value ELSE air.first_score END),'') AS two
+, (CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN air.actual_value ELSE air.first_score END) AS two
 , (CASE 
   WHEN f.form_id = 1 THEN 'Score'
   WHEN f.form_id = 2 THEN 'Second Score'
@@ -81,13 +83,13 @@
   WHEN f.form_id = 1 THEN air.score
   WHEN f.form_id = 2 THEN air.second_score
   ELSE air.deduct_score_unit
- END),'') AS three
+ END),0) AS three
 , '%Weight' AS name_four
-, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.weight_percent ELSE 0 END),'')  AS four
+, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.weight_percent ELSE 0 END),0)  AS four
 , 'Weight Score' AS name_five
-, COALESCE(air.weigh_score,'') AS five
-, COALESCE ( sr.weigh_score,'') AS weigh_score
-, COALESCE(er.result_score,'') AS result_score
+, COALESCE(air.weigh_score,0) AS five
+, COALESCE ( sr.weigh_score,0) AS weigh_score
+, COALESCE(er.result_score,0) AS result_score
 
 FROM appraisal_item_result air
 INNER JOIN appraisal_period apr ON apr.period_id = air.period_id 
@@ -106,11 +108,14 @@ LEFT JOIN emp_result er ON er.period_id = air.period_id
  AND er.org_id = air.org_id
  AND er.position_id = air.position_id
  AND er.level_id = air.level_id
-WHERE air.period_id = $P{param_period} 
-AND air.org_id = $P{param_org_id}
-AND apr.appraisal_year =  $P{param_year}
-and org.level_id =  $P{param_level_org} 
-and air.level_id = $P{param_level_emp}]]>
+ 
+WHERE air.period_id =   $P{param_period} 
+AND (air.org_id = $P{param_org_id}  OR "" =  $P{param_org_id} OR ISNULL( $P{param_org_id} ) = 1)  
+AND apr.appraisal_year =    $P{param_year} 
+and (org.level_id =  $P{param_level_org}  OR "" =  $P{param_level_org}  OR ISNULL(  $P{param_level_org}  ) = 1)  
+and (air.level_id =  $P{param_level_emp} OR "" =  $P{param_level_emp}  OR ISNULL(   $P{param_level_emp}  ) = 1) 
+and (air.position_id =  $P{param_position} OR "" =  $P{param_position} OR ISNULL(   $P{param_position} ) = 1)  
+and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp}  ) = 1)]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
@@ -149,44 +154,44 @@ and air.level_id = $P{param_level_emp}]]>
 	<field name="name_one" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name_one"/>
 	</field>
-	<field name="one" class="java.lang.String">
+	<field name="one" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="one"/>
 	</field>
 	<field name="name_two" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name_two"/>
 	</field>
-	<field name="two" class="java.lang.String">
+	<field name="two" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="two"/>
 	</field>
 	<field name="name_three" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name_three"/>
 	</field>
-	<field name="three" class="java.lang.String">
+	<field name="three" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="three"/>
 	</field>
 	<field name="name_four" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name_four"/>
 	</field>
-	<field name="four" class="java.lang.String">
+	<field name="four" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="four"/>
 	</field>
 	<field name="name_five" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name_five"/>
 	</field>
-	<field name="five" class="java.lang.String">
+	<field name="five" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="five"/>
 	</field>
-	<field name="weigh_score" class="java.lang.String">
+	<field name="weigh_score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="weigh_score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="structure_result"/>
 	</field>
-	<field name="result_score" class="java.lang.String">
+	<field name="result_score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
 	</field>
 	<summary>
-		<band height="180" splitType="Stretch">
+		<band height="211" splitType="Stretch">
 			<crosstab ignoreWidth="true">
-				<reportElement stretchType="RelativeToBandHeight" x="10" y="0" width="1670" height="180" uuid="da6da763-cdc0-483a-9cda-1132c7789252">
+				<reportElement stretchType="RelativeToBandHeight" x="10" y="-1" width="1730" height="212" uuid="da6da763-cdc0-483a-9cda-1132c7789252">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 					<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -231,7 +236,7 @@ and air.level_id = $P{param_level_emp}]]>
 							<text><![CDATA[Employee Name]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="230" y="90" width="40" height="80" backcolor="#FFFFFF" uuid="6ad7e31d-8d6f-4bdf-b66b-8dea5c86757f"/>
+							<reportElement mode="Opaque" x="230" y="90" width="70" height="80" backcolor="#FFFFFF" uuid="6ad7e31d-8d6f-4bdf-b66b-8dea5c86757f"/>
 							<box>
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -244,7 +249,7 @@ and air.level_id = $P{param_level_emp}]]>
 							<text><![CDATA[Level]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="270" y="90" width="250" height="80" backcolor="#FFFFFF" uuid="44113428-116d-4779-b1d3-4c03adb65909"/>
+							<reportElement mode="Opaque" x="300" y="90" width="250" height="80" backcolor="#FFFFFF" uuid="44113428-116d-4779-b1d3-4c03adb65909"/>
 							<box>
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -257,7 +262,7 @@ and air.level_id = $P{param_level_emp}]]>
 							<text><![CDATA[Position]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="520" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="13193af2-15ea-4938-a6d6-e0e8e900928c"/>
+							<reportElement mode="Opaque" x="550" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="13193af2-15ea-4938-a6d6-e0e8e900928c"/>
 							<box>
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,7 +275,7 @@ and air.level_id = $P{param_level_emp}]]>
 							<text><![CDATA[First Line]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="640" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="224e5589-a5fc-40d4-987f-be3ada61c5fe"/>
+							<reportElement mode="Opaque" x="670" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="224e5589-a5fc-40d4-987f-be3ada61c5fe"/>
 							<box>
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +288,7 @@ and air.level_id = $P{param_level_emp}]]>
 							<text><![CDATA[Secone Line]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="760" y="90" width="270" height="80" backcolor="#FFFFFF" uuid="ea70947b-9d73-40de-b369-0260ff33e1af"/>
+							<reportElement mode="Opaque" x="790" y="90" width="270" height="80" backcolor="#FFFFFF" uuid="ea70947b-9d73-40de-b369-0260ff33e1af"/>
 							<box>
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -304,7 +309,7 @@ and air.level_id = $P{param_level_emp}]]>
 						</staticText>
 					</cellContents>
 				</crosstabHeaderCell>
-				<rowGroup name="emp_code" width="1030" totalPosition="End">
+				<rowGroup name="emp_code" width="1060" totalPosition="End">
 					<bucket class="java.lang.String">
 						<bucketExpression><![CDATA[$F{emp_code}]]></bucketExpression>
 					</bucket>
@@ -338,7 +343,7 @@ and air.level_id = $P{param_level_emp}]]>
 								<textFieldExpression><![CDATA[$V{emp_name}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement stretchType="RelativeToBandHeight" x="230" y="0" width="40" height="40" uuid="d4d798fc-dcd7-4fd9-8c10-ebcfed83d072"/>
+								<reportElement stretchType="RelativeToBandHeight" x="230" y="0" width="70" height="40" uuid="d4d798fc-dcd7-4fd9-8c10-ebcfed83d072"/>
 								<box leftPadding="3">
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -351,7 +356,7 @@ and air.level_id = $P{param_level_emp}]]>
 								<textFieldExpression><![CDATA[$V{appraisal_level_name}]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
-								<reportElement stretchType="RelativeToBandHeight" x="270" y="0" width="250" height="40" uuid="9c087177-0dca-43c3-8f96-5413db115af8"/>
+								<reportElement stretchType="RelativeToBandHeight" x="300" y="0" width="250" height="40" uuid="9c087177-0dca-43c3-8f96-5413db115af8"/>
 								<box leftPadding="3">
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +369,7 @@ and air.level_id = $P{param_level_emp}]]>
 								<textFieldExpression><![CDATA[$V{position_name}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement stretchType="RelativeToBandHeight" x="520" y="0" width="120" height="40" uuid="7b48d0ad-6109-41a1-ae24-7e3255b09eac"/>
+								<reportElement stretchType="RelativeToBandHeight" x="550" y="0" width="120" height="40" uuid="7b48d0ad-6109-41a1-ae24-7e3255b09eac"/>
 								<box leftPadding="3">
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -377,7 +382,7 @@ and air.level_id = $P{param_level_emp}]]>
 								<textFieldExpression><![CDATA[$V{chief_emp_name}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement stretchType="RelativeToBandHeight" x="640" y="0" width="120" height="40" uuid="4fdc4908-0342-4c08-bd75-bc6a1786ebda"/>
+								<reportElement stretchType="RelativeToBandHeight" x="670" y="0" width="120" height="40" uuid="4fdc4908-0342-4c08-bd75-bc6a1786ebda"/>
 								<box leftPadding="3">
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -390,7 +395,7 @@ and air.level_id = $P{param_level_emp}]]>
 								<textFieldExpression><![CDATA[$V{chief_second}]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true">
-								<reportElement stretchType="RelativeToBandHeight" x="760" y="0" width="270" height="40" uuid="a8eeb0c5-a8f6-48d6-816a-3e50f9caa66b"/>
+								<reportElement stretchType="RelativeToBandHeight" x="790" y="0" width="270" height="40" uuid="a8eeb0c5-a8f6-48d6-816a-3e50f9caa66b"/>
 								<box leftPadding="3">
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -407,7 +412,8 @@ and air.level_id = $P{param_level_emp}]]>
 					<crosstabTotalRowHeader>
 						<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
 							<box>
-								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<pen lineWidth="1.0"/>
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -572,7 +578,7 @@ and air.level_id = $P{param_level_emp}]]>
 				<measure name="org_name" class="java.lang.String">
 					<measureExpression><![CDATA[$F{org_name}]]></measureExpression>
 				</measure>
-				<measure name="one" class="java.math.BigDecimal" calculation="Sum">
+				<measure name="one" class="java.math.BigDecimal" calculation="First">
 					<measureExpression><![CDATA[$F{one}]]></measureExpression>
 				</measure>
 				<measure name="name_one" class="java.lang.String" calculation="Sum">
@@ -581,25 +587,25 @@ and air.level_id = $P{param_level_emp}]]>
 				<measure name="name_two" class="java.lang.String">
 					<measureExpression><![CDATA[$F{name_two}]]></measureExpression>
 				</measure>
-				<measure name="two" class="java.math.BigDecimal" calculation="Sum">
+				<measure name="two" class="java.math.BigDecimal" calculation="First">
 					<measureExpression><![CDATA[$F{two}]]></measureExpression>
 				</measure>
 				<measure name="name_three" class="java.lang.String">
 					<measureExpression><![CDATA[$F{name_three}]]></measureExpression>
 				</measure>
-				<measure name="three" class="java.math.BigDecimal" calculation="Sum">
+				<measure name="three" class="java.math.BigDecimal" calculation="First">
 					<measureExpression><![CDATA[$F{three}]]></measureExpression>
 				</measure>
 				<measure name="name_four" class="java.lang.String">
 					<measureExpression><![CDATA[$F{name_four}]]></measureExpression>
 				</measure>
-				<measure name="four" class="java.math.BigDecimal" calculation="Sum">
+				<measure name="four" class="java.math.BigDecimal" calculation="First">
 					<measureExpression><![CDATA[$F{four}]]></measureExpression>
 				</measure>
 				<measure name="name_five" class="java.lang.String">
 					<measureExpression><![CDATA[$F{name_five}]]></measureExpression>
 				</measure>
-				<measure name="five" class="java.math.BigDecimal" calculation="Sum">
+				<measure name="five" class="java.math.BigDecimal" calculation="First">
 					<measureExpression><![CDATA[$F{five}]]></measureExpression>
 				</measure>
 				<measure name="weigh_score" class="java.math.BigDecimal">
@@ -611,7 +617,7 @@ and air.level_id = $P{param_level_emp}]]>
 				<crosstabCell width="240" height="40">
 					<cellContents mode="Opaque" style="Crosstab_CD">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-						<textField pattern="#,##0.00">
+						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="48" height="40" uuid="14390d34-ec53-4fe5-8771-2a22108027bf"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -624,7 +630,7 @@ and air.level_id = $P{param_level_emp}]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{one}]]></textFieldExpression>
 						</textField>
-						<textField pattern="#,##0.00#;#,##0.00#-">
+						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="48" y="0" width="48" height="40" uuid="023b1af2-7720-494f-a443-b7a6063829f8"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -637,7 +643,7 @@ and air.level_id = $P{param_level_emp}]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{two}]]></textFieldExpression>
 						</textField>
-						<textField pattern="#,##0.00#;#,##0.00#-">
+						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="96" y="0" width="48" height="40" uuid="614b00a4-c4bc-4bad-b1b3-a6625873e8d5"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -650,7 +656,7 @@ and air.level_id = $P{param_level_emp}]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{three}]]></textFieldExpression>
 						</textField>
-						<textField pattern="#,##0.00#;#,##0.00#-">
+						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="144" y="0" width="48" height="40" uuid="1f571e94-5591-4abe-a534-83bbc17a3aba"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -663,7 +669,7 @@ and air.level_id = $P{param_level_emp}]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{four}]]></textFieldExpression>
 						</textField>
-						<textField pattern="#,##0.00#;#,##0.00#-">
+						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="192" y="0" width="48" height="40" uuid="8f11e369-40be-444b-bc73-28fc10b0992e"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -675,18 +681,6 @@ and air.level_id = $P{param_level_emp}]]>
 								<font fontName="TH SarabunPSK" size="16"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{five}]]></textFieldExpression>
-						</textField>
-					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="90" height="40" columnTotalGroup="structure_name">
-					<cellContents mode="Opaque" style="Crosstab_CT">
-						<textField pattern="#,##0.00#">
-							<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="90" height="40" forecolor="#FFFFFF" uuid="1943f2db-dbc1-4747-9992-6c7ccfede0f9"/>
-							<box rightPadding="3"/>
-							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="16"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{result_score}]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -702,20 +696,22 @@ and air.level_id = $P{param_level_emp}]]>
 						</textField>
 					</cellContents>
 				</crosstabCell>
+				<crosstabCell width="90" height="40" columnTotalGroup="structure_name">
+					<cellContents mode="Opaque" style="Crosstab_CT">
+						<textField pattern="#,##0.00#">
+							<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="90" height="40" forecolor="#FFFFFF" uuid="1943f2db-dbc1-4747-9992-6c7ccfede0f9"/>
+							<box rightPadding="3"/>
+							<textElement textAlignment="Right">
+								<font fontName="TH SarabunPSK" size="16"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{result_score}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
 				<crosstabCell width="240" height="5" rowTotalGroup="emp_code">
 					<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
 						<box>
-							<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-							<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-						</box>
-					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="90" height="5" rowTotalGroup="emp_code" columnTotalGroup="structure_name">
-					<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
-						<box>
-							<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 							<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -725,7 +721,17 @@ and air.level_id = $P{param_level_emp}]]>
 				<crosstabCell width="90" height="5" rowTotalGroup="emp_code" columnTotalGroup="item_name">
 					<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
 						<box>
-							<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+							<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="90" height="5" rowTotalGroup="emp_code" columnTotalGroup="structure_name">
+					<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
+						<box>
+							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 							<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 							<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
