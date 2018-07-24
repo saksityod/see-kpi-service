@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use File;
 use Illuminate\Http\Request;
 use Log;
@@ -17,6 +18,7 @@ class JasperController extends Controller
     public function __construct()
     {
         $this->middleware('cors');
+		$this->middleware('jwt.auth');
     }
     public function generate(Request $request)
     {
@@ -59,6 +61,8 @@ class JasperController extends Controller
         $data_param = $request->data;
         if(!empty($data_param)){
             $params = json_decode($data_param, true);
+			$params['param_user'] = Auth::id();
+		//return response()->json($params);
             Log::info('data_json');
             Log::info($params);
         }else{
