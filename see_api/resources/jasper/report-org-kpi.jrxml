@@ -94,6 +94,7 @@ order by 8]]>
 	<parameter name="param_org" class="java.lang.String"/>
 	<parameter name="param_period" class="java.lang.String"/>
 	<parameter name="param_level_org" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT ER.*
 , Pe.perspective_name
@@ -127,9 +128,9 @@ INNER JOIN (SELECT org.org_id
 	INNER JOIN org ON ER.org_id = org.org_id
 	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
 	WHERE ER.appraisal_type_id = '1' 
-	AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ''=$P{param_period})
-	AND (ER.level_id = $P{param_level_org} OR  ISNULL($P{param_level_org}) = 1 OR ''=$P{param_level_org} )
-	AND (ER.org_id = $P{param_org} OR  ISNULL($P{param_org}) = 1 OR ''=$P{param_org}) )
+	AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
+	AND (ER.level_id = $P{param_level_org} OR  ISNULL($P{param_level_org}) = 1 OR ""=$P{param_level_org} )
+	AND (ER.org_id = $P{param_org} OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) )
 ER ON  AIR.period_id = ER.period_id
 AND AIR.level_id = ER.level_id
 AND AIR.org_id = ER.org_id

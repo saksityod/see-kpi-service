@@ -6,6 +6,7 @@
 	<parameter name="org_id" class="java.lang.String"/>
 	<parameter name="appraisal_type_id" class="java.lang.String"/>
 	<parameter name="level_org_id" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT lev.level_id
 , lev.appraisal_level_name as level

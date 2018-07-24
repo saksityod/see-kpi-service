@@ -55,6 +55,7 @@
 	<parameter name="param_level_org" class="java.lang.String"/>
 	<parameter name="param_position" class="java.lang.String"/>
 	<parameter name="param_emp" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT emp.emp_code
 , emp.emp_name
@@ -84,10 +85,36 @@
   WHEN f.form_id = 2 THEN air.second_score
   ELSE air.deduct_score_unit
  END),0) AS three
-, '%Weight' AS name_four
-, COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.weight_percent ELSE 0 END),0)  AS four
-, 'Weight Score' AS name_five
-, COALESCE(air.weigh_score,0) AS five
+, (CASE 
+  WHEN f.form_id = 1 THEN '%Weight '
+  WHEN f.form_id = 2 THEN ' Score'
+  ELSE '%Weight '
+ END) AS name_four
+,  COALESCE((CASE 
+  WHEN f.form_id = 1 THEN air.weight_percent
+  WHEN f.form_id = 2 THEN air.score
+  ELSE 0
+ END),0) AS four 
+, (CASE 
+  WHEN f.form_id = 1 THEN 'Weight Score'
+  WHEN f.form_id = 2 THEN ' %Weight'
+  ELSE 'Weight Score '
+ END) AS name_five
+,  COALESCE((CASE 
+  WHEN f.form_id = 1 THEN air.weigh_score
+  WHEN f.form_id = 2 THEN air.weight_percent
+  ELSE 0
+ END),0) AS five
+, (CASE 
+  WHEN f.form_id = 1 THEN ' '
+  WHEN f.form_id = 2 THEN ' Weight Score'
+  ELSE ' '
+ END) AS name_six
+, COALESCE((CASE 
+  WHEN f.form_id = 1 THEN ' '
+  WHEN f.form_id = 2 THEN air.weigh_score
+  ELSE ' '
+ END),0) AS six
 , COALESCE ( sr.weigh_score,0) AS weigh_score
 , COALESCE(er.result_score,0) AS result_score
 
@@ -115,7 +142,9 @@ AND apr.appraisal_year =    $P{param_year}
 and (org.level_id =  $P{param_level_org}  OR "" =  $P{param_level_org}  OR ISNULL(  $P{param_level_org}  ) = 1)  
 and (air.level_id =  $P{param_level_emp} OR "" =  $P{param_level_emp}  OR ISNULL(   $P{param_level_emp}  ) = 1) 
 and (air.position_id =  $P{param_position} OR "" =  $P{param_position} OR ISNULL(   $P{param_position} ) = 1)  
-and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp}  ) = 1)]]>
+and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp}  ) = 1)
+AND emp.chief_emp_code =   $P{param_user} 
+ORDER BY emp_code ASC , air.org_id ASC]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
@@ -181,6 +210,12 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 	<field name="five" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="five"/>
 	</field>
+	<field name="name_six" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name_six"/>
+	</field>
+	<field name="six" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="six"/>
+	</field>
 	<field name="weigh_score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="weigh_score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="structure_result"/>
@@ -201,7 +236,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 				<crosstabParameter name="org_id" class="java.lang.Integer"/>
 				<crosstabParameter name="period_id" class="java.lang.Integer"/>
 				<crosstabHeaderCell>
-					<cellContents backcolor="#2F75B5" style="Crosstab_CH">
+					<cellContents backcolor="#3B5998" style="Crosstab_CH">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 						<box>
 							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -428,7 +463,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 					<crosstabColumnHeader>
 						<cellContents backcolor="#0276FA" mode="Opaque" style="Crosstab_CH">
 							<textField isBlankWhenNull="false">
-								<reportElement key="" x="0" y="0" width="330" height="30" isRemoveLineWhenBlank="true" forecolor="#FFFFFF" uuid="2e1a712c-ac1f-4037-85fa-60be23405b6a"/>
+								<reportElement key="" x="0" y="0" width="380" height="30" isRemoveLineWhenBlank="true" forecolor="#FFFFFF" uuid="2e1a712c-ac1f-4037-85fa-60be23405b6a"/>
 								<box>
 									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -463,7 +498,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 						<cellContents backcolor="#E3E4E6" mode="Opaque" style="Crosstab_CH">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 							<textField>
-								<reportElement mode="Opaque" x="0" y="0" width="240" height="60" backcolor="#D6DCE4" uuid="80c8d2c9-190e-49c8-bd35-cc9eda5fb6fa"/>
+								<reportElement mode="Opaque" x="0" y="0" width="290" height="60" backcolor="#D6DCE4" uuid="80c8d2c9-190e-49c8-bd35-cc9eda5fb6fa"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -476,7 +511,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								<textFieldExpression><![CDATA[$V{item_name}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement mode="Opaque" x="0" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="482b64c4-c959-42db-8d43-e6abd19006ba"/>
+								<reportElement mode="Opaque" x="0" y="60" width="50" height="80" backcolor="#ACB9CA" uuid="482b64c4-c959-42db-8d43-e6abd19006ba"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -490,7 +525,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								<textFieldExpression><![CDATA[$V{name_one}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement mode="Opaque" x="48" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="db569a29-56a0-404d-816a-edc1684096cc"/>
+								<reportElement mode="Opaque" x="50" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="db569a29-56a0-404d-816a-edc1684096cc"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -504,7 +539,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								<textFieldExpression><![CDATA[$V{name_two}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement mode="Opaque" x="96" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="cfe60771-17a8-484c-b1df-b90286bb3439"/>
+								<reportElement mode="Opaque" x="98" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="cfe60771-17a8-484c-b1df-b90286bb3439"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -518,7 +553,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								<textFieldExpression><![CDATA[$V{name_three}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement mode="Opaque" x="144" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="9433490c-697a-4ee2-ba42-b967f5e692ee"/>
+								<reportElement mode="Opaque" x="146" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="9433490c-697a-4ee2-ba42-b967f5e692ee"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -532,7 +567,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								<textFieldExpression><![CDATA[$V{name_four}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement mode="Opaque" x="192" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="cb437f0e-28cc-4ce7-a56d-3ec54fa39a11"/>
+								<reportElement mode="Opaque" x="194" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="cb437f0e-28cc-4ce7-a56d-3ec54fa39a11"/>
 								<box>
 									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -545,13 +580,27 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 								</textElement>
 								<textFieldExpression><![CDATA[$V{name_five}]]></textFieldExpression>
 							</textField>
+							<textField>
+								<reportElement mode="Opaque" x="242" y="60" width="48" height="80" backcolor="#ACB9CA" uuid="41de08a0-d806-4813-a282-77d739e9be87"/>
+								<box>
+									<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+									<font fontName="TH SarabunPSK" size="16"/>
+									<paragraph leftIndent="3"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{name_six}]]></textFieldExpression>
+							</textField>
 						</cellContents>
 					</crosstabColumnHeader>
 					<crosstabTotalColumnHeader>
-						<cellContents backcolor="#BDD7EE" mode="Opaque" style="Crosstab_CG">
+						<cellContents backcolor="#2076FA" mode="Opaque" style="Crosstab_CH">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 							<textField>
-								<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="90" height="140" backcolor="#BDD7EE" uuid="38cac1f9-a461-4951-a608-bb20038d8f2a"/>
+								<reportElement stretchType="RelativeToTallestObject" mode="Transparent" x="0" y="0" width="90" height="140" backcolor="#FFFFFF" uuid="38cac1f9-a461-4951-a608-bb20038d8f2a"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
 									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 								</textElement>
@@ -614,11 +663,17 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 				<measure name="result_score" class="java.math.BigDecimal">
 					<measureExpression><![CDATA[$F{result_score}]]></measureExpression>
 				</measure>
-				<crosstabCell width="240" height="40">
+				<measure name="name_six" class="java.lang.String">
+					<measureExpression><![CDATA[$F{name_six}]]></measureExpression>
+				</measure>
+				<measure name="six" class="java.lang.String" calculation="First">
+					<measureExpression><![CDATA[$F{six}]]></measureExpression>
+				</measure>
+				<crosstabCell width="290" height="40">
 					<cellContents mode="Opaque" style="Crosstab_CD">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="48" height="40" uuid="14390d34-ec53-4fe5-8771-2a22108027bf"/>
+							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="40" uuid="14390d34-ec53-4fe5-8771-2a22108027bf"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -631,7 +686,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 							<textFieldExpression><![CDATA[$V{one}]]></textFieldExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="48" y="0" width="48" height="40" uuid="023b1af2-7720-494f-a443-b7a6063829f8"/>
+							<reportElement stretchType="RelativeToBandHeight" x="50" y="0" width="48" height="40" uuid="023b1af2-7720-494f-a443-b7a6063829f8"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -644,7 +699,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 							<textFieldExpression><![CDATA[$V{two}]]></textFieldExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="96" y="0" width="48" height="40" uuid="614b00a4-c4bc-4bad-b1b3-a6625873e8d5"/>
+							<reportElement stretchType="RelativeToBandHeight" x="98" y="0" width="48" height="40" uuid="614b00a4-c4bc-4bad-b1b3-a6625873e8d5"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -657,7 +712,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 							<textFieldExpression><![CDATA[$V{three}]]></textFieldExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="144" y="0" width="48" height="40" uuid="1f571e94-5591-4abe-a534-83bbc17a3aba"/>
+							<reportElement stretchType="RelativeToBandHeight" x="146" y="0" width="48" height="40" uuid="1f571e94-5591-4abe-a534-83bbc17a3aba"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -670,7 +725,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 							<textFieldExpression><![CDATA[$V{four}]]></textFieldExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="192" y="0" width="48" height="40" uuid="8f11e369-40be-444b-bc73-28fc10b0992e"/>
+							<reportElement stretchType="RelativeToBandHeight" x="194" y="0" width="48" height="40" uuid="8f11e369-40be-444b-bc73-28fc10b0992e"/>
 							<box rightPadding="3">
 								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
@@ -682,10 +737,23 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 							</textElement>
 							<textFieldExpression><![CDATA[$V{five}]]></textFieldExpression>
 						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="242" y="0" width="48" height="40" uuid="97a28b84-01e6-4a0c-8fac-9c5ebc3e2e9b"/>
+							<box rightPadding="3">
+								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="TH SarabunPSK" size="16"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{six}]]></textFieldExpression>
+						</textField>
 					</cellContents>
 				</crosstabCell>
 				<crosstabCell width="90" height="40" columnTotalGroup="item_name">
-					<cellContents backcolor="#B9D7EE" mode="Opaque" style="Crosstab_CG">
+					<cellContents backcolor="#2076FA" mode="Opaque" style="Crosstab_CH">
 						<textField pattern="#,##0.00#">
 							<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="90" height="40" uuid="b73f9247-30f0-4fc0-a4fe-5be870cdb53b"/>
 							<box rightPadding="3"/>
@@ -708,7 +776,7 @@ and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp
 						</textField>
 					</cellContents>
 				</crosstabCell>
-				<crosstabCell width="240" height="5" rowTotalGroup="emp_code">
+				<crosstabCell width="290" height="5" rowTotalGroup="emp_code">
 					<cellContents backcolor="#FFFFFF" mode="Opaque" style="Crosstab_CT">
 						<box>
 							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
