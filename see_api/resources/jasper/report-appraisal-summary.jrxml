@@ -143,7 +143,8 @@ and (org.level_id =  $P{param_level_org}  OR "" =  $P{param_level_org}  OR ISNUL
 and (air.level_id =  $P{param_level_emp} OR "" =  $P{param_level_emp}  OR ISNULL(   $P{param_level_emp}  ) = 1) 
 and (air.position_id =  $P{param_position} OR "" =  $P{param_position} OR ISNULL(   $P{param_position} ) = 1)  
 and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp}  ) = 1)
-AND emp.chief_emp_code =   $P{param_user} 
+AND ((emp.chief_emp_code =   $P{param_user} OR "admin" =  $P{param_user})
+OR (emp.emp_code =   $P{param_user} OR "admin" =  $P{param_user}))
 ORDER BY emp_code ASC , air.org_id ASC]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
