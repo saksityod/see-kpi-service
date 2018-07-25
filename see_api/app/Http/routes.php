@@ -427,6 +427,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('import_employee/assign/appraisal_level','ImportEmployeeController@appraisal_level');
 	
 	Route::Resource('generate', 'JasperController@generate');
+	Route::Resource('generateAuth', 'JasperController@generateAuth');
+
 	Route::get('report/al_list_emp','ReportController@al_list_emp');
 	Route::get('report/al_list_org','ReportController@al_list_org');
 	Route::get('report/org_list','ReportController@org_list');
