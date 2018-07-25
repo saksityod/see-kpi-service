@@ -162,8 +162,8 @@ class JobLogController extends Controller
 				return response()->json(['status' => 404, 'data' => 'Cannot Running because some ETL is runing.']);
 			}
 			
-			//$handle = popen("start /B ". "\"".$item->path_batch_file."\"", "r");
-			$handle = popen("start /B cmd /S /C ". $item->path_batch_file, "r");
+			$handle = popen("nohup sh ".$item->path_batch_file . " &", "r"); // linux
+			//$handle = popen("start /B cmd /S /C ". $item->path_batch_file, "r"); // windows
 			
 			if ($handle === FALSE) {
 				return response()->json(['status' => 404, 'data' => 'Unable to execute '.$item->path_batch_file]);	
