@@ -2175,14 +2175,16 @@ class DashboardController extends Controller
 									"startvalue" => $trendlines_check_numeric,
 									"color" => "#1aaf5d",
 									"valueOnRight" => "1",
-									"displayvalue" => "Target{br}".$trendlines_numeric."",
+									"tooltext" => "Target{br}".$trendlines_numeric."",
+									"displayvalue" => "{br}".$trendlines_numeric."",
 									 "thickness"=> "3"
 								],
 								[
 									 "startvalue" => $forecast_check_numeric,
 									 "color" => "#DC143C",
 									 "valueOnRight" => "1",
-									 "displayvalue" => "Forecast{br}".$forecast_numeric."",
+									 "tooltext" => "Forecast{br}".$forecast_numeric."",
+									 "displayvalue" => "{br}".$forecast_numeric."",
 									  "thickness"=> "3"
 								]
 							]
