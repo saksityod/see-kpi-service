@@ -293,7 +293,7 @@ GROUP BY lev.level_id
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["./Report KPI org.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report KPI org.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

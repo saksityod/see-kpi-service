@@ -191,7 +191,8 @@ INNER JOIN (SELECT org.org_id
 		AND (ER.emp_id =  $P{param_emp}  OR  ISNULL($P{param_emp}) = 1 OR ""=$P{param_emp})
 		AND (ER.position_id =  $P{param_position}  OR ISNULL($P{param_position}) = 1 OR ""=$P{param_position})
 		AND ((ER.level_id =  $P{param_level}  OR ISNULL($P{param_level}) = 1 OR ""=$P{param_level}))
-		AND (Emp.chief_emp_code =  $P{param_user} OR "admin"= $P{param_user} )
+		AND ((Emp.chief_emp_code =  $P{param_user} OR "admin"= $P{param_user} )
+		OR  (Emp.emp_code =  $P{param_user} OR "admin"= $P{param_user} ))
 	GROUP BY Emp.emp_id)
 		ER ON AIR.emp_id = ER.emp_id
 		AND AIR.period_id = ER.period_id
