@@ -1026,6 +1026,8 @@ class AppraisalAssignmentController extends Controller
 
 	    		if($request->appraisal_type_id==2) {
 					$items = DB::select("
+						select 'Unassigned' to_action, 'Unassigned' status
+						union all
 			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
 						from emp_result er, 	
 						employee e, 
@@ -1058,6 +1060,8 @@ class AppraisalAssignmentController extends Controller
 			    	");
 				} else {
 					$items = DB::select("
+						select 'Unassigned' to_action, 'Unassigned' status
+						union all
 			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
 						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
@@ -1109,6 +1113,8 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_type_id."
 						".$position_id."
 						and (e.emp_code = '".Auth::id()."' or e.chief_emp_code = '".Auth::id()."')
+						union all
+						select 'Unassigned' to_action, 'Unassigned' status
 			    	");
 				} else {
 
@@ -1128,6 +1134,8 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_year."
 						".$appraisal_type_id."
 						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
+						union all
+						select 'Unassigned' to_action, 'Unassigned' status
 			    	");
 				}
 				// $items = DB::select("
