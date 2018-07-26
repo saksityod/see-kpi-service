@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-tfg12"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="emp_id" class="java.lang.String"/>
 	<parameter name="level_id" class="java.lang.String"/>
@@ -65,8 +65,8 @@ AND (emp.position_id = $P{position_id}  OR '' = $P{position_id} OR  ISNULL($P{po
 AND (emp1.org_id = $P{org_id}  OR '' = $P{org_id}  OR  ISNULL($P{org_id}) = 1 )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_id}  OR '' = $P{level_id}  OR  ISNULL($P{level_id}) = 1 )
-AND ((emp1.chief_emp_code =  $P{param_user} OR "admin" =  $P{param_user} ) 
-OR (emp1.emp_code =  $P{param_user} OR "admin" =  $P{param_user} ))
+AND ((emp1.chief_emp_code = $P{param_user}  OR 'admin' = $P{param_user})
+OR (emp1.emp_code = $P{param_user}  OR 'admin' = $P{param_user}))
 GROUP BY lev.appraisal_level_name 
 , po.position_name 
 , org.org_name 
@@ -414,28 +414,6 @@ GROUP BY lev.appraisal_level_name
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report KPI.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-		<band height="27">
-			<subreport>
-				<reportElement stretchType="ElementGroupBottom" x="-20" y="0" width="820" height="20" uuid="e3f4de8d-c7fa-4db8-bb97-bb27dc836f32"/>
-				<subreportParameter name="two">
-					<subreportParameterExpression><![CDATA[$F{two}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="emp_id">
-					<subreportParameterExpression><![CDATA[$F{emp_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="level_id">
-					<subreportParameterExpression><![CDATA[$F{level_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="position_id">
-					<subreportParameterExpression><![CDATA[$F{position_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["D:/Bitnami/wampstack-5.6.30-1/apache2/htdocs/see_api/resources/jasper/Report Learning.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="26">

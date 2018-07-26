@@ -11,9 +11,10 @@
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT aps.structure_name
+		<![CDATA[SELECT aps.structure_id
+, aps.structure_name
 , app.appraisal_period_desc
-, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1" as order_name
+, 1 as order_name
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
@@ -31,21 +32,24 @@
 	AND air1.level_id = air.level_id
 	AND air1.org_id = air.org_id
 	AND air1.position_id = air.position_id
-	AND aps1.structure_id = aps.structure_id) as weigh_score_sum_item
+	AND aps1.structure_id = aps.structure_id
+	AND air1.period_id = air.period_id) as weigh_score_sum_item
 , COALESCE(str.weigh_score,0) as weigh_score_period
 , COALESCE((select sum(re.weigh_score)
 		from structure_result re
-		where re.structure_id = 3
+		inner join appraisal_structure apst on re.structure_id = apst.structure_id
+		where apst.form_id = 2
 		and re.emp_id = air.emp_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
 		inner join appraisal_item ai on ap.item_id = ai.item_id
+		inner join appraisal_structure st on ai.structure_id = st.structure_id
 		where ap.emp_id = air.emp_id
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
-		and ai.structure_id = 3 )
+		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
@@ -54,16 +58,16 @@ INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
 	AND str.period_id = air.period_id
 	AND str.structure_id = api.structure_id 
-WHERE air.emp_id =  $P{emp_id}
+WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND aps.structure_id = 3
+AND aps.form_id = 2
 AND $P{three} != 0
 AND 1 >= (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
-GROUP BY aps.structure_name
+GROUP BY aps.structure_id
+, aps.structure_name
 , app.appraisal_period_desc
-, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1" 
 , air.item_name
 , COALESCE(air.target_value,0) 
 , COALESCE(air.weight_percent,0) 
@@ -71,15 +75,16 @@ GROUP BY aps.structure_name
 , COALESCE((air.weight_percent*air.first_score),0) 
 , COALESCE(str.weigh_score,0) 
 UNION
-SELECT aps.structure_name
+SELECT aps.structure_id
+, aps.structure_name
 , app.appraisal_period_desc
-, "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 2" as order_name
+, 2 as order_name
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.second_score,0) as score
-, COALESCE((air.weight_percent*air.second_score),0) as weigh_score_item
-, (SELECT SUM(COALESCE((air1.weight_percent*air1.second_score),0))/5
+, COALESCE(air.first_score,0) as score
+, COALESCE((air.weight_percent*air.first_score),0) as weigh_score_item
+, (SELECT SUM(COALESCE((air1.weight_percent*air1.first_score),0))/5
 	FROM appraisal_item_result air1
 	INNER JOIN appraisal_item api1 ON api1.item_id = air1.item_id
 	INNER JOIN appraisal_structure aps1 ON aps1.structure_id = api1.structure_id
@@ -91,40 +96,56 @@ SELECT aps.structure_name
 	AND air1.level_id = air.level_id
 	AND air1.org_id = air.org_id
 	AND air1.position_id = air.position_id
-	AND aps1.structure_id = aps.structure_id) as weigh_score_sum_item
+	AND aps1.structure_id = aps.structure_id
+	AND air1.period_id = air.period_id) as weigh_score_sum_item
 , COALESCE(str.weigh_score,0) as weigh_score_period
 , COALESCE((select sum(re.weigh_score)
 		from structure_result re
-		where re.structure_id = 3
+		inner join appraisal_structure apst on re.structure_id = apst.structure_id
+		where apst.form_id = 2
 		and re.emp_id = air.emp_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
 		inner join appraisal_item ai on ap.item_id = ai.item_id
+		inner join appraisal_structure st on ai.structure_id = st.structure_id
 		where ap.emp_id = air.emp_id
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
-		and ai.structure_id = 3 )
+		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
-	 AND str.period_id = air.period_id
-	 AND str.structure_id = api.structure_id 
-WHERE air.emp_id =  $P{emp_id}
+	AND str.period_id = air.period_id
+	AND str.structure_id = api.structure_id 
+WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND aps.structure_id = 3
-AND $P{three} != 0
+AND aps.form_id = 2
+AND $P{three} != 0 
 AND 1 = (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
+GROUP BY aps.structure_id
+, aps.structure_name
+, app.appraisal_period_desc
+, air.item_name
+, COALESCE(air.target_value,0) 
+, COALESCE(air.weight_percent,0) 
+, COALESCE(air.first_score,0) 
+, COALESCE((air.weight_percent*air.first_score),0) 
+, COALESCE(str.weigh_score,0) 
 ORDER BY 2 asc
 ,3 asc
-,4 asc]]>
+,4 asc
+,5 asc]]>
 	</queryString>
+	<field name="structure_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
+	</field>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
@@ -133,7 +154,7 @@ ORDER BY 2 asc
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 	</field>
-	<field name="order_name" class="java.lang.String">
+	<field name="order_name" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="order_name"/>
 	</field>
 	<field name="item_name" class="java.lang.String">
@@ -181,7 +202,7 @@ ORDER BY 2 asc
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph lineSpacing="Single" leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ส่วนที่ 3 : "+$F{structure_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["ส่วนที่ "+$F{structure_id}+" : "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -285,7 +306,7 @@ ORDER BY 2 asc
 						<font fontName="TH SarabunPSK" size="18" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{order_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{order_name} < 2 ? "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 1" : "ผลการประเมินพฤติกรรมหัวหน้างานลำดับที่ 2"]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="0" y="25" width="30" height="40" uuid="90a89d31-008b-407b-9c7a-9fe917c52bd6"/>

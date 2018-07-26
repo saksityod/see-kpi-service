@@ -411,7 +411,7 @@ ORDER BY aps.structure_id ASC
 		<groupFooter>
 			<band height="25">
 				<staticText>
-					<reportElement x="580" y="0" width="150" height="25" uuid="be218989-f291-41bd-a019-70d16401f98b"/>
+					<reportElement x="585" y="0" width="150" height="25" uuid="be218989-f291-41bd-a019-70d16401f98b"/>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph leftIndent="3"/>

@@ -9,18 +9,19 @@
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT aps.structure_name
+		<![CDATA[SELECT aps.structure_id
+, aps.structure_name
 , app.period_id
 , app.appraisal_period_desc
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.score0,0) as score0
-, COALESCE(air.score1,0) as score1
-, COALESCE(air.score2,0) as score2
-, COALESCE(air.score3,0) as score3
-, COALESCE(air.score4,0) as score4
-, COALESCE(air.score5,0) as score5
+, air.score0 as score0
+, air.score1 as score1
+, air.score2 as score2
+, air.score3 as score3
+, air.score4 as score4
+, air.score5 as score5
 , COALESCE(air.actual_value,0) as actual_value
 , COALESCE(air.score,0) as score
 , COALESCE(air.weigh_score,0) as weigh_score_item
@@ -51,7 +52,7 @@ WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND aps.structure_id = 1
+AND aps.form_id = 1
 AND $P{one} != 0
 GROUP BY aps.structure_name
 , app.period_id
@@ -59,12 +60,12 @@ GROUP BY aps.structure_name
 , air.item_name
 , COALESCE(air.target_value,0) 
 , COALESCE(air.weight_percent,0) 
-, COALESCE(air.score0,0) 
-, COALESCE(air.score1,0) 
-, COALESCE(air.score2,0) 
-, COALESCE(air.score3,0) 
-, COALESCE(air.score4,0)
-, COALESCE(air.score5,0)
+, air.score0 
+, air.score1 
+, air.score2 
+, air.score3 
+, air.score4 
+, air.score5
 , COALESCE(air.actual_value,0) 
 , COALESCE(air.score,0)
 , COALESCE(air.weigh_score,0)
@@ -73,6 +74,10 @@ ORDER BY aps.structure_id ASC
 , app.period_id ASC
 , air.item_id ASC]]>
 	</queryString>
+	<field name="structure_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
+	</field>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
@@ -99,6 +104,7 @@ ORDER BY aps.structure_id ASC
 	</field>
 	<field name="score0" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score0"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score1"/>
@@ -124,7 +130,7 @@ ORDER BY aps.structure_id ASC
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
-	<field name="score" class="java.lang.Long">
+	<field name="score" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
@@ -154,7 +160,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ส่วนที่ 1 : "+$F{structure_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["ส่วนที่ "+$F{structure_id}+" : "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -479,7 +485,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="377" y="0" width="52" height="20" uuid="04d75ee4-6b81-4f58-b132-65853cc8a32f"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -490,7 +496,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="429" y="0" width="52" height="20" uuid="13f12b68-d6d2-43ef-b367-3a78a6281ab6"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -501,7 +507,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="481" y="0" width="52" height="20" uuid="961ee0ca-7bf5-44ce-8295-9cc306450d6c"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -512,7 +518,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="533" y="0" width="55" height="20" uuid="ca10512c-4eb4-451f-933d-6e1aa8fec145"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -523,7 +529,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="588" y="0" width="55" height="20" uuid="1afd5caf-9a9f-4c41-900a-e25a0c4244e4"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -591,7 +597,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Group1_COUNT}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="327" y="0" width="50" height="20" uuid="03b06da9-f62f-48c5-8f1e-e11651247dba"/>
 				<box>
 					<pen lineWidth="0.5"/>
