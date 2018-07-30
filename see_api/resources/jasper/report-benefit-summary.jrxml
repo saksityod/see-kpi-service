@@ -68,10 +68,10 @@ GROUP BY emr.grade DESC]]>
 			<property name="com.jaspersoft.studio.field.label" value="org_name"/>
 		</field>
 	</subDataset>
-	<parameter name="param_period" class="java.lang.Integer"/>
-	<parameter name="param_org_id" class="java.lang.Integer"/>
-	<parameter name="param_year" class="java.lang.Integer"/>
-	<parameter name="param_level_emp" class="java.lang.Integer"/>
+	<parameter name="param_period" class="java.lang.String"/>
+	<parameter name="param_org_id" class="java.lang.String"/>
+	<parameter name="param_year" class="java.lang.String"/>
+	<parameter name="param_level_emp" class="java.lang.String"/>
 	<parameter name="param_level_org" class="java.lang.String"/>
 	<parameter name="param_emp" class="java.lang.String"/>
 	<parameter name="param_position" class="java.lang.String"/>
