@@ -11,30 +11,41 @@
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_level_emp" class="java.lang.String"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
+		<parameter name="param_user" class="java.lang.String"/>
+		<parameter name="param_position" class="java.lang.String"/>
+		<parameter name="param_emp" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[SELECT emr.grade 
-, COUNT(DISTINCT emp_id) AS num_emp
-, ROUND((COUNT(DISTINCT emp_id)*100)/(SELECT count(distinct e.emp_id)
+, COUNT(DISTINCT emr.emp_id) AS num_emp
+, ROUND((COUNT(DISTINCT emr.emp_id)*100)/(SELECT count(distinct e.emp_id)
  FROM emp_result e
  INNER JOIN appraisal_period p ON e.period_id = p.period_id
+ INNER JOIN employee em ON e.emp_id = em.emp_id
  WHERE e.grade IS NOT NULL
  AND p.appraisal_year =  $P{param_year}   -- ${appraisal_year}
  AND e.period_id =  $P{param_period} -- ${period_id}
  AND (e.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
- AND (e.org_id =  $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL($P{param_org_id} ) = 1) -- ${org_id}
+ AND (e.org_id =  $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL($P{param_org_id} ) = 1) -- ${org_id} 
+ AND (em.emp_id = $P{param_emp}  OR '' = $P{param_emp} OR ISNULL( $P{param_emp} ) = 1 )
+ AND (em.position_id = $P{param_position}  OR '' = $P{param_position} OR ISNULL( $P{param_position} ) = 1 )
+ AND ((em.chief_emp_code = $P{param_user}  OR "admin" = $P{param_user} )
+	OR (em.emp_code = $P{param_user}  OR "admin" = $P{param_user} ))
 ), 0) AS percent
 , (SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = $P{param_period}  ) AS period_desc -- ${period_id}
 , (SELECT appraisal_level_name FROM appraisal_level WHERE level_id = $P{param_level_emp}  ) AS level_name -- ${appraisal_type_id}
 , (SELECT org_name FROM org WHERE org_id = $P{param_org_id}  ) AS org_name -- ${org_id}
-
 FROM emp_result emr
 INNER JOIN appraisal_period app ON emr.period_id = app.period_id
-
+INNER JOIN employee emp ON emr.emp_id = emp.emp_id
 WHERE emr.grade IS NOT NULL
 AND app.appraisal_year =  $P{param_year}   -- ${appraisal_year}
 AND emr.period_id =  $P{param_period}  -- ${period_id}
 AND (emr.level_id = $P{param_level_emp}   OR '' = $P{param_level_emp}  OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} ) = 1) -- ${org_id}
+AND (emp.emp_id = $P{param_emp}  OR '' = $P{param_emp} OR ISNULL( $P{param_emp} ) = 1 )
+AND (emp.position_id = $P{param_position}  OR '' = $P{param_position} OR ISNULL( $P{param_position} ) = 1 )
+AND ((emp.chief_emp_code = $P{param_user}  OR "admin" = $P{param_user} )
+	OR (emp.emp_code = $P{param_user}  OR "admin" = $P{param_user} ))
 GROUP BY emr.grade DESC]]>
 		</queryString>
 		<field name="grade" class="java.lang.String">
@@ -64,6 +75,7 @@ GROUP BY emr.grade DESC]]>
 	<parameter name="param_level_org" class="java.lang.String"/>
 	<parameter name="param_emp" class="java.lang.String"/>
 	<parameter name="param_position" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT org.org_name
 , emp.emp_code
@@ -95,6 +107,8 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp} OR ISNULL
 AND (emp.org_id =  $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} ) = 1) -- ${org_id}
 AND (emr.emp_id =   $P{param_emp}   OR '' =   $P{param_emp}   OR ISNULL( $P{param_emp} ) = 1)
 AND (emp.position_id =  $P{param_position}    OR '' =   $P{param_position}   OR ISNULL(  $P{param_position}  ) = 1)
+AND ((emp.chief_emp_code =  $P{param_user}  OR "admin" = $P{param_user}  )
+OR (emp.emp_code =  $P{param_user}  OR "admin" =  $P{param_user} ))
 ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
@@ -166,7 +180,7 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 			<band height="435">
 				<pieChart>
 					<chart isShowLegend="false" evaluationTime="Report">
-						<reportElement x="430" y="37" width="300" height="299" uuid="6657bb6c-3f28-4873-b7d9-d127d3102b12"/>
+						<reportElement x="430" y="37" width="300" height="299" uuid="613a1f26-6b91-4caa-8852-d1a1b21e74c7"/>
 						<box>
 							<pen lineColor="#BCBCBC"/>
 						</box>
@@ -179,7 +193,7 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 					</chart>
 					<pieDataset>
 						<dataset>
-							<datasetRun subDataset="Chart" uuid="21e8fd7a-b2b8-46ab-9790-ecb08e5ce0d3">
+							<datasetRun subDataset="Chart" uuid="888c3833-a655-4852-95f5-b9a5047adb18">
 								<datasetParameter name="param_org_id">
 									<datasetParameterExpression><![CDATA[$P{param_org_id}]]></datasetParameterExpression>
 								</datasetParameter>
@@ -191,6 +205,15 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 								</datasetParameter>
 								<datasetParameter name="param_year">
 									<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_emp">
+									<datasetParameterExpression><![CDATA[$P{param_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_position">
+									<datasetParameterExpression><![CDATA[$P{param_position}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_user">
+									<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
 								</datasetParameter>
 							</datasetRun>
 						</dataset>
@@ -204,7 +227,7 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 				</pieChart>
 				<barChart>
 					<chart isShowLegend="false" evaluationTime="Report">
-						<reportElement x="50" y="37" width="299" height="299" uuid="4f235330-ac7a-44ff-9b2a-d4accccd9c49"/>
+						<reportElement x="50" y="37" width="299" height="299" uuid="e408c869-7c51-4428-ba55-bc40a3ea934d"/>
 						<chartTitle>
 							<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							<titleExpression><![CDATA["จำนวนพนักงานแยกตามเกรด"]]></titleExpression>
@@ -214,7 +237,7 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 					</chart>
 					<categoryDataset>
 						<dataset>
-							<datasetRun subDataset="Chart" uuid="6584b775-2d34-4e4b-b535-0e743ca1b24a">
+							<datasetRun subDataset="Chart" uuid="c9c41334-8783-495a-a2bc-3c239a7a2f5d">
 								<datasetParameter name="param_level_emp">
 									<datasetParameterExpression><![CDATA[$P{param_level_emp}]]></datasetParameterExpression>
 								</datasetParameter>
@@ -226,6 +249,15 @@ ORDER BY emp.org_id ASC, emp.emp_id ASC]]>
 								</datasetParameter>
 								<datasetParameter name="param_year">
 									<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_emp">
+									<datasetParameterExpression><![CDATA[$P{param_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_position">
+									<datasetParameterExpression><![CDATA[$P{param_position}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_user">
+									<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
 								</datasetParameter>
 							</datasetRun>
 						</dataset>
