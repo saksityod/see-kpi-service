@@ -98,26 +98,25 @@
 , (CASE 
   WHEN f.form_id = 1 THEN 'Weight Score'
   WHEN f.form_id = 2 THEN ' %Weight'
-  ELSE 'Weight Score '
+  ELSE 'Weight Score'
  END) AS name_five
 ,  COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.weigh_score
   WHEN f.form_id = 2 THEN air.weight_percent
-  ELSE 0
+  ELSE air.weigh_score
  END),0) AS five
 , (CASE 
   WHEN f.form_id = 1 THEN ' '
-  WHEN f.form_id = 2 THEN ' Weight Score'
-  ELSE ' '
+  WHEN f.form_id = 2 THEN 'Weight Score'
+  ELSE 'Over Value'
  END) AS name_six
 , COALESCE((CASE 
   WHEN f.form_id = 1 THEN ' '
   WHEN f.form_id = 2 THEN air.weigh_score
-  ELSE ' '
+  ELSE air.over_value
  END),0) AS six
 , COALESCE ( sr.weigh_score,0) AS weigh_score
 , COALESCE(er.result_score,0) AS result_score
-
 FROM appraisal_item_result air
 INNER JOIN appraisal_period apr ON apr.period_id = air.period_id 
 inner join employee emp on air.emp_id = emp.emp_id
