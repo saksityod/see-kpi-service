@@ -2254,7 +2254,8 @@ class AppraisalController extends Controller
 					".$empLevelStr."
 					".$empIdStr."
 					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					ORDER BY org.org_code");
 	    } else {
 	      $result = DB::select("
 		      SELECT distinct emp.org_id, org.org_name
@@ -2283,7 +2284,8 @@ class AppraisalController extends Controller
 					".$empLevelStr."
 					".$empIdStr."
 					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					ORDER BY org.org_code");
 	    }	
 
 		return response()->json($result);
