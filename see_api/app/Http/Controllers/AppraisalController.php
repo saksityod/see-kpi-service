@@ -2137,7 +2137,8 @@ class AppraisalController extends Controller
 					WHERE 1 = 1
 					".$levelStr."
 					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC");
 	    } else {
 	      $result = DB::select("
 		      SELECT distinct org.level_id, lev.appraisal_level_name
@@ -2164,7 +2165,8 @@ class AppraisalController extends Controller
 					)
 					".$levelStr."
 					".$periodStr."
-					AND lev.is_org = 1");
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC");
 	    }
 
 		return response()->json($result);
@@ -2255,7 +2257,7 @@ class AppraisalController extends Controller
 					".$empIdStr."
 					".$periodStr."
 					AND lev.is_org = 1
-					ORDER BY org.org_code");
+					ORDER BY org.level_id ASC, org.org_code ASC");
 	    } else {
 	      $result = DB::select("
 		      SELECT distinct emp.org_id, org.org_name
@@ -2285,7 +2287,7 @@ class AppraisalController extends Controller
 					".$empIdStr."
 					".$periodStr."
 					AND lev.is_org = 1
-					ORDER BY org.org_code");
+					ORDER BY org.level_id ASC, org.org_code ASC");
 	    }	
 
 		return response()->json($result);
