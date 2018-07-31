@@ -57,7 +57,7 @@ class AppraisalItemController extends Controller
 		$qinput = array();
 		$query = "
 			select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
-			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.unit_reward_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
 			from appraisal_item i
 			left outer join appraisal_structure s
 			on i.structure_id = s.structure_id 
@@ -210,6 +210,30 @@ class AppraisalItemController extends Controller
 							],									
 						];
 					}
+				} elseif ($s->form_name == 'Reward Score') {
+
+					$columns = [
+						[
+							'column_display' => 'KPI Name',
+							'column_name' => 'item_name',
+							'data_type' => 'text',
+						],
+						[
+							'column_display' => 'Max Value',
+							'column_name' => 'max_value',
+							'data_type' => 'number',
+						],						
+						[
+							'column_display' => 'Reward Score/Unit',
+							'column_name' => 'unit_reward_score',
+							'data_type' => 'number',
+						],								
+						[
+							'column_display' => 'IsActive',
+							'column_name' => 'is_active',
+							'data_type' => 'checkbox',
+						],									
+					];
 				}
 
 				$groups[$key] = array(
@@ -325,6 +349,30 @@ class AppraisalItemController extends Controller
 						];
 					}
 
+				} elseif ($item->form_name == 'Reward Score') {
+
+					$columns = [
+						[
+							'column_display' => 'KPI Name',
+							'column_name' => 'item_name',
+							'data_type' => 'text',
+						],
+						[
+							'column_display' => 'Max Value',
+							'column_name' => 'max_value',
+							'data_type' => 'number',
+						],						
+						[
+							'column_display' => 'Reward Score/Unit',
+							'column_name' => 'unit_reward_score',
+							'data_type' => 'number',
+						],								
+						[
+							'column_display' => 'IsActive',
+							'column_name' => 'is_active',
+							'data_type' => 'checkbox',
+						],									
+					];
 				}
 
 				$groups[$key] = array(
@@ -697,6 +745,61 @@ class AppraisalItemController extends Controller
 						
 			}				
 		
+		} elseif ($request->form_id == 4) {
+		
+			$validator = Validator::make($request->all(), [
+				'item_name' => 'required|max:255|unique:appraisal_item',
+				'structure_id' => 'required|integer',
+				'appraisal_level' => 'required',
+				'max_value' => 'required|numeric',
+				'unit_reward_score' => 'required|numeric|digits_between:1,4',
+				'is_active' => 'required|boolean'
+			]);
+
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			} else {
+				$item = new AppraisalItem;
+				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				$item->created_by = Auth::id();
+				$item->updated_by = Auth::id();
+				$item->save();
+				
+				if (!empty($request->org)) {
+					foreach ($request->org as $i) {
+						$org = new ItemOrg;
+						$org->item_id = $item->item_id;
+						$org->org_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				
+				if (!empty($request->position)) {
+					foreach ($request->position as $i) {
+						$org = new ItemPosition;
+						$org->item_id = $item->item_id;
+						$org->position_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}	
+				}
+				
+				if (!empty($request->appraisal_level)) {
+					foreach ($request->appraisal_level as $i) {
+						$org = new ItemLevel;
+						$org->item_id = $item->item_id;
+						$org->level_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}	
+				}				
+						
+			}				
+		
 		} else {
 			return response()->json(['status' => 400, 'data' => 'Form not available.']);
 		}
@@ -876,6 +979,63 @@ class AppraisalItemController extends Controller
 				'appraisal_level' => 'required',
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
+				'is_active' => 'required|boolean'
+			]);
+
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			} else {
+				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				if ($request->value_get_zero = "") {
+					$item->value_get_zero = null;
+				}				
+				$item->updated_by = Auth::id();
+				$item->save();
+				
+				ItemOrg::where('item_id',$item->item_id)->delete();
+				if (!empty($request->org)) {
+					foreach ($request->org as $i) {
+						$org = new ItemOrg;
+						$org->item_id = $item->item_id;
+						$org->org_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				ItemPosition::where('item_id',$item->item_id)->delete();
+				if (!empty($request->position)) {
+					foreach ($request->position as $i) {
+						$org = new ItemPosition;
+						$org->item_id = $item->item_id;
+						$org->position_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}		
+				}
+					
+				ItemLevel::where('item_id',$item->item_id)->delete();
+				if (!empty($request->appraisal_level)) {
+					foreach ($request->appraisal_level as $i) {
+						$org = new ItemLevel;
+						$org->item_id = $item->item_id;
+						$org->level_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}								
+				}								
+			}				
+		
+		} elseif ($request->form_id == 4) {
+		
+			$validator = Validator::make($request->all(), [
+				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
+				'structure_id' => 'required|integer',
+				'appraisal_level' => 'required',
+				'max_value' => 'required|numeric',
+				'unit_reward_score' => 'required|numeric|digits_between:1,4',
 				'is_active' => 'required|boolean'
 			]);
 

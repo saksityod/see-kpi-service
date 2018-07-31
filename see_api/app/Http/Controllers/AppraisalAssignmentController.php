@@ -1575,7 +1575,7 @@ class AppraisalAssignmentController extends Controller
 		$query = "
 		select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
-		a.max_value, a.value_get_zero, a.unit_deduct_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
+		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
 		from appraisal_item a
 		left outer join appraisal_structure b
 		on a.structure_id = b.structure_id
@@ -1693,6 +1693,34 @@ class AppraisalAssignmentController extends Controller
 						[
 							'column_display' => 'Deduct Score/Unit',
 							'column_name' => 'unit_deduct_score',
+							'data_type' => 'number',
+						],
+						[
+							'column_display' => 'IsActive',
+							'column_name' => 'is_active',
+							'data_type' => 'checkbox',
+						],
+					];
+				} elseif ($item->form_name == 'Reward Score') {
+					$columns = [
+						[
+							'column_display' => 'Appraisal Item Name',
+							'column_name' => 'item_name',
+							'data_type' => 'text',
+						],
+						[
+							'column_display' => 'Appraisal Level',
+							'column_name' => 'appraisal_level_name',
+							'data_type' => 'text',
+						],
+						[
+							'column_display' => 'Max Value',
+							'column_name' => 'max_value',
+							'data_type' => 'number',
+						],					
+						[
+							'column_display' => 'Reward Score/Unit',
+							'column_name' => 'unit_reward_score',
 							'data_type' => 'number',
 						],
 						[
@@ -1960,6 +1988,18 @@ class AppraisalAssignmentController extends Controller
 					$errors[] = ['item_id' => $i['item_id'], 'item_name' => $i['item_name'], 'data' => $validator->errors()];
 				}
 
+			} elseif ($i['form_id'] == 4) {
+
+				$validator = Validator::make($i, [
+					'item_id' => 'required|integer',
+					'max_value' => 'required|numeric',
+					'reward_score_unit' => 'required|numeric',
+				]);
+
+				if ($validator->fails()) {
+					$errors[] = ['item_id' => $i['item_id'], 'item_name' => $i['item_name'], 'data' => $validator->errors()];
+				}
+
 			} else {
 				$errors[] = ['item_id' => $i['item_id'], 'item_name' => $i['item_name'], 'data' => 'Invalid Form.'];
 			}
@@ -2178,6 +2218,29 @@ class AppraisalAssignmentController extends Controller
 								$aitem->item_name = $i['item_name'];
 								$aitem->max_value = $i['max_value'];
 								$aitem->deduct_score_unit = $i['deduct_score_unit'];
+								$aitem->weight_percent = 0;
+								$aitem->over_value = 0;
+								$aitem->weigh_score = 0;
+								$aitem->structure_weight_percent = $i['total_weight'];
+								$aitem->threshold_group_id = $tg_id;
+								$aitem->created_by = Auth::id();
+								$aitem->updated_by = Auth::id();
+								$aitem->save();
+
+							} elseif ($i['form_id'] == 4) {
+
+								$aitem = new AppraisalItemResult;
+								$aitem->emp_result_id = $emp_result->emp_result_id;
+								$aitem->period_id = $period_id;
+								$aitem->emp_id = $emp_id;
+								$aitem->chief_emp_id = $chief_emp_id;
+								$aitem->level_id = $level_id;
+								$aitem->org_id = $org_id;
+								$aitem->position_id = $position_id;
+								$aitem->item_id = $i['item_id'];
+								$aitem->item_name = $i['item_name'];
+								$aitem->max_value = $i['max_value'];
+								$aitem->reward_score_unit = $i['reward_score_unit'];
 								$aitem->weight_percent = 0;
 								$aitem->over_value = 0;
 								$aitem->weigh_score = 0;
@@ -2411,6 +2474,29 @@ class AppraisalAssignmentController extends Controller
 							$aitem->item_name = $i['item_name'];
 							$aitem->max_value = $i['max_value'];
 							$aitem->deduct_score_unit = $i['deduct_score_unit'];
+							$aitem->weight_percent = 0;
+							$aitem->over_value = 0;
+							$aitem->weigh_score = 0;
+							$aitem->threshold_group_id = $tg_id;
+							$aitem->structure_weight_percent = $i['total_weight'];
+							$aitem->created_by = Auth::id();
+							$aitem->updated_by = Auth::id();
+							$aitem->save();
+
+						} elseif ($i['form_id'] == 4) {
+
+							$aitem = new AppraisalItemResult;
+							$aitem->emp_result_id = $emp_result->emp_result_id;
+							$aitem->period_id = $period_id;
+							$aitem->emp_id = $emp_id;
+							$aitem->chief_emp_id = $chief_emp_id;
+							$aitem->org_id = $org_id;
+							$aitem->position_id = $position_id;
+							$aitem->level_id = $level_id;
+							$aitem->item_id = $i['item_id'];
+							$aitem->item_name = $i['item_name'];
+							$aitem->max_value = $i['max_value'];
+							$aitem->reward_score_unit = $i['reward_score_unit'];
 							$aitem->weight_percent = 0;
 							$aitem->over_value = 0;
 							$aitem->weigh_score = 0;
