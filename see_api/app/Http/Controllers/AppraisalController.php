@@ -601,6 +601,7 @@ class AppraisalController extends Controller
 
 		$qinput = array();
 
+		$system_config = SystemConfiguration::where('current_appraisal_year', $request->appraisal_year)->first();
 
 		if ($all_emp[0]->count_no > 0) {
 			$query = "
@@ -841,6 +842,7 @@ class AppraisalController extends Controller
 		}
 		$resultT = $result->toArray();
 		$resultT['group'] = $groups;
+		$resultT['system_config'] = $system_config;
 		return response()->json($resultT);
 
 	}
