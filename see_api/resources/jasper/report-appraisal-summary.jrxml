@@ -78,38 +78,43 @@
 , (CASE 
   WHEN f.form_id = 1 THEN 'Score'
   WHEN f.form_id = 2 THEN 'Second Score'
-  ELSE 'Deduct Score/Unit'
+  ELSE 'Over Value'
  END) AS name_three
 , COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.score
   WHEN f.form_id = 2 THEN air.second_score
-  ELSE air.deduct_score_unit
+  ELSE air.over_value 
  END),0) AS three
 , (CASE 
   WHEN f.form_id = 1 THEN '%Weight '
   WHEN f.form_id = 2 THEN ' Score'
-  ELSE '%Weight '
+  ELSE 'Deduct Score/Unit'
  END) AS name_four
 ,  COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.weight_percent
   WHEN f.form_id = 2 THEN air.score
-  ELSE 0
+  ELSE air.deduct_score_unit
  END),0) AS four 
 , (CASE 
   WHEN f.form_id = 1 THEN 'Weight Score'
   WHEN f.form_id = 2 THEN ' %Weight'
-  ELSE 'Weight Score'
+  ELSE '%Weight '
  END) AS name_five
 ,  COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.weigh_score
   WHEN f.form_id = 2 THEN air.weight_percent
-  ELSE air.weigh_score
+  ELSE 0
  END),0) AS five
 , (CASE 
   WHEN f.form_id = 1 THEN ' '
   WHEN f.form_id = 2 THEN 'Weight Score'
-  ELSE 'Over Value'
+  ELSE 'Weight Score'
  END) AS name_six
+, COALESCE((CASE 
+  WHEN f.form_id = 1 THEN ' '
+  WHEN f.form_id = 2 THEN air.weigh_score
+  ELSE air.weigh_score
+ END),0) AS six
 , COALESCE((CASE 
   WHEN f.form_id = 1 THEN ' '
   WHEN f.form_id = 2 THEN air.weigh_score
@@ -214,6 +219,9 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 		<property name="com.jaspersoft.studio.field.label" value="name_six"/>
 	</field>
 	<field name="six" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="six"/>
+	</field>
+	<field name="COLUMN_22" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="six"/>
 	</field>
 	<field name="weigh_score" class="java.math.BigDecimal">
