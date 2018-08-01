@@ -251,7 +251,7 @@ air.level_id]]>
 	</background>
 	<pageHeader>
 		<band height="93">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement mode="Opaque" x="0" y="40" width="822" height="30" forecolor="#3B5998" backcolor="#FFFFFF" uuid="4edf1381-3805-4e22-a491-0aa23ca87c22"/>
 				<box>
 					<pen lineWidth="1.0" lineColor="#3B5998"/>
@@ -413,7 +413,7 @@ air.level_id]]>
 	</columnHeader>
 	<detail>
 		<band height="85" splitType="Stretch">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="1" y="0" width="114" height="60" uuid="4e156d2c-b937-4c99-be8e-f8b3c822f4bc"/>
 				<box topPadding="3" leftPadding="3">
 					<pen lineWidth="1.0"/>
@@ -521,7 +521,7 @@ air.level_id]]>
 						<datasetParameter name="param_level">
 							<datasetParameterExpression><![CDATA[$F{level_id}]]></datasetParameterExpression>
 						</datasetParameter>
-						<connectionExpression><![CDATA[$P{REPORT_CONNECTION} ]]></connectionExpression>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
 					<jr:column width="16" uuid="d4921f05-5d1d-4bd9-bc15-57c70d92369b">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
@@ -685,7 +685,7 @@ air.level_id]]>
 					</valueAxisFormat>
 				</linePlot>
 			</lineChart>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="115" y="0" width="113" height="60" uuid="8484ed65-35e5-41ca-aade-d798e62cadda"/>
 				<box topPadding="3" leftPadding="0">
 					<pen lineWidth="1.0"/>

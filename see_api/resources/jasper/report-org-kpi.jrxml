@@ -436,7 +436,7 @@ ACHIEVE]]></text>
 	</pageHeader>
 	<detail>
 		<band height="70" splitType="Stretch">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="60" height="70" uuid="b63ca141-d2f8-4c9b-96fb-e4f85a87efe1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="328ee760-2504-4ad9-af92-6460d6650c47"/>
 				</reportElement>
@@ -449,7 +449,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{perspective_name}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="60" y="0" width="170" height="70" uuid="711d6bb4-82e8-486a-bb7d-a06c31043203">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d5a5fad6-b608-4c9b-9fd5-17c4d9dcceff"/>
 				</reportElement>
@@ -462,7 +462,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="230" y="0" width="60" height="70" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="451d1086-cc89-4f20-a16b-8c7f738dc9f7"/>
 				</reportElement>
@@ -475,7 +475,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="290" y="0" width="60" height="70" uuid="e33a0cc3-4b15-41b4-b59c-fa43608a01e4">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="48ad6a29-41ed-4616-b899-53765114bc9f"/>
 				</reportElement>
@@ -487,7 +487,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="350" y="0" width="60" height="70" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9fcbc774-04b4-4bc6-a6db-b707e819b54b"/>
 				</reportElement>
@@ -500,7 +500,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="410" y="0" width="40" height="70" uuid="1c50ab28-0ec3-4ad5-a780-b907c991c028">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3f0001c5-e5cf-46a3-aed0-15241c613b11"/>
 				</reportElement>
@@ -513,7 +513,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="450" y="0" width="45" height="70" uuid="3be53dd1-3b99-44f3-ad7f-67d1d82f640f">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5b1490ae-25f3-4e78-a2d7-02de3f877fe6"/>
 				</reportElement>
@@ -526,7 +526,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="495" y="0" width="45" height="70" uuid="06df3c4c-6ee8-470f-ab91-d71c40d2eb6e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="ed81cbb8-75b4-412f-b43f-0e1dfd571f62"/>
 				</reportElement>
@@ -539,7 +539,7 @@ ACHIEVE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weigh_score}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement mode="Opaque" x="540" y="0" width="60" height="70" backcolor="#C4C4C4" uuid="ad2a4eca-e302-4ae9-801a-0082ef715d0b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="0a59113e-96a2-4b0b-b7b7-43cb51b548a6"/>
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_code}]]></propertyExpression>
