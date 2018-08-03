@@ -54,12 +54,18 @@ class AppraisalStructureController extends Controller
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
-		}			
-	
+		}
+
+		if($request->form_id==2) {
+			$nof_max = 10;
+		} else {
+			$nof_max = 5;
+		}
+
 		$validator = Validator::make($request->all(), [
 			'seq_no' => 'required|integer|unique:appraisal_structure', 
 			'structure_name' => 'required|max:100|unique:appraisal_structure',
-			'nof_target_score' => 'required|integer|min:0|max:5',
+			'nof_target_score' => 'required|integer|min:0|max:'.$nof_max,
 			'form_id' => 'required|integer',
 			'is_unlimited_deduction' => 'boolean',
 			'is_value_get_zero' => 'boolean',
@@ -121,12 +127,18 @@ class AppraisalStructureController extends Controller
 			$item = AppraisalStructure::findOrFail($structure_id);
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Structure not found.']);
+		}	
+		
+		if($request->form_id==2) {
+			$nof_max = 10;
+		} else {
+			$nof_max = 5;
 		}
 		
 		$validator = Validator::make($request->all(), [
 			'seq_no' => 'required|integer|unique:appraisal_structure,seq_no,' . $structure_id . ',structure_id', 
 			'structure_name' => 'required|max:100|unique:appraisal_structure,structure_name,' . $structure_id . ',structure_id', 
-			'nof_target_score' => 'required|integer|min:0|max:5',
+			'nof_target_score' => 'required|integer|min:0|max:'.$nof_max,
 			'form_id' => 'required|integer',
 			'is_unlimited_deduction' => 'boolean',
 			'is_active' => 'required|boolean',		

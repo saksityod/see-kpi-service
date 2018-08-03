@@ -1129,7 +1129,7 @@ class ImportAssignmentController extends Controller
                   "value_get_zero"=>$row->value_get_zero,
                   "threshold_group_id" => $thresholdGroupId,
                   "weight_percent" => (empty($row->weight)) ? "0": $row->weight,
-                  "weigh_score" => "0",
+                  //"weigh_score" => "0",
                   "structure_weight_percent" => (empty($criteriaInfoQry)) ? "0" : $criteriaInfoQry[0]->weight_percent,
                   "updated_by" => Auth::id(),
                   "updated_dttm" => date("Y-m-d H:i:s")
