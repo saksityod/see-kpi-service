@@ -162,7 +162,7 @@ FROM appraisal_item_result AIR
 INNER JOIN appraisal_item AI ON AIR.item_id = AI.item_id
 INNER JOIN perspective Pe ON AI.perspective_id = Pe.perspective_id
 INNER JOIN uom Uo ON AI.uom_id = Uo.uom_id
-INNER JOIN result_threshold RT ON AIR.percent_achievement BETWEEN RT.begin_threshold AND RT.end_threshold
+LEFT JOIN result_threshold RT ON AIR.percent_achievement BETWEEN RT.begin_threshold AND RT.end_threshold
 INNER JOIN (SELECT org.org_id
 	, org.org_code
 	, org.org_name
