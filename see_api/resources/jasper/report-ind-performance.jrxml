@@ -65,8 +65,14 @@ AND (emp.position_id = $P{position_id}  OR '' = $P{position_id} OR  ISNULL($P{po
 AND (emp1.org_id = $P{org_id}  OR '' = $P{org_id}  OR  ISNULL($P{org_id}) = 1 )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_id}  OR '' = $P{level_id}  OR  ISNULL($P{level_id}) = 1 )
-AND ((emp1.chief_emp_code = $P{param_user}  OR 'admin' = $P{param_user})
-OR (emp1.emp_code = $P{param_user}  OR 'admin' = $P{param_user}))
+AND ((emp1.chief_emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user} ))
+OR (emp1.emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user} ) ))
 GROUP BY lev.appraisal_level_name 
 , po.position_name 
 , org.org_name 

@@ -438,7 +438,7 @@ ORDER BY aps.structure_id ASC
 	</group>
 	<detail>
 		<band height="20" splitType="Stretch">
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="222" y="0" width="56" height="20" uuid="21ba68c0-105f-4c28-ae4e-45897acf5057"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -449,7 +449,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="278" y="0" width="49" height="20" uuid="44a973cd-b9d9-4a8b-9f4a-67442058dbcd"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -460,7 +460,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="377" y="0" width="52" height="20" uuid="04d75ee4-6b81-4f58-b132-65853cc8a32f"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -471,7 +471,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="429" y="0" width="52" height="20" uuid="13f12b68-d6d2-43ef-b367-3a78a6281ab6"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -482,7 +482,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="481" y="0" width="52" height="20" uuid="961ee0ca-7bf5-44ce-8295-9cc306450d6c"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -493,7 +493,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="533" y="0" width="55" height="20" uuid="ca10512c-4eb4-451f-933d-6e1aa8fec145"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -504,7 +504,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="588" y="0" width="55" height="20" uuid="1afd5caf-9a9f-4c41-900a-e25a0c4244e4"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -515,7 +515,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="643" y="0" width="53" height="20" uuid="fde2c6a9-006a-4f2c-a27d-18614507b682"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -526,7 +526,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="696" y="0" width="48" height="20" uuid="34db6dab-ff5e-4774-865e-bd8a52871533"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -537,7 +537,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="744" y="0" width="58" height="20" uuid="ab32b5c5-a950-4774-8b9d-275207f32ef2"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -549,7 +549,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weigh_score_item}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="29" y="0" width="193" height="20" uuid="3cb10fec-b498-441a-9f69-0af39e87224d"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -560,7 +560,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="29" height="20" uuid="e94de509-e346-4869-b902-aa78b70ff20e"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -572,7 +572,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Group1_COUNT}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="327" y="0" width="50" height="20" uuid="03b06da9-f62f-48c5-8f1e-e11651247dba"/>
 				<box>
 					<pen lineWidth="0.5"/>

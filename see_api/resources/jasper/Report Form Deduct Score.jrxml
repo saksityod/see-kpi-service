@@ -143,7 +143,7 @@ ORDER BY aps.structure_id ASC
 					</textElement>
 					<text><![CDATA[คะแนน]]></text>
 				</staticText>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="560" y="0" width="150" height="25" backcolor="#DCE6F1" uuid="5c69157c-dec9-4e38-9f66-76dc528f7c48"/>
 					<textElement textAlignment="Right" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="18" isBold="true"/>
@@ -302,7 +302,7 @@ ORDER BY aps.structure_id ASC
 		</groupHeader>
 		<groupFooter>
 			<band height="25">
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="720" y="0" width="82" height="25" uuid="0af03ab1-6a6d-4de0-9daf-76c9859fcb53"/>
 					<box>
 						<pen lineWidth="0.5"/>
@@ -330,7 +330,7 @@ ORDER BY aps.structure_id ASC
 	</group>
 	<detail>
 		<band height="25" splitType="Stretch">
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="30" y="0" width="290" height="25" uuid="3cb10fec-b498-441a-9f69-0af39e87224d"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -341,7 +341,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="30" height="25" uuid="e94de509-e346-4869-b902-aa78b70ff20e"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -352,7 +352,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Group1_COUNT}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="320" y="0" width="100" height="25" uuid="4432c9bb-27e2-4b0d-8c1f-3a6d3d409e5d"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -363,7 +363,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="420" y="0" width="65" height="25" uuid="c9883f0b-6722-4592-8e69-45366e2f7123"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -374,7 +374,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="485" y="0" width="65" height="25" uuid="a8efae5e-bfb3-42c5-b18d-501ab2f52e2a"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -385,7 +385,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{over_value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="640" y="0" width="80" height="25" uuid="e81fb6fb-4c95-4f3c-a1a0-e66afd400734"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -396,7 +396,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deduct_score_unit}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="720" y="0" width="82" height="25" uuid="8a5a25d5-0729-4e2a-a484-c9c8bc8cb9f1"/>
 				<box>
 					<pen lineWidth="0.5"/>
