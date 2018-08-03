@@ -82,7 +82,7 @@ SELECT aps.structure_id
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.first_score,0) as score
+, COALESCE(air.second_score,0) as score
 , COALESCE((air.weight_percent*air.first_score),0) as weigh_score_item
 , (SELECT SUM(COALESCE((air1.weight_percent*air1.first_score),0))/5
 	FROM appraisal_item_result air1
