@@ -28,7 +28,6 @@
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score
 , stuc.one
-, stuc.two
 , stuc.three
 , stuc.four
 , stuc.num_stucture
@@ -38,16 +37,14 @@ INNER JOIN employee emp1 ON emp.emp_id = emp1.emp_id
 INNER JOIN org ON emp1.org_id = org.org_id
 INNER JOIN position po ON po.position_id = emp1.position_id
 INNER JOIN (select max(total.one) as one
-, max(total.two) as two
 , max(total.three) as three
 , max(total.four) as four
 , total.emp_id
 , total.num_stucture
 from (
-	select (CASE WHEN api.structure_id = 1 THEN 1 ELSE 0 END) AS one
-	, (CASE WHEN api.structure_id = 2 THEN 2 ELSE 0 END) AS two
-	, (CASE WHEN api.structure_id = 3 THEN 3 ELSE 0 END) AS three
-	, (CASE WHEN api.structure_id = 4 OR api.structure_id = 5 THEN 4 ELSE 0 END) AS four
+	select (CASE WHEN aps.form_id = 1 THEN 1 ELSE 0 END) AS one
+	, (CASE WHEN aps.form_id = 2 THEN 2 ELSE 0 END) AS three
+	, (CASE WHEN aps.form_id = 3 THEN 3 ELSE 0 END) AS four
 	, air.emp_id
 	, (select count(distinct api1.structure_id)
 			FROM appraisal_item_result air1
@@ -137,9 +134,6 @@ GROUP BY lev.appraisal_level_name
 	</field>
 	<field name="one" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="one"/>
-	</field>
-	<field name="two" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="two"/>
 	</field>
 	<field name="three" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="three"/>
