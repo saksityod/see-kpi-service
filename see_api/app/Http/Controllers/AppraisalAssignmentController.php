@@ -3040,8 +3040,17 @@ class AppraisalAssignmentController extends Controller
 	}
 
 	public function update_action(Request $request) {
+		try {
+			$stage = AppraisalStage::findOrFail($request->head_params['action_to']);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 400, 'data' => 'Appraisal Stage not found.']);
+		}
+
+		if(empty($request->head_params['emp_result_id'])) {
+			return response()->json(['status' => 400, 'data' => 'Emp Result not found.']);
+		}
+
 		$emp_result_id = $request->head_params['emp_result_id'];
-		$stage = AppraisalStage::find($request->head_params['action_to']);
 
 		foreach ($emp_result_id as $key => $value) {
 			$item = EmpResult::find($value);
