@@ -346,7 +346,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="58" width="218" height="20" uuid="e3c95e5f-35a7-4d3b-b255-ffe2377bf535"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -354,7 +354,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="690" y="38" width="90" height="60" forecolor="#FFFFFF" backcolor="#3B5998" uuid="68b19220-0d68-4303-a991-0d8aa2201977"/>
 					<box>
 						<pen lineColor="#3B5998"/>
@@ -375,7 +375,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[ORGANIZATION NAME :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="24" width="218" height="34" uuid="86442c17-aa21-43cb-9846-d3f319251756"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -390,7 +390,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[ORGANIZATION CODE :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="24" width="218" height="34" uuid="8e82c9bf-8253-493d-8c91-4738f7793e32"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -415,7 +415,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[GRAND TOTAL]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="4" width="218" height="20" uuid="038d9625-ff68-4fbb-8abd-f82923658fb7"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -437,7 +437,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[PERIOD :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="4" width="218" height="20" uuid="66517883-a2b8-427e-873e-a32018e9662b"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -445,7 +445,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="78" width="218" height="34" uuid="cd060730-fc8c-4e11-b099-896ba94c50b3"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -467,7 +467,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[EMPLOYEE CODE :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="58" width="218" height="20" uuid="4ce31ddf-7876-4ce5-ab65-fd218ebde95d"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
@@ -482,7 +482,7 @@ INNER JOIN (SELECT org.org_id
 					</textElement>
 					<text><![CDATA[POSITION :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="78" width="218" height="34" uuid="7a51fc52-d329-43ae-8b43-98cc4d9910c7"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="14"/>
