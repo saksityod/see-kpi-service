@@ -1034,7 +1034,7 @@ class AppraisalController extends Controller
 					'total_weight' => $total_weight,
 					'hint' => $hint,
 					'total_weigh_score' => $item->total_weigh_score,
-					'total_weight_percent' => $item->total_weight_percent,
+					'total_weight_percent' => $item->structure_weight_percent,
 					'no_weight' => $item->no_weight,
 					'threshold' => $config->threshold,
 					'result_type' => $config->result_type
