@@ -45,7 +45,9 @@ GROUP BY lev.level_id
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code)
-, emp.appraisal_type_id]]>
+, emp.appraisal_type_id
+ORDER BY  lev.level_id ASC
+, org.org_id ASC]]>
 	</queryString>
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
