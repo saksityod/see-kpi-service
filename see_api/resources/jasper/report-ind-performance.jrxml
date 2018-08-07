@@ -158,7 +158,7 @@ GROUP BY lev.appraisal_level_name
 					</box>
 					<text><![CDATA[]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="67" width="211" height="40" uuid="bb2f82c8-7d2a-43bc-a11a-d942dc81ad52"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -206,7 +206,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[หน่วยงาน :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="107" width="220" height="40" uuid="275d260d-746a-40c6-b8fb-c27bb66a1471"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -220,7 +220,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="660" y="74" width="128" height="56" uuid="b1cf0493-103b-4778-be32-6734fa149cfa"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -254,7 +254,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[ชื่อ-สกุล :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="27" width="211" height="40" uuid="8be4dbf6-8cdf-4cd2-bd75-cbc58899dfc8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -268,7 +268,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{level}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="590" y="74" width="70" height="56" uuid="08e8958b-fb70-4db7-9344-52acdd188fe0"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -279,7 +279,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="67" width="220" height="40" uuid="6cc0bdd5-8159-4689-92fb-08bcf9fd39c2"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -335,7 +335,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[ตำแหน่ง :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="107" width="211" height="40" uuid="c7ef354e-6da3-4797-adae-c772515bc0b7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -349,7 +349,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="27" width="220" height="40" uuid="ab779e79-70a1-450b-9595-14330bc5c3ad"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -363,7 +363,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{position}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="660" y="46" width="128" height="28" uuid="45193cdf-901f-421f-8987-d6bc7abc79fb"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>

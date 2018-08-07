@@ -9,7 +9,8 @@
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT aps.structure_id
+		<![CDATA[SELECT aps.seq_no
+, aps.structure_id
 , aps.structure_name
 , app.period_id
 , app.appraisal_period_desc
@@ -54,7 +55,9 @@ AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
 AND aps.form_id = 1
 AND $P{one} != 0
-GROUP BY aps.structure_name
+GROUP BY aps.seq_no
+, aps.structure_id
+, aps.structure_name
 , app.period_id
 , app.appraisal_period_desc
 , air.item_name
@@ -74,6 +77,10 @@ ORDER BY aps.structure_id ASC
 , app.period_id ASC
 , air.item_id ASC]]>
 	</queryString>
+	<field name="seq_no" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="seq_no"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
+	</field>
 	<field name="structure_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
@@ -130,7 +137,7 @@ ORDER BY aps.structure_id ASC
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
-	<field name="score" class="java.lang.Integer">
+	<field name="score" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
@@ -151,7 +158,7 @@ ORDER BY aps.structure_id ASC
 		<groupExpression><![CDATA[$F{structure_name}]]></groupExpression>
 		<groupHeader>
 			<band height="25">
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement stretchType="ElementGroupBottom" mode="Opaque" x="0" y="0" width="802" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="16084a02-74e2-4b18-86ed-da9773360b90"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#3B5998"/>
@@ -160,7 +167,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ส่วนที่ "+$F{structure_id}+" : "+$F{structure_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["ส่วนที่ "+$F{seq_no}+" : "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -188,7 +195,7 @@ ORDER BY aps.structure_id ASC
 					</textElement>
 					<text><![CDATA[คะแนน]]></text>
 				</staticText>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="560" y="0" width="150" height="25" backcolor="#DCE6F1" uuid="fd55f966-a716-49bb-8771-6d14b92cc781"/>
 					<box>
 						<pen lineColor="#A2BCF1"/>
@@ -206,7 +213,7 @@ ORDER BY aps.structure_id ASC
 		<groupExpression><![CDATA[$F{appraisal_period_desc}]]></groupExpression>
 		<groupHeader>
 			<band height="86">
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="802" height="25" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="5ecee534-b340-4af3-add2-ce2fddf4c9ae"/>
 					<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 						<pen lineWidth="1.0" lineColor="#6B83B5"/>
@@ -443,7 +450,7 @@ ORDER BY aps.structure_id ASC
 					</textElement>
 					<text><![CDATA[คะแนนรวมของผลงาน (KPIs)]]></text>
 				</staticText>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="744" y="0" width="58" height="25" uuid="0af03ab1-6a6d-4de0-9daf-76c9859fcb53"/>
 					<box>
 						<pen lineWidth="0.5"/>
