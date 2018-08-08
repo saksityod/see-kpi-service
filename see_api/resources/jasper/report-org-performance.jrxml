@@ -45,7 +45,9 @@ GROUP BY lev.level_id
 , org.org_code
 , org.org_name 
 , (select o.org_name from org o where o.org_code = org.parent_org_code)
-, emp.appraisal_type_id]]>
+, emp.appraisal_type_id
+ORDER BY  lev.level_id ASC
+, org.org_id ASC]]>
 	</queryString>
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
@@ -99,7 +101,7 @@ GROUP BY lev.level_id
 					</box>
 					<text><![CDATA[]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="73" width="211" height="40" uuid="bb2f82c8-7d2a-43bc-a11a-d942dc81ad52"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -147,7 +149,7 @@ GROUP BY lev.level_id
 					</textElement>
 					<text><![CDATA[หน่วยงาน :]]></text>
 				</staticText>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="664" y="61" width="128" height="50" uuid="b1cf0493-103b-4778-be32-6734fa149cfa"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -168,7 +170,7 @@ GROUP BY lev.level_id
 					</textElement>
 					<text><![CDATA[เกรด]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="33" width="211" height="40" uuid="8be4dbf6-8cdf-4cd2-bd75-cbc58899dfc8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -182,7 +184,7 @@ GROUP BY lev.level_id
 					</textElement>
 					<textFieldExpression><![CDATA[$F{level}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="594" y="61" width="70" height="50" uuid="08e8958b-fb70-4db7-9344-52acdd188fe0"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -193,7 +195,7 @@ GROUP BY lev.level_id
 					</textElement>
 					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="371" y="73" width="218" height="40" uuid="6cc0bdd5-8159-4689-92fb-08bcf9fd39c2"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -235,7 +237,7 @@ GROUP BY lev.level_id
 					</textElement>
 					<text><![CDATA[รหัสหน่วยงาน :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="371" y="33" width="218" height="40" uuid="ab779e79-70a1-450b-9595-14330bc5c3ad"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

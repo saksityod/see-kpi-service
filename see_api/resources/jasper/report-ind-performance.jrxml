@@ -28,7 +28,6 @@
 , emp.appraisal_type_id
 , avg(emp.result_score) as result_score
 , stuc.one
-, stuc.two
 , stuc.three
 , stuc.four
 , stuc.num_stucture
@@ -38,16 +37,14 @@ INNER JOIN employee emp1 ON emp.emp_id = emp1.emp_id
 INNER JOIN org ON emp1.org_id = org.org_id
 INNER JOIN position po ON po.position_id = emp1.position_id
 INNER JOIN (select max(total.one) as one
-, max(total.two) as two
 , max(total.three) as three
 , max(total.four) as four
 , total.emp_id
 , total.num_stucture
 from (
-	select (CASE WHEN api.structure_id = 1 THEN 1 ELSE 0 END) AS one
-	, (CASE WHEN api.structure_id = 2 THEN 2 ELSE 0 END) AS two
-	, (CASE WHEN api.structure_id = 3 THEN 3 ELSE 0 END) AS three
-	, (CASE WHEN api.structure_id = 4 OR api.structure_id = 5 THEN 4 ELSE 0 END) AS four
+	select (CASE WHEN aps.form_id = 1 THEN 1 ELSE 0 END) AS one
+	, (CASE WHEN aps.form_id = 2 THEN 2 ELSE 0 END) AS three
+	, (CASE WHEN aps.form_id = 3 THEN 3 ELSE 0 END) AS four
 	, air.emp_id
 	, (select count(distinct api1.structure_id)
 			FROM appraisal_item_result air1
@@ -81,7 +78,10 @@ GROUP BY lev.appraisal_level_name
 , emp1.emp_code 
 , emp.grade
 , emp1.emp_id
-, emp.appraisal_type_id]]>
+, emp.appraisal_type_id
+ORDER BY lev.level_id DESC
+, org.org_id ASC
+, emp1.emp_id ASC]]>
 	</queryString>
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
@@ -138,9 +138,6 @@ GROUP BY lev.appraisal_level_name
 	<field name="one" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="one"/>
 	</field>
-	<field name="two" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="two"/>
-	</field>
 	<field name="three" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="three"/>
 	</field>
@@ -164,7 +161,7 @@ GROUP BY lev.appraisal_level_name
 					</box>
 					<text><![CDATA[]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="67" width="211" height="40" uuid="bb2f82c8-7d2a-43bc-a11a-d942dc81ad52"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -212,7 +209,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[หน่วยงาน :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="107" width="220" height="40" uuid="275d260d-746a-40c6-b8fb-c27bb66a1471"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -226,7 +223,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.00">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="660" y="74" width="128" height="56" uuid="b1cf0493-103b-4778-be32-6734fa149cfa"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -260,7 +257,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[ชื่อ-สกุล :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="27" width="211" height="40" uuid="8be4dbf6-8cdf-4cd2-bd75-cbc58899dfc8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -274,7 +271,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{level}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="590" y="74" width="70" height="56" uuid="08e8958b-fb70-4db7-9344-52acdd188fe0"/>
 					<box>
 						<pen lineWidth="0.75"/>
@@ -285,7 +282,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="67" width="220" height="40" uuid="6cc0bdd5-8159-4689-92fb-08bcf9fd39c2"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -341,7 +338,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<text><![CDATA[ตำแหน่ง :]]></text>
 				</staticText>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="68" y="107" width="211" height="40" uuid="c7ef354e-6da3-4797-adae-c772515bc0b7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -355,7 +352,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="27" width="220" height="40" uuid="ab779e79-70a1-450b-9595-14330bc5c3ad"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -369,7 +366,7 @@ GROUP BY lev.appraisal_level_name
 					</textElement>
 					<textFieldExpression><![CDATA[$F{position}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement x="660" y="46" width="128" height="28" uuid="45193cdf-901f-421f-8987-d6bc7abc79fb"/>
 					<box>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>

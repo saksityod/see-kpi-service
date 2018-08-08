@@ -11,7 +11,8 @@
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT aps.structure_id
+		<![CDATA[SELECT aps.seq_no
+, aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
 , 1 as order_name
@@ -65,7 +66,8 @@ AND air.position_id = $P{position_id}
 AND aps.form_id = 2
 AND $P{three} != 0
 AND 1 >= (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
-GROUP BY aps.structure_id
+GROUP BY aps.seq_no
+, aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
 , air.item_name
@@ -75,14 +77,15 @@ GROUP BY aps.structure_id
 , COALESCE((air.weight_percent*air.first_score),0) 
 , COALESCE(str.weigh_score,0) 
 UNION
-SELECT aps.structure_id
+SELECT aps.seq_no
+, aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
 , 2 as order_name
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.first_score,0) as score
+, COALESCE(air.second_score,0) as score
 , COALESCE((air.weight_percent*air.first_score),0) as weigh_score_item
 , (SELECT SUM(COALESCE((air1.weight_percent*air1.first_score),0))/5
 	FROM appraisal_item_result air1
@@ -129,7 +132,8 @@ AND air.position_id = $P{position_id}
 AND aps.form_id = 2
 AND $P{three} != 0 
 AND 1 = (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
-GROUP BY aps.structure_id
+GROUP BY aps.seq_no
+, aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
 , air.item_name
@@ -141,8 +145,12 @@ GROUP BY aps.structure_id
 ORDER BY 2 asc
 ,3 asc
 ,4 asc
-,5 asc]]>
+,5 asc
+, 6  asc]]>
 	</queryString>
+	<field name="seq_no" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="seq_no"/>
+	</field>
 	<field name="structure_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
 	</field>
@@ -193,7 +201,7 @@ ORDER BY 2 asc
 		<groupExpression><![CDATA[$F{structure_name}]]></groupExpression>
 		<groupHeader>
 			<band height="25">
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="803" height="25" isPrintInFirstWholeBand="true" forecolor="#FFFFFF" backcolor="#3B5998" uuid="6d0b3099-2ddd-4605-a530-ad910912a090"/>
 					<box>
 						<pen lineColor="#3B5998"/>
@@ -202,7 +210,7 @@ ORDER BY 2 asc
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph lineSpacing="Single" leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ส่วนที่ "+$F{structure_id}+" : "+$F{structure_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["ส่วนที่ "+$F{seq_no}+" : "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -245,7 +253,7 @@ ORDER BY 2 asc
 		<groupExpression><![CDATA[$F{appraisal_period_desc}]]></groupExpression>
 		<groupHeader>
 			<band height="25">
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="803" height="25" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="3ec7722c-3b97-46f3-8644-5da6d0e96ec7"/>
 					<box>
 						<pen lineColor="#6B83B5"/>
@@ -279,7 +287,7 @@ ORDER BY 2 asc
 					</textElement>
 					<textFieldExpression><![CDATA[$F{weigh_score_period}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="560" height="25" backcolor="#D9D9D9" uuid="9bfd6d11-932a-4ceb-b3dc-5feecd97c931"/>
 					<box>
 						<pen lineColor="#D9D9D9"/>
@@ -297,7 +305,7 @@ ORDER BY 2 asc
 		<groupExpression><![CDATA[$F{order_name}]]></groupExpression>
 		<groupHeader>
 			<band height="65">
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="803" height="25" backcolor="#B1B1B1" uuid="c3b36145-5812-40c3-8c6a-d989ae8674a8"/>
 					<box>
 						<pen lineColor="#B1B1B1"/>
