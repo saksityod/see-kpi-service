@@ -125,7 +125,7 @@ class AppraisalDataController extends Controller
 				From appraisal_level
 				Where is_active = 1
 				and is_individual = 1 
-				Order by level_id desc
+				Order by level_id asc
 				");
 		} else {
 
@@ -228,7 +228,7 @@ class AppraisalDataController extends Controller
 				and l.is_individual = 1
 				and l.is_active = 1
 				and e.is_active = 1
-				group by l.level_id desc
+				group by l.level_id asc
 				");
 		}
 
@@ -1023,6 +1023,7 @@ class AppraisalDataController extends Controller
 
 	public function export(Request $request)
 	{
+		set_time_limit(0);
 		$all_emp = DB::select("
 			SELECT sum(b.is_all_employee) count_no
 			from employee a
