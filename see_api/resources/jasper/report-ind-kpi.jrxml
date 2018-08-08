@@ -37,14 +37,15 @@
 	</style>
 	<subDataset name="chart" uuid="53f43788-b265-4adb-b89f-f7b50d505d3c">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-tfg12"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
 		<parameter name="period" class="java.lang.Integer"/>
 		<parameter name="org" class="java.lang.Integer"/>
 		<parameter name="item" class="java.lang.Integer"/>
 		<parameter name="emp" class="java.lang.String"/>
 		<parameter name="emp_result" class="java.lang.String"/>
 		<queryString language="SQL">
-			<![CDATA[SELECT
+			<![CDATA[SELECT A.* FROM(
+SELECT
 	"Actual" AS type_name,
 	mon.period_id,
 	mon.`year`,
@@ -100,8 +101,9 @@ GROUP BY
 	mon.org_id,
 	re.target_value ,
 	mon.appraisal_month_no
-ORDER BY
-	8]]>
+) A
+WHERE  A.type_name = "Actual"
+ORDER BY 8]]>
 		</queryString>
 		<field name="type_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="type_name"/>
@@ -349,7 +351,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="58" width="218" height="20" uuid="e3c95e5f-35a7-4d3b-b255-ffe2377bf535"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
@@ -378,7 +380,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="24" width="218" height="34" uuid="86442c17-aa21-43cb-9846-d3f319251756"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parent_org_name}]]></textFieldExpression>
@@ -393,7 +395,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="24" width="218" height="34" uuid="8e82c9bf-8253-493d-8c91-4738f7793e32"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
@@ -418,7 +420,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="4" width="218" height="20" uuid="038d9625-ff68-4fbb-8abd-f82923658fb7"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{appraisal_period_desc}]]></textFieldExpression>
@@ -440,7 +442,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="4" width="218" height="20" uuid="66517883-a2b8-427e-873e-a32018e9662b"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
@@ -448,7 +450,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="467" y="78" width="218" height="34" uuid="cd060730-fc8c-4e11-b099-896ba94c50b3"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{appraisal_level_name}]]></textFieldExpression>
@@ -470,7 +472,7 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="58" width="218" height="20" uuid="4ce31ddf-7876-4ce5-ab65-fd218ebde95d"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
@@ -485,39 +487,39 @@ INNER JOIN (SELECT org.org_id
 				<textField isBlankWhenNull="true">
 					<reportElement x="122" y="78" width="218" height="34" uuid="7a51fc52-d329-43ae-8b43-98cc4d9910c7"/>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="440" y="119" width="47" height="40" backcolor="#EBEBEB" uuid="1652b286-462e-45f1-9b50-4cee4bd657c4"/>
+					<reportElement positionType="Float" mode="Opaque" x="463" y="119" width="47" height="40" backcolor="#EBEBEB" uuid="1652b286-462e-45f1-9b50-4cee4bd657c4"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[%
 WEIGHT]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="220" y="119" width="60" height="40" backcolor="#EBEBEB" uuid="1256aef9-e94a-4cc1-acc8-652b9113ff8d"/>
+					<reportElement positionType="Float" mode="Opaque" x="220" y="119" width="70" height="40" backcolor="#EBEBEB" uuid="1256aef9-e94a-4cc1-acc8-652b9113ff8d"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[TARGET]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="340" y="119" width="60" height="40" backcolor="#EBEBEB" uuid="669b8d63-5e2c-4888-aa4a-2c13eff0f759"/>
+					<reportElement positionType="Float" mode="Opaque" x="350" y="119" width="73" height="40" backcolor="#EBEBEB" uuid="669b8d63-5e2c-4888-aa4a-2c13eff0f759"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[ACTUAL]]></text>
 				</staticText>
@@ -527,7 +529,7 @@ WEIGHT]]></text>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[PERSPECTIVE]]></text>
 				</staticText>
@@ -537,38 +539,38 @@ WEIGHT]]></text>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[PERFORMANCE TREND]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="280" y="119" width="60" height="40" backcolor="#EBEBEB" uuid="71195c92-468b-4fcb-a9b5-4546fbbec0a4"/>
+					<reportElement positionType="Float" mode="Opaque" x="290" y="119" width="60" height="40" backcolor="#EBEBEB" uuid="71195c92-468b-4fcb-a9b5-4546fbbec0a4"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[UOM]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="537" y="119" width="63" height="40" backcolor="#EBEBEB" uuid="1308961a-64d3-4eac-8f8e-02b6b2d5b99e"/>
+					<reportElement positionType="Float" mode="Opaque" x="560" y="119" width="40" height="40" backcolor="#EBEBEB" uuid="1308961a-64d3-4eac-8f8e-02b6b2d5b99e"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[%
 ACHIEVE]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="487" y="119" width="50" height="40" backcolor="#EBEBEB" uuid="f9f63c2f-8b23-4ded-9106-50420a44066d"/>
+					<reportElement positionType="Float" mode="Opaque" x="510" y="119" width="50" height="40" backcolor="#EBEBEB" uuid="f9f63c2f-8b23-4ded-9106-50420a44066d"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[WEIGHT SCORE]]></text>
 				</staticText>
@@ -578,17 +580,17 @@ ACHIEVE]]></text>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[KPI NAME]]></text>
 				</staticText>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="400" y="119" width="40" height="40" backcolor="#EBEBEB" uuid="705c549a-1f86-410e-944d-01c1aad6c232"/>
+					<reportElement positionType="Float" mode="Opaque" x="423" y="119" width="40" height="40" backcolor="#EBEBEB" uuid="705c549a-1f86-410e-944d-01c1aad6c232"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="13" isBold="true" isItalic="false"/>
+						<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 					</textElement>
 					<text><![CDATA[SCORE]]></text>
 				</staticText>
@@ -610,128 +612,128 @@ ACHIEVE]]></text>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="60" splitType="Stretch">
+		<band height="80" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="69" height="60" uuid="b63ca141-d2f8-4c9b-96fb-e4f85a87efe1">
+				<reportElement x="0" y="0" width="69" height="80" uuid="b63ca141-d2f8-4c9b-96fb-e4f85a87efe1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="328ee760-2504-4ad9-af92-6460d6650c47"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{perspective_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="69" y="0" width="151" height="60" uuid="711d6bb4-82e8-486a-bb7d-a06c31043203">
+				<reportElement x="69" y="0" width="151" height="80" uuid="711d6bb4-82e8-486a-bb7d-a06c31043203">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d5a5fad6-b608-4c9b-9fd5-17c4d9dcceff"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="220" y="0" width="60" height="60" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
+				<reportElement x="220" y="0" width="70" height="80" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="451d1086-cc89-4f20-a16b-8c7f738dc9f7"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="0" width="60" height="60" uuid="e33a0cc3-4b15-41b4-b59c-fa43608a01e4">
+				<reportElement x="290" y="0" width="60" height="80" uuid="e33a0cc3-4b15-41b4-b59c-fa43608a01e4">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="48ad6a29-41ed-4616-b899-53765114bc9f"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph leftIndent="5" rightIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="340" y="0" width="60" height="60" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
+				<reportElement x="350" y="0" width="73" height="80" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9fcbc774-04b4-4bc6-a6db-b707e819b54b"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="400" y="0" width="40" height="60" uuid="1c50ab28-0ec3-4ad5-a780-b907c991c028">
+				<reportElement x="423" y="0" width="40" height="80" uuid="1c50ab28-0ec3-4ad5-a780-b907c991c028">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3f0001c5-e5cf-46a3-aed0-15241c613b11"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="440" y="0" width="47" height="60" uuid="3be53dd1-3b99-44f3-ad7f-67d1d82f640f">
+				<reportElement x="463" y="0" width="47" height="80" uuid="3be53dd1-3b99-44f3-ad7f-67d1d82f640f">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="5b1490ae-25f3-4e78-a2d7-02de3f877fe6"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="487" y="0" width="50" height="60" uuid="06df3c4c-6ee8-470f-ab91-d71c40d2eb6e">
+				<reportElement x="510" y="0" width="50" height="80" uuid="06df3c4c-6ee8-470f-ab91-d71c40d2eb6e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="ed81cbb8-75b4-412f-b43f-0e1dfd571f62"/>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weigh_score}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement mode="Opaque" x="537" y="0" width="63" height="60" forecolor="#000000" backcolor="#CFCFCF" uuid="ad2a4eca-e302-4ae9-801a-0082ef715d0b">
+				<reportElement mode="Opaque" x="560" y="0" width="40" height="80" forecolor="#000000" backcolor="#CFCFCF" uuid="ad2a4eca-e302-4ae9-801a-0082ef715d0b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="0a59113e-96a2-4b0b-b7b7-43cb51b548a6"/>
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_code}]]></propertyExpression>
 				</reportElement>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{percent_achievement}]]></textFieldExpression>
 			</textField>
-			<lineChart>
+			<barChart>
 				<chart isShowLegend="false">
-					<reportElement x="600" y="0" width="200" height="60" uuid="ee519189-f860-4f37-9848-adae39582715"/>
+					<reportElement x="600" y="0" width="200" height="80" uuid="f433773d-e961-4755-ae91-d3e6e1791f71"/>
 					<box>
 						<pen lineWidth="0.5" lineColor="#000000"/>
 					</box>
@@ -747,7 +749,7 @@ ACHIEVE]]></text>
 				</chart>
 				<categoryDataset>
 					<dataset>
-						<datasetRun subDataset="chart" uuid="68a48cc8-6ea6-4e5e-b0fa-0f7cccf7d296">
+						<datasetRun subDataset="chart" uuid="a90c305a-4ccb-4290-bc02-39802c29688c">
 							<datasetParameter name="period">
 								<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -771,30 +773,35 @@ ACHIEVE]]></text>
 						<valueExpression><![CDATA[$F{actual_target_value}]]></valueExpression>
 					</categorySeries>
 				</categoryDataset>
-				<linePlot isShowShapes="true">
-					<plot backgroundAlpha="1.0" foregroundAlpha="1.0"/>
+				<barPlot isShowLabels="true">
+					<plot backgroundAlpha="1.0" foregroundAlpha="1.0">
+						<seriesColor seriesOrder="0" color="#3B5998"/>
+					</plot>
+					<itemLabel>
+						<font fontName="TH SarabunPSK" size="6"/>
+					</itemLabel>
 					<categoryAxisFormat>
-						<axisFormat>
+						<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
 							<labelFont>
-								<font fontName="TH SarabunPSK" size="12" isBold="false"/>
+								<font fontName="TH SarabunPSK" size="6" isBold="false"/>
 							</labelFont>
 							<tickLabelFont>
-								<font fontName="TH SarabunPSK" size="12" isBold="false"/>
+								<font fontName="TH SarabunPSK" size="6" isBold="false"/>
 							</tickLabelFont>
 						</axisFormat>
 					</categoryAxisFormat>
 					<valueAxisFormat>
-						<axisFormat>
+						<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
 							<labelFont>
-								<font fontName="TH SarabunPSK" size="12" isBold="false"/>
+								<font fontName="TH SarabunPSK" size="6" isBold="false"/>
 							</labelFont>
 							<tickLabelFont>
-								<font fontName="TH SarabunPSK" size="12" isBold="false"/>
+								<font fontName="TH SarabunPSK" size="6" isBold="false"/>
 							</tickLabelFont>
 						</axisFormat>
 					</valueAxisFormat>
-				</linePlot>
-			</lineChart>
+				</barPlot>
+			</barChart>
 		</band>
 	</detail>
 	<pageFooter>
@@ -802,7 +809,7 @@ ACHIEVE]]></text>
 			<textField>
 				<reportElement x="0" y="0" width="800" height="20" uuid="8323e0d9-c55e-41c2-a1a0-04d2a30884e5"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="16"/>
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["- "+$V{PAGE_NUMBER}+" -"]]></textFieldExpression>
 			</textField>
