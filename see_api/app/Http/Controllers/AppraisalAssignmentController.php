@@ -2706,7 +2706,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2737,8 +2737,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
-						}
-					} else {
+						} */
+					} /* else {
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
@@ -2771,7 +2771,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
 						}
-					}
+					} */
 
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
@@ -2805,7 +2805,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2828,8 +2828,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
-						}
-					}else {
+						} */
+					} /* else {
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
@@ -2854,7 +2854,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
 						}
-					}
+					} */
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
@@ -2882,7 +2882,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2906,8 +2906,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
-						}
-					}else {
+						} */
+					} /* else {
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
@@ -2933,7 +2933,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->save();
 						}
-					}
+					}*/
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
