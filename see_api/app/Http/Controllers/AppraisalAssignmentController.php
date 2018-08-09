@@ -15,8 +15,8 @@ use App\ResultThresholdGroup;
 use App\ThresholdGroup;
 use App\Org;
 use App\SystemConfiguration;
-use app\Phase;
-use app\ActionPlan;
+use App\Phase;
+use App\ActionPlan;
 
 use Auth;
 use DB;
