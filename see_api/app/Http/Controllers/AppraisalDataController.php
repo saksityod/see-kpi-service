@@ -862,11 +862,11 @@ class AppraisalDataController extends Controller
 			$target_score = AppraisalStructure::find($structure_id);
 
 			if(empty($target_score)) {
-				$data_target = 15;
+				$data_target = "";
 			} else if($target_score->form_id==2) {
-				$data_target = $target_score->nof_target_score;
+				$data_target = "|between:0,".$target_score->nof_target_score;
 			} else {
-				$data_target = 15;
+				$data_target = "";
 			}
 
 			//return response()->json($data_target);
@@ -878,7 +878,7 @@ class AppraisalDataController extends Controller
 					'period_id' => 'required|integer',
 					'item_id' => 'required|integer',
 					'structure_id' => 'required|integer',
-					'data_value' => 'required|numeric|between:0,'.$data_target.'',
+					'data_value' => 'required|numeric'.$data_target.'',
 				]);
 
 				if ($validator->fails()) {
