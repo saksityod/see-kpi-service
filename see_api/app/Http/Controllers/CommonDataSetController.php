@@ -190,14 +190,39 @@ class CommonDataSetController extends Controller
 	public function store(Request $request)
 	{
 		if ($request->is_sql == 1) {
-			$validator = Validator::make($request->all(), [
-				'cds_name' => 'required|max:500|unique:cds',
-				'cds_desc' => 'max:500',
-				'connection_id' => 'required|integer',
-				'is_sql' => 'required|boolean',
-				'cds_sql' => 'required',
-				'is_active' => 'required|boolean'
-			]);
+
+			if($request->sql_statement_for=='1') {
+				$validator = Validator::make($request->all(), [
+					'cds_name' => 'required|max:500|unique:cds',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_org' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+
+			} else if($request->sql_statement_for=='2') {
+				$validator = Validator::make($request->all(), [
+					'cds_name' => 'required|max:500|unique:cds',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_emp' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+
+			} else {
+				$validator = Validator::make($request->all(), [
+					'cds_name' => 'required|max:500|unique:cds',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_org' => 'required',
+					'cds_sql_emp' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+
+			}
 
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
@@ -209,7 +234,9 @@ class CommonDataSetController extends Controller
 				$item->is_sql = $request->is_sql;
 				$item->is_hr = $request->is_hr;
 				$item->is_sum_up = $request->is_sum_up;
-				$item->cds_sql = $request->cds_sql;
+				$item->sql_statement_for = $request->sql_statement_for;
+				$item->cds_sql_org = $request->cds_sql_org;
+				$item->cds_sql_emp = $request->cds_sql_emp;
 				$item->is_active = $request->is_active;
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
@@ -302,14 +329,37 @@ class CommonDataSetController extends Controller
 		}
 		
 		if ($request->is_sql == 1) {
-			$validator = Validator::make($request->all(), [	
-				'cds_name' => 'required|max:500|unique:cds,cds_name,'.$cds_id . ',cds_id',
-				'cds_desc' => 'max:500',
-				'connection_id' => 'required|integer',
-				'is_sql' => 'required|boolean',
-				'cds_sql' => 'required',
-				'is_active' => 'required|boolean'
-			]);
+			if($request->sql_statement_for=='1') {
+				$validator = Validator::make($request->all(), [	
+					'cds_name' => 'required|max:500|unique:cds,cds_name,'.$cds_id . ',cds_id',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_org' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+			} else if($request->sql_statement_for=='2') {
+				$validator = Validator::make($request->all(), [	
+					'cds_name' => 'required|max:500|unique:cds,cds_name,'.$cds_id . ',cds_id',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_emp' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+
+			} else {
+				$validator = Validator::make($request->all(), [	
+					'cds_name' => 'required|max:500|unique:cds,cds_name,'.$cds_id . ',cds_id',
+					'cds_desc' => 'max:500',
+					'connection_id' => 'required|integer',
+					'is_sql' => 'required|boolean',
+					'cds_sql_org' => 'required',
+					'cds_sql_emp' => 'required',
+					'is_active' => 'required|boolean'
+				]);
+
+			}
 
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
@@ -320,7 +370,9 @@ class CommonDataSetController extends Controller
 				$item->is_sql = $request->is_sql;
 				$item->is_hr = $request->is_hr;
 				$item->is_sum_up = $request->is_sum_up;
-				$item->cds_sql = $request->cds_sql;
+				$item->sql_statement_for = $request->sql_statement_for;
+				$item->cds_sql_org = $request->cds_sql_org;
+				$item->cds_sql_emp = $request->cds_sql_emp;
 				$item->is_active = $request->is_active;
 				$item->updated_by = Auth::id();
 				$item->save();
