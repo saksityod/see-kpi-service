@@ -15,6 +15,8 @@ use App\ResultThresholdGroup;
 use App\ThresholdGroup;
 use App\Org;
 use App\SystemConfiguration;
+use app\Phase;
+use app\ActionPlan;
 
 use Auth;
 use DB;
@@ -2971,6 +2973,9 @@ class AppraisalAssignmentController extends Controller
 						");
 				}
 
+				$aitem_plan = ActionPlan::find($i['item_result_id']);
+				$aitem_phase = Phase::find($i['item_result_id']);
+
 				$aitem = AppraisalItemResult::find($i['item_result_id']);
 				$aitem_doc = DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $i['item_result_id']);
 				$aitem_month = DB::table('monthly_appraisal_item_result')->where('item_result_id', '=', $i['item_result_id']);
@@ -2983,6 +2988,14 @@ class AppraisalAssignmentController extends Controller
 							$aitem_cds_doc->delete();
 						}
 					}
+				}
+
+				if(!empty($aitem_plan)) {
+					$aitem_plan->delete();
+				}
+
+				if(!empty($aitem_phase)) {
+					$aitem_phase->delete();
 				}
 
 				if (!empty($aitem)) {
