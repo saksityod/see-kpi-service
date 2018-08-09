@@ -2790,7 +2790,7 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
-					$aitem->weigh_score = 0;
+					//$aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2865,7 +2865,7 @@ class AppraisalAssignmentController extends Controller
 					$aitem->target_value = $i['target_value'];
 					$aitem->weight_percent = $i['weight_percent'];
 					$aitem->over_value = 0;
-					$aitem->weigh_score = 0;
+					//$aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2944,8 +2944,8 @@ class AppraisalAssignmentController extends Controller
 					$aitem->max_value = $i['max_value'];
 					$aitem->deduct_score_unit = $i['deduct_score_unit'];
 					$aitem->weight_percent = 0;
-					$aitem->over_value = 0;
-					$aitem->weigh_score = 0;
+					// $aitem->over_value = 0;
+					// $aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
