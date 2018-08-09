@@ -2973,8 +2973,8 @@ class AppraisalAssignmentController extends Controller
 						");
 				}
 
-				$aitem_plan = ActionPlan::find($i['item_result_id']);
-				$aitem_phase = Phase::find($i['item_result_id']);
+				$aitem_plan = DB::table('action_plan')->where('item_result_id', '=', $i['item_result_id']);
+				$aitem_phase = DB::table('phase')->where('item_result_id', '=', $i['item_result_id']);
 
 				$aitem = AppraisalItemResult::find($i['item_result_id']);
 				$aitem_doc = DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $i['item_result_id']);
