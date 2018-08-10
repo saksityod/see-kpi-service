@@ -238,7 +238,7 @@ class JasperController extends Controller
 
         $content_type = 'application/pdf';
         if($template_format == 'xls')
-            $content_type = 'application/vnd.ms-excel';
+            $content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $headers = array(
             'Content-Type: '.$content_type,
         );
