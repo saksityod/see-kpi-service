@@ -394,6 +394,8 @@ class CommonDataSetController extends Controller
 				$item->is_hr = $request->is_hr;
 				$item->is_sum_up = $request->is_sum_up;
 				$item->sql_statement_for = null;
+				$item->cds_sql_org = $request->cds_sql_org;
+				$item->cds_sql_emp = $request->cds_sql_emp;
 				$item->is_active = $request->is_active;
 				$item->updated_by = Auth::id();
 				$item->save();
