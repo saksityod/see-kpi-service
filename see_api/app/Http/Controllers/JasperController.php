@@ -237,7 +237,7 @@ class JasperController extends Controller
         $pathToFile = base_path('resources/generate/'.$name_gen.'.'.$template_format);
 
         $content_type = 'application/pdf';
-        if($template_format == 'xls')
+        if($template_format == 'xlsx')
             $content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $headers = array(
             'Content-Type: '.$content_type,
