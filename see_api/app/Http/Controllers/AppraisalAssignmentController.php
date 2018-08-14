@@ -808,7 +808,7 @@ class AppraisalAssignmentController extends Controller
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
 	    		where emp_code = ?
-	    		", array($request->emp_code));
+	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0) {
 	    		$items = DB::select("
@@ -827,9 +827,8 @@ class AppraisalAssignmentController extends Controller
 	    			where (e.chief_emp_code = ? or e.emp_code = ?)
 	    			and l.is_individual = 1
 	    			and l.is_active = 1
-	    			and e.is_active = 1
 	    			group by l.level_id desc
-	    			", array($request->emp_code, $request->emp_code));
+	    			", array(Auth::id(), Auth::id()));
 	    	}
 
 	    	return response()->json($items);
@@ -843,7 +842,7 @@ class AppraisalAssignmentController extends Controller
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
 	    		where emp_code = ?
-	    		", array($request->emp_code));
+	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
 	    		$items = DB::select("
@@ -875,7 +874,7 @@ class AppraisalAssignmentController extends Controller
 	    			on l.level_id = o.level_id
 	    			inner join employee e
 	    			on o.org_id = e.org_id
-	    			where (e.chief_emp_code = '".$request->emp_code."' or e.emp_code = '".$request->emp_code."')
+	    			where (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
 	    			and e.level_id = ?
 	    			and l.is_org = 1
 	    			and l.is_active = 1

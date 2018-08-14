@@ -29,6 +29,95 @@ class AppraisalItemController extends Controller
 
 	   $this->middleware('jwt.auth');
 	}
+
+	public function al_list_org(Request $request)
+    {
+    	$all_emp = DB::select("
+	    	SELECT sum(b.is_all_employee) count_no
+	    	from employee a
+	    	left outer join appraisal_level b
+	    	on a.level_id = b.level_id
+	    	where emp_code = ?
+	    ", array(Auth::id()));
+
+    	if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
+    		$items = DB::select("
+    			select DISTINCT org.level_id, al.appraisal_level_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				order by org.level_id
+    			");
+    	} else if($all_emp[0]->count_no > 0 && !empty($request->level_id)){
+    		$items = DB::select("
+    			select DISTINCT org.level_id, al.appraisal_level_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				and e.level_id = ?
+				order by org.level_id
+    			", array($request->level_id));
+    	} else {
+    		$items = DB::select("
+    			select DISTINCT org.level_id, al.appraisal_level_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				and e.level_id = ?
+				and (e.chief_emp_code = ? or e.emp_code = ?)
+				order by org.level_id
+    			", array($request->level_id, Auth::id(), Auth::id()));
+    	}
+		return response()->json($items);
+    }
+
+    public function al_list_organization(Request $request) {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    		");
+
+    	$level_emp = empty($request->level_emp) ? "" : "and e.level_id = {$request->level_emp}";
+    	$level_org = empty($request->level_org) ? "" : "and org.level_id = {$request->level_org}";
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$orgs = DB::select("
+    			select DISTINCT org.org_id, org.org_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_emp."
+				".$level_org."
+				order by org.level_id
+    			");
+    	} else {
+    		$orgs = DB::select("
+    			select DISTINCT org.org_id, org.org_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_emp."
+				".$level_org."
+				and (e.chief_emp_code = ? or e.emp_code = ?)
+				order by org.level_id
+    			", array(Auth::id(), Auth::id()));
+    	}
+
+    	return response()->json($orgs);
+    }
 	
 	public function remind_list()
 	{
@@ -69,16 +158,20 @@ class AppraisalItemController extends Controller
 			on s.form_id = f.form_id	
 			where 1=1
 		";
-		
+
 		empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+		empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
 		empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
 		empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
 		if ($request->structure_id == 1 || empty($request->structure_id)) {
 			empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
 		}
 		empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
-		empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id = ? ) " AND $qinput[] = $request->org_id);		
-		
+
+		if($request->org_id!='null' && !empty($request->org_id)) {
+			$query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$request->org_id}) ) ";
+		}
+
 		$qfooter = " Order by isnull(i.kpi_id), i.kpi_id asc, i.item_id asc";
 		
 		$items = DB::select($query . $qfooter, $qinput);
@@ -414,6 +507,9 @@ class AppraisalItemController extends Controller
 	public function auto_appraisal_name(Request $request)
 	{
 		$qinput = array();
+		if(!empty($request->org_id)) {
+			$org_string = implode(",",$request->org_id);
+		}
 		// $items = DB::select("
 			// Select appraisal_item_id, appraisal_item_name
 			// From appraisal_item
@@ -431,14 +527,16 @@ class AppraisalItemController extends Controller
 		";
 		
 		empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+		empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
 		empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
-		empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id = ? ) " AND $qinput[] = $request->org_id);				
+		empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$org_string}) )");	
 		empty($request->perspective_id) ?: ($query .= " and i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
 		empty($request->structure_id) ?: ($query .= " and i.structure_id = ? " AND $qinput[] = $request->structure_id);
 		empty($request->item_name) ?: ($query .= " and item_name like ? " AND $qinput[] = '%'.$request->item_name.'%');
 		
 		$qfooter = "
 			Order by i.item_name
+			limit 10
 		";
 		
 		$items = DB::select($query.$qfooter,$qinput);
