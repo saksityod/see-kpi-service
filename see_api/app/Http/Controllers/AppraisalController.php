@@ -2022,6 +2022,7 @@ class AppraisalController extends Controller
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
 		
+		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and a.org_id in (" . $request->org_id_multi . ") ";
 		empty($request->org_id) ? $org = " " : $org = " and a.org_id = " . $request->org_id . " ";
 		$levelStr = (empty($request->level_id)) ? " " : " AND a.level_id = {$request->level_id} " ;
 		
@@ -2032,7 +2033,7 @@ class AppraisalController extends Controller
 				FROM employee emp inner join appraisal_item_result a
 				on a.emp_id = emp.emp_id
 				WHERE emp.is_active = 1
-				" . $org . $levelStr ."
+				" . $org_multi . $org . $levelStr ."
 				AND emp.emp_name like '%{$request->emp_name}%' ");
 		} else {
 			$result = DB::select("
@@ -2040,7 +2041,7 @@ class AppraisalController extends Controller
 				FROM employee emp inner join appraisal_item_result a
 				on a.emp_id = emp.emp_id
 				WHERE emp.is_active = 1
-				" . $org . "
+				" . $org . $org_multi . "
 				AND (
 					emp.emp_code = '{$empCode}'
 					OR emp.chief_emp_code = '{$empCode}'
@@ -2076,6 +2077,7 @@ class AppraisalController extends Controller
 		$empLevInfo = $this->is_all_employee($empCode);
 		
 		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and org_id in (" . $request->org_id_multi . ") ";
 		
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
@@ -2084,6 +2086,7 @@ class AppraisalController extends Controller
 				on p.position_id = e.position_id
 				WHERE p.is_active = 1
 				" . $org . "
+				" . $org_multi . "
 				AND p.position_name LIKE '%{$request->position_name}%' 
 				AND e.emp_name LIKE '%{$request->emp_name}%' ");
 		} else {
@@ -2094,6 +2097,7 @@ class AppraisalController extends Controller
 				INNER JOIN position pos ON pos.position_id = emp.position_id
 				WHERE emp.is_active = 1
 				" . $org . "
+				" . $org_multi . "
 				AND (
 					emp.emp_code = '{$empCode}'
 					OR emp.chief_emp_code = '{$empCode}'
