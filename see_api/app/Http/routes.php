@@ -411,6 +411,12 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('benchmark_data/search_kpi/', 'BenchmarkDataController@search_kpi');
 	Route::get('benchmark_data/search_chart/', 'BenchmarkDataController@search_chart');
 	Route::get('benchmark_data/search_chart_quarter/', 'BenchmarkDataController@search_chart_quarter');
+	
+	// Dashboard Performance Comparison //
+	Route::get('dashboard/performance/position','DashboardPerformanceComparisonController@position_list');
+	Route::get('dashboard/performance/bar_chart','DashboardPerformanceComparisonController@bar_chart');
+	Route::get('dashboard/performance/line_chart','DashboardPerformanceComparisonController@line_chart');
+	Route::get('dashboard/performance/table_structure','DashboardPerformanceComparisonController@table_structure');
 
 
 	// Editting
