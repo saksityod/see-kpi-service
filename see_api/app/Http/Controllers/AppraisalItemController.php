@@ -144,32 +144,95 @@ class AppraisalItemController extends Controller
 	public function index(Request $request)
 	{	
 		$qinput = array();
-		$query = "
-			select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
-			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
-			from appraisal_item i
-			left outer join appraisal_structure s
-			on i.structure_id = s.structure_id 
-			left outer join perspective p
-			on i.perspective_id = p.perspective_id
-			left outer join uom u
-			on i.uom_id = u.uom_id
-			left outer join form_type f
-			on s.form_id = f.form_id	
-			where 1=1
-		";
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    		");
 
-		empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
-		empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
-		empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
-		empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
-		if ($request->structure_id == 1 || empty($request->structure_id)) {
-			empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
-		}
-		empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
+		if ($all_emp[0]->count_no > 0) {
+			$query = "
+				select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
+				p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+				from appraisal_item i
+				left outer join appraisal_structure s
+				on i.structure_id = s.structure_id 
+				left outer join perspective p
+				on i.perspective_id = p.perspective_id
+				left outer join uom u
+				on i.uom_id = u.uom_id
+				left outer join form_type f
+				on s.form_id = f.form_id	
+				where 1=1
+			";
 
-		if($request->org_id!='null' && !empty($request->org_id)) {
-			$query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$request->org_id}) ) ";
+			empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+			empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
+			empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
+			empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
+			if ($request->structure_id == 1 || empty($request->structure_id)) {
+				empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+			}
+			empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
+
+			if($request->org_id!='null' && !empty($request->org_id)) {
+				$query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$request->org_id}) ) ";
+			}
+		} else {
+			$query = "
+				select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
+				p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+				from appraisal_item i
+				left outer join appraisal_structure s
+				on i.structure_id = s.structure_id 
+				left outer join perspective p
+				on i.perspective_id = p.perspective_id
+				left outer join uom u
+				on i.uom_id = u.uom_id
+				left outer join form_type f
+				on s.form_id = f.form_id
+				where 1=1
+				AND EXISTS (
+					SELECT
+						1
+					FROM
+						appraisal_item_level lv
+						LEFT OUTER JOIN appraisal_level al on al.level_id = lv.level_id
+						LEFT OUTER JOIN org on org.level_id = al.level_id
+						left outer join employee e on e.org_id = org.org_id
+						WHERE
+						lv.item_id = i.item_id
+					AND al.is_hr = 0
+					and (e.chief_emp_code =  '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+				)
+				AND EXISTS (
+					SELECT
+						1
+					FROM
+						appraisal_item_level lv
+						left outer join appraisal_level al on al.level_id = lv.level_id
+						left outer join employee e on e.level_id = al.level_id
+						WHERE
+						lv.item_id = i.item_id
+					AND al.is_hr = 0
+					and (e.chief_emp_code =  '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+				)
+			";
+
+			empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+			empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
+			empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
+			empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
+			if ($request->structure_id == 1 || empty($request->structure_id)) {
+				empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+			}
+			empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
+
+			if($request->org_id!='null' && !empty($request->org_id)) {
+				$query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$request->org_id}) ) ";
+			}
 		}
 
 		$qfooter = " Order by isnull(i.kpi_id), i.kpi_id asc, i.item_id asc";
