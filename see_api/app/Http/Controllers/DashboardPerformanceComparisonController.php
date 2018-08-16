@@ -565,7 +565,7 @@ class DashboardPerformanceComparisonController extends Controller
 						else ROUND(avg(air.percent_achievement),2) end) as score_achievement   -- threshold
 					, ROUND(avg(air.weight_percent),2) as weight_percent -- /avg
 					, (case when 1={$system_config[0]->threshold} then ROUND((avg(air.score)*avg(air.weight_percent)),2)  -- threshold
-						else ROUND((avg(air.percent_achievement)*avg(air.weight_percent)),2)
+						else ROUND((avg(air.percent_achievement)*avg(air.weight_percent))/100,2)
 						end) as weight_score
 					, (case when 1={$system_config[0]->threshold} then aps.nof_target_score  -- threshold
 					 	else (select avg(count_of_item) from structure_result where emp_result_id = air.emp_result_id
