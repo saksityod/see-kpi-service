@@ -189,7 +189,7 @@ INNER JOIN (SELECT org.org_id
 	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
-		AND (ER.org_id =  $P{param_org}  OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) 
+		AND (ER.org_id  IN ($P!{param_org}) ) 
 		AND (ER.emp_id =  $P{param_emp}  OR  ISNULL($P{param_emp}) = 1 OR ""=$P{param_emp})
 		AND (ER.position_id =  $P{param_position}  OR ISNULL($P{param_position}) = 1 OR ""=$P{param_position})
 		AND ((ER.level_id =  $P{param_level}  OR ISNULL($P{param_level}) = 1 OR ""=$P{param_level}))

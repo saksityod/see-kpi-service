@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-tfg12"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="org_id" class="java.lang.String"/>
 	<parameter name="appraisal_type_id" class="java.lang.String"/>
@@ -36,7 +36,7 @@ from (
 		AND org2.level_id = air.level_id
 	)total 
 	group by total.org_id) stuc ON org.org_id = stuc.org_id 
-WHERE (org.org_id =  $P{org_id}  OR '' = $P{org_id}  OR  ISNULL($P{org_id}) = 1 )
+WHERE (org.org_id IN( $P!{org_id} ) )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 ) 
 GROUP BY lev.level_id
