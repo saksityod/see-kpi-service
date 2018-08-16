@@ -517,6 +517,51 @@ class MailController extends Controller
 				$error[] = $e->getMessage();
 			}
 		}
+
+		$emp_list = DB::select("
+			select c.org_email email, c.org_name emp_name, a.emp_result_id, a.appraisal_type_id
+			from emp_result a 
+			left outer join appraisal_stage b on a.stage_id = b.stage_id
+			left outer join org c on a.org_id = c.org_id
+			where send_reminder = 1
+		");
+
+
+		$error = [];
+
+		foreach ($emp_list as $e) {
+
+
+			// $admin_emails = DB::select("
+				// select a.email
+				// from employee a
+				// left outer join appraisal_level b
+				// on a.level_id = b.level_id
+				// where is_hr = 1
+			// ");
+
+			try {
+				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'emp_result_id' => $e->emp_result_id, 'appraisal_type_id' => $e->appraisal_type_id];
+
+			//	$from = 'gjtestmail2017@gmail.com';
+				$to = [$e->email];
+			//	$cc = [$e->chief_email];
+
+				// foreach ($admin_emails as $ae) {
+					// $cc[] = $ae->email;
+				// }
+
+				Mail::send('emails.remind_workflow', $data, function($message) use ($from, $to)
+				{
+					$message->from($from['address'], $from['name']);
+					$message->to($to);
+					//$message->cc($cc);
+					$message->subject('Please Update Workflow');
+				});
+			} catch (Exception $e) {
+				$error[] = $e->getMessage();
+			}
+		}
 		//return view('emails.remind',['items' => $items, 'emp_name' => 'hello', 'web_domain' => $config->web_domain]);
 		return response()->json(['status' => 200, 'error' => $error]);
 	}
@@ -547,6 +592,51 @@ class MailController extends Controller
 			on a.stage_id = b.stage_id
 			left outer join employee c
 			on a.emp_id = c.emp_id
+			where send_reminder = 2
+		");
+
+
+		$error = [];
+
+		foreach ($emp_list as $e) {
+
+
+			// $admin_emails = DB::select("
+				// select a.email
+				// from employee a
+				// left outer join appraisal_level b
+				// on a.level_id = b.level_id
+				// where is_hr = 1
+			// ");
+
+			try {
+				$data = ['emp_name' => $e->emp_name, 'web_domain' => $config->web_domain, 'emp_result_id' => $e->emp_result_id, 'appraisal_type_id' => $e->appraisal_type_id];
+
+			//	$from = 'gjtestmail2017@gmail.com';
+				$to = [$e->email];
+			//	$cc = [$e->chief_email];
+
+				// foreach ($admin_emails as $ae) {
+					// $cc[] = $ae->email;
+				// }
+
+				Mail::send('emails.remind_workflow', $data, function($message) use ($from, $to)
+				{
+					$message->from($from['address'], $from['name']);
+					$message->to($to);
+					//$message->cc($cc);
+					$message->subject('Please Update Workflow');
+				});
+			} catch (Exception $e) {
+				$error[] = $e->getMessage();
+			}
+		}
+
+		$emp_list = DB::select("
+			select c.org_email email, c.org_name emp_name, a.emp_result_id, a.appraisal_type_id 
+			from emp_result a
+			left outer join appraisal_stage b on a.stage_id = b.stage_id
+			left outer join org c on a.org_id = c.org_id
 			where send_reminder = 2
 		");
 
