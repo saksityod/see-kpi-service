@@ -76,7 +76,11 @@ class CommonDataSetController extends Controller
 				$hostport = $dbcon->ip_address.':'.$dbcon->port;
 			}
 
-			$con = mysqli_connect($hostport, $dbcon->user_name, $dbcon->password, $dbcon->database_name);
+			try {
+				$con = mysqli_connect($hostport, $dbcon->user_name, $dbcon->password, $dbcon->database_name);
+			} catch(Exception $e) {
+				return response()->json(['status' => 400 , 'data' => "" .$e. ""]);
+			}
 			
 			if (mysqli_connect_errno()) {
 			    return response()->json(['status' => 400 , 'data' => "Connection failed: " .mysqli_connect_error(). " "]);
