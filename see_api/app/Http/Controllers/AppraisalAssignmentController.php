@@ -2737,6 +2737,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
 					} else {
@@ -2780,6 +2781,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
 					}
@@ -2838,6 +2840,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
 					}else {
@@ -2866,6 +2869,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
 					}
@@ -2919,6 +2923,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
 						}
 					}else {
@@ -2949,6 +2955,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
 						}
 					}
@@ -3047,6 +3055,8 @@ class AppraisalAssignmentController extends Controller
 						$aitemlog->max_value = $aitem->max_value;
 						$aitemlog->deduct_score_unit = $aitem->deduct_score_unit;
 						$aitemlog->updated_by = Auth::id();
+						$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+						$aitemlog->value_get_zero = $aitem->value_get_zero;
 						$aitemlog->save();
 					}
 
