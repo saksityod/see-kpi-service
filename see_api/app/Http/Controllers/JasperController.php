@@ -132,7 +132,7 @@ class JasperController extends Controller
             $content = file_get_contents($pathToFile);
             File::delete($pathToFile);
             return FacadeResponse::make($content, 200,
-                array('content-type' => 'application/pdf', 'Content-Disposition' => 'inline; ' . $name));
+                array('content-type' => 'application/pdf', 'Content-Disposition' => 'inline;  filename= ' .$name));
         }else{
             return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
         }
@@ -237,13 +237,14 @@ class JasperController extends Controller
         $pathToFile = base_path('resources/generate/'.$name_gen.'.'.$template_format);
 
         $content_type = 'application/pdf';
-        if($template_format == 'xlsx')
+        if($template_format == 'xls')
             $content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $headers = array(
             'Content-Type: '.$content_type,
         );
 
         $name = $template_name.'.'.$template_format;
+		//return $name; 
         //return response()->download($pathToFile)->deleteFileAfterSend(true);
         //return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
          //$response->header('X-Frame-Options', 'SAMEORIGIN',false);
@@ -251,7 +252,7 @@ class JasperController extends Controller
             $content = file_get_contents($pathToFile);
             File::delete($pathToFile);
             return FacadeResponse::make($content, 200,
-                array('content-type' => 'application/pdf', 'Content-Disposition' => 'inline; ' . $name));
+                array('content-type' => 'application/pdf', 'Content-Disposition' => 'inline;  filename= ' .$name));
         }else{
             return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
         }
