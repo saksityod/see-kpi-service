@@ -2740,7 +2740,17 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->save();
 						}
 					} else {
-						if($config->item_result_log == 1){
+						if($config->item_result_log == 1 &&
+						($aitem->score0 != (array_key_exists('score0', $i) ? $i['score0'] : null)
+						|| $aitem->score1 != (array_key_exists('score1', $i) ? $i['score1'] : null)
+						|| $aitem->score2 != (array_key_exists('score2', $i) ? $i['score2'] : null)
+						|| $aitem->score3 != (array_key_exists('score3', $i) ? $i['score3'] : null)
+						|| $aitem->score4 != (array_key_exists('score4', $i) ? $i['score4'] : null)
+						|| $aitem->score5 != (array_key_exists('score5', $i) ? $i['score5'] : null)
+						|| $aitem->target_value != $i['target_value']
+						|| $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
+						|| $aitem->weight_percent != $i['weight_percent'])
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2831,7 +2841,10 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->save();
 						}
 					}else {
-						if($config->item_result_log == 1){
+						if($config->item_result_log == 1 &&
+						( $aitem->target_value != $i['target_value']
+						|| $aitem->weight_percent != $i['weight_percent'])
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2909,7 +2922,11 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->save();
 						}
 					}else {
-						if($config->item_result_log == 1){
+						if($config->item_result_log == 1 &&
+						( $aitem->max_value != $i['max_value']
+						|| $aitem->deduct_score_unit != $i['deduct_score_unit']
+						|| ($aitem->value_get_zero != $i['value_get_zero'] && $i['value_get_zero'] != 'undefined'))
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
