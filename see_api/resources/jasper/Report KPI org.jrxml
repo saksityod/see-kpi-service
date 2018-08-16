@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-tfg12"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="one" class="java.lang.Integer"/>
 	<parameter name="level_id" class="java.lang.Integer"/>
@@ -22,7 +22,7 @@
 , COALESCE(air.score4,0) as score4
 , COALESCE(air.score5,0) as score5
 , COALESCE(air.actual_value,0) as actual_value
-, COALESCE(air.score,0) as score
+, (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
 , COALESCE(air.weigh_score,0) as weigh_score_item
 , COALESCE(str.weigh_score,0) as weigh_score_report
 , COALESCE(
@@ -47,6 +47,7 @@ INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
 	 AND str.period_id = air.period_id
 	 AND str.structure_id = api.structure_id
+CROSS JOIN system_config sc
 WHERE  air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND aps.structure_id = 1
@@ -132,7 +133,7 @@ ORDER BY aps.structure_id ASC
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
-	<field name="score" class="java.lang.Long">
+	<field name="score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
