@@ -182,43 +182,61 @@ class AppraisalItemController extends Controller
 			}
 		} else {
 			$query = "
-				select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
-				p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
-				from appraisal_item i
-				left outer join appraisal_structure s
-				on i.structure_id = s.structure_id 
-				left outer join perspective p
-				on i.perspective_id = p.perspective_id
-				left outer join uom u
-				on i.uom_id = u.uom_id
-				left outer join form_type f
-				on s.form_id = f.form_id
-				where 1=1
-				AND EXISTS (
-					SELECT
+				select *
+				from
+				(
+					select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
+					p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+					from appraisal_item i
+					left outer join appraisal_structure s
+					on i.structure_id = s.structure_id 
+					left outer join perspective p
+					on i.perspective_id = p.perspective_id
+					left outer join uom u
+					on i.uom_id = u.uom_id
+					left outer join form_type f
+					on s.form_id = f.form_id
+					where 1=1
+					AND EXISTS (
+						SELECT
 						1
-					FROM
+						FROM
+						appraisal_item_level lv
+						left outer join appraisal_level al on al.level_id = lv.level_id
+						left outer join employee e on e.level_id = al.level_id
+						WHERE
+						lv.item_id = i.item_id
+						AND al.is_hr = 0
+						and (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+					)
+					union
+					select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
+					p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+					from appraisal_item i
+					left outer join appraisal_structure s
+					on i.structure_id = s.structure_id 
+					left outer join perspective p
+					on i.perspective_id = p.perspective_id
+					left outer join uom u
+					on i.uom_id = u.uom_id
+					left outer join form_type f
+					on s.form_id = f.form_id
+					where 1=1
+					AND EXISTS (
+						SELECT
+						1
+						FROM
 						appraisal_item_level lv
 						LEFT OUTER JOIN appraisal_level al on al.level_id = lv.level_id
 						LEFT OUTER JOIN org on org.level_id = al.level_id
 						left outer join employee e on e.org_id = org.org_id
 						WHERE
 						lv.item_id = i.item_id
-					AND al.is_hr = 0
-					and (e.chief_emp_code =  '".Auth::id()."' or e.emp_code = '".Auth::id()."')
-				)
-				AND EXISTS (
-					SELECT
-						1
-					FROM
-						appraisal_item_level lv
-						left outer join appraisal_level al on al.level_id = lv.level_id
-						left outer join employee e on e.level_id = al.level_id
-						WHERE
-						lv.item_id = i.item_id
-					AND al.is_hr = 0
-					and (e.chief_emp_code =  '".Auth::id()."' or e.emp_code = '".Auth::id()."')
-				)
+						AND al.is_hr = 0
+						and (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+					)
+				)i
+				where 1=1
 			";
 
 			empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
