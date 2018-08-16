@@ -173,7 +173,6 @@ class MailController extends Controller
 			}
 		}
 
-
 		$admin_emails = DB::select("
 			select a.email
 			from employee a
@@ -226,6 +225,103 @@ class MailController extends Controller
 					$message->to($to);
 				//	$message->cc($cc);
 					$message->subject('Action Plan Required Summary');
+				});
+			} catch (Exception $e) {
+				$error[] = $e->getMessage();
+			}
+		}
+
+		$items = DB::select("
+			SELECT a.item_result_id, d.item_name, c.org_id emp_id, c.org_name emp_name, c.org_email email, p.period_id, p.appraisal_period_desc,
+			sum(a.actual_value) actual_value, max(a.target_value) target_value
+			FROM monthly_appraisal_item_result a
+			left outer join emp_result b on a.emp_result_id = b.emp_result_id
+			inner join org c on a.org_id = c.org_id
+			left outer join appraisal_item d on a.item_id = d.item_id
+			left outer join appraisal_period p on b.period_id = p.period_id
+			where d.remind_condition_id = 1
+			and b.appraisal_type_id = 1
+			and d.function_type = 1
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no <= date_format(current_date,'%c')
+			group by a.item_result_id, d.item_name, c.org_id, c.org_name, c.org_email, p.period_id, p.appraisal_period_desc
+			having sum(a.actual_value) < max(a.target_value)
+			union all
+			SELECT a.item_result_id, d.item_name, c.org_id emp_id, c.org_name emp_name, c.org_email email, p.period_id, p.appraisal_period_desc,
+			a.actual_value actual_value, a.target_value target_value
+			FROM monthly_appraisal_item_result a
+			left outer join emp_result b on a.emp_result_id = b.emp_result_id
+			inner join org c on a.org_id = c.org_id
+			left outer join appraisal_item d on a.item_id = d.item_id
+			left outer join appraisal_period p on b.period_id = p.period_id
+			where d.remind_condition_id = 1
+			and b.appraisal_type_id = 1
+			and d.function_type = 2
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no = date_format(current_date,'%c')
+			and a.actual_value < a.target_value
+			union all
+			SELECT a.item_result_id, d.item_name, c.org_id emp_id, c.org_name emp_name, c.org_email email, p.period_id, p.appraisal_period_desc,
+			avg(a.actual_value) actual_value, max(a.target_value) target_value
+			FROM monthly_appraisal_item_result a
+			left outer join emp_result b on a.emp_result_id = b.emp_result_id
+			inner join org c on a.org_id = c.org_id
+			left outer join appraisal_item d on a.item_id = d.item_id
+			left outer join appraisal_period p on b.period_id = p.period_id
+			where d.remind_condition_id = 1
+			and b.appraisal_type_id = 1
+			and d.function_type = 3
+			and a.year = date_format(current_date,'%Y')
+			and a.appraisal_month_no <= date_format(current_date,'%c')
+			group by a.item_result_id, d.item_name, c.org_id, c.org_name, c.org_email, p.period_id, p.appraisal_period_desc
+			having avg(a.actual_value) < max(a.target_value)
+			order by item_name asc, period_id asc
+		");
+		$groups = [];
+		foreach ($items as $i) {
+			$key1 = $i->email;
+			$key2 = $i->emp_name;
+			if (!isset($groups[$key1][$key2])) {
+				$groups[$key1][$key2] = array(
+					'items' => array($i),
+					'email' => $i->email,
+					'emp_name' => $i->emp_name,
+					'count' => 1,
+				);
+			} else {
+				$groups[$key1][$key2]['items'][] = $i;
+				$groups[$key1][$key2]['count'] += 1;
+			}
+		}
+
+		$admin_emails = DB::select("
+			select a.email
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where is_hr = 1
+		");
+
+		$cc = [];
+
+		foreach ($groups as $k => $items) {
+
+			try {
+				$data = ['items' => $items, 'emp_name' => $k, 'web_domain' => $config->web_domain];
+
+				$to = [$k];
+				//$cc = [$e->chief_email];
+
+				foreach ($admin_emails as $ae) {
+					$cc[] = $ae->email;
+				}
+
+				Mail::send('emails.remind_group', $data, function($message) use ($from, $to, $cc)
+				{
+					$message->from($from['address'], $from['name']);
+					$message->to($to);
+				//	$message->cc($cc);
+					$message->subject('Action Plan Required');
 				});
 			} catch (Exception $e) {
 				$error[] = $e->getMessage();
