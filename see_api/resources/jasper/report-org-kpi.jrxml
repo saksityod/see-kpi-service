@@ -133,7 +133,7 @@ INNER JOIN (SELECT org.org_id
 	WHERE ER.appraisal_type_id = '1' 
 	AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 	AND (ER.level_id = $P{param_level_org} OR  ISNULL($P{param_level_org}) = 1 OR ""=$P{param_level_org} )
-	AND (ER.org_id = $P{param_org} OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) )
+	AND (ER.org_id IN( $P!{param_org} ) ) )
 ER ON  AIR.period_id = ER.period_id
 AND AIR.level_id = ER.level_id
 AND AIR.org_id = ER.org_id
