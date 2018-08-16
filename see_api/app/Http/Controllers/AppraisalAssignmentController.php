@@ -2742,15 +2742,24 @@ class AppraisalAssignmentController extends Controller
 						}
 					} else {
 						if($config->item_result_log == 1 &&
-						($aitem->score0 != (array_key_exists('score0', $i) ? $i['score0'] : null)
-						|| $aitem->score1 != (array_key_exists('score1', $i) ? $i['score1'] : null)
-						|| $aitem->score2 != (array_key_exists('score2', $i) ? $i['score2'] : null)
-						|| $aitem->score3 != (array_key_exists('score3', $i) ? $i['score3'] : null)
-						|| $aitem->score4 != (array_key_exists('score4', $i) ? $i['score4'] : null)
-						|| $aitem->score5 != (array_key_exists('score5', $i) ? $i['score5'] : null)
+						((array_key_exists('score0', $i) ? $aitem->score0 != $i['score0'] : null)
+						|| (array_key_exists('score1', $i) ? $aitem->score1 != $i['score1'] : null)
+						|| (array_key_exists('score2', $i) ? $aitem->score2 != $i['score2'] : null)
+						|| (array_key_exists('score3', $i) ? $aitem->score3 != $i['score3'] : null)
+						|| (array_key_exists('score4', $i) ? $aitem->score4 != $i['score4'] : null)
+						|| (array_key_exists('score5', $i) ? $aitem->score5 != $i['score5'] : null)
 						|| $aitem->target_value != $i['target_value']
-						|| $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
+						|| (array_key_exists('forecast_value', $i) ? $aitem->forecast_value != $i['forecast_value'] : null)
 						|| $aitem->weight_percent != $i['weight_percent'])
+						// ($aitem->score0 != (array_key_exists('score0', $i) ? $i['score0'] : null)
+						// || $aitem->score1 != (array_key_exists('score1', $i) ? $i['score1'] : null)
+						// || $aitem->score2 != (array_key_exists('score2', $i) ? $i['score2'] : null)
+						// || $aitem->score3 != (array_key_exists('score3', $i) ? $i['score3'] : null)
+						// || $aitem->score4 != (array_key_exists('score4', $i) ? $i['score4'] : null)
+						// || $aitem->score5 != (array_key_exists('score5', $i) ? $i['score5'] : null)
+						// || $aitem->target_value != $i['target_value']
+						// || $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
+						// || $aitem->weight_percent != $i['weight_percent'])
 						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
