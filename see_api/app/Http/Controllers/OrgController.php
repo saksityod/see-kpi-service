@@ -30,7 +30,7 @@ class OrgController extends Controller
 		empty($request->level_id) ? $level = "" : $level = " and a.level_id = " . $request->level_id . " ";
 		empty($request->org_code) ? $org = "" : $org = " and a.org_code = '" . $request->org_code . "' ";
 		$items = DB::select("
-			SELECT a.org_id, a.org_code, a.org_name, a.org_abbr, a.is_active, b.org_name parent_org_name, a.parent_org_code, a.level_id, c.appraisal_level_name,
+			SELECT a.org_id, a.org_code, a.org_name, a.org_abbr, a.org_email, a.is_active, b.org_name parent_org_name, a.parent_org_code, a.level_id, c.appraisal_level_name,
 			case when a.longitude = 0 then '' else a.longitude end  longitude,
 			case when a.latitude = 0 then '' else a.latitude end  latitude,
 			a.province_code, d.province_name
@@ -177,6 +177,7 @@ class OrgController extends Controller
 						$org->org_code = $i->org_code;
 						$org->org_name = $i->org_name;
 						$org->org_abbr = $i->org_abbr;
+						$org->org_email = $i->org_email;
 						$org->parent_org_code = $i->parent_org_code;
 						$org->is_active = 1;
 						$org->latitude = $i->latitude;
@@ -189,7 +190,7 @@ class OrgController extends Controller
 							$errors[] = ['org_code' => $i->org_code, 'errors' => substr($e,0,254)];
 						}
 					} else {
- 						Org::where('org_code',$i->org_code)->update(['org_name' => $i->org_name,'org_abbr' => $i->org_abbr,'parent_org_code' => $i->parent_org_code,'latitude' => $i->latitude,'longitude' => $i->longitude]);
+ 						Org::where('org_code',$i->org_code)->update(['org_name' => $i->org_name,'org_abbr' => $i->org_abbr,'org_email' => $i->org_email,'parent_org_code' => $i->parent_org_code,'latitude' => $i->latitude,'longitude' => $i->longitude]);
 					}
 				}
 			}
@@ -204,6 +205,7 @@ class OrgController extends Controller
 			'org_code' => 'required|max:15|unique:org',
 			'org_name' => 'required|max:255|unique:org',
 			'org_abbr' => 'max:255',
+			'org_email' => 'max:255',
 			'parent_org_code' => 'max:15',
 			'level_id' => 'integer',
 			'latitude' => 'numeric',
@@ -267,6 +269,7 @@ class OrgController extends Controller
 			'org_code' => 'required|max:15|unique:org,org_name,' . $org_id . ',org_id',
 			'org_name' => 'required|max:255|unique:org,org_name,' . $org_id . ',org_id',
 			'org_abbr' => 'max:255',
+			'org_email' => 'max:255',
 			'parent_org_code' => 'max:15',
 			'level_id' => 'integer',
 			'latitude' => 'numeric',

@@ -2108,6 +2108,23 @@ class AppraisalAssignmentController extends Controller
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
+							} else if($request->head_params['appraisal_type_id'] == 1) {
+								try {
+
+									$data = ["chief_emp_name" => $org->org_name, "emp_name" => $org->org_name, "status" => $stage->status, "web_domain" => $config->web_domain, 'emp_result_id' => $emp_result->emp_result_id, 'appraisal_type_id' => $emp_result->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
+									$to = [$org->org_email];
+
+									//$from = $config->mail_username;
+
+									Mail::send('emails.status', $data, function($message) use ($from, $to)
+									{
+										$message->from($from['address'], $from['name']);
+										$message->to($to)->subject('ระบบได้ทำการประเมิน');
+									});
+								} catch (Exception $e) {
+								//	$mail_error[] = $e->getMessage();
+									$mail_error = 'has error';
+								}
 							}
 						}
 
@@ -2326,6 +2343,25 @@ class AppraisalAssignmentController extends Controller
 
 								$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, "web_domain" => $config->web_domain, 'emp_result_id' => $emp_result->emp_result_id, 'appraisal_type_id' => $emp_result->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
 								$to = [$employee->email, $chief_emp->email];
+
+								//$from = $config->mail_username;
+
+								Mail::send('emails.status', $data, function($message) use ($from, $to)
+								{
+									$message->from($from['address'], $from['name']);
+									$message->to($to)->subject('ระบบได้ทำการประเมิน');
+								});
+							} catch (Exception $e) {
+								//$mail_error = $e->getMessage();
+
+								//return response()->json($e->getMessage());
+								$mail_error = 'has error';
+							}
+						} else if ($request->head_params['appraisal_type_id'] == 1) {
+							try {
+
+								$data = ["chief_emp_name" => $org->org_name, "emp_name" => $org->org_name, "status" => $stage->status, "web_domain" => $config->web_domain, 'emp_result_id' => $emp_result->emp_result_id, 'appraisal_type_id' => $emp_result->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
+								$to = [$org->org_email];
 
 								//$from = $config->mail_username;
 
@@ -2689,6 +2725,25 @@ class AppraisalAssignmentController extends Controller
 			$position_id = null;
 			$level_id = $org->level_id;
 			$org_id = $emp_result->org_id;
+
+			if ($config->email_reminder_flag == 1) {
+				try {
+
+					$data = ["chief_emp_name" => $org->org_name, "emp_name" => $org->org_name, "status" => $stage->status, "web_domain" => $config->web_domain, 'emp_result_id' => $emp_result->emp_result_id, 'appraisal_type_id' => $emp_result->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
+					$to = [$org->org_email];
+
+						//$from = $config->mail_username;
+
+					Mail::send('emails.status', $data, function($message) use ($from, $to)
+					{
+						$message->from($from['address'], $from['name']);
+						$message->to($to)->subject('ระบบได้ทำการประเมิน');
+					});
+				} catch (Exception $e) {
+					$mail_error = $e->getMessage();
+
+				}
+			}
 		}
 
 		$tg_id = ThresholdGroup::where('is_active',1)->first();
