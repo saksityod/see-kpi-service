@@ -108,14 +108,13 @@ class DashboardPerformanceComparisonController extends Controller
 				inner join (select distinct level_id, position_id, org_id, appraisal_type_id
 						from emp_result
 						where emp_id = ?) lev ON lev.level_id = emp.level_id  -- emp_id
-						and lev.position_id = emp.position_id
 						and lev.org_id = emp.org_id
 				inner join employee em on sr.emp_id = em.emp_id
 				where aps.form_id = 1
 				and ap.appraisal_year = (".$year_old.")
 				and emp.level_id = ? -- level_id
 				and emp.org_id = ? -- org_id
-				and emp.position_id = ? -- position_id
+				and lev.position_id = ? -- position_id
 				and lev.appraisal_type_id = ? -- appraisal_type_id
 				group by em.emp_id";
 
@@ -141,7 +140,6 @@ class DashboardPerformanceComparisonController extends Controller
 					inner join (select distinct level_id, position_id, org_id, appraisal_type_id
 							from emp_result
 							where emp_id = ?) lev ON lev.level_id = emp.level_id  -- emp_id
-							and lev.position_id = emp.position_id
 							and lev.org_id = emp.org_id
 					inner join employee em on sr.emp_id = em.emp_id
 					left join (".$value_old."
@@ -150,7 +148,7 @@ class DashboardPerformanceComparisonController extends Controller
 					and ap.appraisal_year = ?
 					and emp.level_id = ? -- level_id
 					and emp.org_id = ? -- org_id
-					and emp.position_id = ? -- position_id
+					and lev.position_id = ? -- position_id
 					and lev.appraisal_type_id = ? -- appraisal_type_id
 					group by em.emp_id
 				)result
@@ -173,8 +171,8 @@ class DashboardPerformanceComparisonController extends Controller
 			inner join appraisal_period ap on sr.period_id = ap.period_id
 			inner join emp_result emp on sr.emp_result_id = emp.emp_result_id
 			inner join (select distinct level_id, org_id, appraisal_type_id
-			from emp_result
-			where org_id = ?) lev ON lev.level_id = emp.level_id  -- org_id
+				from emp_result
+				where org_id = ?) lev ON lev.level_id = emp.level_id  -- org_id
 			inner join org on emp.org_id = org.org_id
 			where aps.form_id = 1
 			and ap.appraisal_year = (".$year_old.") -- appraisal_year
@@ -307,7 +305,6 @@ class DashboardPerformanceComparisonController extends Controller
 					inner join (select distinct level_id, position_id, org_id, appraisal_type_id
 						from emp_result
 						where emp_id = ?) lev ON lev.level_id = emp.level_id  -- emp_id
-						and lev.position_id = emp.position_id
 						and lev.org_id = emp.org_id
 					inner join employee em on sr.emp_id = em.emp_id
 					where aps.form_id = 1
@@ -315,7 +312,7 @@ class DashboardPerformanceComparisonController extends Controller
 					and emp.appraisal_type_id = ? -- appraisal_type_id
 					and emp.level_id = ? -- level_id
 					and emp.org_id = ? -- org_id
-					and emp.position_id = ? -- position_id
+					and lev.position_id = ? -- position_id
 				";
 
 				//max value
