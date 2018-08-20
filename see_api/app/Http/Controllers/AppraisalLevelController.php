@@ -32,20 +32,32 @@ class AppraisalLevelController extends Controller
 			FROM appraisal_level a
 			left outer join appraisal_level b
 			on a.parent_id = b.level_id
-			order by FIELD(a.level_id, 1) desc, is_org asc, is_individual asc, a.seq_no asc, a.level_id asc
+			order by
+			FIELD(a.level_id, 1) DESC,
+			FIELD(a.is_individual, 1) DESC,
+			FIELD(a.is_org, 1) DESC,
+			a.seq_no ASC,
+			a.level_id ASC
 		");
 		return response()->json($items);
 	}
 	
 	public function store(Request $request)
 	{
-	
+		if($request->is_org==0 && $request->is_individual==0) {
+			$org_dividual = "required|integer|between:1,1";
+			$org_dividual_text = ".between";
+		} else {
+			$org_dividual = "boolean";
+			$org_dividual_text = "";
+		}
+
 		$validator = Validator::make($request->all(), [
 			'appraisal_level_name' => 'required|max:100|unique:appraisal_level',
 			'seq_no' => 'required|integer',
 			'is_all_employee' => 'required|boolean',
-			'is_org' => 'boolean',
-			'is_individual' => 'boolean',
+			'is_org' => $org_dividual,
+			'is_individual' => $org_dividual,
 			'is_active' => 'required|boolean',
 			'is_hr' => 'required|boolean',
 			'is_self_assign' => 'boolean',
@@ -54,6 +66,9 @@ class AppraisalLevelController extends Controller
 			'district_flag' => 'boolean',
 			'no_weight' => 'required|boolean',
 			'default_stage_id' => 'integer'
+		], [
+			'is_org'.$org_dividual_text => 'Please select is_org or is_individual.',
+			'is_individual'.$org_dividual_text => '',
 		]);
 
 		if ($validator->fails()) {
