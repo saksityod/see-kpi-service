@@ -808,14 +808,16 @@ class AppraisalAssignmentController extends Controller
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
 	    		where emp_code = ?
-	    		", array($request->emp_code));
+	    		", array(Auth::id()));
+
+	    	$show_all = empty($request->show_all) ? "" : "and is_individual = 1";
 
 	    	if ($all_emp[0]->count_no > 0) {
 	    		$items = DB::select("
 	    			Select level_id, appraisal_level_name
 	    			From appraisal_level
 	    			Where is_active = 1
-	    			and is_individual = 1
+	    			".$show_all."
 	    			Order by level_id desc
 	    			");
 	    	} else {
@@ -825,11 +827,10 @@ class AppraisalAssignmentController extends Controller
 	    			inner join employee e
 	    			on e.level_id = l.level_id
 	    			where (e.chief_emp_code = ? or e.emp_code = ?)
-	    			and l.is_individual = 1
+	    			".$show_all."
 	    			and l.is_active = 1
-	    			and e.is_active = 1
 	    			group by l.level_id desc
-	    			", array($request->emp_code, $request->emp_code));
+	    			", array(Auth::id(), Auth::id()));
 	    	}
 
 	    	return response()->json($items);
@@ -843,7 +844,7 @@ class AppraisalAssignmentController extends Controller
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
 	    		where emp_code = ?
-	    		", array($request->emp_code));
+	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
 	    		$items = DB::select("
@@ -875,7 +876,7 @@ class AppraisalAssignmentController extends Controller
 	    			on l.level_id = o.level_id
 	    			inner join employee e
 	    			on o.org_id = e.org_id
-	    			where (e.chief_emp_code = '".$request->emp_code."' or e.emp_code = '".$request->emp_code."')
+	    			where (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
 	    			and e.level_id = ?
 	    			and l.is_org = 1
 	    			and l.is_active = 1
@@ -2102,9 +2103,9 @@ class AppraisalAssignmentController extends Controller
 									Mail::send('emails.status', $data, function($message) use ($from, $to)
 									{
 										$message->from($from['address'], $from['name']);
-										$message->to($to)->subject('ระบบได้ทำการประเมิน');
+										$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2119,9 +2120,9 @@ class AppraisalAssignmentController extends Controller
 									Mail::send('emails.status', $data, function($message) use ($from, $to)
 									{
 										$message->from($from['address'], $from['name']);
-										$message->to($to)->subject('ระบบได้ทำการประเมิน');
+										$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2349,9 +2350,9 @@ class AppraisalAssignmentController extends Controller
 								Mail::send('emails.status', $data, function($message) use ($from, $to)
 								{
 									$message->from($from['address'], $from['name']);
-									$message->to($to)->subject('ระบบได้ทำการประเมิน');
+									$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2368,9 +2369,9 @@ class AppraisalAssignmentController extends Controller
 								Mail::send('emails.status', $data, function($message) use ($from, $to)
 								{
 									$message->from($from['address'], $from['name']);
-									$message->to($to)->subject('ระบบได้ทำการประเมิน');
+									$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2710,10 +2711,10 @@ class AppraisalAssignmentController extends Controller
 						Mail::send('emails.status', $data, function($message) use ($from, $to)
 						{
 							$message->from($from['address'], $from['name']);
-							$message->to($to)->subject('ระบบได้ทำการประเมิน');
+							$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 						});
-					} catch (Exception $e) {
-						$mail_error = $e->getMessage();
+					} catch (Exception $ExceptionError) {
+						$mail_error = $ExceptionError->getMessage();
 
 					}
 				}
@@ -2737,10 +2738,10 @@ class AppraisalAssignmentController extends Controller
 					Mail::send('emails.status', $data, function($message) use ($from, $to)
 					{
 						$message->from($from['address'], $from['name']);
-						$message->to($to)->subject('ระบบได้ทำการประเมิน');
+						$message->to($to)->subject('ระ�?�?�?ด�?ทำ�?าร�?ระเมิ�?');
 					});
-				} catch (Exception $e) {
-					$mail_error = $e->getMessage();
+				} catch (Exception $ExceptionError) {
+					$mail_error = $ExceptionError->getMessage();
 
 				}
 			}
@@ -2763,7 +2764,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						/* if($config->item_result_log == 1){
+						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2793,10 +2794,30 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
-						} */
-					} /* else {
-						if($config->item_result_log == 1){
+						}
+					} else {
+						if($config->item_result_log == 1 &&
+						((array_key_exists('score0', $i) ? $aitem->score0 != $i['score0'] : null)
+						|| (array_key_exists('score1', $i) ? $aitem->score1 != $i['score1'] : null)
+						|| (array_key_exists('score2', $i) ? $aitem->score2 != $i['score2'] : null)
+						|| (array_key_exists('score3', $i) ? $aitem->score3 != $i['score3'] : null)
+						|| (array_key_exists('score4', $i) ? $aitem->score4 != $i['score4'] : null)
+						|| (array_key_exists('score5', $i) ? $aitem->score5 != $i['score5'] : null)
+						|| $aitem->target_value != $i['target_value']
+						|| (array_key_exists('forecast_value', $i) ? $aitem->forecast_value != $i['forecast_value'] : null)
+						|| $aitem->weight_percent != $i['weight_percent'])
+						// ($aitem->score0 != (array_key_exists('score0', $i) ? $i['score0'] : null)
+						// || $aitem->score1 != (array_key_exists('score1', $i) ? $i['score1'] : null)
+						// || $aitem->score2 != (array_key_exists('score2', $i) ? $i['score2'] : null)
+						// || $aitem->score3 != (array_key_exists('score3', $i) ? $i['score3'] : null)
+						// || $aitem->score4 != (array_key_exists('score4', $i) ? $i['score4'] : null)
+						// || $aitem->score5 != (array_key_exists('score5', $i) ? $i['score5'] : null)
+						// || $aitem->target_value != $i['target_value']
+						// || $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
+						// || $aitem->weight_percent != $i['weight_percent'])
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2826,9 +2847,10 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
-					} */
+					}
 
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
@@ -2845,7 +2867,7 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
-					// $aitem->weigh_score = 0;
+					//$aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2862,7 +2884,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						/* if($config->item_result_log == 1){
+						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2884,10 +2906,14 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
-						} */
-					} /* else {
-						if($config->item_result_log == 1){
+						}
+					}else {
+						if($config->item_result_log == 1 &&
+						( $aitem->target_value != $i['target_value']
+						|| $aitem->weight_percent != $i['weight_percent'])
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2909,9 +2935,10 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
-					} */
+					}
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
@@ -2920,7 +2947,7 @@ class AppraisalAssignmentController extends Controller
 					$aitem->target_value = $i['target_value'];
 					$aitem->weight_percent = $i['weight_percent'];
 					$aitem->over_value = 0;
-					// $aitem->weigh_score = 0;
+					//$aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2939,7 +2966,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						/* if($config->item_result_log == 1){
+						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2962,10 +2989,16 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
-						} */
-					} /* else {
-						if($config->item_result_log == 1){
+						}
+					}else {
+						if($config->item_result_log == 1 &&
+						( $aitem->max_value != $i['max_value']
+						|| $aitem->deduct_score_unit != $i['deduct_score_unit']
+						|| ($aitem->value_get_zero != $i['value_get_zero'] && $i['value_get_zero'] != 'undefined'))
+						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2988,9 +3021,11 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->weigh_score = $aitem->weigh_score;
 							$aitemlog->threshold_group_id = $aitem->threshold_group_id;
 							$aitemlog->updated_by = Auth::id();
+							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
 						}
-					}*/
+					}
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
@@ -3030,6 +3065,7 @@ class AppraisalAssignmentController extends Controller
 
 				$aitem_plan = DB::table('action_plan')->where('item_result_id', '=', $i['item_result_id']);
 				$aitem_phase = DB::table('phase')->where('item_result_id', '=', $i['item_result_id']);
+
 				$aitem = AppraisalItemResult::find($i['item_result_id']);
 				$aitem_doc = DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $i['item_result_id']);
 				$aitem_month = DB::table('monthly_appraisal_item_result')->where('item_result_id', '=', $i['item_result_id']);
@@ -3085,6 +3121,8 @@ class AppraisalAssignmentController extends Controller
 						$aitemlog->max_value = $aitem->max_value;
 						$aitemlog->deduct_score_unit = $aitem->deduct_score_unit;
 						$aitemlog->updated_by = Auth::id();
+						$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+						$aitemlog->value_get_zero = $aitem->value_get_zero;
 						$aitemlog->save();
 					}
 

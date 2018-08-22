@@ -86,7 +86,8 @@ class SystemConfigController extends Controller
 			'mail_username' => 'max:50',
 			'mail_password' => 'max:50',
 			'mail_encryption' => 'max:50',
-			'web_domain' => 'max:255'
+			'web_domain' => 'max:255',
+			'item_result_log' => 'boolean'
 		]);
 
 		if ($validator->fails()) {
