@@ -810,12 +810,14 @@ class AppraisalAssignmentController extends Controller
 	    		where emp_code = ?
 	    		", array(Auth::id()));
 
+	    	$show_all = empty($request->show_all) ? "" : "and is_individual = 1";
+
 	    	if ($all_emp[0]->count_no > 0) {
 	    		$items = DB::select("
 	    			Select level_id, appraisal_level_name
 	    			From appraisal_level
 	    			Where is_active = 1
-	    			and is_individual = 1
+	    			".$show_all."
 	    			Order by level_id desc
 	    			");
 	    	} else {
@@ -825,7 +827,7 @@ class AppraisalAssignmentController extends Controller
 	    			inner join employee e
 	    			on e.level_id = l.level_id
 	    			where (e.chief_emp_code = ? or e.emp_code = ?)
-	    			and l.is_individual = 1
+	    			".$show_all."
 	    			and l.is_active = 1
 	    			group by l.level_id desc
 	    			", array(Auth::id(), Auth::id()));
@@ -2103,7 +2105,7 @@ class AppraisalAssignmentController extends Controller
 										$message->from($from['address'], $from['name']);
 										$message->to($to)->subject('ระบบได้ทำการประเมิน');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2120,7 +2122,7 @@ class AppraisalAssignmentController extends Controller
 										$message->from($from['address'], $from['name']);
 										$message->to($to)->subject('ระบบได้ทำการประเมิน');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2350,7 +2352,7 @@ class AppraisalAssignmentController extends Controller
 									$message->from($from['address'], $from['name']);
 									$message->to($to)->subject('ระบบได้ทำการประเมิน');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2369,7 +2371,7 @@ class AppraisalAssignmentController extends Controller
 									$message->from($from['address'], $from['name']);
 									$message->to($to)->subject('ระบบได้ทำการประเมิน');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2711,8 +2713,8 @@ class AppraisalAssignmentController extends Controller
 							$message->from($from['address'], $from['name']);
 							$message->to($to)->subject('ระบบได้ทำการประเมิน');
 						});
-					} catch (Exception $e) {
-						$mail_error = $e->getMessage();
+					} catch (Exception $ExceptionError) {
+						$mail_error = $ExceptionError->getMessage();
 
 					}
 				}
@@ -2738,8 +2740,8 @@ class AppraisalAssignmentController extends Controller
 						$message->from($from['address'], $from['name']);
 						$message->to($to)->subject('ระบบได้ทำการประเมิน');
 					});
-				} catch (Exception $e) {
-					$mail_error = $e->getMessage();
+				} catch (Exception $ExceptionError) {
+					$mail_error = $ExceptionError->getMessage();
 
 				}
 			}
