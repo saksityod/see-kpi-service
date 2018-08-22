@@ -810,14 +810,12 @@ class AppraisalAssignmentController extends Controller
 	    		where emp_code = ?
 	    		", array(Auth::id()));
 
-	    	$show_all = empty($request->show_all) ? "" : "and is_individual = 1";
-
 	    	if ($all_emp[0]->count_no > 0) {
 	    		$items = DB::select("
 	    			Select level_id, appraisal_level_name
 	    			From appraisal_level
 	    			Where is_active = 1
-	    			".$show_all."
+	    			and is_individual = 1
 	    			Order by level_id desc
 	    			");
 	    	} else {
@@ -827,7 +825,7 @@ class AppraisalAssignmentController extends Controller
 	    			inner join employee e
 	    			on e.level_id = l.level_id
 	    			where (e.chief_emp_code = ? or e.emp_code = ?)
-	    			".$show_all."
+	    			and is_individual = 1
 	    			and l.is_active = 1
 	    			group by l.level_id desc
 	    			", array(Auth::id(), Auth::id()));

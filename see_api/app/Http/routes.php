@@ -46,6 +46,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('appraisal_item','AppraisalItemController@store');
 	Route::get('appraisal_item/al_list','AppraisalItemController@al_list');
 
+	Route::get('appraisal_item/al_list_emp','AppraisalItemController@al_list_emp');
 	Route::get('appraisal_item/al_list_org','AppraisalItemController@al_list_org');
 	Route::get('appraisal_item/al_list_organization','AppraisalItemController@al_list_organization');
 

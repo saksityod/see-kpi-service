@@ -542,6 +542,42 @@ class AppraisalItemController extends Controller
 		");
 		return response()->json($items);
     }
+
+    public function al_list_emp(Request $request)
+    {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = ?
+    		", array(Auth::id()));
+
+    	$show_all = empty($request->show_all) ? "" : "and is_individual = 1";
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$items = DB::select("
+    			Select level_id, appraisal_level_name
+    			From appraisal_level
+    			Where is_active = 1
+    			".$show_all."
+    			Order by level_id desc
+    			");
+    	} else {
+    		$items = DB::select("
+    			select l.level_id, l.appraisal_level_name
+    			from appraisal_level l
+    			inner join employee e
+    			on e.level_id = l.level_id
+    			where (e.chief_emp_code = ? or e.emp_code = ?)
+    			".$show_all."
+    			and l.is_active = 1
+    			group by l.level_id desc
+    			", array(Auth::id(), Auth::id()));
+    	}
+
+    	return response()->json($items);
+    }
 	
 	public function department_list()
 	{
