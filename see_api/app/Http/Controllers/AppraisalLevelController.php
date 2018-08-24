@@ -146,13 +146,15 @@ class AppraisalLevelController extends Controller
 		}	
 		
 		$items = DB::select("
-			SELECT a.structure_id, a.form_id, a.seq_no, a.structure_name, ifnull(b.weight_percent,0) weight_percent, if(b.appraisal_level_id is null,0,1) checkbox
-			FROM appraisal_structure a
-			left outer join appraisal_criteria b
-			on a.structure_id = b.structure_id
-			and b.appraisal_level_id = ?
-			where a.is_active = 1
-			order by a.seq_no		
+			SELECT b.appraisal_level_id ,al.appraisal_level_name ,a.structure_id, a.form_id, a.seq_no, a.structure_name, ifnull(b.weight_percent,0) weight_percent, if(b.appraisal_level_id is null,0,1) checkbox
+		   FROM appraisal_structure a
+		   left outer join appraisal_criteria b
+		   on a.structure_id = b.structure_id
+		   inner join appraisal_level al
+		   on al.level_id = b.appraisal_level_id
+		   and b.appraisal_level_id = ?
+		   where a.is_active = 1
+		   order by a.seq_no
 		", array($level_id));
 		
 		return response()->json(['data' => $items, 'no_weight' => $ap->no_weight]);

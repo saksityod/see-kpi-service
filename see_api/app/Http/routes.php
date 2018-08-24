@@ -445,6 +445,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
 
+	Route::get('competency_criteria/{appraisal_level_id}', 'Appraisal360degree/CompetencyCriteriaController@show');
+	Route::patch('competency_criteria/{appraisal_level_id}', 'Appraisal360degree/CompetencyCriteriaController@update');
 
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
