@@ -2104,7 +2104,7 @@ class AppraisalAssignmentController extends Controller
 										$message->from($from['address'], $from['name']);
 										$message->to($to)->subject('ระบบได้ทำการประเมิน');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2121,7 +2121,7 @@ class AppraisalAssignmentController extends Controller
 										$message->from($from['address'], $from['name']);
 										$message->to($to)->subject('ระบบได้ทำการประเมิน');
 									});
-								} catch (Exception $e) {
+								} catch (Exception $ExceptionError) {
 								//	$mail_error[] = $e->getMessage();
 									$mail_error = 'has error';
 								}
@@ -2351,7 +2351,7 @@ class AppraisalAssignmentController extends Controller
 									$message->from($from['address'], $from['name']);
 									$message->to($to)->subject('ระบบได้ทำการประเมิน');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2370,7 +2370,7 @@ class AppraisalAssignmentController extends Controller
 									$message->from($from['address'], $from['name']);
 									$message->to($to)->subject('ระบบได้ทำการประเมิน');
 								});
-							} catch (Exception $e) {
+							} catch (Exception $ExceptionError) {
 								//$mail_error = $e->getMessage();
 
 								//return response()->json($e->getMessage());
@@ -2712,8 +2712,8 @@ class AppraisalAssignmentController extends Controller
 							$message->from($from['address'], $from['name']);
 							$message->to($to)->subject('ระบบได้ทำการประเมิน');
 						});
-					} catch (Exception $e) {
-						$mail_error = $e->getMessage();
+					} catch (Exception $ExceptionError) {
+						$mail_error = $ExceptionError->getMessage();
 
 					}
 				}
@@ -2739,8 +2739,8 @@ class AppraisalAssignmentController extends Controller
 						$message->from($from['address'], $from['name']);
 						$message->to($to)->subject('ระบบได้ทำการประเมิน');
 					});
-				} catch (Exception $e) {
-					$mail_error = $e->getMessage();
+				} catch (Exception $ExceptionError) {
+					$mail_error = $ExceptionError->getMessage();
 
 				}
 			}
