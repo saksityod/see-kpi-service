@@ -905,9 +905,9 @@ class AppraisalItemController extends Controller
     	");
 
     	if($all_emp[0]->count_no > 0) {
-    		$org_required="required";
-    	} else {
     		$org_required="";
+    	} else {
+    		$org_required="required";
     	}
 
 		if ($request->form_id == 1) {
@@ -1144,6 +1144,20 @@ class AppraisalItemController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Item not found.']);
 		}
+
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    	");
+
+		if($all_emp[0]->count_no > 0) {
+    		$org_required="";
+    	} else {
+    		$org_required="required";
+    	}
 		
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [
@@ -1159,7 +1173,8 @@ class AppraisalItemController extends Controller
 				'is_show_variance' => 'boolean',
 				'formula_desc' => 'max:1000',
 				'is_active' => 'required|boolean',
-				'kpi_id' => 'numeric'
+				'kpi_id' => 'numeric',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -1227,7 +1242,8 @@ class AppraisalItemController extends Controller
 				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
 				'structure_id' => 'required|integer',
 				'appraisal_level' => 'required',
-				'is_active' => 'required|boolean'
+				'is_active' => 'required|boolean',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -1281,7 +1297,8 @@ class AppraisalItemController extends Controller
 				'appraisal_level' => 'required',
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
-				'is_active' => 'required|boolean'
+				'is_active' => 'required|boolean',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
