@@ -3196,11 +3196,11 @@ class AppraisalAssignmentController extends Controller
 					$cds = DB::select("
 						select cds_result_id
 						from cds_result
-						where emp_id = ".$air[0]->emp_id."
-						and level_id = ".$air[0]->level_id."
-						and position_id = ".$air[0]->position_id."
-						and org_id = ".$air[0]->org_id."
-						and period_id = ".$air[0]->period_id."
+						where emp_id = '".$air[0]->emp_id."'
+						and level_id = '".$air[0]->level_id."'
+						and position_id = '".$air[0]->position_id."'
+						and org_id = '".$air[0]->org_id."'
+						and period_id = '".$air[0]->period_id."'
 						");
 				}
 
