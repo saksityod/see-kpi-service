@@ -448,6 +448,13 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('competency_criteria', 'Appraisal360degree\CompetencyCriteriaController@show');
 	Route::patch('competency_criteria/{appraisal_level_id}', 'Appraisal360degree\CompetencyCriteriaController@update');
 
+	Route::get('salary_structure/all_list_year', 'Appraisal360degree\SalaryStructureController@all_list_year');
+	Route::get('salary_structure/all_list_level', 'Appraisal360degree\SalaryStructureController@all_list_level');
+	Route::get('salary_structure', 'Appraisal360degree\SalaryStructureController@index');
+	Route::get('salary_structure/show', 'Appraisal360degree\SalaryStructureController@show');
+	Route::post('salary_structure/import', 'Appraisal360degree\SalaryStructureController@import');
+	Route::delete('salary_structure', 'Appraisal360degree\SalaryStructureController@destroy');
+
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
 	}]);
