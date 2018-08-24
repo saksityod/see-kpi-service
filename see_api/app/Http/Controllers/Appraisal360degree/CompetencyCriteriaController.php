@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Appraisal360degree;
 
 use App\CompetencyCriteria;
 
@@ -15,7 +15,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class CompetencyCriteria extends Controller
+class CompetencyCriteriaController extends Controller
 {
 
 	public function __construct()
