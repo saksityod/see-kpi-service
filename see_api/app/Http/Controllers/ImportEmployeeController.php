@@ -6,6 +6,7 @@ use App\EmpLevel;
 use App\Employee;
 use App\Position;
 use App\Org;
+use App\User;
 
 use Auth;
 use DB;
@@ -374,6 +375,15 @@ class ImportEmployeeController extends Controller
 
 		try {
 			$item->delete();
+
+			// ส่งกลับไปให้ cliant เพื่อนำไปลบ User ใน Liferay //
+			try {
+				$user = User::findOrFail($item->emp_code);
+				$liferayUserId = $user->userId;
+			} catch (ModelNotFoundException $e) {
+				$liferayUserId = null;
+			}		
+
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Employee is in use.']);
@@ -382,7 +392,7 @@ class ImportEmployeeController extends Controller
 			}
 		}
 
-		return response()->json(['status' => 200]);
+		return response()->json(['status' => 200, "liferay_user_id"=>$liferayUserId]);
 
 	}
 
