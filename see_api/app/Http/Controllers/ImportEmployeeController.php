@@ -6,6 +6,7 @@ use App\EmpLevel;
 use App\Employee;
 use App\Position;
 use App\Org;
+use App\User;
 
 use Auth;
 use DB;
