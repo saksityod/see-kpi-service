@@ -609,7 +609,7 @@ class DashboardPerformanceComparisonController extends Controller
 						else air.percent_achievement end) as score_achievement   -- threshold
 					, air.weight_percent
 					, (case when 1={$system_config[0]->threshold} then (air.score)*(air.weight_percent)  -- threshold
-						else (air.percent_achievement)*(air.weight_percent)
+						else round(((air.percent_achievement)*(air.weight_percent))/100,2)
 						end) as weight_score
 					/* , (case when 1={$system_config[0]->threshold} then aps.nof_target_score  -- threshold
 					 	else (select count_of_item from structure_result where emp_id = em.emp_id
@@ -705,7 +705,7 @@ class DashboardPerformanceComparisonController extends Controller
 						else air.percent_achievement end) as score_achievement   -- threshold
 					, air.weight_percent
 					, (case when 1={$system_config[0]->threshold} then (air.score)*(air.weight_percent)  -- threshold
-						else (air.percent_achievement)*(air.weight_percent)
+						else round(((air.percent_achievement)*(air.weight_percent))/100,2)
 						end) as weight_score
 					, aps.form_id
 					-- from appraisal_item_result air
