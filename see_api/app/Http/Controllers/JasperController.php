@@ -188,6 +188,14 @@ class JasperController extends Controller
             Log::info(' from POST');
             Log::info($params);
         }
+		
+		// set subreport path //
+		if(!empty($request->subreport_bundle)){
+			if($request->subreport_bundle == "1"){
+				$params['subreport_path'] =  base_path("resources/jasper");
+			}
+		}
+		
         /*
         $params1 = json_decode($request->getContent(), true);
         Log::info($params1);

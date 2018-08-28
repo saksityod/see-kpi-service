@@ -2762,7 +2762,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2794,6 +2794,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
+<<<<<<< HEAD
 						}
 					} else {
 						if($config->item_result_log == 1 &&
@@ -2816,6 +2817,11 @@ class AppraisalAssignmentController extends Controller
 						// || $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
 						// || $aitem->weight_percent != $i['weight_percent'])
 						){
+=======
+						} */
+					} /* else {
+						if($config->item_result_log == 1){
+>>>>>>> refs/remotes/origin/tfg/develop
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2848,7 +2854,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
-					}
+					} */
 
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
@@ -2865,7 +2871,11 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
+<<<<<<< HEAD
 					//$aitem->weigh_score = 0;
+=======
+					// $aitem->weigh_score = 0;
+>>>>>>> refs/remotes/origin/tfg/develop
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2882,7 +2892,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2906,12 +2916,18 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
+<<<<<<< HEAD
 						}
 					}else {
 						if($config->item_result_log == 1 &&
 						( $aitem->target_value != $i['target_value']
 						|| $aitem->weight_percent != $i['weight_percent'])
 						){
+=======
+						} */
+					} /* else {
+						if($config->item_result_log == 1){
+>>>>>>> refs/remotes/origin/tfg/develop
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -2936,7 +2952,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
 						}
-					}
+					} */
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
@@ -2945,7 +2961,11 @@ class AppraisalAssignmentController extends Controller
 					$aitem->target_value = $i['target_value'];
 					$aitem->weight_percent = $i['weight_percent'];
 					$aitem->over_value = 0;
+<<<<<<< HEAD
 					//$aitem->weigh_score = 0;
+=======
+					// $aitem->weigh_score = 0;
+>>>>>>> refs/remotes/origin/tfg/develop
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
@@ -2964,7 +2984,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
 
-						if($config->item_result_log == 1){
+						/* if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $org_id;
 							$aitemlog->position_id = $position_id;
@@ -2990,6 +3010,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
+<<<<<<< HEAD
 						}
 					}else {
 						if($config->item_result_log == 1 &&
@@ -2997,6 +3018,11 @@ class AppraisalAssignmentController extends Controller
 						|| $aitem->deduct_score_unit != $i['deduct_score_unit']
 						|| ($aitem->value_get_zero != $i['value_get_zero'] && $i['value_get_zero'] != 'undefined'))
 						){
+=======
+						} */
+					} /* else {
+						if($config->item_result_log == 1){
+>>>>>>> refs/remotes/origin/tfg/develop
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
 							$aitemlog->position_id = $aitem->position_id;
@@ -3023,7 +3049,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
 						}
-					}
+					}*/
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
@@ -3063,7 +3089,10 @@ class AppraisalAssignmentController extends Controller
 
 				$aitem_plan = DB::table('action_plan')->where('item_result_id', '=', $i['item_result_id']);
 				$aitem_phase = DB::table('phase')->where('item_result_id', '=', $i['item_result_id']);
+<<<<<<< HEAD
 
+=======
+>>>>>>> refs/remotes/origin/tfg/develop
 				$aitem = AppraisalItemResult::find($i['item_result_id']);
 				$aitem_doc = DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $i['item_result_id']);
 				$aitem_month = DB::table('monthly_appraisal_item_result')->where('item_result_id', '=', $i['item_result_id']);
