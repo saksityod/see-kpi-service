@@ -24,18 +24,12 @@ class CompetencyCriteriaController extends Controller
 	}
 
 	public function show(Request $request) {
-		try {
-			$item = CompetencyCriteria::findOrFail($request->appraisal_level_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Competency Criteria not found.']);
-		}
-
 		$items = DB::select("
-			select cc.*, ag.assessor_group_name
-			from competency_criteria cc
-			right join assessor_group ag on ag.assessor_group_id = cc.assessor_group_id
-			where cc.structure_id = {$request->structure_id}
-			and cc.appraisal_level_id = {$request->appraisal_level_id}
+			select ag.*, cc.appraisal_level_id, cc.structure_id, ifnull(cc.weight_percent,0) weight_percent, if(cc.appraisal_level_id is null,0,1) checkbox
+			from assessor_group ag
+			left outer join competency_criteria cc on cc.assessor_group_id = ag.assessor_group_id
+			and cc.appraisal_level_id ={$request->appraisal_level_id}
+			and cc.structure_id = {$request->structure_id}
 		");
 
 		return response()->json($items);
