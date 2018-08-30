@@ -451,6 +451,23 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('job_log/{job_log_id}', 'JobLogController@show');
 	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
+	
+	
+	// Appraisal 360 Degree //
+	// Appraisal Level //
+	Route::get('competency_criteria', 'Appraisal360Degree\CompetencyCriteriaController@show');
+	Route::patch('competency_criteria/{appraisal_level_id}', 'Appraisal360Degree\CompetencyCriteriaController@update');
+	Route::patch('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@update_criteria');
+	// Appraisal //
+	
+	
+	// Salary //
+	Route::get('salary_structure/all_list_year', 'Appraisal360degree\SalaryStructureController@all_list_year');
+	Route::get('salary_structure/all_list_level', 'Appraisal360degree\SalaryStructureController@all_list_level');
+	Route::get('salary_structure', 'Appraisal360degree\SalaryStructureController@index');
+	Route::get('salary_structure/show', 'Appraisal360degree\SalaryStructureController@show');
+	Route::post('salary_structure/import', 'Appraisal360degree\SalaryStructureController@import');
+	Route::delete('salary_structure', 'Appraisal360degree\SalaryStructureController@destroy');
 
 
 	Route::get('404', ['as' => 'notfound', function () {

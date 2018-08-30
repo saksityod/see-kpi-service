@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Appraisal360degree;
+namespace App\Http\Controllers\Appraisal360Degree;
 
 use App\CompetencyCriteria;
 use App\Http\Controllers\Controller;
