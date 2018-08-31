@@ -352,12 +352,12 @@ class ImportEmployeeController extends Controller
 		} else {
 			foreach ($request->employees as $e) {
 				$emp = Employee::find($e);
-				if (empty($request->roles)) {
-				} else {
+				if (!empty($request->roles)) {
 					foreach ($request->roles as $r) {
 						$emp->level_id = $r;
 						$emp->updated_by = Auth::id();
 						$emp->save();
+						EmployeeSnapshot::where('emp_code',$emp->emp_code)->update(['level_id' => $r]);
 					}
 				}
 			}

@@ -451,6 +451,33 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('job_log/{job_log_id}', 'JobLogController@show');
 	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
+	
+	Route::get('customer/list_cus_type', 'PMTL\CustomerController@list_cus_type');
+	Route::get('customer/list_industry', 'PMTL\CustomerController@list_industry');
+	Route::get('customer/auto_cus', 'PMTL\CustomerController@auto_cus');
+	Route::get('customer', 'PMTL\CustomerController@index');
+	Route::get('customer/{customer_id}', 'PMTL\CustomerController@show');
+	Route::post('customer/import', 'PMTL\CustomerController@import');
+	// Route::patch('customer/{customer_id}', 'PMTL\CustomerController@update');
+	// Route::delete('customer/{customer_id}', 'PMTL\CustomerController@destroy');
+
+	//Route::get('employee_snap/list_level', 'PMTL\ImportEmployeeSnapshotController@list_level');
+	Route::get('employee_snap/list_level', 'AppraisalLevelController@index');
+	Route::get('employee_snap/auto_position', 'PMTL\ImportEmployeeSnapshotController@auto_position');
+	Route::get('employee_snap/auto_start_date', 'PMTL\ImportEmployeeSnapshotController@auto_start_date');
+	Route::get('employee_snap/auto_emp', 'PMTL\ImportEmployeeSnapshotController@auto_emp');
+	Route::post('employee_snap/export', 'PMTL\ImportEmployeeSnapshotController@export');
+	Route::get('employee_snap', 'PMTL\ImportEmployeeSnapshotController@index');
+	Route::get('employee_snap/{emp_snapshot_id}', 'PMTL\ImportEmployeeSnapshotController@show');
+	Route::post('employee_snap/import', 'PMTL\ImportEmployeeSnapshotController@import');
+
+	Route::get('questionaire/list_type', 'PMTL\QuestionaireController@list_type');
+	Route::get('questionaire/auto_name', 'PMTL\QuestionaireController@auto_name');
+	Route::get('questionaire', 'PMTL\QuestionaireController@index');
+	Route::get('questionaire/{questionaire_id}', 'PMTL\QuestionaireController@show');
+	Route::post('questionaire', 'PMTL\QuestionaireController@store');
+	Route::patch('questionaire', 'PMTL\QuestionaireController@update');
+	Route::delete('questionaire/{questionaire_id}', 'PMTL\QuestionaireController@destroy');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
