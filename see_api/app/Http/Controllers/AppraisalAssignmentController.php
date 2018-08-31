@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\AppraisalItemResult;
-use App\AppraisalItemResultLog;
+// use App\AppraisalItemResultLog;
 use App\AppraisalFrequency;
 use App\AppraisalPeriod;
 use App\AppraisalStage;
@@ -3053,40 +3053,40 @@ class AppraisalAssignmentController extends Controller
 				}
 
 				if (!empty($aitem)) {
-					if($config->item_result_log == 1){
-						$aitemlog = new AppraisalItemResultLog;
-						$aitemlog->org_id = $aitem->org_id;
-						$aitemlog->position_id = $aitem->position_id;
-						$aitemlog->level_id = $aitem->level_id;
-						$aitemlog->chief_emp_id = $aitem->chief_emp_id;
-						$aitemlog->kpi_type_id = $aitem->kpi_type_id;
-						$aitemlog->structure_weight_percent = $aitem->structure_weight_percent;
-						$aitemlog->created_by = Auth::id();
-						$aitemlog->modify_by = Auth::id();
-						$aitemlog->modify_date = new DateTime();
-						$aitemlog->modify_type = 'D';
-						$aitemlog->emp_result_id = $aitem->emp_result_id;
-						$aitemlog->period_id = $aitem->period_id;
-						$aitemlog->emp_id = $aitem->emp_id;
-						$aitemlog->item_id = $aitem->item_id;
-						$aitemlog->item_name = $aitem->item_name;
-						$aitemlog->target_value = $aitem->target_value;
-						$aitemlog->weight_percent = $aitem->weight_percent;
-						$aitemlog->score0 = $aitem->score0;
-						$aitemlog->score1 = $aitem->score1;
-						$aitemlog->score2 = $aitem->score2;
-						$aitemlog->score3 = $aitem->score3;
-						$aitemlog->score4 = $aitem->score4;
-						$aitemlog->score5 = $aitem->score5;
-						$aitemlog->forecast_value = $aitem->forecast_value;
-						$aitemlog->over_value = $aitem->over_value;
-						$aitemlog->weigh_score = $aitem->weigh_score;
-						$aitemlog->threshold_group_id = $aitem->threshold_group_id;
-						$aitemlog->max_value = $aitem->max_value;
-						$aitemlog->deduct_score_unit = $aitem->deduct_score_unit;
-						$aitemlog->updated_by = Auth::id();
-						$aitemlog->save();
-					}
+					// if($config->item_result_log == 1){
+					// 	$aitemlog = new AppraisalItemResultLog;
+					// 	$aitemlog->org_id = $aitem->org_id;
+					// 	$aitemlog->position_id = $aitem->position_id;
+					// 	$aitemlog->level_id = $aitem->level_id;
+					// 	$aitemlog->chief_emp_id = $aitem->chief_emp_id;
+					// 	$aitemlog->kpi_type_id = $aitem->kpi_type_id;
+					// 	$aitemlog->structure_weight_percent = $aitem->structure_weight_percent;
+					// 	$aitemlog->created_by = Auth::id();
+					// 	$aitemlog->modify_by = Auth::id();
+					// 	$aitemlog->modify_date = new DateTime();
+					// 	$aitemlog->modify_type = 'D';
+					// 	$aitemlog->emp_result_id = $aitem->emp_result_id;
+					// 	$aitemlog->period_id = $aitem->period_id;
+					// 	$aitemlog->emp_id = $aitem->emp_id;
+					// 	$aitemlog->item_id = $aitem->item_id;
+					// 	$aitemlog->item_name = $aitem->item_name;
+					// 	$aitemlog->target_value = $aitem->target_value;
+					// 	$aitemlog->weight_percent = $aitem->weight_percent;
+					// 	$aitemlog->score0 = $aitem->score0;
+					// 	$aitemlog->score1 = $aitem->score1;
+					// 	$aitemlog->score2 = $aitem->score2;
+					// 	$aitemlog->score3 = $aitem->score3;
+					// 	$aitemlog->score4 = $aitem->score4;
+					// 	$aitemlog->score5 = $aitem->score5;
+					// 	$aitemlog->forecast_value = $aitem->forecast_value;
+					// 	$aitemlog->over_value = $aitem->over_value;
+					// 	$aitemlog->weigh_score = $aitem->weigh_score;
+					// 	$aitemlog->threshold_group_id = $aitem->threshold_group_id;
+					// 	$aitemlog->max_value = $aitem->max_value;
+					// 	$aitemlog->deduct_score_unit = $aitem->deduct_score_unit;
+					// 	$aitemlog->updated_by = Auth::id();
+					// 	$aitemlog->save();
+					// }
 
 					$aitem->delete();
 				}
