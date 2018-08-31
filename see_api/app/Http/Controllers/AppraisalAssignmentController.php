@@ -3208,6 +3208,7 @@ class AppraisalAssignmentController extends Controller
 
 				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
 				AppraisalItemResult::where('emp_result_id',$item->emp_result_id)->delete();
+				AppraisalItemResultLog::where('emp_result_id',$item->emp_result_id)->delete();
 				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 
