@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Appraisal360degree;
+namespace App\Http\Controllers\Appraisal360Degree;
 
 use App\Http\Controllers\Controller;
 use App\AppraisalCriteria;
@@ -18,8 +18,52 @@ class AppraisalLevel360Controller extends Controller
 
 	public function __construct()
 	{
+		$this->middleware('jwt.auth');
+	}
+	
+	
+	public function appraisal_criteria($level_id)
+	{
+		try {
+			$ap = AppraisalLevel::findOrFail($level_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Appraisal Level not found.']);
+		}	
+		
+		$strucObj = DB::select("
+			SELECT 
+				b.appraisal_level_id,
+				(
+					SELECT sal.appraisal_level_name FROM appraisal_level sal
+					WHERE sal.level_id = b.appraisal_level_id
+				) as appraisal_level_name,
+				a.structure_id, 
+				a.form_id, 
+				a.seq_no, 
+				a.structure_name, 
+				ifnull(b.weight_percent,0) weight_percent, 
+				if(b.appraisal_level_id is null,0,1) checkbox
+			FROM appraisal_structure a
+			LEFT OUTER JOIN appraisal_criteria b ON a.structure_id = b.structure_id
+			AND b.appraisal_level_id = ?
+			WHERE a.is_active = 1
+			ORDER BY a.seq_no	
+		", array($level_id));
 
-	   $this->middleware('jwt.auth');
+		// Get weight from competency_criteria //
+		/*
+		$dataResp = array();
+		foreach ($strucObj as $struc) {
+			$compCriteria = CompetencyCriteria::where('appraisal_level_id', $struc->appraisal_level_id)
+			->where('structure_id',$struc->structure_id)->get();
+			if($compCriteria->count() > 0){
+				$struc->weight  = $compCriteria;
+			}
+			array_push($dataResp, $struc);
+		}
+		*/
+	
+		return response()->json(['data' => $strucObj, 'no_weight' => $ap->no_weight]);
 	}
 	
 	

@@ -167,7 +167,7 @@ class AppraisalLevelController extends Controller
 			on a.structure_id = b.structure_id
 			and b.appraisal_level_id = ?
 			where a.is_active = 1
-			order by a.seq_no		
+			order by a.seq_no	
 		", array($level_id));
 		
 		return response()->json(['data' => $items, 'no_weight' => $ap->no_weight]);
