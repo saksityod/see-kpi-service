@@ -469,6 +469,13 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('salary_structure/show', 'Appraisal360degree\SalaryStructureController@show');
 	Route::post('salary_structure/import', 'Appraisal360degree\SalaryStructureController@import');
 	Route::delete('salary_structure', 'Appraisal360degree\SalaryStructureController@destroy');
+	
+	// Appraisal Comment //
+	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
+	Route::post('appraisal/comment/update/insert','Appraisal360degree\AppraisalCommentController@insert_update');
+	
+	// Appraisal emp_result //
+	Route::get('appraisal/show/emp_result','Appraisal360degree\AppraisalGroupController@show');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
