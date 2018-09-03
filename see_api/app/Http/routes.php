@@ -478,6 +478,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('questionaire', 'PMTL\QuestionaireController@store');
 	Route::patch('questionaire', 'PMTL\QuestionaireController@update');
 	Route::delete('questionaire/{questionaire_id}', 'PMTL\QuestionaireController@destroy');
+	Route::delete('questionaire/section/{section_id}', 'PMTL\QuestionaireController@destroy_section');
+	Route::delete('questionaire/question/{question_id}', 'PMTL\QuestionaireController@destroy_question');
+	Route::delete('questionaire/answer/{answer_id}', 'PMTL\QuestionaireController@destroy_answer');
 
 
 	Route::get('404', ['as' => 'notfound', function () {

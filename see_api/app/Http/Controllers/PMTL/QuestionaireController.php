@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\PMTL;
 
 use App\Questionaire;
+use App\QuestionaireSection;
+use App\Question;
+use App\Answer;
 
 use Auth;
 use DB;
@@ -51,7 +54,7 @@ class QuestionaireController extends Controller
 		$questionaire_type_id = empty($request->questionaire_type_id) ? "" : "AND q.questionaire_type_id = '{$request->questionaire_type_id}'";
 		$questionaire_id = empty($request->questionaire_id) ? "" : "AND q.questionaire_id = '{$request->questionaire_id}'";
 
-		$items =DB::select("
+		$items = DB::select("
 			SELECT q.questionaire_id, 
 					qt.questionaire_type,
 					q.questionaire_name,
@@ -64,37 +67,277 @@ class QuestionaireController extends Controller
 			ORDER BY qt.questionaire_type, q.questionaire_id
 		");
 
-		// Get the current page from the url if it's not set default to 1
-		empty($request->page) ? $page = 1 : $page = $request->page;
-
-		// Number of items per page
-		empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
-
-		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
-
-		// Get only the items you need using array_slice (only get 10 items since that's what you need)
-		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
-
-		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
-		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
-
-
-		return response()->json($result);
+		return response()->json($items);
 	}
 
 	public function show($questionaire_id)
 	{
+		try {
+			$items = Questionaire::findOrFail($questionaire_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Questionaire not found.']);
+		}
 
+		$sub_items = DB::select("
+			SELECT section_id, section_name, is_cust_search
+			FROM questionaire_section
+			WHERE questionaire_id = {$questionaire_id}
+			");
+		foreach ($sub_items as $key => $qsv) {
+			$sub_items[$key]->question =  DB::select("
+				SELECT question_id, answer_type_id, parent_question_id, question_name
+				FROM question
+				WHERE section_id = {$qsv->section_id}
+				");
+
+			foreach ($sub_items[$key]->question as $key2 => $anv) {
+				$sub_items[$key]->question[$key2]->answer =  DB::select("
+					SELECT answer_id, row_name, answer_name, score
+					FROM answer
+					WHERE question_id = {$anv->question_id}
+					");
+			}
+		}
+
+		return response()->json(['questionaire' => $items, 'questionaire_section' => $sub_items]);
 	}
 
 	public function store(Request $request)
 	{
+		$errors = array();
+		$errors_validator = array();
+		DB::beginTransaction();
 
+		$validator = Validator::make($request, [
+			'questionaire_name' => 'required|max:255',
+			'questionaire_type_id' => 'required|integer',
+			'pass_score' => 'required|integer',
+			'is_active' => 'required|integer'
+		]);
+
+		if(!empty($request['questionaire_section'])) {
+			foreach ($request['questionaire_section'] as $qs) {
+				$validator_questionaire_section = Validator::make($qs, [
+					'section_name' => 'required|max:255',
+					'is_cust_search' => 'required|integer'
+				]);
+				$errors_validator[] = ($validator_questionaire_section->false()) ? $validator_questionaire_section->errors(): '';
+			}
+		}
+
+		if(!empty($request['questionaire_section']['question'])) {
+			foreach ($request['questionaire_section']['question'] as $q) {
+				$validator_question = Validator::make($q, [
+					'answer_type_id' => 'required|integer',
+					'question_name' => 'required|max:255'
+				]);
+				$errors_validator[] = ($validator_question->false()) ? $validator_question->errors(): '';
+			}
+		}
+
+		if(!empty($request['questionaire_section']['question']['answer'])) {
+			foreach ($request['questionaire_section']['question']['answer'] as $an) {
+				$validator_answer = Validator::make($an, [
+					'row_name' => 'required|max:255',
+					'answer_name' => 'required|max:255',
+					'score' => 'required|integer'
+				]);
+				$errors_validator[] = ($validator_answer->false()) ? $validator_answer->errors(): '';
+			}
+		}
+
+		if(!empty($errors_validator)) {
+			return response()->json(['status' => 400, 'errors' => $errors_validator]);
+		}
+
+		$qn = new Questionaire;
+		$qn->questionaire_name = $request->questionaire_name;
+		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->pass_score = $request->pass_score;
+		$qn->is_active = $request->is_active;
+		$qn->created_by = Auth::id();
+		$qn->updated_by = Auth::id();
+		try {
+			$qn->save();
+			if(!empty($request['questionaire_section'])) {
+				foreach ($request['questionaire_section'] as $qsv) {
+					$qs = new QuestionaireSection;
+					$qs->questionaire_id = $qn->questionaire_id;
+					$qs->section_name = $qsv['section_name'];
+					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->created_by = Auth::id();
+					$qs->updated_by = Auth::id();
+					try {
+						$qs->save();
+						if(!empty($request['questionaire_section']['question'])) {
+							foreach ($request['questionaire_section']['question'] as $qv) {
+								$q = new Question;
+								$q->section_id = $qs->section_id;
+								$q->answer_type_id = $qv['answer_type_id'];
+								$q->parent_question_id = $qv['parent_question_id'];
+								$q->question_name = $qv['question_name'];
+								$q->created_by = Auth::id();
+								$q->updated_by = Auth::id();
+								try {
+									$q->save();
+									if(!empty($request['questionaire_section']['question']['answer'])) {
+										foreach ($request['questionaire_section']['question']['answer'] as $ans) {
+											$an = new Answer;
+											$an->question_id = $q->question_id;
+											$an->row_name = $ans['row_name'];
+											$an->answer_name = $ans['answer_name'];
+											$an->score = $ans['score'];
+											$an->created_by = Auth::id();
+											$an->updated_by = Auth::id();
+											try {
+												$an->save();
+											} catch (Exception $e) {
+												$errors[] = ['Answer' => $e];
+											}
+										}
+									}
+								} catch (Exception $e) {
+									$errors[] = ['Question' => $e];
+								}
+							}
+						}
+					} catch (Exception $e) {
+						$errors[] = ['QuestionaireSection' => $e];
+					}
+				}
+			}
+		} catch (Exception $e) {
+			$errors[] = ['Questionaire' => $e];
+		}
+
+		if(empty($errors)) {
+			DB::commit();
+			$status = 200;
+		} else {
+			DB::rollback();
+			$status = 400;
+		}
+
+		return response()->json(['status' => $status, 'errors' => $errors]);
 	}
 
 	public function update(Request $request)
 	{
+		$errors = array();
+		$errors_validator = array();
+		DB::beginTransaction();
 
+		$validator = Validator::make($request, [
+			'questionaire_id' => 'required|integer',
+			'questionaire_name' => 'required|max:255',
+			'questionaire_type_id' => 'required|integer',
+			'pass_score' => 'required|integer',
+			'is_active' => 'required|integer'
+		]);
+
+		if(!empty($request['questionaire_section'])) {
+			foreach ($request['questionaire_section'] as $qs) {
+				$validator_questionaire_section = Validator::make($qs, [
+					'section_id' => 'required|integer',
+					'section_name' => 'required|max:255',
+					'is_cust_search' => 'required|integer'
+				]);
+				$errors_validator[] = ($validator_questionaire_section->false()) ? $validator_questionaire_section->errors(): '';
+			}
+		}
+
+		if(!empty($request['questionaire_section']['question'])) {
+			foreach ($request['questionaire_section']['question'] as $q) {
+				$validator_question = Validator::make($q, [
+					'question_id' => 'required|integer',
+					'answer_type_id' => 'required|integer',
+					'question_name' => 'required|max:255'
+				]);
+				$errors_validator[] = ($validator_question->false()) ? $validator_question->errors(): '';
+			}
+		}
+
+		if(!empty($request['questionaire_section']['question']['answer'])) {
+			foreach ($request['questionaire_section']['question']['answer'] as $an) {
+				$validator_answer = Validator::make($an, [
+					'answer_id' => 'required|integer',
+					'row_name' => 'required|max:255',
+					'answer_name' => 'required|max:255',
+					'score' => 'required|integer'
+				]);
+				$errors_validator[] = ($validator_answer->false()) ? $validator_answer->errors(): '';
+			}
+		}
+
+		if(!empty($errors_validator)) {
+			return response()->json(['status' => 400, 'errors' => $errors_validator]);
+		}
+
+		$qn = Questionaire::find($request->questionaire_id);
+		$qn->questionaire_name = $request->questionaire_name;
+		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->pass_score = $request->pass_score;
+		$qn->is_active = $request->is_active;
+		$qn->updated_by = Auth::id();
+		try {
+			$qn->save();
+			if(!empty($request['questionaire_section'])) {
+				foreach ($request['questionaire_section'] as $qsv) {
+					$qs = QuestionaireSection::find($qsv['section_id']);
+					$qs->questionaire_id = $qn->questionaire_id;
+					$qs->section_name = $qsv['section_name'];
+					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->updated_by = Auth::id();
+					try {
+						$qs->save();
+						if(!empty($request['questionaire_section']['question'])) {
+							foreach ($request['questionaire_section']['question'] as $qv) {
+								$q = Question::find($qv['question_id']);
+								$q->section_id = $qs->section_id;
+								$q->answer_type_id = $qv['answer_type_id'];
+								$q->parent_question_id = $qv['parent_question_id'];
+								$q->question_name = $qv['question_name'];
+								$q->updated_by = Auth::id();
+								try {
+									$q->save();
+									if(!empty($request['questionaire_section']['question']['answer'])) {
+										foreach ($request['questionaire_section']['question']['answer'] as $ans) {
+											$an = Answer::find($ans['answer_id']);
+											$an->question_id = $q->question_id;
+											$an->row_name = $ans['row_name'];
+											$an->answer_name = $ans['answer_name'];
+											$an->score = $ans['score'];
+											$an->updated_by = Auth::id();
+											try {
+												$an->save();
+											} catch (Exception $e) {
+												$errors[] = ['Answer' => $e];
+											}
+										}
+									}
+								} catch (Exception $e) {
+									$errors[] = ['Question' => $e];
+								}
+							}
+						}
+					} catch (Exception $e) {
+						$errors[] = ['QuestionaireSection' => $e];
+					}
+				}
+			}
+		} catch (Exception $e) {
+			$errors[] = ['Questionaire' => $e];
+		}
+
+		if(empty($errors)) {
+			DB::commit();
+			$status = 200;
+		} else {
+			DB::rollback();
+			$status = 400;
+		}
+
+		return response()->json(['status' => $status, 'errors' => $errors]);
 	}
 
 	public function destroy($questionaire_id)
@@ -110,6 +353,72 @@ class QuestionaireController extends Controller
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Questionaire is in use.']);
+			} else {
+				return response()->json($e->errorInfo);
+			}
+		}
+
+		return response()->json(['status' => 200]);
+
+	}
+
+	public function destroy_section($section_id)
+	{
+		try {
+			$item = QuestionaireSection::findOrFail($section_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'QuestionaireSection not found.']);
+		}
+
+		try {
+			$item->delete();
+		} catch (Exception $e) {
+			if ($e->errorInfo[1] == 1451) {
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this QuestionaireSection is in use.']);
+			} else {
+				return response()->json($e->errorInfo);
+			}
+		}
+
+		return response()->json(['status' => 200]);
+
+	}
+
+	public function destroy_question($question_id)
+	{
+		try {
+			$item = Question::findOrFail($question_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Question not found.']);
+		}
+
+		try {
+			$item->delete();
+		} catch (Exception $e) {
+			if ($e->errorInfo[1] == 1451) {
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Question is in use.']);
+			} else {
+				return response()->json($e->errorInfo);
+			}
+		}
+
+		return response()->json(['status' => 200]);
+
+	}
+
+	public function destroy_answer($answer_id)
+	{
+		try {
+			$item = Answer::findOrFail($answer_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Answer not found.']);
+		}
+
+		try {
+			$item->delete();
+		} catch (Exception $e) {
+			if ($e->errorInfo[1] == 1451) {
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Answer is in use.']);
 			} else {
 				return response()->json($e->errorInfo);
 			}
