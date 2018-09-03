@@ -55,16 +55,8 @@ class AppraisalLevel360Controller extends Controller
 	
 	
 	public function update_criteria(Request $request, $level_id)
-	{
-		try {
-			$item = AppraisalLevel::findOrFail($level_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Appraisal Level not found.']);
-		}	
-		$total_weight = 0;
-		
-		
-		/* check set weight */
+	{		
+		// Check set weight //
 		foreach ($request->criteria as $c){
 			if ($c['checkbox'] == 1) {
 				$struc = AppraisalStructure::find($c['structure_id']);
@@ -76,11 +68,22 @@ class AppraisalLevel360Controller extends Controller
 				}
 			}
 		}
-		
-		
-		if ($item->no_weight == 0) {
+
+
+		// Check Total Weight & No Weight //
+		$total_weight = 0;
+		$itemIsActiveCnt = 0;
+		// --> Get level info by level id //
+		try {
+			$appLevel = AppraisalLevel::findOrFail($level_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Appraisal Level not found.']);
+		}
+		// --> Check No Weight //
+		if ($appLevel->no_weight == 0) {
 			foreach ($request->criteria as $c) {
 				if ($c['checkbox'] == 1) {
+					$itemIsActiveCnt += 1;
 					$total_weight += $c['weight_percent'];
 
 					$form_type = DB::select("
@@ -96,17 +99,24 @@ class AppraisalLevel360Controller extends Controller
 					}
 				}
 			}
-			
-			if ($total_weight != 100) {
-				return response()->json(['status' => 400, 'data' => 'Total weight is not equal to 100%']);
-			}
+		}
+		// --> Check the total weight score is 100% //
+		if ($itemIsActiveCnt > 0 && $total_weight != 100) {
+			return response()->json(['status' => 400, 'data' => 'Total weight is not equal to 100%']);
 		}
 		
+
+		// Insert - Update - Delete item inactive //
 		foreach ($request->criteria as $c) {
 			if ($c['checkbox'] == 1) {
-				$criteria = AppraisalCriteria::where('appraisal_level_id',$level_id)->where('structure_id',$c['structure_id']);
+				$criteria = AppraisalCriteria::where('appraisal_level_id',$level_id)
+					->where('structure_id',$c['structure_id']);
 				if ($criteria->count() > 0) {
-					AppraisalCriteria::where('appraisal_level_id',$level_id)->where('structure_id',$c['structure_id'])->update(['weight_percent' => $c['weight_percent'], 'updated_by' => Auth::id()]);
+					AppraisalCriteria::where('appraisal_level_id',$level_id)
+						->where('structure_id',$c['structure_id'])
+						->update([
+								'weight_percent' => $c['weight_percent'], 
+								'updated_by' => Auth::id()]);
 				} else {
 					$item = new AppraisalCriteria;
 					$item->appraisal_level_id = $level_id;
@@ -117,7 +127,13 @@ class AppraisalLevel360Controller extends Controller
 					$item->save();
 				}
 			} else {
-				AppraisalCriteria::where('appraisal_level_id',$level_id)->where('structure_id',$c['structure_id'])->delete();
+				CompetencyCriteria::where('appraisal_level_id', $level_id)
+					->where('structure_id', $c['structure_id'])
+					->delete();
+
+				AppraisalCriteria::where('appraisal_level_id', $level_id)
+					->where('structure_id', $c['structure_id'])
+					->delete();
 			}
 		}
 		

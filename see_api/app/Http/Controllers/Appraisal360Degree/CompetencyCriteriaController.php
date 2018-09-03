@@ -50,29 +50,34 @@ class CompetencyCriteriaController extends Controller
 			$criteria->save();
 		}
 
-
-		try {
-			$item = CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Competency Criteria not found.']);
-		}	
+		// Check the total weight score is 100% //
 		$total_weight = 0;
-		
+		$itemIsActiveCnt = 0;
 		foreach ($request->set_weight as $c) {
-			if ($c['checkbox'] == 1) {
+			if ($c['checkbox']== 1) {
+				$itemIsActiveCnt += 1;
 				$total_weight += $c['weight_percent'];
 			}
 		}
-
-		if ($total_weight != 100) {
+		if ($itemIsActiveCnt > 0 && $total_weight != 100) {
 			return response()->json(['status' => 400, 'data' => 'Total weight is not equal to 100%']);
 		}
 		
+		// Insert - Update - Delete item inactive //
 		foreach ($request->set_weight as $c) {
 			if ($c['checkbox'] == 1) {
-				$competency = CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)->where('structure_id',$c['structure_id'])->where('assessor_group_id',$c['assessor_group_id']);
+				$competency = CompetencyCriteria::where('appraisal_level_id', $appraisal_level_id)
+					->where('structure_id', $c['structure_id'])
+					->where('assessor_group_id',$c['assessor_group_id']);
 				if ($competency->count() > 0) {
-					CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)->where('structure_id',$c['structure_id'])->where('assessor_group_id',$c['assessor_group_id'])->update(['weight_percent' => $c['weight_percent'], 'updated_by' => Auth::id()]);
+					CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)
+						->where('structure_id', $c['structure_id'])
+						->where('assessor_group_id', $c['assessor_group_id'])
+						->update(
+							[
+								'weight_percent' => $c['weight_percent'], 
+								'updated_by' => Auth::id()
+							]);
 				} else {
 					$item = new CompetencyCriteria;
 					$item->appraisal_level_id = $appraisal_level_id;
@@ -84,7 +89,10 @@ class CompetencyCriteriaController extends Controller
 					$item->save();
 				}
 			} else {
-				CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)->where('structure_id',$c['structure_id'])->where('assessor_group_id',$c['assessor_group_id'])->delete();
+				CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)
+					->where('structure_id', $c['structure_id'])
+					->where('assessor_group_id', $c['assessor_group_id'])
+					->delete();
 			}
 		}
 		
