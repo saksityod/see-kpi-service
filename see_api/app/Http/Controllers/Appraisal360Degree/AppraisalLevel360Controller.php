@@ -49,19 +49,6 @@ class AppraisalLevel360Controller extends Controller
 			WHERE a.is_active = 1
 			ORDER BY a.seq_no	
 		", array($level_id));
-
-		// Get weight from competency_criteria //
-		/*
-		$dataResp = array();
-		foreach ($strucObj as $struc) {
-			$compCriteria = CompetencyCriteria::where('appraisal_level_id', $struc->appraisal_level_id)
-			->where('structure_id',$struc->structure_id)->get();
-			if($compCriteria->count() > 0){
-				$struc->weight  = $compCriteria;
-			}
-			array_push($dataResp, $struc);
-		}
-		*/
 	
 		return response()->json(['data' => $strucObj, 'no_weight' => $ap->no_weight]);
 	}

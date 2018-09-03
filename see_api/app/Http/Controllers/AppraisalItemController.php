@@ -909,6 +909,7 @@ class AppraisalItemController extends Controller
     	} else {
     		$org_required="required";
     	}
+    	$request->item_name = str_replace('"',"'",$request->item_name);
 
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [	
