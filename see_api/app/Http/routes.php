@@ -453,8 +453,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
 	
 	
+
 	// Appraisal 360 Degree //
-	// Appraisal Level //
+	// Appraisal 360 Degree --> Appraisal Level //
 	Route::get('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@appraisal_criteria');
 	Route::patch('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@update_criteria');
 	Route::get('competency_criteria', 'Appraisal360Degree\CompetencyCriteriaController@show');
@@ -463,12 +464,16 @@ Route::group(['middleware' => 'cors'], function()
 	
 	
 	// Salary //
-	Route::get('salary_structure/all_list_year', 'Appraisal360degree\SalaryStructureController@all_list_year');
-	Route::get('salary_structure/all_list_level', 'Appraisal360degree\SalaryStructureController@all_list_level');
-	Route::get('salary_structure', 'Appraisal360degree\SalaryStructureController@index');
-	Route::get('salary_structure/show', 'Appraisal360degree\SalaryStructureController@show');
-	Route::post('salary_structure/import', 'Appraisal360degree\SalaryStructureController@import');
-	Route::delete('salary_structure', 'Appraisal360degree\SalaryStructureController@destroy');
+	// Sarary --> Import Salary Range //
+	Route::get('salary_structure/all_list_year', 'Salary\SalaryStructureController@all_list_year');
+	Route::get('salary_structure/all_list_level', 'Salary\SalaryStructureController@all_list_level');
+	Route::get('salary_structure', 'Salary\SalaryStructureController@index');
+	Route::get('salary_structure/show', 'Salary\SalaryStructureController@show');
+	Route::post('salary_structure/import', 'Salary\SalaryStructureController@import');
+	Route::delete('salary_structure', 'Salary\SalaryStructureController@destroy');
+	// Salary --> Import Employee //
+	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
+
 	
 	// Appraisal Comment //
 	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
