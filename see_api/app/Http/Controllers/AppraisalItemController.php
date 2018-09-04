@@ -686,7 +686,7 @@ class AppraisalItemController extends Controller
 	
 	public function store(Request $request)
 	{
-
+		$request->item_name = str_replace('"',"'",$request->item_name);
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [	
 				'item_name' => 'required|max:255|unique:appraisal_item',
@@ -918,7 +918,7 @@ class AppraisalItemController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Item not found.']);
 		}
-		
+		$request->item_name = str_replace('"',"'",$request->item_name);
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [
 				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
