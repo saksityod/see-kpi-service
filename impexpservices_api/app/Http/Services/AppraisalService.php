@@ -245,7 +245,7 @@ class AppraisalService
                                     $cds_id = $cdsOld[0]->cds_id;
                                 }else{
                                     $cds = new CDSModel;
-                                    $cds->cds_name = $cds_name;
+                                    $cds->cds_name = str_replace('"',"'",$cds_name);
                                     $cds->cds_desc = $cds_name;
                                     $cds->connection_id = null;
                                     $cds->is_sql = 0;
@@ -262,9 +262,9 @@ class AppraisalService
                             }
                             $appraisalItem = new AppraisalItemModel;
                             if ($form_id == 1) {
-                                $item_name = $cds_name;
+                                $item_name = str_replace('"',"'",$cds_name);
                                 $appraisalItem->kpi_id = null;
-                                $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
+                                $appraisalItem->item_name = str_replace('"',"'",$cds_name); // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
                                 $appraisalItem->is_corporate_kpi = $is_corporate_kpi;
@@ -297,7 +297,7 @@ class AppraisalService
 
                             } else if ($form_id == 2) {
                                 $appraisalItem->kpi_id = null;
-                                $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
+                                $appraisalItem->item_name = str_replace('"',"'",$cds_name); // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
                                 $appraisalItem->is_corporate_kpi = null;
@@ -325,7 +325,7 @@ class AppraisalService
                                 $unit_deduct_score = $sheet->getCell('C'.$i)->getValue() ;
                                 $value_get_zero = $sheet->getCell('D'.$i)->getValue() ;
                                 $appraisalItem->kpi_id = null;
-                                $appraisalItem->item_name = $cds_name; // column ตัวชี้วัด ในไฟล์ master
+                                $appraisalItem->item_name = str_replace('"',"'",$cds_name); // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
                                 $appraisalItem->is_corporate_kpi = null;
@@ -353,7 +353,7 @@ class AppraisalService
                             $item_id = null;
                             if ( sizeof($appraisalItemOld)>0){
                                 AppraisalItemModel::where('item_id', $appraisalItemOld[0]->item_id)
-                                    ->update(['kpi_id' => $appraisalItem->kpi_id,'item_name' => $appraisalItem->item_name , 'structure_id' => $appraisalItem->structure_id
+                                    ->update(['kpi_id' => $appraisalItem->kpi_id,'item_name' => str_replace('"',"'",$appraisalItem->item_name), 'structure_id' => $appraisalItem->structure_id
                                         , 'kpi_type_id' => $appraisalItem->kpi_type_id , 'is_corporate_kpi' => $appraisalItem->is_corporate_kpi , 'perspective_id' => $appraisalItem->perspective_id
                                         ,'uom_id' => $appraisalItem->uom_id , 'value_type_id' => $appraisalItem->value_type_id , 'remind_condition_id' => $appraisalItem->remind_condition_id
                                         ,'baseline_value' => $appraisalItem->baseline_value , 'formula_desc' => $appraisalItem->formula_desc , 'formula_cds_id' => $appraisalItem->formula_cds_id
