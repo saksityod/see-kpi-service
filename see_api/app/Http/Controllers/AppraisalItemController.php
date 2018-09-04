@@ -903,7 +903,7 @@ class AppraisalItemController extends Controller
     		on a.level_id = b.level_id
     		where emp_code = '".Auth::id()."'
     	");
-
+	$request->item_name = str_replace('"',"'",$request->item_name);
     	if($all_emp[0]->count_no > 0) {
     		$org_required="";
     	} else {
@@ -1152,7 +1152,7 @@ class AppraisalItemController extends Controller
     		on a.level_id = b.level_id
     		where emp_code = '".Auth::id()."'
     	");
-
+	$request->item_name = str_replace('"',"'",$request->item_name);
 		if($all_emp[0]->count_no > 0) {
     		$org_required="";
     	} else {
