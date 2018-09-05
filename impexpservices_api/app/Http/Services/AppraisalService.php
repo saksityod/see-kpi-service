@@ -264,7 +264,7 @@ class AppraisalService
                             if ($form_id == 1) {
                                 $item_name = str_replace('"',"'",$cds_name);
                                 $appraisalItem->kpi_id = null;
-                                $appraisalItem->item_name = str_replace('"',"'",$cds_name);// column ตัวชี้วัด ในไฟล์ master
+                              	$appraisalItem->item_name = str_replace('"',"'",$cds_name); // column ตัวชี้วัด ในไฟล์ master
                                 $appraisalItem->structure_id = $structure_id; // จากพารามิเตอร์ structure ที่หน้าจอ
                                 $appraisalItem->kpi_type_id = null;
                                 $appraisalItem->is_corporate_kpi = $is_corporate_kpi;

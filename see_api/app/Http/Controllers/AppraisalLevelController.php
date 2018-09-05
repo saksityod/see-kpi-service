@@ -101,13 +101,21 @@ class AppraisalLevelController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Level not found.']);
 		}
+
+		if($request->is_org==0 && $request->is_individual==0) {
+			$org_dividual = "required|integer|between:1,1";
+			$org_dividual_text = ".between";
+		} else {
+			$org_dividual = "boolean";
+			$org_dividual_text = "";
+		}
 		
 		$validator = Validator::make($request->all(), [
 			'appraisal_level_name' => 'required|max:100|unique:appraisal_level,appraisal_level_name,' . $level_id . ',level_id',
 			'seq_no' => 'required|integer',
 			'is_all_employee' => 'required|boolean',
-			'is_org' => 'boolean',
-			'is_individual' => 'boolean',
+			'is_org' => $org_dividual,
+			'is_individual' => $org_dividual,
 			'is_active' => 'required|boolean',
 			'is_hr' => 'required|boolean',
 			'is_self_assign' => 'boolean',
@@ -116,6 +124,9 @@ class AppraisalLevelController extends Controller
 			'district_flag' => 'boolean',
 			'no_weight' => 'required|boolean',
 			'default_stage_id' => 'integer'
+		], [
+			'is_org'.$org_dividual_text => 'Please select is_org or is_individual.',
+			'is_individual'.$org_dividual_text => '',
 		]);
 
 		if ($validator->fails()) {
