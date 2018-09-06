@@ -903,7 +903,8 @@ class AppraisalItemController extends Controller
     		on a.level_id = b.level_id
     		where emp_code = '".Auth::id()."'
     	");
-	$request->item_name = str_replace('"',"'",$request->item_name);
+    	
+		$request->item_name = str_replace('"',"'",$request->item_name);
     	if($all_emp[0]->count_no > 0) {
     		$org_required="";
     	} else {
@@ -921,7 +922,7 @@ class AppraisalItemController extends Controller
 				'uom_id' => 'required|integer',
 				'remind_condition_id' => 'integer',
 				'value_type_id' => 'integer',
-				'function_type_id' => 'integer',
+				// 'function_type_id' => 'integer',
 				'is_show_variance' => 'boolean',
 				'formula_desc' => 'max:1000',
 			//	'formula_cds_id' => 'required|max:1000',
@@ -939,16 +940,17 @@ class AppraisalItemController extends Controller
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
 				$item->save();
-			
-				preg_match_all('/cds(.*?)\]/', $request->formula_cds_id, $cds);
 
-				foreach ($cds[1] as $c) {
-					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c);
-					
+				$request->formula_cds_id = array_unique(array_filter(explode("]",$request->formula_cds_id)));
+
+				foreach ($request->formula_cds_id as $c) {
+					$c = explode(":",str_replace('cds', '', str_replace('[', '', $c)));
+					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c[1]);
 					if ($checkmap->count() == 0) {
 						$map = new KPICDSMapping;
 						$map->item_id = $item->item_id;
-						$map->cds_id = $c;
+						$map->cds_id = $c[1];
+						$map->function_type = $c[0];
 						$map->created_by = Auth::id();
 						$map->save();
 					}
@@ -1187,14 +1189,17 @@ class AppraisalItemController extends Controller
 				// $f_cds_name = array();
 				// $key = 0;
 				KPICDSMapping::where('item_id',$item->item_id)->delete();
-				preg_match_all('/cds(.*?)\]/', $request->formula_cds_id, $cds);
-				foreach ($cds[1] as $c) {
-					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c);
-					
+
+				$request->formula_cds_id = array_unique(array_filter(explode("]",$request->formula_cds_id)));
+
+				foreach ($request->formula_cds_id as $c) {
+					$c = explode(":",str_replace('cds', '', str_replace('[', '', $c)));
+					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c[1]);
 					if ($checkmap->count() == 0) {
 						$map = new KPICDSMapping;
 						$map->item_id = $item->item_id;
-						$map->cds_id = $c;
+						$map->cds_id = $c[1];
+						$map->function_type = $c[0];
 						$map->created_by = Auth::id();
 						$map->save();
 					}
