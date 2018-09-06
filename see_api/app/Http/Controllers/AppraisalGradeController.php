@@ -54,13 +54,20 @@ class AppraisalGradeController extends Controller
 				left outer join appraisal_level b
 				on a.appraisal_level_id = b.level_id
 			";
-		} else {
+		} else if($config->raise_type == 2) {
 			$query = "
 				select a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, a.begin_score, a.end_score, ifnull(a.salary_raise_percent, '') salary_raise_amount, a.is_active
 				from appraisal_grade a
 				left outer join appraisal_level b
 				on a.appraisal_level_id = b.level_id
 			";		
+		} else if($config->raise_type == 3) {
+			$query = "
+				select a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, a.begin_score, a.end_score, 'Use salary structure table' salary_raise_amount, a.is_active
+				from appraisal_grade a
+				left outer join appraisal_level b
+				on a.appraisal_level_id = b.level_id
+			";
 		}
 				
 		empty($request->appraisal_level_id) ?: ($query .= " where a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
