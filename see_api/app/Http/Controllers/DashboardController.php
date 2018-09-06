@@ -1175,24 +1175,45 @@ class DashboardController extends Controller
 
 			}else{ // (GHB)
 
-				$perspective = DB::select("
-				select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
-				round(sum(a.weight_percent),2) perspective_weight,
-				round(sum(a.weigh_score),2) total_score
-				from appraisal_item_result a
-				left outer join appraisal_item b
-				on a.item_id = b.item_id
-				left outer join perspective c
-				on b.perspective_id = c.perspective_id
-				left outer join appraisal_structure d
-				on b.structure_id = d.structure_id
-				left outer join form_type e
-				on d.form_id = e.form_id
-				where emp_result_id = ?
-				and b.perspective_id is not null
-				and e.form_name = 'Quantity'
-				group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
-			",array($e->emp_result_id));
+				if($e->no_weight==1) {
+					$perspective = DB::select("
+					select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
+					round(sum(a.weight_percent),2) perspective_weight,
+					round(sum(a.weigh_score)/(select count(1) from appraisal_item_result where emp_result_id = a.emp_result_id)) total_score
+					from appraisal_item_result a
+					left outer join appraisal_item b
+					on a.item_id = b.item_id
+					left outer join perspective c
+					on b.perspective_id = c.perspective_id
+					left outer join appraisal_structure d
+					on b.structure_id = d.structure_id
+					left outer join form_type e
+					on d.form_id = e.form_id
+					where emp_result_id = ?
+					and b.perspective_id is not null
+					and e.form_name = 'Quantity'
+					group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
+					",array($e->emp_result_id));
+				} else {
+					$perspective = DB::select("
+					select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
+					round(sum(a.weight_percent),2) perspective_weight,
+					round(sum(a.weigh_score),2) total_score
+					from appraisal_item_result a
+					left outer join appraisal_item b
+					on a.item_id = b.item_id
+					left outer join perspective c
+					on b.perspective_id = c.perspective_id
+					left outer join appraisal_structure d
+					on b.structure_id = d.structure_id
+					left outer join form_type e
+					on d.form_id = e.form_id
+					where emp_result_id = ?
+					and b.perspective_id is not null
+					and e.form_name = 'Quantity'
+					group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
+					",array($e->emp_result_id));
+				}
 
 			}
 
