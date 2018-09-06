@@ -387,7 +387,7 @@ class AppraisalGroupController extends Controller
 				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id 
 				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
-				and d.form_id != 2
+				-- and d.form_id != 2
 				order by c.seq_no, b.item_id
 				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
@@ -511,6 +511,7 @@ class AppraisalGroupController extends Controller
 					'count' => 1,
 					'form_id' => $item->form_id,
 					'form_url' => $item->app_url,
+					'structure_id' => $item->structure_id,
 					'is_value_get_zero' => $item->is_value_get_zero,
 					'nof_target_score' => $item->nof_target_score,
 					'total_weight' => $total_weight,
@@ -575,8 +576,11 @@ class AppraisalGroupController extends Controller
 					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
 					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
 					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
-					left outer join appraisal_criteria g on aps.structure_id = g.structure_id
+					-- left outer join appraisal_criteria g on aps.structure_id = g.structure_id
+					-- 	and air.level_id = g.appraisal_level_id
+					left outer join competency_criteria g on aps.structure_id = g.structure_id
 						and air.level_id = g.appraisal_level_id
+						and g.assessor_group_id = 5
 					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
 						and ags.assessor_group_id = 5
 					where aps.form_id = 2
@@ -629,11 +633,13 @@ class AppraisalGroupController extends Controller
 				and e.emp_code = '{$auth}' "
 			,array($request->emp_result_id, $request->assessor_group_id));
 
+			// return ($auth);
+
 			if($check[0]->num == 0){
 				$items = DB::select("
 					select DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url
-					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code
-					, 0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name
+					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, a.emp_id, emp.emp_code
+					, gg.assessor_group_id, gg.assessor_group_name, emp.emp_id as assessor_id, c.is_value_get_zero, emp.emp_name
 					, a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, 0 as score, a.threshold_group_id
 					, a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id
 					, c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score
@@ -652,20 +658,28 @@ class AppraisalGroupController extends Controller
 					left outer join structure_result f
 					on a.emp_result_id = f.emp_result_id
 					and c.structure_id = f.structure_id
-					left outer join appraisal_criteria g
-					on c.structure_id = g.structure_id
-					and a.level_id = g.appraisal_level_id
+					-- left outer join appraisal_criteria g
+					-- on c.structure_id = g.structure_id
+					-- and a.level_id = g.appraisal_level_id
 					left outer join appraisal_level al
 					on a.level_id = al.level_id
 					left outer join emp_result h
 					on a.emp_result_id = h.emp_result_id
 					left join uom on  b.uom_id= uom.uom_id
+					left join assessor_group gg on gg.assessor_group_id = ?
+					cross join employee emp on emp.emp_code = '{$auth}'
+					left outer join competency_criteria g on c.structure_id = g.structure_id
+						and a.level_id = g.appraisal_level_id
+						and g.assessor_group_id = ?
+					-- cross join (select emp_id, emp_code, emp_name from employee where emp_code = '{$auth}') emp
 					inner join assessor_group_structure ags on ags.structure_id = b.structure_id
 							and ags.assessor_group_id = ?
 					where a.emp_result_id = ?
 					and c.form_id = 2
 					order by b.item_id asc"
-				,array($request->assessor_group_id, $request->emp_result_id));
+				,array($request->assessor_group_id, $request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id));
+
+				// return ($items[0]->item_id);
 			}else {
 				$items = DB::select("
 					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
@@ -675,7 +689,7 @@ class AppraisalGroupController extends Controller
 					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
 					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, air.structure_weight_percent
 					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
-					-- , f.weigh_score as total_weigh_score
+					, 0 as total_weigh_score
 					from competency_result com
 					left outer join appraisal_level le on com.level_id = le.level_id
 					left outer join appraisal_item ai on com.item_id = ai.item_id
@@ -686,20 +700,33 @@ class AppraisalGroupController extends Controller
 					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
 					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
 					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
-					left outer join appraisal_criteria g on aps.structure_id = g.structure_id
-						and air.level_id = g.appraisal_level_id
+					-- left outer join appraisal_criteria g on aps.structure_id = g.structure_id
+					-- 	and air.level_id = g.appraisal_level_id
+					left outer join competency_criteria g on aps.structure_id = g.structure_id
+							and air.level_id = g.appraisal_level_id
+							and g.assessor_group_id = ?
 					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
 						and ags.assessor_group_id = ?
 					where aps.form_id = 2
 					and emp.emp_result_id = ?
 					and em.emp_code = '{$auth}'
 					order by ai.structure_id asc,com.assessor_group_id asc, com.assessor_id asc, com.item_id asc"
-				,array($request->assessor_group_id, $request->emp_result_id));
+				,array($request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id));
 			}
 		}
 
+		// return response()->json($items);
+
 		$groups = array();
 		foreach($items as $item){
+
+			$check_max = DB::select("
+				SELECT nof_target_score as max_no FROM
+			appraisal_structure
+			where  structure_id=?
+			", array($item->structure_id));
+
+			$total_weight = ($check_max[0]->max_no * $item->total_weight_percent) / 100;
 
 			$hint = array();
 			
@@ -732,8 +759,10 @@ class AppraisalGroupController extends Controller
 					$groups[$key][$k] = array(
 						'group_name' => $item->assessor_group_name,
 						'group_id' => $item->assessor_group_id,
-						// 'total_weigh_score' => $item->total_weigh_score,
-						// 'total_weight_percent' => $item->total_weight_percent,
+						'total_weight_percent' => $item->total_weight_percent,
+						'result_type' => $config->result_type,
+						'no_weight' => $item->no_weight,
+						'total_weight' => $total_weight,
 					);
 					//in $key $k 
 					if (!isset($groups[$key][$k][$emp])) {
@@ -741,8 +770,7 @@ class AppraisalGroupController extends Controller
 							'items' => array($item),
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
-							'total_weigh_score' => $item->total_weigh_score,
-							'total_weight_percent' => $item->total_weight_percent,
+							'total_weigh_score' => $item->total_weigh_score,							
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -755,7 +783,6 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
-							'total_weight_percent' => $item->total_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -769,6 +796,10 @@ class AppraisalGroupController extends Controller
 						'group_name' => $item->assessor_group_name,
 						'group_id' => $item->assessor_group_id,
 						'total_weigh_score' => $item->total_weigh_score,
+						'total_weight_percent' => $item->total_weight_percent,
+						'result_type' => $config->result_type,
+						'no_weight' => $item->no_weight,
+						'total_weight' => $total_weight,
 					);
 					//in $key $k 
 					if (!isset($groups[$key][$k][$emp])) {
@@ -777,7 +808,6 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
-							'total_weight_percent' => $item->total_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -790,7 +820,6 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
-							'total_weight_percent' => $item->total_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -831,27 +860,29 @@ class AppraisalGroupController extends Controller
 
 		$now = new DateTime();
 		$datas = json_decode($request->data);
-		$auth = "seekpi003"; //Auth::id();
-
-		$item_result = DB::select("
-				select item_result_id
-				, period_id
-				, emp_id
-				, org_id
-				, position_id
-				, item_id
-				, level_id
-				, item_name
-				, chief_emp_id
-				, threshold_group_id
-				, auth_emp_id
-				from appraisal_item_result 
-				cross join (select emp_id as auth_emp_id from employee where emp_code = '{$auth}') emp 
-				where item_result_id = ? "
-		,array($datas[0]->item_result_id));
-			// return response()->json($item_result);
+		$auth = Auth::id();
 
 		foreach ($datas as $da){
+
+			$item_result = DB::select("
+					select air.item_result_id
+					, air.period_id
+					, air.emp_id
+					, air.org_id
+					, air.position_id
+					, air.item_id
+					, air.level_id
+					, air.item_name
+					, air.chief_emp_id
+					, air.threshold_group_id
+					, emp.auth_emp_id
+					from appraisal_item_result air
+					cross join (select emp_id as auth_emp_id from employee where emp_code = '{$auth}') emp 
+					where air.item_result_id = ? "
+			,array($da->item_result_id));
+
+			// return ($auth);
+			// return response()->json($item_result);
 		
 			foreach ($item_result as $item){
 				if($da->group_id == 0){
@@ -883,13 +914,14 @@ class AppraisalGroupController extends Controller
 						$competency->target_value = $da->target_value;
 						$competency->score = $da->score;
 						$competency->weight_percent = $da->weight_percent;
-						$competency->group_weight_percent = 0 ;
+						$competency->group_weight_percent = $da->group_weight_percent ;
 						$competency->weigh_score = $da->weigh_score;
 						$competency->created_by = $auth;
 						$competency->created_dttm = $now;
 						$competency->save();
 					}
 					$competency->score = $da->score;
+					$competency->group_weight_percent = $da->group_weight_percent ;
 					$competency->updated_by = $auth;
 					$competency->updated_dttm = $now;
 					$competency->save();
