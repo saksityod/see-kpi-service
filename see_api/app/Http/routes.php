@@ -460,6 +460,16 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@update_criteria');
 	Route::get('competency_criteria', 'Appraisal360Degree\CompetencyCriteriaController@show');
 	Route::patch('competency_criteria/{appraisal_level_id}/{structure_id}', 'Appraisal360Degree\CompetencyCriteriaController@update');
+	
+	// Appraisal 360 Degree --> Appraisal Comment //
+	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
+	Route::post('appraisal/comment/update/insert','Appraisal360degree\AppraisalCommentController@insert_update');
+	
+	// Appraisal 360 Degree --> Appraisal emp_result //
+	Route::get('appraisal/show/index','Appraisal360degree\AppraisalGroupController@index');
+	Route::get('appraisal/show/emp_result','Appraisal360degree\AppraisalGroupController@show');
+	Route::get('appraisal/show/emp_result/type_2','Appraisal360degree\AppraisalGroupController@show_type2');
+	Route::patch('appraisal/update/type_2','Appraisal360degree\AppraisalGroupController@update');
 
 	
 	
@@ -474,13 +484,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Salary --> Import Employee //
 	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
 
-	
-	// Appraisal Comment //
-	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
-	Route::post('appraisal/comment/update/insert','Appraisal360degree\AppraisalCommentController@insert_update');
-	
-	// Appraisal emp_result //
-	Route::get('appraisal/show/emp_result','Appraisal360degree\AppraisalGroupController@show');
+
 
 
 	Route::get('404', ['as' => 'notfound', function () {

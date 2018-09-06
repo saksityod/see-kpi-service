@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Appraisal360degree;
 
 use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
+use App\CompetencyResult;
+use App\AppraisalItemResult;
 
 use Auth;
 use DB;
+use DateTime;
 use File;
 use Validator;
 use Excel;
@@ -331,9 +334,6 @@ class AppraisalGroupController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
-
-		$auth = Auth::id();
-		
 		$head = DB::select("
 			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id
 			FROM emp_result a
@@ -360,133 +360,6 @@ class AppraisalGroupController extends Controller
 			where a.emp_result_id = ?
 		", array($request->emp_result_id));
 
-		if($request->assessor_group_id == 5){
-			$items = DB::select("
-				select DISTINCT b.item_name,b.formula_desc,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
-				if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount
-					from appraisal_item_result a
-				left outer join appraisal_item b
-				on a.item_id = b.item_id
-				INNER JOIN appraisal_item ai
-				on ai.item_id = a.item_id
-				left outer join appraisal_structure c
-				on b.structure_id = c.structure_id
-				left outer join form_type d
-				on c.form_id = d.form_id
-				left outer join perspective e
-				on b.perspective_id = e.perspective_id
-				left outer join structure_result f
-				on a.emp_result_id = f.emp_result_id
-				and c.structure_id = f.structure_id
-				left outer join appraisal_criteria g
-				on c.structure_id = g.structure_id
-				and a.level_id = g.appraisal_level_id
-				left outer join appraisal_level al
-				on a.level_id = al.level_id
-				left outer join emp_result h
-				on a.emp_result_id = h.emp_result_id
-				left join uom on  b.uom_id= uom.uom_id
-				inner join assessor_group_structure ags on ags.structure_id = b.structure_id
-						and ags.assessor_group_id = ?
-				where a.emp_result_id = ?
-				and c.form_id != 2
-				order by c.seq_no asc, b.item_id"
-			, array($request->assessor_group_id, $request->emp_result_id));
-
-				$form_type = DB::select("
-					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
-					, ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id
-					, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
-					, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
-					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
-					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement
-					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
-					-- , f.weigh_score as total_weigh_score
-					from competency_result com
-					left outer join appraisal_level le on com.level_id = le.level_id
-					left outer join appraisal_item ai on com.item_id = ai.item_id
-					left outer join appraisal_structure aps on ai.structure_id = aps.structure_id
-					left outer join form_type ft on aps.form_id = ft.form_id
-					left outer join assessor_group gr on com.assessor_group_id = gr.assessor_group_id
-					left outer join employee em on com.assessor_id = em.emp_id
-					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
-					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
-					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
-					left outer join appraisal_criteria g on aps.structure_id = g.structure_id
-						and air.level_id = g.appraisal_level_id
-					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
-						and ags.assessor_group_id = 5
-					where aps.form_id = 2
-					and emp.emp_result_id = ?
-					and 5 = ?
-					order by ai.structure_id asc,com.assessor_group_id asc, com.assessor_id asc, com.item_id asc"
-				,array($request->emp_result_id, $request->assessor_group_id));
-
-				$items = $items + $form_type;
-		}else {
-			$items = DB::select("
-				select DISTINCT b.item_name,b.formula_desc,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
-				if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount
-					from appraisal_item_result a
-				left outer join appraisal_item b
-				on a.item_id = b.item_id
-				INNER JOIN appraisal_item ai
-				on ai.item_id = a.item_id
-				left outer join appraisal_structure c
-				on b.structure_id = c.structure_id
-				left outer join form_type d
-				on c.form_id = d.form_id
-				left outer join perspective e
-				on b.perspective_id = e.perspective_id
-				left outer join structure_result f
-				on a.emp_result_id = f.emp_result_id
-				and c.structure_id = f.structure_id
-				left outer join appraisal_criteria g
-				on c.structure_id = g.structure_id
-				and a.level_id = g.appraisal_level_id
-				left outer join appraisal_level al
-				on a.level_id = al.level_id
-				left outer join emp_result h
-				on a.emp_result_id = h.emp_result_id
-				left join uom on  b.uom_id= uom.uom_id
-				inner join assessor_group_structure ags on ags.structure_id = b.structure_id
-						and ags.assessor_group_id = ?
-				where a.emp_result_id = ?
-				and c.form_id != 2
-				order by c.seq_no asc, b.item_id"
-			,array($request->assessor_group_id, $request->emp_result_id));
-
-			$form_type = DB::select("
-				select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
-				, ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id
-				, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
-				, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
-				, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
-				, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement
-				, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
-				-- , f.weigh_score as total_weigh_score
-				from competency_result com
-				left outer join appraisal_level le on com.level_id = le.level_id
-				left outer join appraisal_item ai on com.item_id = ai.item_id
-				left outer join appraisal_structure aps on ai.structure_id = aps.structure_id
-				left outer join form_type ft on aps.form_id = ft.form_id
-				left outer join assessor_group gr on com.assessor_group_id = gr.assessor_group_id
-				left outer join employee em on com.assessor_id = em.emp_id
-				left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
-				left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
-				left outer join structure_result f on emp.emp_result_id = f.emp_result_id
-				left outer join appraisal_criteria g on aps.structure_id = g.structure_id
-					and air.level_id = g.appraisal_level_id
-				inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
-					and ags.assessor_group_id = ?
-				where aps.form_id = 2
-				and emp.emp_result_id = ?
-				and em.emp_code = '{$auth}'
-				order by ai.structure_id asc,com.assessor_group_id asc, com.assessor_id asc, com.item_id asc"
-			,array($request->assessor_group_id, $request->emp_result_id));
-
-		}
-		/*
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
 				select DISTINCT b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
@@ -511,10 +384,12 @@ class AppraisalGroupController extends Controller
 				left outer join emp_result h
 				on a.emp_result_id = h.emp_result_id
 				left join uom on  b.uom_id= uom.uom_id
+				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id 
+				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
 				and d.form_id != 2
 				order by c.seq_no, b.item_id
-				", array($emp_result_id));
+				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
 			$items = DB::select("
 				select DISTINCT b.item_name,b.formula_desc,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
@@ -541,10 +416,12 @@ class AppraisalGroupController extends Controller
 				left outer join emp_result h
 				on a.emp_result_id = h.emp_result_id
 				left join uom on  b.uom_id= uom.uom_id
+				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id 
+				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
 				order by c.seq_no asc, b.item_id
-				", array($emp_result_id));
-		} */
+				", array($request->assessor_group_id, $request->emp_result_id));
+		}
 
 		$groups = array();
 		foreach ($items as $item) {
@@ -628,8 +505,6 @@ class AppraisalGroupController extends Controller
 
 			$total_weight = ($check[0]->max_no * $item->structure_weight_percent) / 100;
 
-
-
 			if (!isset($groups[$key])) {
 				$groups[$key] = array(
 					'items' => array($item),
@@ -662,10 +537,368 @@ class AppraisalGroupController extends Controller
 			on a.stage_id = b.stage_id
 			where a.emp_result_id = ?
 			order by a.created_dttm asc
-		", array($emp_result_id));
+		", array($request->emp_result_id));
 
 		return response()->json(['head' => $head, 'data' => $items, 'group' => $groups, 'stage' => $stage]);
 
+	}
+
+	public function show_type2 (Request $request)
+	{
+		try {
+			$config = SystemConfiguration::firstOrFail();
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
+		}
+
+		$auth = Auth::id();
+
+		if($request->assessor_group_id == 5){
+			$items = DB::select("
+				select * from (
+					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
+					, ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id
+					, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
+					, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
+					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
+					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement
+					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
+					, 0 as total_weigh_score
+					, air.structure_weight_percent
+					from competency_result com
+					left outer join appraisal_level le on com.level_id = le.level_id
+					left outer join appraisal_item ai on com.item_id = ai.item_id
+					left outer join appraisal_structure aps on ai.structure_id = aps.structure_id
+					left outer join form_type ft on aps.form_id = ft.form_id
+					left outer join assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+					left outer join employee em on com.assessor_id = em.emp_id
+					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
+					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
+					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
+					left outer join appraisal_criteria g on aps.structure_id = g.structure_id
+						and air.level_id = g.appraisal_level_id
+					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
+						and ags.assessor_group_id = 5
+					where aps.form_id = 2
+					and emp.emp_result_id = ?
+					and 5 = ?
+					union
+					select DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url
+					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code
+					, 0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name
+					, a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, a.score, a.threshold_group_id
+					, a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id
+					, c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score
+					, a.structure_weight_percent
+					from appraisal_item_result a
+					left outer join appraisal_item b
+					on a.item_id = b.item_id
+					INNER JOIN appraisal_item ai
+					on ai.item_id = a.item_id
+					left outer join appraisal_structure c
+					on b.structure_id = c.structure_id
+					left outer join form_type d
+					on c.form_id = d.form_id
+					left outer join perspective e
+					on b.perspective_id = e.perspective_id
+					left outer join structure_result f
+					on a.emp_result_id = f.emp_result_id
+					and c.structure_id = f.structure_id
+					left outer join appraisal_criteria g
+					on c.structure_id = g.structure_id
+					and a.level_id = g.appraisal_level_id
+					left outer join appraisal_level al
+					on a.level_id = al.level_id
+					left outer join emp_result h
+					on a.emp_result_id = h.emp_result_id
+					left join uom on  b.uom_id= uom.uom_id
+					inner join assessor_group_structure ags on ags.structure_id = b.structure_id
+							and ags.assessor_group_id = ?
+					where a.emp_result_id = ?
+					and c.form_id = 2
+				) re 
+				order by re.structure_id asc, re.assessor_group_id asc, re.assessor_id asc,  re.item_id asc"
+					,array($request->emp_result_id, $request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id));
+		}else {
+			$check = DB::select("select count(competency_result_id) as num
+				from competency_result c
+				inner join appraisal_item_result i on c.item_result_id = i.item_result_id
+				inner join employee e on c.assessor_id = e.emp_id
+				where i.emp_result_id = ? 
+				and assessor_group_id = ?
+				and e.emp_code = '{$auth}' "
+			,array($request->emp_result_id, $request->assessor_group_id));
+
+			if($check[0]->num == 0){
+				$items = DB::select("
+					select DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url
+					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code
+					, 0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name
+					, a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, 0 as score, a.threshold_group_id
+					, a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id
+					, c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score
+					, a.structure_weight_percent
+					from appraisal_item_result a
+					left outer join appraisal_item b
+					on a.item_id = b.item_id
+					INNER JOIN appraisal_item ai
+					on ai.item_id = a.item_id
+					left outer join appraisal_structure c
+					on b.structure_id = c.structure_id
+					left outer join form_type d
+					on c.form_id = d.form_id
+					left outer join perspective e
+					on b.perspective_id = e.perspective_id
+					left outer join structure_result f
+					on a.emp_result_id = f.emp_result_id
+					and c.structure_id = f.structure_id
+					left outer join appraisal_criteria g
+					on c.structure_id = g.structure_id
+					and a.level_id = g.appraisal_level_id
+					left outer join appraisal_level al
+					on a.level_id = al.level_id
+					left outer join emp_result h
+					on a.emp_result_id = h.emp_result_id
+					left join uom on  b.uom_id= uom.uom_id
+					inner join assessor_group_structure ags on ags.structure_id = b.structure_id
+							and ags.assessor_group_id = ?
+					where a.emp_result_id = ?
+					and c.form_id = 2
+					order by b.item_id asc"
+				,array($request->assessor_group_id, $request->emp_result_id));
+			}else {
+				$items = DB::select("
+					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
+					, ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id
+					, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
+					, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
+					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
+					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, air.structure_weight_percent
+					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
+					-- , f.weigh_score as total_weigh_score
+					from competency_result com
+					left outer join appraisal_level le on com.level_id = le.level_id
+					left outer join appraisal_item ai on com.item_id = ai.item_id
+					left outer join appraisal_structure aps on ai.structure_id = aps.structure_id
+					left outer join form_type ft on aps.form_id = ft.form_id
+					left outer join assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+					left outer join employee em on com.assessor_id = em.emp_id
+					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
+					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
+					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
+					left outer join appraisal_criteria g on aps.structure_id = g.structure_id
+						and air.level_id = g.appraisal_level_id
+					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
+						and ags.assessor_group_id = ?
+					where aps.form_id = 2
+					and emp.emp_result_id = ?
+					and em.emp_code = '{$auth}'
+					order by ai.structure_id asc,com.assessor_group_id asc, com.assessor_id asc, com.item_id asc"
+				,array($request->assessor_group_id, $request->emp_result_id));
+			}
+		}
+
+		$groups = array();
+		foreach($items as $item){
+
+			$hint = array();
+			
+			if ($item->form_id == 2) {
+				$hint = DB::select("
+					select concat(a.target_score,' = ',a.threshold_name) hint
+					from threshold a
+					left outer join threshold_group b
+					on a.threshold_group_id = b.threshold_group_id
+					where b.is_active = 1
+					and a.structure_id=?
+					order by target_score asc
+				", array($item->structure_id));
+			}
+
+			$key = $item->structure_name;
+			$k = $item->assessor_group_name;
+			$emp = $item->emp_name;
+			if (!isset($groups[$key])) {
+				$groups[$key] = array(
+					'count' => 1,
+					'form_id' => $item->form_id,
+					'form_url' => $item->app_url,
+					'structure_name' => $item->structure_name,
+					'structure_id' => $item->structure_id,
+					'hint' => $hint,
+				);
+				//in $key
+				if (!isset($groups[$key][$k])) {
+					$groups[$key][$k] = array(
+						'group_name' => $item->assessor_group_name,
+						'group_id' => $item->assessor_group_id,
+						// 'total_weigh_score' => $item->total_weigh_score,
+						// 'total_weight_percent' => $item->total_weight_percent,
+					);
+					//in $key $k 
+					if (!isset($groups[$key][$k][$emp])) {
+						$groups[$key][$k][$emp] = array(
+							'items' => array($item),
+							'emp_name' => $item->emp_name,
+							'emp_id' => $item->assessor_id,
+							'total_weigh_score' => $item->total_weigh_score,
+							'total_weight_percent' => $item->total_weight_percent,
+						);
+					}else {
+						$groups[$key][$k][$emp]['items'][] = $item;
+					}
+				}else {
+					//in $key $k 
+					if (!isset($groups[$key][$k][$emp])) {
+						$groups[$key][$k][$emp] = array(
+							'items' => array($item),
+							'emp_name' => $item->emp_name,
+							'emp_id' => $item->assessor_id,
+							'total_weigh_score' => $item->total_weigh_score,
+							'total_weight_percent' => $item->total_weight_percent,
+						);
+					}else {
+						$groups[$key][$k][$emp]['items'][] = $item;
+					}
+				}
+			} else {
+				$groups[$key]['count'] += 1;
+				//in $key
+				if (!isset($groups[$key][$k])) {
+					$groups[$key][$k] = array(
+						'group_name' => $item->assessor_group_name,
+						'group_id' => $item->assessor_group_id,
+						'total_weigh_score' => $item->total_weigh_score,
+					);
+					//in $key $k 
+					if (!isset($groups[$key][$k][$emp])) {
+						$groups[$key][$k][$emp] = array(
+							'items' => array($item),
+							'emp_name' => $item->emp_name,
+							'emp_id' => $item->assessor_id,
+							'total_weigh_score' => $item->total_weigh_score,
+							'total_weight_percent' => $item->total_weight_percent,
+						);
+					}else {
+						$groups[$key][$k][$emp]['items'][] = $item;
+					}
+				}else {
+					//in $key $k 
+					if (!isset($groups[$key][$k][$emp])) {
+						$groups[$key][$k][$emp] = array(
+							'items' => array($item),
+							'emp_name' => $item->emp_name,
+							'emp_id' => $item->assessor_id,
+							'total_weigh_score' => $item->total_weigh_score,
+							'total_weight_percent' => $item->total_weight_percent,
+						);
+					}else {
+						$groups[$key][$k][$emp]['items'][] = $item;
+					}
+				}
+			}
+
+			// $key = $item->structure_name;
+			// if (!isset($groups[$key])) {
+			// 	$groups[$key] = array(
+			// 		'items' => array($item),
+			// 		'count' => 1,
+			// 		'form_id' => $item->form_id,
+			// 		'form_url' => $item->app_url,
+			// 		'structure_name' => $item->structure_name,
+			// 		'group_name' => $item->assessor_group_name,
+			// 		'group_id' => $item->assessor_group_id,
+			// 		'hint' => $hint,
+			// 		'total_weigh_score' => $item->total_weigh_score,
+			// 	);
+			// } else {
+			// 	$groups[$key]['items'][] = $item;
+			// 	$groups[$key]['count'] += 1;
+			// }
+		}
+
+		return response()->json($groups);
+	}
+
+	
+	public function update(Request $request)
+	{
+		try {
+			$config = SystemConfiguration::firstOrFail();
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
+		}
+
+		$now = new DateTime();
+		$datas = json_decode($request->data);
+		$auth = "seekpi003"; //Auth::id();
+
+		$item_result = DB::select("
+				select item_result_id
+				, period_id
+				, emp_id
+				, org_id
+				, position_id
+				, item_id
+				, level_id
+				, item_name
+				, chief_emp_id
+				, threshold_group_id
+				, auth_emp_id
+				from appraisal_item_result 
+				cross join (select emp_id as auth_emp_id from employee where emp_code = '{$auth}') emp 
+				where item_result_id = ? "
+		,array($datas[0]->item_result_id));
+			// return response()->json($item_result);
+
+		foreach ($datas as $da){
+		
+			foreach ($item_result as $item){
+				if($da->group_id == 0){
+
+					// update to app..item_result
+					$item_result = AppraisalItemResult::find($da->item_result_id);
+					$item_result->score = $da->score;
+					$item_result->updated_by = $auth;
+					$item_result->updated_dttm = $now;
+					$item_result->save();
+
+				}else {
+					$competency = CompetencyResult::find($da->competency_result_id);
+					if(empty($competency)){
+					
+						$competency = new CompetencyResult;
+						$competency->item_result_id = $item->item_result_id;
+						$competency->period_id = $item->period_id;
+						$competency->emp_id = $item->emp_id;
+						$competency->org_id = $item->org_id;
+						$competency->position_id = $item->position_id;
+						$competency->item_id = $item->item_id;
+						$competency->level_id = $item->level_id;
+						$competency->item_name = $item->item_name;
+						$competency->chief_emp_id = $item->chief_emp_id;
+						$competency->assessor_id = $item->auth_emp_id;
+						$competency->threshold_group_id = $item->threshold_group_id;
+						$competency->assessor_group_id = $da->group_id;
+						$competency->target_value = $da->target_value;
+						$competency->score = $da->score;
+						$competency->weight_percent = $da->weight_percent;
+						$competency->group_weight_percent = 0 ;
+						$competency->weigh_score = $da->weigh_score;
+						$competency->created_by = $auth;
+						$competency->created_dttm = $now;
+						$competency->save();
+					}
+					$competency->score = $da->score;
+					$competency->updated_by = $auth;
+					$competency->updated_dttm = $now;
+					$competency->save();
+				}
+			}//end for item
+		}//end for datas
+
+		
+		return response()->json(['status' => 200]);
 	}
 
 }

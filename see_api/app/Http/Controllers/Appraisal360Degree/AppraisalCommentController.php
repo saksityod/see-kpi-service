@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Appraisal360degree;
 
 use App\SystemConfiguration;
 use App\AssessmentOpinion;
