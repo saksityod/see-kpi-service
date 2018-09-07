@@ -29,6 +29,203 @@ class AppraisalItemController extends Controller
 
 	   $this->middleware('jwt.auth');
 	}
+
+	public function al_list_emp(Request $request)
+    {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = ?
+    		", array(Auth::id()));
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$items = DB::select("
+    			Select level_id, appraisal_level_name
+    			From appraisal_level
+    			Where is_active = 1
+    			Order by level_id desc
+    			");
+    	} else {
+    		$items = DB::select("
+    			select l.level_id, l.appraisal_level_name
+    			from appraisal_level l
+    			inner join employee e on e.level_id = l.level_id
+    			where (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+    			and l.is_active = 1
+    			group by l.level_id
+    			union
+    			select l.level_id, l.appraisal_level_name
+    			from appraisal_level l
+    			inner join org o on o.level_id = l.level_id
+    			inner join employee e on e.org_id = o.org_id
+    			where (e.chief_emp_code = '".Auth::id()."' or e.emp_code = '".Auth::id()."')
+    			and l.is_active = 1
+    			group by l.level_id
+    			");
+    	}
+
+    	return response()->json($items);
+    }
+
+    public function al_list_emp2(Request $request)
+    {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = ?
+    		", array(Auth::id()));
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$items = DB::select("
+    			Select level_id, appraisal_level_name
+    			From appraisal_level
+    			Where is_active = 1
+    			and is_individual = 1
+    			Order by level_id desc
+    			");
+    	} else {
+    		$items = DB::select("
+    			select l.level_id, l.appraisal_level_name
+    			from appraisal_level l
+    			inner join employee e
+    			on e.level_id = l.level_id
+    			where (e.chief_emp_code = ? or e.emp_code = ?)
+    			and is_individual = 1
+    			and l.is_active = 1
+    			group by l.level_id
+    			", array(Auth::id(), Auth::id()));
+    	}
+
+    	return response()->json($items);
+    }
+
+	public function al_list_org(Request $request)
+    {
+    	$all_emp = DB::select("
+	    	SELECT sum(b.is_all_employee) count_no
+	    	from employee a
+	    	left outer join appraisal_level b
+	    	on a.level_id = b.level_id
+	    	where emp_code = ?
+	    ", array(Auth::id()));
+
+	    $level_id = empty($request->level_id) ? "" : "and e.level_id = {$request->level_id}";
+
+    	if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
+    		$items = DB::select("
+    			select DISTINCT al.level_id, al.appraisal_level_name
+				from appraisal_level al
+				where al.is_active = 1
+				and al.is_org = 1
+				order by al.level_id
+    			");
+    	} else if($all_emp[0]->count_no > 0 && !empty($request->level_id)){
+    		$items = DB::select("
+    			select DISTINCT org.level_id, al.appraisal_level_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_id."
+				order by org.level_id
+    			");
+    	} else {
+    		$items = DB::select("
+    			select DISTINCT org.level_id, al.appraisal_level_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_id."
+				and (e.chief_emp_code = ? or e.emp_code = ?)
+				order by org.level_id
+    			", array(Auth::id(), Auth::id()));
+    	}
+		return response()->json($items);
+    }
+
+    public function al_list_organization(Request $request) {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    		");
+
+    	$level_emp = empty($request->level_emp) ? "" : "and e.level_id = {$request->level_emp}";
+    	$level_org = empty($request->level_org) ? "" : "and org.level_id = {$request->level_org}";
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$orgs = DB::select("
+    			select DISTINCT org.org_id, org.org_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_emp."
+				".$level_org."
+				order by org.level_id
+    			");
+    	} else {
+    		$orgs = DB::select("
+    			select DISTINCT org.org_id, org.org_name
+				from org
+				left outer join employee e on e.org_id = org.org_id
+				left outer join appraisal_level al on al.level_id = org.level_id
+				where org.is_active = 1
+				and al.is_org = 1
+				".$level_emp."
+				".$level_org."
+				and (e.chief_emp_code = ? or e.emp_code = ?)
+				order by org.level_id
+    			", array(Auth::id(), Auth::id()));
+    	}
+
+    	return response()->json($orgs);
+    }
+
+    public function al_list_position(Request $request) {
+    	$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    		");
+
+    	$level_emp = empty($request->level_emp) ? "" : "and e.level_id = {$request->level_emp}";
+
+    	if ($all_emp[0]->count_no > 0) {
+    		$orgs = DB::select("
+    			select DISTINCT p.position_id, p.position_name
+				from position p
+				left outer join employee e on e.position_id = p.position_id
+				where p.is_active = 1
+				".$level_emp."
+				order by p.position_id
+    			");
+    	} else {
+    		$orgs = DB::select("
+    			select DISTINCT p.position_id, p.position_name
+				from position p
+				left outer join employee e on e.position_id = p.position_id
+				where p.is_active = 1
+				".$level_emp."
+				and (e.chief_emp_code = ? or e.emp_code = ?)
+				order by p.position_id
+    			", array(Auth::id(), Auth::id()));
+    	}
+
+    	return response()->json($orgs);
+    }
 	
 	public function remind_list()
 	{
@@ -55,30 +252,141 @@ class AppraisalItemController extends Controller
 	public function index(Request $request)
 	{	
 		$qinput = array();
-		$query = "
-			select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
-			p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
-			from appraisal_item i
-			left outer join appraisal_structure s
-			on i.structure_id = s.structure_id 
-			left outer join perspective p
-			on i.perspective_id = p.perspective_id
-			left outer join uom u
-			on i.uom_id = u.uom_id
-			left outer join form_type f
-			on s.form_id = f.form_id	
-			where 1=1
-		";
-		
-		empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
-		empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
-		empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
-		if ($request->structure_id == 1 || empty($request->structure_id)) {
-			empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    		");
+
+			$level_id = empty($request->level_id) && empty($request->level_id_org) ? "" : "AND (ail.level_id = '{$request->level_id}' or ail.level_id = '{$request->level_id_org}')";
+			$structure_id = empty($request->structure_id) ? "" : "AND i.structure_id = {$request->structure_id}";
+			$kpi_type_id = empty($request->kpi_type_id) ? "" : "AND i.kpi_type_id = {$request->kpi_type_id}";
+			$item_id = empty($request->item_id) ? "" : "AND i.item_id = {$request->item_id}";
+
+			if ($request->structure_id == 1 || empty($request->structure_id)) {
+				$perspective_id = empty($request->perspective_id) ? "" : "AND i.perspective_id = {$request->perspective_id}";
+			} else {
+				$perspective_id="";
+			}
+
+			if($request->org_id!='null' && !empty($request->org_id)) {
+				$org_id = "AND aio.org_id IN ({$request->org_id})";
+			} else {
+				$org_id = "";
+			}
+
+		if ($all_emp[0]->count_no > 0) {
+			// $query = "
+			// 	select s.seq_no, s.structure_name, s.structure_id, i.item_id, i.item_name, ifnull(i.kpi_id,'') kpi_id,
+			// 	p.perspective_name, u.uom_name, i.max_value, i.unit_deduct_score, i.value_get_zero, i.is_active, f.form_name, f.app_url, f.form_id
+			// 	from appraisal_item i
+			// 	left outer join appraisal_structure s
+			// 	on i.structure_id = s.structure_id 
+			// 	left outer join perspective p
+			// 	on i.perspective_id = p.perspective_id
+			// 	left outer join uom u
+			// 	on i.uom_id = u.uom_id
+			// 	left outer join form_type f
+			// 	on s.form_id = f.form_id	
+			// 	where 1=1
+			// ";
+
+			$query = "
+				SELECT
+					s.seq_no,
+					s.structure_name,
+					s.structure_id,
+					i.item_id,
+					i.item_name,
+					ifnull(i.kpi_id, '') kpi_id,
+					p.perspective_name,
+					u.uom_name,
+					i.max_value,
+					i.unit_deduct_score,
+					i.unit_reward_score,
+					i.value_get_zero,
+					i.is_active,
+					f.form_name,
+					f.app_url,
+					f.form_id
+				FROM
+					appraisal_item i
+				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
+				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
+				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
+				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
+				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
+				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
+				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
+				WHERE al.is_hr = 0
+				".$level_id."
+				".$structure_id."
+				".$kpi_type_id."
+				".$perspective_id."
+				".$item_id."
+				".$org_id."
+				GROUP BY i.item_id
+			";
+
+			// empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+			// empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
+			// empty($request->structure_id) ?: ($query .= " And i.structure_id = ? " AND $qinput[] = $request->structure_id);
+			// empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
+			// if ($request->structure_id == 1 || empty($request->structure_id)) {
+			// 	empty($request->perspective_id) ?: ($query .= " And i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+			// }
+			// empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
+
+			// if($request->org_id!='null' && !empty($request->org_id)) {
+			// 	$query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$request->org_id}) ) ";
+			// }
+
+		} else {
+
+			$query = "
+				SELECT
+					s.seq_no,
+					s.structure_name,
+					s.structure_id,
+					i.item_id,
+					i.item_name,
+					ifnull(i.kpi_id, '') kpi_id,
+					p.perspective_name,
+					u.uom_name,
+					i.max_value,
+					i.unit_deduct_score,
+					i.value_get_zero,
+					i.is_active,
+					f.form_name,
+					f.app_url,
+					f.form_id
+				FROM
+					appraisal_item i
+				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
+				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
+				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
+				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
+				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
+				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
+				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
+				WHERE al.is_hr = 0
+				".$level_id."
+				".$structure_id."
+				".$kpi_type_id."
+				".$perspective_id."
+				".$item_id."
+				".$org_id."
+				AND (e.chief_emp_code = '".Auth::id()."' OR e.emp_code = '".Auth::id()."')
+				GROUP BY i.item_id
+			";
 		}
-		empty($request->item_id) ?: ($query .= " And i.item_id = ? " AND $qinput[] = $request->item_id);
-		empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id = ? ) " AND $qinput[] = $request->org_id);		
-		
+
 		$qfooter = " Order by isnull(i.kpi_id), i.kpi_id asc, i.item_id asc";
 		
 		$items = DB::select($query . $qfooter, $qinput);
@@ -210,6 +518,29 @@ class AppraisalItemController extends Controller
 							],									
 						];
 					}
+				} elseif ($s->form_name == 'Reward Score') {
+					$columns = [
+							[
+									'column_display' => 'KPI Name',
+									'column_name' => 'item_name',
+									'data_type' => 'text',
+							],
+							[
+									'column_display' => 'Max Value',
+									'column_name' => 'max_value',
+									'data_type' => 'number',
+							],
+							[
+									'column_display' => 'Reward Score/Unit',
+									'column_name' => 'unit_reward_score',
+									'data_type' => 'number',
+							],
+							[
+									'column_display' => 'IsActive',
+									'column_name' => 'is_active',
+									'data_type' => 'checkbox',
+							],
+					];
 				}
 
 				$groups[$key] = array(
@@ -325,6 +656,29 @@ class AppraisalItemController extends Controller
 						];
 					}
 
+				} elseif ($item->form_name == 'Reward Score') {
+					$columns = [
+							[
+									'column_display' => 'KPI Name',
+									'column_name' => 'item_name',
+									'data_type' => 'text',
+							],
+							[
+									'column_display' => 'Max Value',
+									'column_name' => 'max_value',
+									'data_type' => 'number',
+							],
+							[
+									'column_display' => 'Reward Score/Unit',
+									'column_name' => 'unit_reward_score',
+									'data_type' => 'number',
+							],
+							[
+									'column_display' => 'IsActive',
+									'column_name' => 'is_active',
+									'data_type' => 'checkbox',
+							],
+					];
 				}
 
 				$groups[$key] = array(
@@ -413,7 +767,87 @@ class AppraisalItemController extends Controller
 	
 	public function auto_appraisal_name(Request $request)
 	{
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    	");
+
 		$qinput = array();
+		$level_id = empty($request->level_id) && empty($request->level_id_org) ? "" : "AND (ail.level_id = '{$request->level_id}' or ail.level_id = '{$request->level_id_org}')";
+		$structure_id = empty($request->structure_id) ? "" : "AND i.structure_id = {$request->structure_id}";
+		$kpi_type_id = empty($request->kpi_type_id) ? "" : "AND i.kpi_type_id = {$request->kpi_type_id}";
+		$item_name = empty($request->item_name) ? "" : "AND i.item_name LIKE '%{$request->item_name}%'";
+
+		if ($request->structure_id == 1 || empty($request->structure_id)) {
+			$perspective_id = empty($request->perspective_id) ? "" : "AND i.perspective_id = {$request->perspective_id}";
+		} else {
+			$perspective_id="";
+		}
+
+		if(!empty($request->org_id)) {
+			$org_string = implode(",",$request->org_id);
+			$org_id = "AND aio.org_id IN ({$org_string})";
+		} else {
+			$org_id = "";
+		}
+
+		if ($all_emp[0]->count_no > 0) {
+			$query = "
+				SELECT
+					i.item_id,
+					i.item_name
+				FROM
+					appraisal_item i
+				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
+				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
+				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
+				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
+				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
+				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
+				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
+				WHERE al.is_hr = 0
+				".$level_id."
+				".$structure_id."
+				".$kpi_type_id."
+				".$perspective_id."
+				".$item_name."
+				".$org_id."
+				GROUP BY i.item_id
+			";
+
+		} else {
+
+			$query = "
+				SELECT
+					i.item_id,
+					i.item_name
+				FROM
+					appraisal_item i
+				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
+				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
+				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
+				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
+				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
+				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
+				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
+				WHERE al.is_hr = 0
+				".$level_id."
+				".$structure_id."
+				".$kpi_type_id."
+				".$perspective_id."
+				".$item_name."
+				".$org_id."
+				AND (e.chief_emp_code = '".Auth::id()."' OR e.emp_code = '".Auth::id()."')
+				GROUP BY i.item_id
+			";
+		}
 		// $items = DB::select("
 			// Select appraisal_item_id, appraisal_item_name
 			// From appraisal_item
@@ -424,21 +858,23 @@ class AppraisalItemController extends Controller
 			
 		// ", array($request->appraisal_level_id, $request->perspective_id, $request->structure_id, '%'.$request->appraisal_item_name.'%'));
 		
-		$query = "
-			Select i.item_id, i.item_name
-			From appraisal_item i
-			where 1 = 1
-		";
+		// $query = "
+		// 	Select i.item_id, i.item_name
+		// 	From appraisal_item i
+		// 	where 1 = 1
+		// ";
 		
-		empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
-		empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
-		empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id = ? ) " AND $qinput[] = $request->org_id);				
-		empty($request->perspective_id) ?: ($query .= " and i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
-		empty($request->structure_id) ?: ($query .= " and i.structure_id = ? " AND $qinput[] = $request->structure_id);
-		empty($request->item_name) ?: ($query .= " and item_name like ? " AND $qinput[] = '%'.$request->item_name.'%');
+		// empty($request->level_id) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id);
+		// empty($request->level_id_org) ?: ($query .= " and exists ( select 1 from appraisal_item_level lv left outer join appraisal_level al on lv.level_id = al.level_id where lv.item_id = i.item_id and al.is_hr = 0 and lv.level_id = ? ) " AND $qinput[] = $request->level_id_org);
+		// empty($request->kpi_type_id) ?: ($query .= " And i.kpi_type_id = ? " AND $qinput[] = $request->kpi_type_id);
+		// empty($request->org_id) ?: ($query .= " and exists ( select 1 from appraisal_item_org lv where lv.item_id = i.item_id and lv.org_id in ({$org_string}) )");	
+		// empty($request->perspective_id) ?: ($query .= " and i.perspective_id = ? " AND $qinput[] = $request->perspective_id);
+		// empty($request->structure_id) ?: ($query .= " and i.structure_id = ? " AND $qinput[] = $request->structure_id);
+		// empty($request->item_name) ?: ($query .= " and item_name like ? " AND $qinput[] = '%'.$request->item_name.'%');
 		
 		$qfooter = "
 			Order by i.item_name
+			limit 10
 		";
 		
 		$items = DB::select($query.$qfooter,$qinput);
@@ -458,11 +894,9 @@ class AppraisalItemController extends Controller
 			if(empty($structure)) {
 				$item->structure_name = '';
 				$item->is_value_get_zero = null;
-				$item->is_no_raise_value = 0;
 			} else {
 				$item->structure_name = $structure->structure_name;
 				$item->is_value_get_zero = $structure->is_value_get_zero;
-				$item->is_no_raise_value = $structure->is_no_raise_value;
 			}
 
 			//empty($structure) ? $item->structure_name = '' : $item->structure_name = $structure->structure_name;
@@ -509,6 +943,20 @@ class AppraisalItemController extends Controller
 	
 	public function store(Request $request)
 	{
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    	");
+	$request->item_name = str_replace('"',"'",$request->item_name);
+    	if($all_emp[0]->count_no > 0) {
+    		$org_required="";
+    	} else {
+    		$org_required="required";
+    	}
+    	$request->item_name = str_replace('"',"'",$request->item_name);
 
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [	
@@ -527,7 +975,8 @@ class AppraisalItemController extends Controller
 			//	'formula_cds_id' => 'required|max:1000',
 			//	'formula_cds_name' => 'required|max:1000',
 				'is_active' => 'required|boolean',
-				'kpi_id' => 'numeric'
+				'kpi_id' => 'numeric',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -594,7 +1043,8 @@ class AppraisalItemController extends Controller
 				'item_name' => 'required|max:255|unique:appraisal_item',
 				'structure_id' => 'required|integer',
 				'appraisal_level' => 'required',
-				'is_active' => 'required|boolean'
+				'is_active' => 'required|boolean',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -650,7 +1100,7 @@ class AppraisalItemController extends Controller
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 				'is_active' => 'required|boolean',
-				'no_raise_value' => 'required|numeric'
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -661,7 +1111,6 @@ class AppraisalItemController extends Controller
 				if ($request->value_get_zero = "") {
 					$item->value_get_zero = null;
 				}
-				$item->no_raise_value = $request->no_raise_value;
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
 				$item->save();
@@ -697,41 +1146,64 @@ class AppraisalItemController extends Controller
 						$org->updated_by = Auth::id();
 						$org->save();
 					}	
-				}
-
-				preg_match_all('/cds(.*?)\]/', $request->formula_cds_id, $cds);
-
-				foreach ($cds[1] as $c) {
-					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c);
-					
-					if ($checkmap->count() == 0) {
-						$map = new KPICDSMapping;
-						$map->item_id = $item->item_id;
-						$map->cds_id = $c;
-						$map->created_by = Auth::id();
-						$map->save();
-					}
-				}
+				}				
 						
 			}				
 		
 		} elseif ($request->form_id == 4) {
-
-			preg_match_all('/cds(.*?)\]/', $request->formula_cds_id, $cds);
-
-			foreach ($cds[1] as $c) {
-				$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c);
+			
+			$validator = Validator::make($request->all(), [
+					'item_name' => 'required|max:255|unique:appraisal_item',
+					'structure_id' => 'required|integer',
+					'appraisal_level' => 'required',
+					'max_value' => 'required|numeric',
+					'unit_reward_score' => 'required|numeric|digits_between:1,4',
+					'is_active' => 'required|boolean'
+			]);
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			} else {
+				$item = new AppraisalItem;
+				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				$item->created_by = Auth::id();
+				$item->updated_by = Auth::id();
+				$item->save();
 				
-				if ($checkmap->count() == 0) {
-					$map = new KPICDSMapping;
-					$map->item_id = $item->item_id;
-					$map->cds_id = $c;
-					$map->created_by = Auth::id();
-					$map->save();
+				if (!empty($request->org)) {
+					foreach ($request->org as $i) {
+						$org = new ItemOrg;
+						$org->item_id = $item->item_id;
+						$org->org_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
 				}
-			}
-		}
-		else {
+				
+				if (!empty($request->position)) {
+					foreach ($request->position as $i) {
+						$org = new ItemPosition;
+						$org->item_id = $item->item_id;
+						$org->position_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				
+				if (!empty($request->appraisal_level)) {
+					foreach ($request->appraisal_level as $i) {
+						$org = new ItemLevel;
+						$org->item_id = $item->item_id;
+						$org->level_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				
+			} 
+		}else {
 			return response()->json(['status' => 400, 'data' => 'Form not available.']);
 		}
 		
@@ -773,6 +1245,20 @@ class AppraisalItemController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Item not found.']);
 		}
+
+		$all_emp = DB::select("
+    		SELECT sum(b.is_all_employee) count_no
+    		from employee a
+    		left outer join appraisal_level b
+    		on a.level_id = b.level_id
+    		where emp_code = '".Auth::id()."'
+    	");
+	$request->item_name = str_replace('"',"'",$request->item_name);
+		if($all_emp[0]->count_no > 0) {
+    		$org_required="";
+    	} else {
+    		$org_required="required";
+    	}
 		
 		if ($request->form_id == 1) {
 			$validator = Validator::make($request->all(), [
@@ -788,7 +1274,8 @@ class AppraisalItemController extends Controller
 				'is_show_variance' => 'boolean',
 				'formula_desc' => 'max:1000',
 				'is_active' => 'required|boolean',
-				'kpi_id' => 'numeric'
+				'kpi_id' => 'numeric',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -856,7 +1343,8 @@ class AppraisalItemController extends Controller
 				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
 				'structure_id' => 'required|integer',
 				'appraisal_level' => 'required',
-				'is_active' => 'required|boolean'
+				'is_active' => 'required|boolean',
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -911,7 +1399,7 @@ class AppraisalItemController extends Controller
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 				'is_active' => 'required|boolean',
-				'no_raise_value' => 'required|numeric'
+				'org' => $org_required
 			]);
 
 			if ($validator->fails()) {
@@ -920,8 +1408,7 @@ class AppraisalItemController extends Controller
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
 				if ($request->value_get_zero = "") {
 					$item->value_get_zero = null;
-				}
-				$item->no_raise_value = $request->no_raise_value;				
+				}				
 				$item->updated_by = Auth::id();
 				$item->save();
 				
@@ -961,7 +1448,63 @@ class AppraisalItemController extends Controller
 				}								
 			}				
 		
-		} else {
+		} elseif ($request->form_id == 4) {
+			
+			$validator = Validator::make($request->all(), [
+					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
+					'structure_id' => 'required|integer',
+					'appraisal_level' => 'required',
+					'max_value' => 'required|numeric',
+					'unit_reward_score' => 'required|numeric|digits_between:1,4',
+					'is_active' => 'required|boolean'
+			]);
+			if ($validator->fails()) {
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
+			} else {
+				$item->fill($request->except(['form_id','org','position','appraisal_level']));
+				if ($request->value_get_zero = "") {
+					$item->value_get_zero = null;
+				}
+				$item->updated_by = Auth::id();
+				$item->save();
+				
+				ItemOrg::where('item_id',$item->item_id)->delete();
+				if (!empty($request->org)) {
+					foreach ($request->org as $i) {
+						$org = new ItemOrg;
+						$org->item_id = $item->item_id;
+						$org->org_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				ItemPosition::where('item_id',$item->item_id)->delete();
+				if (!empty($request->position)) {
+					foreach ($request->position as $i) {
+						$org = new ItemPosition;
+						$org->item_id = $item->item_id;
+						$org->position_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+				
+				ItemLevel::where('item_id',$item->item_id)->delete();
+				if (!empty($request->appraisal_level)) {
+					foreach ($request->appraisal_level as $i) {
+						$org = new ItemLevel;
+						$org->item_id = $item->item_id;
+						$org->level_id = $i;
+						$org->created_by = Auth::id();
+						$org->updated_by = Auth::id();
+						$org->save();
+					}
+				}
+			}
+			
+		}else {
 			return response()->json(['status' => 400, 'data' => 'Form not available.']);
 		}
 		
