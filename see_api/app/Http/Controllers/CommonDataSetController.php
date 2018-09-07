@@ -175,18 +175,15 @@ class CommonDataSetController extends Controller
 	
 	public function auto_cds_name(Request $request)
 	{
-		$qinput = array();
+		
 		$query = "
 			Select cds_id, cds_name
 			From cds
-			Where cds_name like ?
+			Where cds_name like '%{$request->cds_name}%'
+			Order by cds_name limit 10
 		";
 		
-		$qfooter = " Order by cds_name limit 10";
-		$qinput[] = '%'.$request->cds_name.'%';
-		empty($request->appraisal_level_id) ?: ($query .= " and appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
-		
-		$items = DB::select($query.$qfooter,$qinput);
+		$items = DB::select($query);
 		return response()->json($items);
 		
 	}

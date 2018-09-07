@@ -941,10 +941,26 @@ class AppraisalItemController extends Controller
 				$item->updated_by = Auth::id();
 				$item->save();
 
+				$loop_formula_cds_id = str_split($request->formula_cds_id);
+				$concat_formula_cds_id = "";
+				$request->formula_cds_id = "";
+				foreach ($loop_formula_cds_id as $key => $value) {
+					if('['==$value) {
+						$concat_formula_cds_id = "";
+					}
+
+					$concat_formula_cds_id .= $value;
+
+					if(']'==$value) {
+						$request->formula_cds_id .= $concat_formula_cds_id;
+						$concat_formula_cds_id = "";
+					}
+				}
+
 				$request->formula_cds_id = array_unique(array_filter(explode("]",str_replace('[', '', $request->formula_cds_id))));
 
 				foreach ($request->formula_cds_id as $c) {
-					$c = explode(":",str_replace(['\\', '/', '*', '+', '-', 'cds'], '', $c));
+					$c = explode(":",str_replace('cds', '', $c));
 					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c[1]);
 					if ($checkmap->count() == 0) {
 						$map = new KPICDSMapping;
@@ -1190,10 +1206,26 @@ class AppraisalItemController extends Controller
 				// $key = 0;
 				KPICDSMapping::where('item_id',$item->item_id)->delete();
 
+				$loop_formula_cds_id = str_split($request->formula_cds_id);
+				$concat_formula_cds_id = "";
+				$request->formula_cds_id = "";
+				foreach ($loop_formula_cds_id as $key => $value) {
+					if('['==$value) {
+						$concat_formula_cds_id = "";
+					}
+
+					$concat_formula_cds_id .= $value;
+
+					if(']'==$value) {
+						$request->formula_cds_id .= $concat_formula_cds_id;
+						$concat_formula_cds_id = "";
+					}
+				}
+
 				$request->formula_cds_id = array_unique(array_filter(explode("]",str_replace('[', '', $request->formula_cds_id))));
 
 				foreach ($request->formula_cds_id as $c) {
-					$c = explode(":",str_replace(['\\', '/', '*', '+', '-', 'cds'], '', $c));
+					$c = explode(":",str_replace('cds', '', $c));
 					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c[1]);
 					if ($checkmap->count() == 0) {
 						$map = new KPICDSMapping;
