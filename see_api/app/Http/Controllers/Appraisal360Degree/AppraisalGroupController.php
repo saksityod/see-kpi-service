@@ -580,7 +580,7 @@ class AppraisalGroupController extends Controller
 					-- 	and air.level_id = g.appraisal_level_id
 					left outer join competency_criteria g on aps.structure_id = g.structure_id
 						and air.level_id = g.appraisal_level_id
-						and g.assessor_group_id = 5
+						and g.assessor_group_id = com.assessor_group_id
 					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
 						and ags.assessor_group_id = 5
 					where aps.form_id = 2
