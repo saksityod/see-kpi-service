@@ -894,9 +894,11 @@ class AppraisalItemController extends Controller
 			if(empty($structure)) {
 				$item->structure_name = '';
 				$item->is_value_get_zero = null;
+				$item->is_no_raise_value = null;
 			} else {
 				$item->structure_name = $structure->structure_name;
 				$item->is_value_get_zero = $structure->is_value_get_zero;
+				$item->is_no_raise_value = $structure->is_no_raise_value;
 			}
 
 			//empty($structure) ? $item->structure_name = '' : $item->structure_name = $structure->structure_name;
@@ -1100,7 +1102,8 @@ class AppraisalItemController extends Controller
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 				'is_active' => 'required|boolean',
-				'org' => $org_required
+				'org' => $org_required,
+				'no_raise_value' => 'required|numeric'
 			]);
 
 			if ($validator->fails()) {
@@ -1111,9 +1114,36 @@ class AppraisalItemController extends Controller
 				if ($request->value_get_zero = "") {
 					$item->value_get_zero = null;
 				}
+				if ($request->no_raise_value = "") {
+					$item->no_raise_value = null;
+				}
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
 				$item->save();
+
+				// insert cds
+				$cds = new CDS;
+				$cds->cds_name = $request->item_name;
+				$cds->cds_desc = $request->item_name;
+				$cds->created_by = Auth::id();
+				$cds->updated_by = Auth::id();
+				$cds->save();
+
+				$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$cds->cds_id);
+					
+				if ($checkmap->count() == 0) {
+					$map = new KPICDSMapping;
+					$map->item_id = $item->item_id;
+					$map->cds_id = $cds->cds_id;
+					$map->created_by = Auth::id();
+					$map->save();
+				}
+
+				// update formula in item
+				$item_formula = AppraisalItem::findOrFail($item->item_id);
+				$item_formula->formula_cds_id = "[sum:cds".$cds->cds_id."]";
+				$item_formula->save();
+				
 				
 				if (!empty($request->org)) {
 					foreach ($request->org as $i) {
@@ -1168,6 +1198,29 @@ class AppraisalItemController extends Controller
 				$item->created_by = Auth::id();
 				$item->updated_by = Auth::id();
 				$item->save();
+
+				// insert cds
+				$cds = new CDS;
+				$cds->cds_name = $request->item_name;
+				$cds->cds_desc = $request->item_name;
+				$cds->created_by = Auth::id();
+				$cds->updated_by = Auth::id();
+				$cds->save();
+
+				$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$cds->cds_id);
+					
+				if ($checkmap->count() == 0) {
+					$map = new KPICDSMapping;
+					$map->item_id = $item->item_id;
+					$map->cds_id = $cds->cds_id;
+					$map->created_by = Auth::id();
+					$map->save();
+				}
+
+				// update formula in item
+				$item_formula = AppraisalItem::findOrFail($item->item_id);
+				$item_formula->formula_cds_id = "[sum:cds".$cds->cds_id."]";
+				$item_formula->save();
 				
 				if (!empty($request->org)) {
 					foreach ($request->org as $i) {
@@ -1399,16 +1452,20 @@ class AppraisalItemController extends Controller
 				'max_value' => 'required|numeric',
 				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 				'is_active' => 'required|boolean',
-				'org' => $org_required
+				'org' => $org_required,
+				'no_raise_value' => 'required|numeric' 
 			]);
 
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			} else {
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
-				if ($request->value_get_zero = "") {
+				if ($request->value_get_zero = "" ) {
 					$item->value_get_zero = null;
-				}				
+				}
+				if ($request->no_raise_value = "" )	{
+					$item->no_raise_value = null;
+				}		
 				$item->updated_by = Auth::id();
 				$item->save();
 				
@@ -1518,13 +1575,18 @@ class AppraisalItemController extends Controller
 			$item = AppraisalItem::findOrFail($item_id);
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Item not found.']);
-		}	
+		}
+		
+		$kpi = DB::select("select cds_id from kpi_cds_mapping where item_id = ? ",array($item_id));
 
 		try {
 			ItemOrg::where('item_id',$item_id)->delete();
 			ItemLevel::where('item_id',$item_id)->delete();
 			ItemPosition::where('item_id',$item_id)->delete();
 			KPICDSMapping::where('item_id',$item_id)->delete();
+			if($item->structure_id == 3 || $item->structure_id == 4) {
+				CDS::where('cds_id',$kpi[0]->cds_id)->delete();
+			}
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
