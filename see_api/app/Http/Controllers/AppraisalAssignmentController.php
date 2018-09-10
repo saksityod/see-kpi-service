@@ -17,6 +17,7 @@ use App\Org;
 use App\SystemConfiguration;
 use App\Phase;
 use App\ActionPlan;
+use App\AppraisalStructure;
 
 use Auth;
 use DB;
@@ -1579,6 +1580,7 @@ class AppraisalAssignmentController extends Controller
 		select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
 		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
+		, a.no_raise_value, b.is_no_raise_value
 		from appraisal_item a
 		left outer join appraisal_structure b
 		on a.structure_id = b.structure_id
@@ -1779,7 +1781,9 @@ class AppraisalAssignmentController extends Controller
 					'total_weight' => $total_weight,
 					'no_weight' => $item->no_weight,
 					'threshold' => $config->threshold,
-					'threshold_color' => $tc
+					'threshold_color' => $tc,
+					'is_no_raise_value' => $item->is_no_raise_value,
+					'no_raise_value' => $item->no_raise_value
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
@@ -1981,11 +1985,28 @@ class AppraisalAssignmentController extends Controller
 
 			} elseif ($i['form_id'] == 3) {
 
-				$validator = Validator::make($i, [
-					'item_id' => 'required|integer',
-					'max_value' => 'required|numeric',
-					'deduct_score_unit' => 'required|numeric',
-				]);
+				$no = DB::select("
+					select s.is_no_raise_value from appraisal_item i 
+					inner join appraisal_structure s on i.structure_id = s.structure_id
+					where i.item_id = ?"
+				,array($i['item_id'])); // $request->item_id
+
+				// return ($no[0]->is_no_raise_value);
+
+				if ($no[0]->is_no_raise_value == 1){
+					$validator = Validator::make($i, [
+						'item_id' => 'required|integer',
+						'max_value' => 'required|numeric',
+						'deduct_score_unit' => 'required|numeric',
+						'no_raise_value' => 'required|numeric',
+					]);
+				}else {
+					$validator = Validator::make($i, [
+						'item_id' => 'required|integer',
+						'max_value' => 'required|numeric',
+						'deduct_score_unit' => 'required|numeric'
+					]);
+				}	
 
 				if ($validator->fails()) {
 					$errors[] = ['item_id' => $i['item_id'], 'item_name' => $i['item_name'], 'data' => $validator->errors()];
@@ -2241,6 +2262,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->weigh_score = 0;
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
+								$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2514,6 +2536,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->weigh_score = 0;
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
+							$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
@@ -3042,6 +3065,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->level_id = $level_id;
 						$aitem->chief_emp_id = $chief_emp_id;
 						$aitem->structure_weight_percent = $i['total_weight'];
+						$aitem->no_raise_value = $i['no_raise_value'];
 						$aitem->created_by = Auth::id();
 
 						if($config->item_result_log == 1){
@@ -3111,6 +3135,7 @@ class AppraisalAssignmentController extends Controller
 					$aitem->item_name = $i['item_name'];
 					$aitem->max_value = $i['max_value'];
 					$aitem->deduct_score_unit = $i['deduct_score_unit'];
+					$aitem->no_raise_value = $i['no_raise_value'];
 					$aitem->weight_percent = 0;
 					// $aitem->over_value = 0;
 					// $aitem->weigh_score = 0;

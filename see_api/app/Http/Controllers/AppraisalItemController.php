@@ -1132,10 +1132,10 @@ class AppraisalItemController extends Controller
 			} else {
 				$item = new AppraisalItem;
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
-				if ($request->value_get_zero = "") {
+				if ($request->value_get_zero == "") {
 					$item->value_get_zero = null;
 				}
-				if ($request->no_raise_value = "") {
+				if ($request->no_raise_value == "") {
 					$item->no_raise_value = null;
 				}
 				$item->created_by = Auth::id();
@@ -1465,26 +1465,41 @@ class AppraisalItemController extends Controller
 			}			
 		
 		} elseif ($request->form_id == 3) {
+
+			$structure = AppraisalStructure::find($request->structure_id);
+
+			if($structure->is_no_raise_value == 1) {
+				$validator = Validator::make($request->all(), [
+					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
+					'structure_id' => 'required|integer',
+					'appraisal_level' => 'required',
+					'max_value' => 'required|numeric',
+					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
+					'is_active' => 'required|boolean',
+					'org' => $org_required,
+					'no_raise_value' => 'required|numeric' 
+				]);
+			} else {
+				$validator = Validator::make($request->all(), [
+					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
+					'structure_id' => 'required|integer',
+					'appraisal_level' => 'required',
+					'max_value' => 'required|numeric',
+					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
+					'is_active' => 'required|boolean',
+					'org' => $org_required
+				]);
+			}
 		
-			$validator = Validator::make($request->all(), [
-				'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
-				'structure_id' => 'required|integer',
-				'appraisal_level' => 'required',
-				'max_value' => 'required|numeric',
-				'unit_deduct_score' => 'required|numeric|digits_between:1,4',
-				'is_active' => 'required|boolean',
-				'org' => $org_required,
-				'no_raise_value' => 'required|numeric' 
-			]);
 
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			} else {
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
-				if ($request->value_get_zero = "" ) {
+				if ($request->value_get_zero == "" ) {
 					$item->value_get_zero = null;
 				}
-				if ($request->no_raise_value = "" )	{
+				if ($request->no_raise_value == "" )	{
 					$item->no_raise_value = null;
 				}		
 				$item->updated_by = Auth::id();
