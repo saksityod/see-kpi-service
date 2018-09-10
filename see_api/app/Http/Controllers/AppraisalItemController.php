@@ -310,7 +310,8 @@ class AppraisalItemController extends Controller
 					i.is_active,
 					f.form_name,
 					f.app_url,
-					f.form_id
+					f.form_id,
+					s.is_no_raise_value
 				FROM
 					appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
@@ -363,7 +364,8 @@ class AppraisalItemController extends Controller
 					i.is_active,
 					f.form_name,
 					f.app_url,
-					f.form_id
+					f.form_id,
+					s.is_no_raise_value
 				FROM
 					appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
@@ -409,6 +411,7 @@ class AppraisalItemController extends Controller
 		
 		$structure_template = DB::select("
 			select a.structure_id, a.structure_name, b.*, a.is_value_get_zero
+			, a.is_no_raise_value
 			from appraisal_structure a
 			left outer join form_type b
 			on a.form_id = b.form_id		
@@ -550,7 +553,8 @@ class AppraisalItemController extends Controller
 					'structure_id' => $s->structure_id,
 					'form_id' => $s->form_id,
 					'form_url' => $s->app_url,
-					'is_value_get_zero' => $s->is_value_get_zero
+					'is_value_get_zero' => $s->is_value_get_zero,
+					'is_no_raise_value' => $s->is_no_raise_value
 				);
 			}
 		}		
@@ -688,7 +692,8 @@ class AppraisalItemController extends Controller
 					'structure_id' => $item->structure_id,
 					'form_id' => $item->form_id,
 					'form_url' => $item->app_url,
-					'is_value_get_zero' => $item->is_value_get_zero
+					'is_value_get_zero' => $item->is_value_get_zero,
+					'is_no_raise_value' => $item->is_no_raise_value
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
