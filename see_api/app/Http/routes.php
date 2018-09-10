@@ -461,11 +461,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@update_criteria');
 	Route::get('competency_criteria', 'Appraisal360Degree\CompetencyCriteriaController@show');
 	Route::patch('competency_criteria/{appraisal_level_id}/{structure_id}', 'Appraisal360Degree\CompetencyCriteriaController@update');
-	
 	// Appraisal 360 Degree --> Appraisal Comment //
 	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
 	Route::post('appraisal/comment/update/insert','Appraisal360degree\AppraisalCommentController@insert_update');
-	
 	// Appraisal 360 Degree --> Appraisal emp_result //
 	Route::get('appraisal/show/index','Appraisal360degree\AppraisalGroupController@index');
 	Route::get('appraisal/show/emp_result','Appraisal360degree\AppraisalGroupController@show');
@@ -481,6 +479,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('salary_structure', 'Salary\SalaryStructureController@index');
 	Route::get('salary_structure/show', 'Salary\SalaryStructureController@show');
 	Route::post('salary_structure/import', 'Salary\SalaryStructureController@import');
+	Route::patch('salary_structure/update', 'Salary\SalaryStructureController@update');
 	Route::delete('salary_structure', 'Salary\SalaryStructureController@destroy');
 	// Salary --> Import Employee //
 	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
