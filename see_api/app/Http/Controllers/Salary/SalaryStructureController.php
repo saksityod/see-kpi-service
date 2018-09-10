@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Appraisal360degree;
+namespace App\Http\Controllers\Salary;
 
 use App\Http\Controllers\Controller;
 use App\SalaryStructure;
+use App\AppraisalLevel;
 use Auth;
 use DB;
 use Excel;
@@ -21,43 +22,55 @@ class SalaryStructureController extends Controller {
 	
 	
 	public function all_list_year() {
-		$items = DB::select ( "
-				SELECT appraisal_year
-				FROM salary_structure
-				where is_active = 1
-			" );
-		return response ()->json ( $items );
+		$objYear = SalaryStructure::select('appraisal_year')
+			->distinct()
+			->orderBy('appraisal_year', 'desc')
+			->get();
+		return response()->json(["status"=>200, "data"=>$objYear]);
 	}
 	
 	
-	public function all_list_level() {
-		$items = DB::select ( "
-				SELECT level_id
-				FROM salary_structure
-				where is_active = 1
-			" );
-		return response ()->json ( $items );
+	public function all_list_level() { 
+		$objLevel = DB::select("
+			SELECT al.level_id, al.appraisal_level_name
+			FROM appraisal_level al 
+			WHERE EXISTS (
+				SELECT 1 FROM salary_structure 
+				WHERE level_id = al.level_id
+			)
+			AND al.is_individual = 1
+			ORDER BY al.level_id
+		");
+		return response()->json(["status"=>200, "data"=>$objLevel]);
 	}
 	
 	
 	public function index(Request $requst) {
-		$year = empty ( $requst->appraisal_year ) ? "" : "AND appraisal_year = '{$requst->appraisal_year}'";
-		$level = empty ( $requst->level_id ) ? "" : "AND level_id = '{$requst->level_id}' ";
+		$yearQryStr = empty($requst->year) ? "" :"AND ss.appraisal_year = '{$requst->year}'";
+		$levelQryStr = empty($requst->level) ? "" : "AND ss.level_id = '{$requst->level}'";
+		$stepQryStr = empty($requst->step_from) && empty($requst->step_to) ? "" : "AND ss.step BETWEEN '{$requst->step_from}' and '{$requst->step_to}'";
+
+		$objSalaryStruc = DB::select("
+			SELECT ss.appraisal_year, ss.level_id, ss.step, 
+				ss.s_amount, ss.minimum_wage_amount, al.appraisal_level_name
+			FROM salary_structure ss
+			LEFT OUTER JOIN appraisal_level al ON al.level_id = ss.level_id
+			WHERE 1 = 1 
+			".$yearQryStr."
+			".$levelQryStr."
+			".$stepQryStr."
+		");
 		
-		$items = DB::select ( "
-				SELECT *
-				FROM salary_structure
-				where is_active = 1
-				" . $year . "
-				" . $level . "
-			" );
-		return response ()->json ( $items );
+		return response()->json(["status"=>200, "data"=>$objSalaryStruc]);
 	}
 	
 	
 	public function show(Request $requst) {
 		try {
-			$item = CompetencyCriteria::where ( 'appraisal_year', $request->appraisal_year )->where ( 'level_id', $request->level_id )->where ( 'step', $request->step )->firstOrFail ();
+			$item = SalaryStructure::where ( 'appraisal_year', $requst->appraisal_year )
+				->where ( 'level_id', $requst->level_id )
+				->where ( 'step', $requst->step )
+				->firstOrFail();
 		} catch ( ModelNotFoundException $e ) {
 			return response ()->json ( [ 
 					'status' => 404,
@@ -68,9 +81,12 @@ class SalaryStructureController extends Controller {
 	}
 	
 	
-	public function update(Request $request) {
+	public function update(Request $request) { 
 		try {
-			$item = CompetencyCriteria::where ( 'appraisal_year', $request->appraisal_year )->where ( 'level_id', $request->level_id )->where ( 'step', $request->step )->firstOrFail ();
+			$item = SalaryStructure::where ( 'appraisal_year', $request->appraisal_year )
+				->where ( 'level_id', $request->level_id )
+				->where ( 'step', $request->step )
+				->firstOrFail();
 		} catch ( ModelNotFoundException $e ) {
 			return response ()->json ( [ 
 					'status' => 404,
@@ -82,23 +98,31 @@ class SalaryStructureController extends Controller {
 				'appraisal_year' => 'required|integer',
 				'level_id' => 'required|integer',
 				'step' => 'required|between:0,99.99',
-				's_amount' => 'required|integer' 
+				's_amount' => 'required|numeric', 
+				'minimum_wage_amount' => 'required|numeric' 
 		] );
 		
-		if ($validator->fails ()) {
-			return response ()->json ( [ 
-					'status' => 400,
-					'data' => $validator->errors () 
+		if ($validator->fails()) {
+			return response()->json ( [ 
+				'status' => 400,
+				'data' => $validator->errors() 
 			] );
 		} else {
-			$item->s_amount = $requst->s_amount;
-			$item->save ();
+			SalaryStructure::where ( 'appraisal_year', $request->appraisal_year )
+				->where ( 'level_id', $request->level_id )
+				->where ( 'step', $request->step )
+				->update(array('s_amount' => $request->s_amount,
+								'minimum_wage_amount' => $request->minimum_wage_amount));
+				//->update(array('minimum_wage_amount' => $request->minimum_wage_amount));
+			
+			//$item->s_amount = $request->s_amount;
+			//$item->save();
 		}
 		
-		return response ()->json ( [ 
-				'status' => 200,
-				'data' => $item 
-		] );
+		return response()->json([ 
+			'status' => 200,
+			'data' => $item 
+		]);
 	}
 	
 	
@@ -108,69 +132,84 @@ class SalaryStructureController extends Controller {
 			$items = Excel::load ( $f, function ($reader) {
 			} )->get ();
 			foreach ( $items as $i ) {
-				
-				$validator = Validator::make ( $i->toArray (), [ 
-						'appraisal_year' => 'required|integer',
+				$validator = Validator::make ( $i->toArray(), [ 
+						'year' => 'required|integer',
 						'level_id' => 'required|integer',
+						'level_name' => 'required|max:255',
 						'step' => 'required|between:0,99.99',
-						's_amount' => 'required|integer' 
+						'salary' => 'required|integer', 
+						'minimum_salary' => 'integer'
 				] );
 				
-				if ($validator->fails ()) {
-					$errors [] = [ 
-							'appraisal_year' => $i->appraisal_year,
-							'level_id' => $i->level_id,
-							'step' => $i->step,
-							'errors' => $validator->errors () 
-					];
-				} else {
-					$org = DB::select ( "
-						select appraisal_year
-						from salary_structure
-						where appraisal_year = ?
-						and level_id = ?
-						and step = ?
-					", array (
-							$i->appraisal_year,
-							$i->level_id,
-							$i->step 
-					) );
-					if (empty ( $org )) {
-						$org = new SalaryStructure ();
-						$org->appraisal_year = $i->appraisal_year;
-						$org->level_id = $i->level_id;
-						$org->step = $i->step;
-						$org->s_amount = $i->s_amount;
-						$org->is_active = 1;
+				if ($validator->fails()) {
+					$errors [] = ['step'=>$i->step, 'errors'=>$validator->errors ()];
+				} else { 
+					$getExistData = SalaryStructure::where('appraisal_year', $i->year)
+						->where('level_id', $i->level_id)
+						->where('step', $i->step)
+						->get();
+
+					// Set minimum wage amount //
+					if (empty($i->minimum_salary)) {
+						$minWageAmount = 0 ;
+					}else {
+						$minWageAmount = $i->minimum_salary;
+					}
+
+					// Insert / Update //
+					if (count($getExistData) == 0) { // Insert //
+						$salaryStructure = new SalaryStructure;
+						$salaryStructure->appraisal_year = $i->year;
+						$salaryStructure->level_id = $i->level_id;
+						$salaryStructure->step = $i->step;
+						$salaryStructure->s_amount = $i->salary;
+						$salaryStructure->minimum_wage_amount = $minWageAmount;
+						$salaryStructure->created_by = Auth::id();
+						$salaryStructure->updated_by = Auth::id();
+
 						try {
-							$org->save ();
+							$salaryStructure->save();
 						} catch ( Exception $e ) {
-							$errors [] = [ 
-									'appraisal_year' => $i->appraisal_year,
-									'level_id' => $i->level_id,
-									'step' => $i->step,
-									'errors' => substr ( $e, 0, 254 ) 
+							$errors [] = [
+								'step'=>'Update, Year:'.$i->year
+									.', Level:'.$i->level_name
+									.', Step:'.$i->step,
+								'errors' => $e
 							];
 						}
-					} else {
-						SalaryStructure::where ( 'appraisal_year', $i->appraisal_year )->where ( 'level_id', $i->level_id )->where ( 'step', $i->step )->update ( [ 
-								's_amount' => $i->s_amount,
-								'is_active' => $i->is_active 
-						] );
+					} else { // Update //
+						try {
+							DB::table('salary_structure')
+							->where('appraisal_year', $i->year)
+							->where('level_id', $i->level_id)
+							->where('step', $i->step)
+							->update([
+								's_amount' => $i->salary,
+								'minimum_wage_amount' => $minWageAmount,
+								'updated_by' => Auth::id(),
+								'updated_dttm' => date('Y-m-d H:i:s')]);
+						} catch ( Exception $e ) {
+							$errors [] = [
+								'step'=>'Update, Year:'.$i->year
+									.', Level:'.$i->level_name
+									.', Step:'.$i->step, 
+								'errors' => $e
+							];
+						}
 					}
 				}
 			}
 		}
-		return response ()->json ( [ 
-				'status' => 200,
-				'errors' => $errors 
-		] );
+		return response ()->json(['status' => 200,'errors' => $errors]);
 	}
 	
 	
 	public function destroy(Request $requst) {
 		try {
-			$item = CompetencyCriteria::where ( 'appraisal_year', $request->appraisal_year )->where ( 'level_id', $request->level_id )->where ( 'step', $request->step )->firstOrFail ();
+			$item = SalaryStructure::where ( 'appraisal_year', $requst->appraisal_year )
+				->where ( 'level_id', $requst->level_id )
+				->where ( 'step', $requst->step )
+				->firstOrFail();
 		} catch ( ModelNotFoundException $e ) {
 			return response ()->json ( [ 
 					'status' => 404,
@@ -179,16 +218,15 @@ class SalaryStructureController extends Controller {
 		}
 		
 		try {
-			$item->delete ();
+			SalaryStructure::where ( 'appraisal_year', $requst->appraisal_year )
+				->where ( 'level_id', $requst->level_id )
+				->where ( 'step', $requst->step )
+				->delete();
 		} catch ( Exception $e ) {
-			if ($e->errorInfo [1] == 1451) {
-				return response ()->json ( [ 
-						'status' => 400,
-						'data' => 'Cannot delete because this Salary Structure is in use.' 
-				] );
-			} else {
-				return response ()->json ( $e->errorInfo );
-			}
+			return response ()->json ( [ 
+				'status' => 400,
+				'data' => 'Cannot delete because this Salary Structure is in use. ('.$e->getMessage().')' 
+			]);
 		}
 		
 		return response ()->json ( [ 
