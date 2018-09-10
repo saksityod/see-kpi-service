@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\AppraisalGrade;
 use App\SystemConfiguration;
+use App\AppraisalStructure;
 
 use Auth;
 use DB;
@@ -21,8 +22,7 @@ class AppraisalGradeController extends Controller
 
 	public function __construct()
 	{
-
-	   $this->middleware('jwt.auth');
+		$this->middleware('jwt.auth');
 	}
 	
     public function al_list()
@@ -34,7 +34,15 @@ class AppraisalGradeController extends Controller
 			order by appraisal_level_name
 		");
 		return response()->json($items);
-    }
+	}
+	
+	public function struc_list(){
+		$objStruc = AppraisalStructure::select("structure_id", "structure_name")
+			->where("is_no_raise_value", "1")
+			->orderBy("structure_id")
+			->get();
+		return response()->json($objStruc);
+	}
 	
 	public function index(Request $request)
 	{		
@@ -103,17 +111,27 @@ class AppraisalGradeController extends Controller
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
-		}		
+		}
 
-		
-		$validator = Validator::make($request->all(), [	
-			'appraisal_level_id' => 'required|integer',
-			'grade' => 'required|max:10|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
-			'begin_score' => 'required|numeric',
-			'end_score' => 'required|numeric',
-			'salary_raise_amount' => 'required|numeric',
-			'is_active' => 'required|boolean',
-		]);
+		if($config->raise_type == "3"){
+			$validator = Validator::make($request->all(), [	
+				'appraisal_level_id' => 'required|integer',
+				'grade' => 'required|max:10|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
+				'begin_score' => 'required|numeric',
+				'end_score' => 'required|numeric',
+				'salary_raise_amount' => 'numeric',
+				'is_active' => 'required|boolean',
+			]);
+		} else {
+			$validator = Validator::make($request->all(), [	
+				'appraisal_level_id' => 'required|integer',
+				'grade' => 'required|max:10|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
+				'begin_score' => 'required|numeric',
+				'end_score' => 'required|numeric',
+				'salary_raise_amount' => 'required|numeric',
+				'is_active' => 'required|boolean',
+			]);
+		}		
 		
 		$range_check = DB::select("
 			select grade, begin_score, end_score
@@ -141,8 +159,16 @@ class AppraisalGradeController extends Controller
 			
 			if ($config->raise_type == 1) {
 				$item->salary_raise_amount = $request->salary_raise_amount;
-			} else {
-				$item->salary_raise_percent = $request->salary_raise_amount;			
+				$item->salary_raise_percent = 0;
+				$item->structure_id = 0;
+			} elseif ($config->raise_type == 2) {
+				$item->salary_raise_amount = 0;
+				$item->salary_raise_percent = $request->salary_raise_amount;
+				$item->structure_id = 0;
+			}elseif ($config->raise_type == 3) {
+				$item->salary_raise_amount = 0;
+				$item->salary_raise_percent = 0;
+				$item->structure_id = $request->structure_id;
 			}
 			
 			$item->created_by = Auth::id();
@@ -189,14 +215,25 @@ class AppraisalGradeController extends Controller
 		}		
 		
 		$errors = array();
-		$validator = Validator::make($request->all(), [	
-			'appraisal_level_id' => 'required|integer',	
-			'grade' => 'required|max:10|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
-			'begin_score' => 'required|numeric',
-			'end_score' => 'required|numeric',
-			'salary_raise_amount' => 'required|numeric',
-			'is_active' => 'required|boolean',
-		]);
+		if($config->raise_type == 3){
+			$validator = Validator::make($request->all(), [	
+				'appraisal_level_id' => 'required|integer',	
+				'grade' => 'required|max:10|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
+				'begin_score' => 'required|numeric',
+				'end_score' => 'required|numeric',
+				'salary_raise_amount' => 'numeric',
+				'is_active' => 'required|boolean',
+			]);
+		} else {
+			$validator = Validator::make($request->all(), [	
+				'appraisal_level_id' => 'required|integer',	
+				'grade' => 'required|max:10|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
+				'begin_score' => 'required|numeric',
+				'end_score' => 'required|numeric',
+				'salary_raise_amount' => 'required|numeric',
+				'is_active' => 'required|boolean',
+			]);
+		}
 		
 		$range_check = DB::select("
 			select grade, begin_score, end_score
@@ -220,12 +257,20 @@ class AppraisalGradeController extends Controller
 				$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
 				return response()->json(['status' => 400, 'data' => $errors]);
 			}		
-			$item->fill($request->except('salary_raise_amount'));
+			$item->fill($request->except(['salary_raise_amount', 'structure_id']));
 			if ($config->raise_type == 1) {
 				$item->salary_raise_amount = $request->salary_raise_amount;
-			} else {
-				$item->salary_raise_percent = $request->salary_raise_amount;			
-			}			
+				$item->salary_raise_percent = 0;
+				$item->structure_id = 0;
+			} elseif ($config->raise_type == 2) {
+				$item->salary_raise_amount = 0;
+				$item->salary_raise_percent = $request->salary_raise_amount;
+				$item->structure_id = 0;			
+			}elseif ($config->raise_type == 3) {
+				$item->salary_raise_amount = 0;
+				$item->salary_raise_percent = 0;
+				$item->structure_id = $request->structure_id;
+			}
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
