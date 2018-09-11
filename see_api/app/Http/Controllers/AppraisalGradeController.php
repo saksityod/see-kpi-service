@@ -37,10 +37,13 @@ class AppraisalGradeController extends Controller
 	}
 	
 	public function struc_list(){
-		$objStruc = AppraisalStructure::select("structure_id", "structure_name")
-			->where("is_no_raise_value", "1")
-			->orderBy("structure_id")
-			->get();
+		$objStruc = DB::select("
+			SELECT '0' structure_id, '-' structure_name
+			UNION ALL
+			SELECT structure_id, structure_name
+			FROM appraisal_structure
+			WHERE is_no_raise_value = 1
+		");
 		return response()->json($objStruc);
 	}
 	
@@ -155,20 +158,20 @@ class AppraisalGradeController extends Controller
 				return response()->json(['status' => 400, 'data' => $errors]);
 			}		
 			$item = new AppraisalGrade;
-			$item->fill($request->except('salary_raise_amount'));
+			$item->fill($request->except(['salary_raise_amount', 'structure_id']));
 			
 			if ($config->raise_type == 1) {
 				$item->salary_raise_amount = $request->salary_raise_amount;
-				$item->salary_raise_percent = 0;
-				$item->structure_id = 0;
+				$item->salary_raise_percent = null;
+				$item->structure_id = null;
 			} elseif ($config->raise_type == 2) {
-				$item->salary_raise_amount = 0;
+				$item->salary_raise_amount = null;
 				$item->salary_raise_percent = $request->salary_raise_amount;
-				$item->structure_id = 0;
+				$item->structure_id = null;
 			}elseif ($config->raise_type == 3) {
-				$item->salary_raise_amount = 0;
-				$item->salary_raise_percent = 0;
-				$item->structure_id = $request->structure_id;
+				$item->salary_raise_amount = null;
+				$item->salary_raise_percent = null;
+				$item->structure_id = ($request->structure_id==0)?null:$request->structure_id;
 			}
 			
 			$item->created_by = Auth::id();
