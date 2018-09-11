@@ -472,6 +472,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('employee_snap/import', 'PMTL\ImportEmployeeSnapshotController@import');
 
 	Route::get('questionaire/list_type', 'PMTL\QuestionaireController@list_type');
+	Route::get('questionaire/list_answer_type', 'PMTL\QuestionaireController@list_answer_type');
 	Route::get('questionaire/auto_name', 'PMTL\QuestionaireController@auto_name');
 	Route::get('questionaire', 'PMTL\QuestionaireController@index');
 	Route::get('questionaire/{questionaire_id}', 'PMTL\QuestionaireController@show');
@@ -481,6 +482,20 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('questionaire/section/{section_id}', 'PMTL\QuestionaireController@destroy_section');
 	Route::delete('questionaire/question/{question_id}', 'PMTL\QuestionaireController@destroy_question');
 	Route::delete('questionaire/answer/{answer_id}', 'PMTL\QuestionaireController@destroy_answer');
+
+	Route::get('questionaire_data/auto_emp', 'PMTL\QuestionaireDataController@auto_emp');
+	Route::get('questionaire_data/auto_store', 'PMTL\QuestionaireDataController@auto_store');
+	Route::get('questionaire_data/cust', 'PMTL\QuestionaireDataController@cust');
+	Route::get('questionaire_data/show_cust', 'PMTL\QuestionaireDataController@show_cust');
+	Route::get('questionaire_data/list_questionaire', 'PMTL\QuestionaireDataController@list_questionaire');
+	Route::get('questionaire_data', 'PMTL\QuestionaireDataController@index');
+	Route::get('questionaire_data/assign_template', 'PMTL\QuestionaireDataController@assign_template');
+	Route::get('questionaire_data/stage', 'PMTL\QuestionaireDataController@stage');
+	Route::get('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@show');
+	Route::post('questionaire_data', 'PMTL\QuestionaireDataController@store');
+	Route::patch('questionaire_data', 'PMTL\QuestionaireDataController@update');
+	Route::delete('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@destroy');
+	// Route::delete('questionaire_data/data_detail/{data_detail_id}', 'PMTL\QuestionaireDataController@destroy_data_detail');
 
 
 	Route::get('404', ['as' => 'notfound', function () {

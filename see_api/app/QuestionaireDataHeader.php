@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class QuestionaireSection extends Model
+class QuestionaireDataHeader extends Model
 {
     /**
      * The table associated with the model.
@@ -14,8 +14,8 @@ class QuestionaireSection extends Model
 	 
 	const CREATED_AT = 'created_dttm';
 	const UPDATED_AT = 'updated_dttm';
-    protected $table = 'questionaire_section';
-	protected $primaryKey = 'section_id';
+    protected $table = 'questionaire_data_header';
+	protected $primaryKey = 'data_header_id';
 	public $incrementing = true;
 	//public $timestamps = false;
 	protected $guarded = array();
