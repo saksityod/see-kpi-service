@@ -484,7 +484,10 @@ Route::group(['middleware' => 'cors'], function()
 	// Salary --> Import Employee //
 	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
 
-
+	Route::get('judgement/list_status', 'Salary\JudgementController@list_status');
+	Route::get('judgement', 'Salary\JudgementController@index');
+	Route::get('judgement/assign_judgement', 'Salary\JudgementController@assign_judgement');
+	Route::post('judgement', 'Salary\JudgementController@store');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
