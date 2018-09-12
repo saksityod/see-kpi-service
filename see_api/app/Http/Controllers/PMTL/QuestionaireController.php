@@ -97,6 +97,7 @@ class QuestionaireController extends Controller
 				LEFT JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = '{$qsv->section_id}'
 				AND q.parent_question_id IS NULL
+				ORDER BY q.seq_no ASC
 				");
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
@@ -104,6 +105,7 @@ class QuestionaireController extends Controller
 					SELECT answer_id, row_name, answer_name, score, is_not_applicable
 					FROM answer
 					WHERE question_id = '{$anv->question_id}'
+					ORDER BY seq_no ASC
 					");
 			}
 
@@ -112,6 +114,7 @@ class QuestionaireController extends Controller
 					SELECT question_id, answer_type_id, parent_question_id, question_name
 					FROM question
 					WHERE parent_question_id = '{$anv->question_id}'
+					ORDER BY seq_no ASC
 					");
 
 				foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
@@ -119,6 +122,7 @@ class QuestionaireController extends Controller
 						SELECT answer_id, row_name, answer_name, score, is_not_applicable
 						FROM answer
 						WHERE question_id = '{$ssq->question_id}'
+						ORDER BY seq_no ASC
 						");
 				}
 			}
@@ -267,6 +271,7 @@ class QuestionaireController extends Controller
 					foreach ($request['questionaire_section'][$qsv_k]['sub_section'] as $qssv_k => $qssv) {
 						$q = new Question;
 						$q->section_id = $qs->section_id;
+						$q->seq_no = $qssv_k;
 						$q->answer_type_id = $qssv['answer_type_id'];
 						$q->pass_score = $qssv['pass_score'];
 						$q->question_name = $qssv['question_name'];
@@ -275,9 +280,10 @@ class QuestionaireController extends Controller
 						$q->save();
 
 						if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'])) {
-							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'] as $ansv) {
+							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'] as $ansv_k => $ansv) {
 								$an = new Answer;
 								$an->question_id = $q->question_id;
+								$an->seq_no = $ansv_k;
 								$an->row_name = $ansv['row_name'];
 								$an->answer_name = $ansv['answer_name'];
 								$an->is_not_applicable = $ansv['is_not_applicable'];
@@ -292,6 +298,7 @@ class QuestionaireController extends Controller
 							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'] as $qssq_k => $quesv) {
 								$ques = new Question;
 								$ques->section_id = $qs->section_id;
+								$ques->seq_no = $qssq_k;
 								$ques->answer_type_id = $quesv['answer_type_id'];
 								$ques->parent_question_id = $q->question_id;
 								$ques->question_name = $quesv['question_name'];
@@ -300,9 +307,10 @@ class QuestionaireController extends Controller
 								$ques->save();
 
 								if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'])) {
-									foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'] as $ansv) {
+									foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'] as $ansv_k => $ansv) {
 										$an = new Answer;
 										$an->question_id = $ques->question_id;
+										$an->seq_no = $ansv_k;
 										$an->row_name = $ansv['row_name'];
 										$an->answer_name = $ansv['answer_name'];
 										$an->is_not_applicable = $ansv['is_not_applicable'];
@@ -469,6 +477,7 @@ class QuestionaireController extends Controller
 					foreach ($request['questionaire_section'][$qsv_k]['sub_section'] as $qssv_k => $qssv) {
 						$q = empty($qssv['question_id']) ? new Question : Question::find($qssv['question_id']);
 						$q->section_id = $qs->section_id;
+						$q->seq_no = $qssv_k;
 						$q->answer_type_id = $qssv['answer_type_id'];
 						$q->pass_score = $qssv['pass_score'];
 						$q->question_name = $qssv['question_name'];
@@ -477,9 +486,10 @@ class QuestionaireController extends Controller
 						$q->save();
 
 						if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'])) {
-							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'] as $ansv) {
+							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'] as $ansv_k => $ansv) {
 								$an = empty($ansv['answer_id']) ? new Answer : Answer::find($ansv['answer_id']);
 								$an->question_id = $q->question_id;
+								$an->seq_no = $ansv_k;
 								$an->row_name = $ansv['row_name'];
 								$an->answer_name = $ansv['answer_name'];
 								$an->is_not_applicable = $ansv['is_not_applicable'];
@@ -494,6 +504,7 @@ class QuestionaireController extends Controller
 							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'] as $qssq_k => $quesv) {
 								$ques = empty($quesv['question_id']) ? new Question : Question::find($quesv['question_id']);
 								$ques->section_id = $qs->section_id;
+								$ques->seq_no = $qssv_k;
 								$ques->answer_type_id = $quesv['answer_type_id'];
 								$ques->parent_question_id = $q->question_id;
 								$ques->question_name = $quesv['question_name'];
@@ -502,9 +513,10 @@ class QuestionaireController extends Controller
 								$ques->save();
 
 								if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'])) {
-									foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'] as $ansv) {
+									foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'] as $ansv_k => $ansv) {
 										$an = empty($ansv['answer_id']) ? new Answer : Answer::find($ansv['answer_id']);
 										$an->question_id = $ques->question_id;
+										$an->seq_no = $ansv_k;
 										$an->row_name = $ansv['row_name'];
 										$an->answer_name = $ansv['answer_name'];
 										$an->is_not_applicable = $ansv['is_not_applicable'];
