@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Salary;
 
 use App\EmpResult;
-use app\EmpJudgement;
+use App\EmpJudgement;
 
 use Auth;
 use DB;
@@ -38,7 +38,7 @@ class JudgementController extends Controller
 
 	public function index(Request $request) {
 		$year = empty($request->year) ? "" : "AND ap.appraisal_year = '{$request->year}'";
-		$period = empty($request->period) ? "" : "AND ap.period = '{$request->period}'";
+		$period = empty($request->period) ? "" : "AND ap.period_id = '{$request->period}'";
 		$status = empty($request->status) ? "" : "AND er.judgement_status_id = '{$request->status}'";
 
 		$items = DB::select("
@@ -57,7 +57,7 @@ class JudgementController extends Controller
 			LEFT OUTER JOIN appraisal_level al on al.level_id = er.level_id
 			LEFT OUTER JOIN org o ON o.org_id = er.org_id
 			LEFT OUTER JOIN position p ON p.position_id = er.position_id
-			LEFT OUTER JOIN appraisal_grand ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
+			LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
 			INNER JOIN judgement_status j ON j.judgement_status_id = er.judgement_status_id
 			WHERE 1=1 ". $year . $period . $status ."
 			ORDER BY j.judgement_status_id, er.emp_result_id
@@ -81,18 +81,18 @@ class JudgementController extends Controller
 	}
 
 	public function assign_judgement(Request $request) {
-		$emp_result_id = [];
-		foreach ($request['emp_result_id'] as $key => $value) {
-			$emp_result_id[] = $value['id'];
+		$emp_result_id = "";
+		$eri = json_decode($request['emp_result_id'], true);
+		$last_key = count($eri) -1;
+		foreach ($eri as $eri_k => $d) {
+			if($eri_k == $last_key) {
+				$emp_result_id .= $d['id'];
+			} else {
+				$emp_result_id .= $d['id'].",";
+			}
 		}
-
-		try {
-			EmpResult::firstOrFail($emp_result_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'errors' => 'EmpResult not found in DB.']);
-		}
-
-		if(count($emp_result_id) > 1) {
+		
+		if(count($eri) > 1) {
 			$head = [];
 			$detail = DB::select("
 				SELECT j.judgement_item_id, j.judgement_item_name, '0' is_pass
@@ -116,9 +116,9 @@ class JudgementController extends Controller
 				LEFT OUTER JOIN employee chief ON chief.emp_code = e.chief_emp_code
 				LEFT OUTER JOIN org o ON o.org_id = er.org_id
 				LEFT OUTER JOIN position p ON p.position_id = er.position_id
-				LEFT OUTER JOIN appraisal_grand ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
+				LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
 				WHERE er.emp_result_id IN ({$emp_result_id})
-			");
+			"); 
 
 			$detail = DB::select("
 				SELECT j.judgement_item_id, j.judgement_item_name, IF(ej.is_pass IS NULL, 0, 1) is_pass
@@ -128,23 +128,25 @@ class JudgementController extends Controller
 				WHERE j.is_active = 1
 				ORDER BY j.judgement_item_id
 			");
-		}
+		} 
 
 		return response()->json(['head' => $head, 'detail' => $detail]);
 	}
 
 	public function store(Request $request) {
-		$emp_result_id = [];
-		foreach ($request['emp_result_id'] as $key => $value) {
-			$emp_result_id[] = $value['id'];
+		$emp_result_id = "";
+		//$eri = json_decode($request['emp_result_id'], true);
+		$eri = $request['emp_result_id'];
+		$last_key = count($eri) -1;
+		foreach ($eri as $eri_k => $d) {
+			if($eri_k == $last_key) {
+				$emp_result_id .= $d['id'];
+			} else {
+				$emp_result_id .= $d['id'].",";
+			}
 		}
-
-		try {
-			EmpResult::firstOrFail($emp_result_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'errors' => 'EmpResult not found in DB.']);
-		}
-
+		
+		//$request['items'] = json_decode($request['items'], true);
 		if(empty($request['items'])) {
 			return response()->json(['status' => 404, 'errors' => 'Array items not found.']);
 		}
@@ -167,19 +169,19 @@ class JudgementController extends Controller
 		}
 
 		try {
-			foreach ($emp_result_id as $id) {
-				$ej = EmpResult::find($id);
+			foreach ($eri as $d) {
+				DB::table('emp_judgement')->where('emp_result_id', '=', $d['id'])->delete();
+				$ej = EmpResult::find($d['id']);
 				$ej->judgement_status_id = 2;
 				$ej->updated_by = Auth::id();
 				$ej->save();
 			}
 			
-			DB::table('emp_judgement')->whereIn('emp_result_id', '=', $emp_result_id)->delete();
 			foreach ($request['items'] as $i) {
 				if($i['is_pass']==1) {
-					foreach ($emp_result_id as $id) {
+					foreach ($eri as $d) {
 						$ej = new EmpJudgement;
-						$ej->emp_result_id = $id;
+						$ej->emp_result_id = $d['id'];
 						$ej->judgement_item_id = $i['judgement_item_id'];
 						$ej->is_pass = $i['is_pass'];
 						$ej->created_by = Auth::id();
