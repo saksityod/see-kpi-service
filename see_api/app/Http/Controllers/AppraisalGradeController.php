@@ -84,7 +84,7 @@ class AppraisalGradeController extends Controller
 				
 		empty($request->appraisal_level_id) ?: ($query .= " where a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 		
-		$qfooter = " Order by b.appraisal_level_name asc, a.grade asc ";
+		$qfooter = " Order by a.appraisal_level_id, a.begin_score";
 		
 		$items = DB::select($query . $qfooter, $qinput);
 		
@@ -119,7 +119,7 @@ class AppraisalGradeController extends Controller
 
 		$validator = Validator::make($request->all(), [
 			'appraisal_level_id' => 'required|integer',
-			'grade' => 'required|max:10|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
+			'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
 			'begin_score' => 'required|numeric',
 			'end_score' => 'required|numeric',
 			'salary_raise_amount' => 'required|numeric',
@@ -214,7 +214,7 @@ class AppraisalGradeController extends Controller
 		$errors = array();
 		$validator = Validator::make($request->all(), [	
 			'appraisal_level_id' => 'required|integer',	
-			'grade' => 'required|max:10|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
+			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
 			'begin_score' => 'required|numeric',
 			'end_score' => 'required|numeric',
 			'salary_raise_amount' => 'required|numeric',

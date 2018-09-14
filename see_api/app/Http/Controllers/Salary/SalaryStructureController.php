@@ -127,6 +127,9 @@ class SalaryStructureController extends Controller {
 	
 	
 	public function import(Request $request) {
+		// ini_set('max_execution_time', 180); // 3 Minutes
+		set_time_limit(0);
+		ini_set('memory_limit', '1024M');
 		$errors = array ();
 		foreach ( $request->file () as $f ) {
 			$items = Excel::load ( $f, function ($reader) {
