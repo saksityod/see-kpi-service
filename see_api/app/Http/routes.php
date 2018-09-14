@@ -485,16 +485,16 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('questionaire_data/auto_emp', 'PMTL\QuestionaireDataController@auto_emp');
 	Route::get('questionaire_data/auto_store', 'PMTL\QuestionaireDataController@auto_store');
-	Route::get('questionaire_data/cust', 'PMTL\QuestionaireDataController@cust');
-	Route::get('questionaire_data/show_cust', 'PMTL\QuestionaireDataController@show_cust');
+	Route::get('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@evaluated_retailer_list');
+	Route::get('questionaire_data/evaluated_retailer_list_edit', 'PMTL\QuestionaireDataController@evaluated_retailer_list_edit');
 	Route::get('questionaire_data/list_questionaire', 'PMTL\QuestionaireDataController@list_questionaire');
 	Route::get('questionaire_data', 'PMTL\QuestionaireDataController@index');
 	Route::get('questionaire_data/assign_template', 'PMTL\QuestionaireDataController@assign_template');
-	Route::get('questionaire_data/stage', 'PMTL\QuestionaireDataController@stage');
 	Route::get('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@show');
 	Route::post('questionaire_data', 'PMTL\QuestionaireDataController@store');
 	Route::patch('questionaire_data', 'PMTL\QuestionaireDataController@update');
 	Route::delete('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@destroy');
+	Route::delete('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@destroy_evaluated_retailer_list');
 	// Route::delete('questionaire_data/data_detail/{data_detail_id}', 'PMTL\QuestionaireDataController@destroy_data_detail');
 
 

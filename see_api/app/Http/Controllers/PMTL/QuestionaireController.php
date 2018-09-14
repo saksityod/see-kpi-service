@@ -459,70 +459,119 @@ class QuestionaireController extends Controller
 		$qn->questionaire_type_id = $request->questionaire_type_id;
 		$qn->pass_score = $request->pass_score;
 		$qn->is_active = $request->is_active;
-		$qn->created_by = Auth::id();
 		$qn->updated_by = Auth::id();
 		$qn->save();
 
 		if(!empty($request['questionaire_section'])) {
 			foreach ($request['questionaire_section'] as $qsv_k => $qsv) {
-				$qs = empty($qsv['section_id']) ? new QuestionaireSection : QuestionaireSection::find($qsv['section_id']);
-				$qs->questionaire_id = $qn->questionaire_id;
-				$qs->section_name = $qsv['section_name'];
-				$qs->is_cust_search = $qsv['is_cust_search'];
-				$qs->created_by = Auth::id();
-				$qs->updated_by = Auth::id();
+				if(empty($qsv['section_id'])) {
+					$qs = new QuestionaireSection;
+					$qs->questionaire_id = $qn->questionaire_id;
+					$qs->section_name = $qsv['section_name'];
+					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->created_by = Auth::id();
+					$qs->updated_by = Auth::id();
+				} else {
+					$qs = QuestionaireSection::find($qsv['section_id']);
+					$qs->questionaire_id = $qn->questionaire_id;
+					$qs->section_name = $qsv['section_name'];
+					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->updated_by = Auth::id();
+				}
 				$qs->save();
 
 				if(!empty($request['questionaire_section'][$qsv_k]['sub_section'])) {
 					foreach ($request['questionaire_section'][$qsv_k]['sub_section'] as $qssv_k => $qssv) {
-						$q = empty($qssv['question_id']) ? new Question : Question::find($qssv['question_id']);
-						$q->section_id = $qs->section_id;
-						$q->seq_no = $qssv_k;
-						$q->answer_type_id = $qssv['answer_type_id'];
-						$q->pass_score = $qssv['pass_score'];
-						$q->question_name = $qssv['question_name'];
-						$q->created_by = Auth::id();
-						$q->updated_by = Auth::id();
+						if(empty($qssv['question_id'])) {
+							$q = new Question;
+							$q->section_id = $qs->section_id;
+							$q->seq_no = $qssv_k;
+							$q->answer_type_id = $qssv['answer_type_id'];
+							$q->pass_score = $qssv['pass_score'];
+							$q->question_name = $qssv['question_name'];
+							$q->created_by = Auth::id();
+							$q->updated_by = Auth::id();
+						} else {
+							$q = Question::find($qssv['question_id']);
+							$q->section_id = $qs->section_id;
+							$q->seq_no = $qssv_k;
+							$q->answer_type_id = $qssv['answer_type_id'];
+							$q->pass_score = $qssv['pass_score'];
+							$q->question_name = $qssv['question_name'];
+							$q->updated_by = Auth::id();
+						}
 						$q->save();
 
 						if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'])) {
 							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'] as $ansv_k => $ansv) {
-								$an = empty($ansv['answer_id']) ? new Answer : Answer::find($ansv['answer_id']);
-								$an->question_id = $q->question_id;
-								$an->seq_no = $ansv_k;
-								$an->row_name = $ansv['row_name'];
-								$an->answer_name = $ansv['answer_name'];
-								$an->is_not_applicable = $ansv['is_not_applicable'];
-								$an->score = $ansv['score'];
-								$an->created_by = Auth::id();
-								$an->updated_by = Auth::id();
+								if(empty($ansv['answer_id'])) {
+									$an = new Answer;
+									$an->question_id = $q->question_id;
+									$an->seq_no = $ansv_k;
+									$an->row_name = $ansv['row_name'];
+									$an->answer_name = $ansv['answer_name'];
+									$an->is_not_applicable = $ansv['is_not_applicable'];
+									$an->score = $ansv['score'];
+									$an->created_by = Auth::id();
+									$an->updated_by = Auth::id();
+								} else {
+									$an = Answer::find($ansv['answer_id']);
+									$an->question_id = $q->question_id;
+									$an->seq_no = $ansv_k;
+									$an->row_name = $ansv['row_name'];
+									$an->answer_name = $ansv['answer_name'];
+									$an->is_not_applicable = $ansv['is_not_applicable'];
+									$an->score = $ansv['score'];
+									$an->updated_by = Auth::id();
+								}
 								$an->save();
 							}
 						}
 
 						if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'])) {
 							foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'] as $qssq_k => $quesv) {
-								$ques = empty($quesv['question_id']) ? new Question : Question::find($quesv['question_id']);
-								$ques->section_id = $qs->section_id;
-								$ques->seq_no = $qssv_k;
-								$ques->answer_type_id = $quesv['answer_type_id'];
-								$ques->parent_question_id = $q->question_id;
-								$ques->question_name = $quesv['question_name'];
-								$ques->created_by = Auth::id();
-								$ques->updated_by = Auth::id();
+								if(empty($quesv['question_id'])) {
+									$ques = new Question;
+									$ques->section_id = $qs->section_id;
+									$ques->seq_no = $qssq_k;
+									$ques->answer_type_id = $quesv['answer_type_id'];
+									$ques->parent_question_id = $q->question_id;
+									$ques->question_name = $quesv['question_name'];
+									$ques->created_by = Auth::id();
+									$ques->updated_by = Auth::id();
+								} else {
+									$ques = Question::find($quesv['question_id']);
+									$ques->section_id = $qs->section_id;
+									$ques->seq_no = $qssq_k;
+									$ques->answer_type_id = $quesv['answer_type_id'];
+									$ques->parent_question_id = $q->question_id;
+									$ques->question_name = $quesv['question_name'];
+									$ques->updated_by = Auth::id();
+								}
 								$ques->save();
 
 								if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'])) {
 									foreach ($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['question'][$qssq_k]['answer'] as $ansv_k => $ansv) {
-										$an = empty($ansv['answer_id']) ? new Answer : Answer::find($ansv['answer_id']);
-										$an->question_id = $ques->question_id;
-										$an->seq_no = $ansv_k;
-										$an->row_name = $ansv['row_name'];
-										$an->answer_name = $ansv['answer_name'];
-										$an->is_not_applicable = $ansv['is_not_applicable'];
-										$an->score = $ansv['score'];
-										$an->created_by = Auth::id();
-										$an->updated_by = Auth::id();
+										if(empty($ansv['answer_id'])) {
+											$an = new Answer;
+											$an->question_id = $ques->question_id;
+											$an->seq_no = $ansv_k;
+											$an->row_name = $ansv['row_name'];
+											$an->answer_name = $ansv['answer_name'];
+											$an->is_not_applicable = $ansv['is_not_applicable'];
+											$an->score = $ansv['score'];
+											$an->created_by = Auth::id();
+											$an->updated_by = Auth::id();
+										} else {
+											$an = Answer::find($ansv['answer_id']);
+											$an->question_id = $ques->question_id;
+											$an->seq_no = $ansv_k;
+											$an->row_name = $ansv['row_name'];
+											$an->answer_name = $ansv['answer_name'];
+											$an->is_not_applicable = $ansv['is_not_applicable'];
+											$an->score = $ansv['score'];
+											$an->updated_by = Auth::id();
+										}
 										$an->save();
 									}
 								}
