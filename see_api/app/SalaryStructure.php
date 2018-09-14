@@ -21,4 +21,9 @@ class SalaryStructure extends Model
 	//protected $guarded = array();
 	protected $fillable = array('appraisal_year', 'level_id','step','s_amount', 'minimum_wage_amount');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
+	protected $casts = [
+		'step' => 'float',
+		's_amount' => 'float',
+		'minimum_wage_amount' => 'float',
+	];
 }

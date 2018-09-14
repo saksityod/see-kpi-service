@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 
 use Auth;
 use DB;
 use Exception;
-
 use App\User;
 use App\AppraisalPeriod;
+use App\SalaryStructure;
+use App\EmpResult;
+use App\Employee;
 
 
 
@@ -28,17 +31,27 @@ class CalculateSalaryStructureController extends Controller
      * 1. คำนวณเกรดให้กับ emp
      * 2. ทำการปรับเงินเดือน
      *      2.1 ค้นหา emp ที่ได้ Grade ที่ไม่มี Struc (Step-1)
-     *          2.1.1 ปรับเงินเดือน Raise Step
+     *          - ปรับเงินเดือน Raise Step
      *      2.2 ค้นหา emp ที่ได้ Grade ที่มี Struc ผูกอยู่ (Step-2)
-     *          2.2.1 ไม่ผ่านการประเมิณเลยซัก Item เดียวที่อยู่ภายใต้ Struc => ไม่ปรับเงินเดือน
-     *          2.2.2 ผ่านการประเมิณเพียงแค่บาง Item ที่อยู่ภายใต้ Struc => ไม่ปรับเงินเดือน
-     *          2.2.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc => ปรับเงินเดือน Raise Step
-     * Step-3 : ได้ Grade ที่มี Struc ผูกอยู่ และผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc นั้น 
-     *          -> บันทึก Grade, judgement status ลงที่ emp_result
-     *          -> ปรับเงินเดือน (สั่งงานจากหน้า Judgement)
-     *              -> ดึง emp ที่มีสถานะ 2-พิจารณาแล้ว 
-     *                  -> ผ่านการพิจารณา => ปรับเงินเดือน Raise Step
-     *                  -> ไม่ผ่านการพิจารณา => ไม่ปรับเงินเดือน
+     *      2.3 ตรวจสอบผลผลการประเมิณของ item ที่อยู่ภายใต้ ข้อ 2.2 (เช็คที่ตาราง appraisal_item_result ที่ no_raise_value กับ actual_value)
+     *          2.3.1 ไม่ผ่านการประเมิณเลยซัก Item เดียวที่อยู่ภายใต้ Struc
+     *              - ไม่ปรับเงินเดือน
+     *          2.3.2 ผ่านการประเมิณเพียงแค่บาง Item ที่อยู่ภายใต้ Struc
+     *              - ไม่ปรับเงินเดือน
+     *          2.3.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc 
+     *              2.3.3.1 ตรวจสอบว่า appraisal_structure.is_no_raise_value (ต้องผ่านการพิจารณาหรือไม่)
+     *                  2.3.3.1.1 กรณี is_no_raise_value = 0 (ไม่ต้องผ่านการพิจารณา)
+     *                      - ปรับเงินเดือน Raise Step
+     *                  2.3.3.1.2 กรณี is_no_raise_value = 1 (จำเป็นต้องผ่านการพิจารณา)
+     *                      - บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result
+     * 3. ปรับเงินเดือน (สั่งงานจากหน้า Judgement)
+     *      3.1 ดึง emp judgement_status = 2-พิจารณาแล้ว 
+     *      3.2 ตรวจสอบผลการพิจารณา 
+     *          3.2.1 ผ่านการพิจารณา 
+     *              - ปรับเงินเดือน Raise Step
+     *          3.2.2 ไม่ผ่านการพิจารณา
+     *              - ไม่ปรับเงินเดือน
+     * **การปรัปเงินเดือน update ข้อมูลที่ตาราง emp_result(judgement_status_id,raise_amount,new_s_amount), employee(step,s_amount)
      */
 
 
@@ -63,7 +76,7 @@ class CalculateSalaryStructureController extends Controller
         }
         
         // 2. ทำการปรับเงินเดือน //
-        // 2.1 ค้นหา emp ที่ได้ Grade ที่ไม่มี Struc (Step-1) //
+        // 2.1 ค้นหา emp ที่ได้ Grade ที่ไม่มี Struc (Step-1) และทำการปรับเงินเดือน //
         $raiseStep1 = $this->SalaryRaiseStep1($periodInfo);
         
         return response()->json($raiseStep1);
@@ -101,7 +114,10 @@ class CalculateSalaryStructureController extends Controller
                         AND end_date <= '{$periodInfo->end_date}'
                     )
                     AND er.appraisal_type_id = 2
-                    AND er.result_score != 0
+
+                    -- AND er.result_score != 0
+
+                    AND (er.judgement_status_id is null OR er.judgement_status_id = 0)
                     GROUP BY er.emp_id, er.org_id, er.position_id, er.level_id
                     HAVING status_all_end = 0
                 )grade
@@ -110,8 +126,10 @@ class CalculateSalaryStructureController extends Controller
                     AND grade.org_id = empr.org_id
                     AND grade.position_id = empr.position_id
                     AND grade.level_id = empr.level_id
+                LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = grade.result_grade
                 SET 
-                    empr.salary_grade_id = result_grade,
+                    empr.salary_grade_id = grade.result_grade,
+                    empr.grade = ag.grade,
                     empr.updated_by = '{$authId}',
                     empr.updated_dttm = '{$curDateTime}'
             ");
@@ -127,39 +145,55 @@ class CalculateSalaryStructureController extends Controller
 
     private function SalaryRaiseStep1($periodInfo)
     {
-        // get grade ที่ไม่มี Struc และไม่มี judgement
+        // ดึงข้อมูล grade ที่ขึ้นเงินเดือน step1(ไม่มี Struc และไม่มี judgement) เพื่อหา raise step //
         $gradeStep1 = DB::select("
             SELECT grade_id, appraisal_level_id, grade, salary_raise_step
             FROM appraisal_grade
             WHERE (structure_id is null or structure_id = 0)
-            AND is_judgement = 0
-        ");
+            AND is_judgement = 0");
 
+        $empLog = [];
         foreach ($gradeStep1 as $grade) {
-            // get employee information //
+            // ดึงข้อมูลของ emp ที่ถูกคิด grade ว่าอยู่ที่ level ไหน และปัจจุบันมี step และ salary เท่าไหร่ //
             $empGrade = DB::select("
-                SELECT er.emp_result_id, emp.emp_id, emp.level_id, ap.period_id, ap.appraisal_year,
-                    IFNULL(emp.step,0) emp_cur_step, IFNULL(emp.s_amount,0) emp_cur_salary
+                SELECT er.emp_result_id, emp.emp_id, emp.level_id,
+                    IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
                 FROM emp_result er
                 INNER JOIN employee emp 
                     ON emp.emp_id = er.emp_id 
                     AND er.org_id = er.org_id
                     AND er.position_id = er.position_id
                     AND er.level_id = er.level_id
-                INNER JOIN appraisal_period ap ON ap.period_id = '{$periodInfo->period_id}'
-                WHERE er.period_id = '{$periodInfo->period_id}'
+                WHERE (er.judgement_status_id IS NULL OR er.judgement_status_id = 0)
+                AND er.period_id = '{$periodInfo->period_id}'
                 AND er.salary_grade_id = '{$grade->grade_id}'
-                AND er.level_id = '{$grade->appraisal_level_id}'
-            ");
+                AND er.level_id = '{$grade->appraisal_level_id}'");
 
             foreach ($empGrade as $emp){
+                // ตรวจสอบ และ set ค่า ให้กับ emp ที่ไม่มี step และ salary (ตั้งค่าให้มี step, salary เป็นค่าน้อยที่สุดของ level นั้นๆ ) //
+                if($emp->emp_cur_step == 0){
+                    $firstStepLevel = DB::select("
+                        SELECT  ss.step, ss.s_amount
+                        FROM salary_structure ss
+                        WHERE ss.appraisal_year = '{$periodInfo->appraisal_year}'
+                        AND ss.level_id = '{$emp->level_id}'
+                        AND ss.step = (
+                            SELECT MIN(ms.step) 
+                            FROM salary_structure ms
+                            WHERE ms.appraisal_year = ss.appraisal_year
+                            AND ms.level_id = ss.level_id
+                        )");
+                    $emp->emp_cur_step = (float) $firstStepLevel[0]->step;
+                    $emp->emp_cur_salary = (float) $firstStepLevel[0]->s_amount;
+                }
 
-                
-                return ["grade"=>$grade, "empGrade"=>$emp];
+                // Update เงินเดือนให้ emp //
+                $empLog[] = $this->RaiseUp($periodInfo, $grade, $emp);
+
             }
         }
 
-        //return ["grade"=>$grade, "empGrade"=>$empGrade];
+        return ["status"=>200, "data"=>$empLog];
     }
 
 
@@ -171,4 +205,52 @@ class CalculateSalaryStructureController extends Controller
     // private function JudgementCalculate(){
 
     // }
+
+
+    private function RaiseUp($periodInfo, $grade, $emp)
+    {
+        // ดึงข้อมูลจาก salary struc ของปีที่อยู่ใน period และ level ของ emp ที่อยู่ใน loop ปัจจุบัน //           
+        $salaryStruc = SalaryStructure::where("appraisal_year", $periodInfo->appraisal_year)
+            ->where("level_id", $emp->level_id)
+            ->get();
+
+        // ตรวจสอบและกำหนดค่าให้กับ emp ที่มี next step เกินกว่าที่กำหนดใน level นั้นๆ //
+        $nextStep = ((float)$emp->emp_cur_step) + ((float)$grade->salary_raise_step);
+        $levelMaxStep = $salaryStruc->max("step");
+        if($nextStep > $levelMaxStep){
+            $salaryStruc = $salaryStruc->where("step", $levelMaxStep)->first();
+        } else {
+            $salaryStruc = $salaryStruc->where("step", $nextStep)->first();
+        }
+
+        // ตรวจสอบเงินเดือนขั้นต่ำ (minimum_wage_amount) //
+        if($salaryStruc->minimum_wage_amount > $salaryStruc->s_amount){
+            $salaryStruc->s_amount = $salaryStruc->minimum_wage_amount;
+        }
+        
+        // Update ข้อมูลเงินเดือนที่ตาราง emp_result //
+        EmpResult::where("emp_result_id", $emp->emp_result_id)
+            ->update([
+                "judgement_status_id" => 3, 
+                "raise_amount" => ((float)$salaryStruc->s_amount) - ((float)$emp->emp_cur_salary),
+                "new_s_amount" => $salaryStruc->s_amount
+            ]);
+        
+        // Update ข้อมูลเงินเดือนที่ตาราง emp //
+        Employee::where("emp_id", $emp->emp_id)
+            ->update([
+                "step" => $salaryStruc->step,
+                "s_amount" => $salaryStruc->s_amount
+            ]);
+
+        // Log //
+        return [
+            "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id, 
+            "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary,
+            "grade"=>$grade->grade, "salary_raise_step"=>$grade->salary_raise_step,
+            "new_step"=>$salaryStruc->step, "new_salary"=>$salaryStruc->s_amount, 
+            "raise_amount"=>((float)$salaryStruc->s_amount) - ((float)$emp->emp_cur_salary),
+            "judgement_status_id" => 3
+        ];
+    }
 }
