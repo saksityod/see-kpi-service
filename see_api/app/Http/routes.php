@@ -483,6 +483,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('salary_structure', 'Salary\SalaryStructureController@destroy');
 	// Salary --> Import Employee //
 	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
+	// Salary --> Salary Raise //
+	Route::get('salary_raise/raise', 'Salary\CalculateSalaryStructureController@SalaryRaise');
 
 	Route::get('judgement/list_status', 'Salary\JudgementController@list_status');
 	Route::get('judgement', 'Salary\JudgementController@index');
