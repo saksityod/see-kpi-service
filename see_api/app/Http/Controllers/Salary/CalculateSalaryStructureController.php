@@ -25,15 +25,35 @@ class CalculateSalaryStructureController extends Controller
 {
     public function __construct()
 	{
-	   $this->middleware('jwt.auth');
+	   //$this->middleware('jwt.auth');
     }
 
 
-    public function index(){
+    public function index()
+    {
+        $empGrade = DB::select("
+                SELECT er.emp_result_id, emp.emp_id, emp.level_id, salary_grade_id,
+                    IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
+                FROM emp_result er
+                INNER JOIN employee emp 
+                    ON emp.emp_id = er.emp_id 
+                    AND er.org_id = er.org_id
+                    AND er.position_id = er.position_id
+                    AND er.level_id = er.level_id
+                WHERE er.emp_result_id = '20084'"
+            );
+
+            $grade = DB::select("
+                SELECT grade_id, appraisal_level_id, grade, salary_raise_step
+                FROM appraisal_grade
+                WHERE grade_id = '{$empGrade[0]->salary_grade_id}'"
+            );
+            return response()->json(["status"=>200, "data"=>$grade]);
     }
 
 
-    public function ParameterPeriod(){
+    public function ParameterPeriod()
+    {
         return response()->json( 
             AppraisalPeriod::select("period_id", "appraisal_year", "appraisal_period_desc")
                 ->where("is_raise", 1)
@@ -91,21 +111,43 @@ class CalculateSalaryStructureController extends Controller
         // 2.2 ค้นหา emp ที่ได้ Grade ที่มี Struc ผูกอยู่ (Step-2, Step-3) //
         $raiseStep[] = $this->SalaryRaiseStep2_3($periodInfo);
 
-
-        
         return response()->json(["status"=>200, "data"=>$raiseStep]);
     }
 
 
     public function SalaryRieseJudgement(Request $request)
     {
-        $empLog = [];
-        foreach ($request->emp as $emp) {
-            // Update เงินเดือนให้ emp //
-            $empLog[] = $this->RaiseUp($request->periodInfo, $request->grade, $emp);
+        try {
+			$periodInfo = AppraisalPeriod::FindOrFail($request->period_id);
+		} catch(ModelNotFoundException $e) {
+			return response()->json(["status"=>404, "data"=>"Salary Appraisal Period not found."]);
         }
 
-        return response()->json($empLog); 
+        $empLog = [];
+        foreach ($request->emp_result_id as $id) {
+            $empGrade = DB::select("
+                SELECT er.emp_result_id, emp.emp_id, emp.level_id, salary_grade_id,
+                    IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
+                FROM emp_result er
+                INNER JOIN employee emp 
+                    ON emp.emp_id = er.emp_id 
+                    AND er.org_id = er.org_id
+                    AND er.position_id = er.position_id
+                    AND er.level_id = er.level_id
+                WHERE er.emp_result_id = '{$id}'"
+            );
+
+            $grade = DB::select("
+                SELECT grade_id, appraisal_level_id, grade, salary_raise_step
+                FROM appraisal_grade
+                WHERE grade_id = '{$empGrade[0]->salary_grade_id}'"
+            );
+
+            // Update เงินเดือนให้ emp //
+            $empLog[] = $this->RaiseUp($periodInfo, $grade[0], $empGrade[0]);
+        }
+
+        return response()->json(["status"=>200, "data"=>$empLog]);
     }
 
 
