@@ -484,8 +484,11 @@ Route::group(['middleware' => 'cors'], function()
 	// Salary --> Import Employee //
 	Route::post('import_employee_salary', 'Salary\ImportEmployeeSalaryController@import');
 	// Salary --> Salary Raise //
-	Route::get('salary_raise/raise', 'Salary\CalculateSalaryStructureController@SalaryRaise');
-
+	Route::get('salary_raise/parameter/period', 'Salary\CalculateSalaryStructureController@ParameterPeriod');
+	Route::post('salary_raise/raise', 'Salary\CalculateSalaryStructureController@SalaryRaise');
+	Route::post('salary_raise/judgement', 'Salary\CalculateSalaryStructureController@SalaryRieseJudgement');
+	Route::get('salary_raise/test', 'Salary\CalculateSalaryStructureController@index');
+	// Salary --> Salary Judgement //
 	Route::get('judgement/list_status', 'Salary\JudgementController@list_status');
 	Route::get('judgement', 'Salary\JudgementController@index');
 	Route::get('judgement/assign_judgement', 'Salary\JudgementController@assign_judgement');
