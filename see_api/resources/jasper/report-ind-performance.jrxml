@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="CopyOfsee-kpi-mpn"/>
 	<parameter name="emp_id" class="java.lang.String"/>
 	<parameter name="level_id" class="java.lang.String"/>
 	<parameter name="position_id" class="java.lang.String"/>
@@ -60,7 +60,7 @@ from (
 	group by total.emp_id) stuc ON emp1.emp_id = stuc.emp_id 
 WHERE (emp.emp_id =  $P{emp_id} OR '' = $P{emp_id} OR  ISNULL($P{emp_id}) = 1 )
 AND (emp.position_id = $P{position_id}  OR '' = $P{position_id} OR  ISNULL($P{position_id}) = 1  )
-AND (emp1.org_id IN($P!{org_id} ))
+AND (emp1.org_id IN( $P{org_id} ))
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_id}  OR '' = $P{level_id}  OR  ISNULL($P{level_id}) = 1 )
 AND ((emp1.chief_emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2

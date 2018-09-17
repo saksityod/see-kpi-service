@@ -41,6 +41,7 @@
 		inner join appraisal_structure apst on re.structure_id = apst.structure_id
 		where apst.form_id = 2
 		and re.emp_id = air.emp_id
+		and re.structure_id = aps.structure_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
@@ -50,6 +51,7 @@
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
+		and st.structure_id = aps.structure_id
 		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
@@ -107,6 +109,7 @@ SELECT aps.seq_no
 		inner join appraisal_structure apst on re.structure_id = apst.structure_id
 		where apst.form_id = 2
 		and re.emp_id = air.emp_id
+		and re.structure_id = aps.structure_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
@@ -116,6 +119,7 @@ SELECT aps.seq_no
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
+		and st.structure_id = aps.structure_id
 		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
