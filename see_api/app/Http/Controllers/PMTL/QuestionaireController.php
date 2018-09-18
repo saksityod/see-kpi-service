@@ -153,9 +153,13 @@ class QuestionaireController extends Controller
 			foreach ($request['questionaire_section'] as $qs_k => $qs) {
 				$validator_questionaire_section = Validator::make([
 					'section_name' => $qs['section_name'],
+					'is_show_report' => $qs['is_show_report'],
+					'report_url' => $qs['report_url'],
 					'is_cust_search' => $qs['is_cust_search']
 				], [
 					'section_name' => 'required|max:255',
+					'is_show_report' => 'required|integer',
+					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer'
 				]);
 
@@ -262,6 +266,8 @@ class QuestionaireController extends Controller
 				$qs = new QuestionaireSection;
 				$qs->questionaire_id = $qn->questionaire_id;
 				$qs->section_name = $qsv['section_name'];
+				$qs->is_show_report = $qsv['is_show_report'];
+				$qs->report_url = $qsv['report_url'];
 				$qs->is_cust_search = $qsv['is_cust_search'];
 				$qs->created_by = Auth::id();
 				$qs->updated_by = Auth::id();
@@ -359,9 +365,13 @@ class QuestionaireController extends Controller
 			foreach ($request['questionaire_section'] as $qs_k => $qs) {
 				$validator_questionaire_section = Validator::make([
 					'section_name' => $qs['section_name'],
+					'is_show_report' => $qs['is_show_report'],
+					'report_url' => $qs['report_url'],
 					'is_cust_search' => $qs['is_cust_search']
 				], [
 					'section_name' => 'required|max:255',
+					'is_show_report' => 'required|integer',
+					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer'
 				]);
 
@@ -468,6 +478,8 @@ class QuestionaireController extends Controller
 					$qs = new QuestionaireSection;
 					$qs->questionaire_id = $qn->questionaire_id;
 					$qs->section_name = $qsv['section_name'];
+					$qs->is_show_report = $qsv['is_show_report'];
+					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
 					$qs->created_by = Auth::id();
 					$qs->updated_by = Auth::id();
@@ -475,6 +487,8 @@ class QuestionaireController extends Controller
 					$qs = QuestionaireSection::find($qsv['section_id']);
 					$qs->questionaire_id = $qn->questionaire_id;
 					$qs->section_name = $qsv['section_name'];
+					$qs->is_show_report = $qsv['is_show_report'];
+					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
 					$qs->updated_by = Auth::id();
 				}
