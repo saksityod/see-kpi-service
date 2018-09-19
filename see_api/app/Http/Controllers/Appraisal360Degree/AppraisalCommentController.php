@@ -54,12 +54,12 @@ class AppraisalCommentController extends Controller
 					, em.emp_id
 					, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
 					, ag.assessor_group_id
-					, (CASE WHEN LENGTH(ao.emp__strength_opinion) and  LENGTH(ao.emp__weakness_opinion)
+					, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
 					THEN 'yes' ELSE 'no' END) AS comment
-					, ao.assessor__strength_opinion
-					, ao.assessor__weakness_opinion
-					, ao.emp__strength_opinion
-					, ao.emp__weakness_opinion
+					, ao.assessor_strength_opinion
+					, ao.assessor_weakness_opinion
+					, ao.emp_strength_opinion
+					, ao.emp_weakness_opinion
 					-- , 'admin' as user
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
@@ -81,12 +81,12 @@ class AppraisalCommentController extends Controller
 					, em.emp_id
 					, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
 					, ag.assessor_group_id
-					, (CASE WHEN LENGTH(ao.emp__strength_opinion) and  LENGTH(ao.emp__weakness_opinion)
+					, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
 					THEN 'yes' ELSE 'no' END) AS comment
-					, ao.assessor__strength_opinion
-					, ao.assessor__weakness_opinion
-					, ao.emp__strength_opinion
-					, ao.emp__weakness_opinion
+					, ao.assessor_strength_opinion
+					, ao.assessor_weakness_opinion
+					, ao.emp_strength_opinion
+					, ao.emp_weakness_opinion
 					-- , 'my' as user
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
@@ -108,12 +108,12 @@ class AppraisalCommentController extends Controller
 					, em.emp_id
 					, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
 					, ag.assessor_group_id
-					, (CASE WHEN LENGTH(ao.emp__strength_opinion) and  LENGTH(ao.emp__weakness_opinion)
+					, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
 					THEN 'yes' ELSE 'no' END) AS comment
-					, ao.assessor__strength_opinion
-					, ao.assessor__weakness_opinion
-					, ao.emp__strength_opinion
-					, ao.emp__weakness_opinion
+					, ao.assessor_strength_opinion
+					, ao.assessor_weakness_opinion
+					, ao.emp_strength_opinion
+					, ao.emp_weakness_opinion
 					-- , 'other' as user
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
@@ -131,10 +131,10 @@ class AppraisalCommentController extends Controller
 						, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
 						, ? as assessor_group_id -- ?
 						, 'no' as comment
-						, '' as assessor__strength_opinion
-						, '' as assessor__weakness_opinion
-						, '' as emp__strength_opinion
-						, '' as emp__weakness_opinion
+						, '' as assessor_strength_opinion
+						, '' as assessor_weakness_opinion
+						, '' as emp_strength_opinion
+						, '' as emp_weakness_opinion
 						-- , 'other' as user
 						from employee
 						cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
@@ -179,10 +179,10 @@ class AppraisalCommentController extends Controller
 				$assessment->emp_result_id = $da->emp_result_id;
 				$assessment->assessor_group_id = 3; //$da->assessor_group_id;
 				$assessment->assessor_id = $da->emp_id;
-				$assessment->assessor__strength_opinion = $da->assessor__strength_opinion;
-				$assessment->assessor__weakness_opinion = $da->assessor__weakness_opinion;
-				$assessment->emp__strength_opinion = $da->emp__strength_opinion;
-				$assessment->emp__weakness_opinion = $da->emp__weakness_opinion;
+				$assessment->assessor_strength_opinion = $da->assessor_strength_opinion;
+				$assessment->assessor_weakness_opinion = $da->assessor_weakness_opinion;
+				$assessment->emp_strength_opinion = $da->emp_strength_opinion;
+				$assessment->emp_weakness_opinion = $da->emp_weakness_opinion;
 				$assessment->created_by = Auth::id();
 				$assessment->created_dttm = $now;
 				$assessment->save();
@@ -198,10 +198,10 @@ class AppraisalCommentController extends Controller
 				$assessment->emp_result_id = $da->emp_result_id;
 				$assessment->assessor_group_id = $da->assessor_group_id;
 				$assessment->assessor_id = $da->emp_id;
-				$assessment->assessor__strength_opinion = $da->assessor__strength_opinion;
-				$assessment->assessor__weakness_opinion = $da->assessor__weakness_opinion;
-				$assessment->emp__strength_opinion = $da->emp__strength_opinion;
-				$assessment->emp__weakness_opinion = $da->emp__weakness_opinion;
+				$assessment->assessor_strength_opinion = $da->assessor_strength_opinion;
+				$assessment->assessor_weakness_opinion = $da->assessor_weakness_opinion;
+				$assessment->emp_strength_opinion = $da->emp_strength_opinion;
+				$assessment->emp_weakness_opinion = $da->emp_weakness_opinion;
 				$assessment->updated_by = Auth::id();
 				$assessment->updated_dttm = $now;
 				$assessment->save();
