@@ -86,7 +86,7 @@ class QuestionaireController extends Controller
 		}
 
 		$sub_items = DB::select("
-			SELECT section_id, section_name, is_cust_search
+			SELECT section_id, section_name, is_cust_search, is_show_report, report_url
 			FROM questionaire_section
 			WHERE questionaire_id = {$questionaire_id}
 			");

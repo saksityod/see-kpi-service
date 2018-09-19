@@ -34,7 +34,102 @@ class QuestionaireDataController extends Controller
 		$this->middleware('jwt.auth');
 	}
 
+	function format_date($date) {
+		if(empty($date)) {
+			return "";
+		} else {
+			$date = strtr($date, '/', '-');
+			$date_formated = date('Y-m-d', strtotime($date));
+		}
+
+		return $date_formated;
+	}
+
+	function role_authorize($stage_id) {
+        $data = [];
+        $user = DB::select("
+        	SELECT roleId
+        	FROM lportal.users_roles
+        	WHERE userId = ?
+        	",array(Auth::user()->userId));
+
+        if (empty($user)) {
+            return (object)$data;
+        }
+
+        $role = [];
+        foreach ($user as $key => $value) {
+            array_push($role, $value->roleId);
+        }
+
+        $role_id = implode(',', $role);
+
+        $data = DB::select("
+        	SELECT add_flag, edit_flag, delete_flag, view_flag
+        	FROM role_stage_authorize
+        	WHERE role_id IN ({$role_id})
+        	AND stage_id = '{$request->stage_id}'
+        	");
+
+        $data = $data[0];
+
+        return $data;
+    }
+
+    function get_role() {
+    	$role = [];
+        $user = DB::select("
+        	SELECT roleId
+        	FROM lportal.users_roles
+        	WHERE userId = ?
+        	",array(Auth::user()->userId));
+
+        if (empty($user)) {
+            return $role;
+        }
+
+        foreach ($user as $key => $value) {
+            array_push($role, $value->roleId);
+        }
+
+        return $role;
+    }
+
+    function concat_emp_first_last_code($emp) {
+    	// $name = explode(' ', str_replace(['(',')'], '', $emp));
+    	$name = explode(' ', $emp);
+    	if($name[0]) {
+    		return $name[0]; //emp_first_name
+    	} else if($name[1]) {
+    		return $name[1]; //emp_last_name
+    	}
+    }
+
 	public function auto_emp(Request $request) {
+		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+
+		$items = DB::select("
+			SELECT es.emp_snapshot_id, 
+					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+					p.position_code,
+					es.emp_code
+			FROM employee_snapshot es
+			LEFT JOIN position p ON p.position_id = es.position_id
+			WHERE
+				(
+					es.emp_first_name LIKE '%{$emp_name}%'
+					OR es.emp_last_name LIKE '%{$emp_name}%'
+					OR p.position_code LIKE '%{$emp_name}%'
+				)
+			LIMIT 10
+			");
+		return response()->json($items);
+	}
+
+	public function auto_emp2(Request $request) {
+		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+		$request->date = $this->format_date($request->date);
+
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, 
 					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name, 
@@ -45,12 +140,17 @@ class QuestionaireDataController extends Controller
 			FROM employee_snapshot es
 			LEFT JOIN position p ON p.position_id = es.position_id
 			LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
-			WHERE
-				(
-					es.emp_first_name LIKE '%{$request->emp_name}%'
-					OR es.emp_last_name LIKE '%{$request->emp_name}%'
-					OR es.emp_code LIKE '%{$request->emp_name}%'
-				)
+			WHERE (
+					es.emp_first_name LIKE '%{$emp_name}%'
+					OR es.emp_last_name LIKE '%{$emp_name}%'
+					OR p.position_code LIKE '%{$emp_name}%'
+			)
+			AND es.emp_snapshot_id NOT IN (
+				SELECT emp_snapshot_id
+				FROM questionaire_data_header
+				WHERE questionaire_date = '{$request->date}'
+				AND questionaire_id = '{$request->questionaire_id}'
+			)
 			LIMIT 10
 			");
 		return response()->json($items);
@@ -80,6 +180,7 @@ class QuestionaireDataController extends Controller
 	}
 
 	public function evaluated_retailer_list(Request $request) {
+		$request->date = $this->format_date($request->date);
 		$items = DB::select("
 			SELECT qdh.data_header_id, qdd.customer_id, c.customer_name, SUM(qdd.score) score, qdd.section_id 
 			FROM questionaire_data_detail qdd
@@ -87,7 +188,7 @@ class QuestionaireDataController extends Controller
 			LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
 			LEFT JOIN questionaire_data_header qdh ON qdh.data_header_id = qdd.data_header_id 
 			WHERE qdd.section_id = '{$request->section_id}'
-			AND c.position_code = '{$request->position_code}'
+			AND cp.position_code = '{$request->position_code}'
 			AND qdh.data_header_id = '{$request->data_header_id}'
 			AND qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
@@ -197,6 +298,9 @@ class QuestionaireDataController extends Controller
 	}
 
 	public function index(Request $request) {
+		$request->start_date = $this->format_date($request->start_date);
+		$request->end_date = $this->format_date($request->end_date);
+
 		$between_date = "
 			WHERE qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
@@ -214,36 +318,51 @@ class QuestionaireDataController extends Controller
             $between_date .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
         }
 
-		$questionaire = empty($request->questionaire_id) ? "" : "AND qdh.questionaire_id = '{$request->questionaire_id}'";
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
 		$items = DB::select("
-			SELECT qdh.data_header_id, p.position_code, CONCAT(es.emp_first_name, '', es.emp_last_name) emp_name
+			SELECT qdh.data_header_id, DATE_FORMAT(qdh.questionaire_date,'%d/%m/%Y') questionaire_date 
 			FROM questionaire_data_header qdh
-			LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			LEFT JOIN position p ON p.position_id = es.position_id
 			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			AND qdh.questionaire_id = '{$request->questionaire_id}'
 			".$between_date."
-			".$questionaire."
 			".$emp_snapshot_id."
+			GROUP BY qdh.questionaire_date
 			ORDER BY qdh.questionaire_date
 			");
 
-		// Get the current page from the url if it's not set default to 1
-		empty($request->page) ? $page = 1 : $page = $request->page;
+		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
 
-		// Number of items per page
-		empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
+		foreach ($items as $key => $value) {
+			$items[$key]->data = DB::select("
+				SELECT qdh.data_header_id, 
+						p.position_code, 
+						CONCAT(es.emp_first_name, '', es.emp_last_name) emp_name
+				FROM questionaire_data_header qdh
+				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+				LEFT JOIN position p ON p.position_id = es.position_id
+				LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+				WHERE qdh.data_header_id = {$value->data_header_id}
+				ORDER BY qdh.data_stage_id DESC
+				");
 
-		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
+			// $items[$key]->data = DB::select("
+			// 	SELECT qdh.data_header_id, 
+			// 			p.position_code, 
+			// 			CONCAT(es.emp_first_name, '', es.emp_last_name) emp_name,
+			// 			rsa.add_flag, rsa.edit_flag, rsa.delete_flag, rsa.view_flag
+			// 	FROM questionaire_data_header qdh
+			// 	LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+			// 	LEFT JOIN position p ON p.position_id = es.position_id
+			// 	LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			// 	LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id
+			// 	WHERE qdh.data_header_id = {$value->data_header_id}
+			// 	AND rsa.role_id IN ({$role})
+			// 	ORDER BY qdh.data_stage_id DESC
+			// 	");
+		}
 
-		// Get only the items you need using array_slice (only get 10 items since that's what you need)
-		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
-
-		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
-		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
-
-		return response()->json($result);
+		return response()->json($items);
 	}
 
 	public function assign_template(Request $request) {
@@ -256,16 +375,19 @@ class QuestionaireDataController extends Controller
 			}
 
 			$head = DB::select("
-				SELECT qdh.questionaire_date,
+				SELECT DATE_FORMAT(qdh.questionaire_date,'%d/%m/%Y') questionaire_date,
 						es.emp_snapshot_id,
 						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name, 
 						es.distributor_name,
 						CONCAT(chief.emp_first_name, ' ', chief.emp_last_name) chief_emp_name,
-						p.position_code
+						p.position_code,
+						qt.questionaire_type_id
 				FROM questionaire_data_header qdh
 				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
 				LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
 				LEFT JOIN position p ON p.position_id = es.position_id
+				INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
+				INNER JOIN questionaire_type qt ON qt.questionaire_type_id = q.questionaire_type_id
 				WHERE qdh.data_header_id = {$request->data_header_id}
 			");
 
@@ -361,12 +483,22 @@ class QuestionaireDataController extends Controller
 			}
 
 			$stage = DB::select("
-				SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.*
+				SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.remark, qds.created_dttm, qds.created_by, s.stage_name from_action, st.stage_name to_action
 				FROM questionaire_data_stage qds
 				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qds.to_emp_snapshot_id
 				LEFT JOIN employee_snapshot chief ON chief.emp_snapshot_id = qds.from_emp_snapshot_id
+				LEFT JOIN stage s ON s.stage_id = qds.from_stage_id
+				LEFT JOIN stage st ON st.stage_id = qds.to_stage_id
 				WHERE data_header_id = '{$request->data_header_id}'
 			");
+
+			$current_stage = DB::select("
+                SELECT stage_id, stage_name, role_id
+                from stage
+                where stage_id = '{$data_header->data_stage_id}'
+            ");
+
+ 			$role = $this->role_authorize($data_header->data_stage_id);
 
 		} else if(!empty($request->questionaire_id)) {
 			try {
@@ -375,7 +507,14 @@ class QuestionaireDataController extends Controller
 				return response()->json(['status' => 404, 'data' => 'QuestionaireSection not found.']);
 			}
 
-			$head = (object)[];
+			$head = DB::select("
+				SELECT qt.questionaire_type_id
+				FROM questionaire_type qt, questionaire q
+				WHERE q.questionaire_type_id = qt.questionaire_type_id
+				AND q.questionaire_id = '{$request->questionaire_id}'
+			");
+
+			$head = $head[0];
 
 			$sub_items = DB::select("
 				SELECT section_id, section_name, is_cust_search, is_show_report, report_url
@@ -422,29 +561,19 @@ class QuestionaireDataController extends Controller
 				}
 			}
 
-			$stage = [];
-
-		} else {
-			$sub_items = [];
-			$stage = [];
-			$head = (object)[];
-			$data_header->data_stage_id = '';
-		}
-
-		if(empty($request->data_header_id)) {
-            $current_stage = DB::select("
+			$current_stage = DB::select("
                 SELECT stage_id, stage_name, role_id
                 from stage
                 where stage_id = '1'
-            "); 
+            ");
 
-        } else {
-            $current_stage = DB::select("
-                SELECT stage_id, stage_name, role_id
-                from stage
-                where stage_id = '{$data_header->data_stage_id}'
-            "); 
-        }
+			$stage = [];
+
+			$role = $this->role_authorize(1);
+
+		} else {
+			return response()->json(['status' => 404, 'data' => 'Parameter not found.']);
+		}
 
         $workflow_stage = DB::select("
             select to_stage_id, status
@@ -458,15 +587,16 @@ class QuestionaireDataController extends Controller
             	'data' => $sub_items, 
             	'stage' => $stage, 
             	'current_stage' => $current_stage, 
-            	'to_stage' => []
+            	'to_stage' => [],
+            	'role' => $role
             ]);
         }
         
         $actions = DB::select("
             SELECT s.stage_id, s.stage_name, s.stage_name as status
-            from stage s
-            where s.stage_id in ({$workflow_stage[0]->to_stage_id})
-            order by s.stage_id
+            FROM stage s
+            WHERE s.stage_id IN ({$workflow_stage[0]->to_stage_id})
+            ORDER BY s.stage_id
         ");
 
 		return response()->json([
@@ -474,7 +604,8 @@ class QuestionaireDataController extends Controller
 			'data' => $sub_items, 
 			'stage' => $stage, 
 			'current_stage' => $current_stage, 
-			'to_stage' => $actions
+			'to_stage' => $actions,
+			'role' => $role
 		]);
 	}
 
@@ -509,9 +640,9 @@ class QuestionaireDataController extends Controller
 			'total_score' => $request->total_score
 		], [
 			'questionaire_id' => 'required|integer',
-			'questionaire_date' => 'required|date|date_format:Y-m-d',
+			'questionaire_date' => 'required|date_format:d/m/Y',
 			'emp_snapshot_id' => 'required|integer',
-			'total_score' => 'required|integer'
+			'total_score' => 'required|between:0,99.99'
 		]);
 
 		if($validator->fails()) {
@@ -532,7 +663,7 @@ class QuestionaireDataController extends Controller
 					'customer_id' => 'integer',
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
-					'score' => 'required|integer',
+					'score' => 'required|between:0,99.99',
 					'is_not_applicable' => 'required|integer'
 				]);
 
@@ -562,7 +693,7 @@ class QuestionaireDataController extends Controller
 
 		$h = new QuestionaireDataHeader;
 		$h->questionaire_id = $request->questionaire_id;
-		$h->questionaire_date = $request->questionaire_date;
+		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
@@ -637,6 +768,123 @@ class QuestionaireDataController extends Controller
 
 	}
 
+	// public function auto_save(Request $request) {
+	// 	DB::beginTransaction();
+	// 	$errors = [];
+	// 	$errors_validator = [];
+	// 	$validator = Validator::make([
+	// 		'questionaire_id' => $request->questionaire_id,
+	// 		'questionaire_date' => $request->questionaire_date,
+	// 		'emp_snapshot_id' => $request->emp_snapshot_id,
+	// 		'total_score' => $request->total_score
+	// 	], [
+	// 		'questionaire_id' => 'required|integer',
+	// 		'questionaire_date' => 'required|date|date_format:Y-m-d',
+	// 		'emp_snapshot_id' => 'required|integer',
+	// 		'total_score' => 'required|integer'
+	// 	]);
+
+	// 	if($validator->fails()) {
+	// 		$errors_validator[] = $validator->errors();
+	// 	}
+
+	// 	if(!empty($request['detail'])) {
+	// 		foreach ($request['detail'] as $d) {
+	// 			$validator_detail = Validator::make([
+	// 				'section_id' => $d['section_id'],
+	// 				'customer_id' => $d['customer_id'],
+	// 				'question_id' => $d['question_id'],
+	// 				'answer_id' => $d['answer_id'],
+	// 				'score' => $d['score'],
+	// 				'is_not_applicable' => $d['is_not_applicable']
+	// 			], [
+	// 				'section_id' => 'required|integer',
+	// 				'customer_id' => 'integer',
+	// 				'question_id' => 'required|integer',
+	// 				'answer_id' => 'required|integer',
+	// 				'score' => 'required|integer',
+	// 				'is_not_applicable' => 'required|integer'
+	// 			]);
+
+	// 			if($validator_detail->fails()) {
+	// 				$errors_validator[] = $validator_detail->errors();
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if($validator_stage->fails()) {
+	// 		$errors_validator[] = $validator_stage->errors();
+	// 	}
+
+	// 	if(!empty($errors_validator)) {
+	// 		return response()->json(['status' => 400, 'errors' => $errors_validator]);
+	// 	}
+
+	// 	if(empty($request->data_header_id)) {
+	// 		$h = new QuestionaireDataHeader;
+	// 		$h->questionaire_id = $request->questionaire_id;
+	// 		$h->questionaire_date = $request->questionaire_date;
+	// 		$h->emp_snapshot_id = $request->emp_snapshot_id;
+	// 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
+	// 		$h->total_score = $request->total_score;
+	// 		$h->created_by = Auth::id();
+	// 		$h->updated_by = Auth::id();
+	// 	} else {
+	// 		$h = QuestionaireDataHeader::find($request->data_header_id);
+	// 		$h->questionaire_id = $request->questionaire_id;
+	// 		$h->questionaire_date = $request->questionaire_date;
+	// 		$h->emp_snapshot_id = $request->emp_snapshot_id;
+	// 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
+	// 		$h->total_score = $request->total_score;
+	// 		$h->updated_by = Auth::id();
+	// 	}
+
+	// 	try {
+	// 		$h->save();
+	// 		if(!empty($request['detail'])) {
+	// 			foreach ($request['detail'] as $keyD => $d) {
+	// 				if(empty($request->data_header_id)) {
+	// 					$dt = new QuestionaireDataDetail;
+	// 					$dt->data_header_id = $h->data_header_id;
+	// 					$dt->section_id = $d['section_id'];
+	// 					$dt->customer_id = $d['customer_id'];
+	// 					$dt->question_id = $d['question_id'];
+	// 					$dt->answer_id = $d['answer_id'];
+	// 					$dt->score = $d['score'];
+	// 					$dt->is_not_applicable = $d['is_not_applicable'];
+	// 					$dt->desc_answer = $d['desc_answer'];
+	// 					$dt->created_by = Auth::id();
+	// 					$dt->updated_by = Auth::id();
+	// 				} else {
+	// 					$dt = QuestionaireDataDetail::find($d['data_detail_id']);
+	// 					$dt->data_header_id = $h->data_header_id;
+	// 					$dt->section_id = $d['section_id'];
+	// 					$dt->customer_id = $d['customer_id'];
+	// 					$dt->question_id = $d['question_id'];
+	// 					$dt->answer_id = $d['answer_id'];
+	// 					$dt->score = $d['score'];
+	// 					$dt->is_not_applicable = $d['is_not_applicable'];
+	// 					$dt->desc_answer = $d['desc_answer'];
+	// 					$dt->updated_by = Auth::id();
+	// 				}
+
+	// 				try {
+	// 					$dt->save();
+	// 				} catch (Exception $e) {
+	// 					$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
+	// 				}
+	// 			}
+	// 		}
+	// 	} catch (Exception $e) {
+	// 		$errors[] = ['QuestionaireDataHeader' => substr($e, 0, 255)];
+	// 	}
+
+	// 	empty($errors) ? DB::commit() : DB::rollback();
+	// 	empty($errors) ? $status = 200 : $status = 400;
+
+ //        return response()->json(['status' => $status, 'errors' => $errors]);
+	// }
+
 	public function update(Request $request) {
 		try {
 			$config = SystemConfiguration::firstOrFail();
@@ -674,9 +922,9 @@ class QuestionaireDataController extends Controller
 			'total_score' => $request->total_score
 		], [
 			'questionaire_id' => 'required|integer',
-			'questionaire_date' => 'required|date|date_format:Y-m-d',
+			'questionaire_date' => 'required|date_format:d/m/Y',
 			'emp_snapshot_id' => 'required|integer',
-			'total_score' => 'required|integer'
+			'total_score' => 'required|between:0,99.99'
 		]);
 
 		if($validator->fails()) {
@@ -699,7 +947,7 @@ class QuestionaireDataController extends Controller
 					'customer_id' => 'integer',
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
-					'score' => 'required|integer',
+					'score' => 'required|between:0,99.99',
 					'is_not_applicable' => 'required|integer'
 				]);
 
@@ -728,7 +976,7 @@ class QuestionaireDataController extends Controller
 		}
 
 		$h->questionaire_id = $request->questionaire_id;
-		$h->questionaire_date = $request->questionaire_date;
+		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;

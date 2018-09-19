@@ -484,6 +484,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('questionaire/answer/{answer_id}', 'PMTL\QuestionaireController@destroy_answer');
 
 	Route::get('questionaire_data/auto_emp', 'PMTL\QuestionaireDataController@auto_emp');
+	Route::get('questionaire_data/auto_emp2', 'PMTL\QuestionaireDataController@auto_emp2');
 	Route::get('questionaire_data/auto_store', 'PMTL\QuestionaireDataController@auto_store');
 	Route::get('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@evaluated_retailer_list');
 	Route::get('questionaire_data/evaluated_retailer_list_edit', 'PMTL\QuestionaireDataController@evaluated_retailer_list_edit');
