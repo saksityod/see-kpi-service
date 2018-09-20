@@ -109,7 +109,7 @@ class JudgementController extends Controller
 						chief.emp_code chief_emp_code, 
 						chief.emp_name chief_emp_name,
 						ap.appraisal_period_desc,
-						CONCAT(er.result_score,' (',ag.grade_name, ')') grand_total
+						CONCAT(er.result_score,' (',ag.salary_raise_step, ' ขั้น)') grand_total
 				FROM emp_result er
 				LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
 				LEFT OUTER JOIN employee e ON e.emp_id = er.emp_id

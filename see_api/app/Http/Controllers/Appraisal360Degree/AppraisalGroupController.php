@@ -941,7 +941,7 @@ class AppraisalGroupController extends Controller
 			(
 				SELECT @pv := chief_emp_code
 				FROM employee 
-				WHERE emp_code = '{$loginEmpCode}'
+				WHERE emp_code = '{$searchEmpCode}'
 			) init
 			WHERE find_in_set(emp.emp_code, CONVERT(@pv USING utf8))
 			AND length(@pv := concat(@pv, ',', emp.chief_emp_code))
@@ -954,17 +954,17 @@ class AppraisalGroupController extends Controller
 				SELECT emp_code, chief_emp_code
 				FROM employee
 				ORDER BY chief_emp_code, emp_code
-			) emp, (select @pv := '{$loginEmpCode}') init
+			) emp, (select @pv := '{$searchEmpCode}') init
 			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
 			AND length(@pv := concat(@pv, ',', emp.emp_code))
 		"));
 		
-		$isChief = $allChiefEmpOfAuth->filter(function ($emp) use ($searchEmpCode){
-			return $emp->emp_code == $searchEmpCode;
+		$isChief = $allChiefEmpOfAuth->filter(function ($emp) use ($loginEmpCode){
+			return $emp->emp_code == $loginEmpCode;
 		});
 
-		$isUnder = $allUnderEmpOfAuth->filter(function ($emp) use ($searchEmpCode){
-			return $emp->emp_code == $searchEmpCode;
+		$isUnder = $allUnderEmpOfAuth->filter(function ($emp) use ($loginEmpCode){
+			return $emp->emp_code == $loginEmpCode;
 		});
 
 		$loginEmpLevel = collect(DB::select("

@@ -283,7 +283,8 @@ class ImportEmployeeController extends Controller
 			'emp_type' => 'max:50',
 			'dotline_code' => 'max:255',
 			'has_second_line' => 'max:255',
-			'is_active' => 'required|boolean'
+			'is_active' => 'required|boolean',
+			'step' => 'numeric|between:0,199.99'
         ]);
 
         if ($validator->fails()) {
@@ -302,6 +303,7 @@ class ImportEmployeeController extends Controller
 			$item->position_id = $request->position_id;
 			$item->chief_emp_code = $request->chief_emp_code;
 			$item->level_id = $request->level_id;
+			$item->step = $request->step;
 			$item->s_amount = $request->s_amount;
 			$item->email = $request->email;
 			$item->emp_type = $request->emp_type;
