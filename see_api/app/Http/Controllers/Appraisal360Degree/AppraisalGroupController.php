@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Appraisal360degree;
 use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
+use App\AssessorGroup;
+use App\AppraisalLevel;
 use App\CompetencyResult;
 use App\AppraisalItemResult;
 
@@ -18,19 +20,20 @@ use Config;
 use Mail;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AppraisalGroupController extends Controller
 {
-
 	public function __construct()
 	{
 		$this->middleware('jwt.auth');
 	}
 
-  public function index(Request $request)
+
+	public function index(Request $request)
 	{
 
 		$all_emp = DB::select("
@@ -46,62 +49,54 @@ class AppraisalGroupController extends Controller
 		$system_config = SystemConfiguration::where('current_appraisal_year', $request->appraisal_year)->first();
 
 		//ja start
-		$auth_group = Auth::id();
-		$query_group = "select (case when l.is_all_employee = 1 or l.is_hr = 1 then 5
-				when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second then 1
-				when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code then 2
-				when e.emp_code = y.you_emp_code then 4
-				else 3 end
-				) as group_id
-				, (case when l.is_all_employee = 1 or l.is_hr = 1
-					then (select assessor_group_name from assessor_group where assessor_group_id = 5)
-				when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second
-					then (select assessor_group_name from assessor_group where assessor_group_id = 1)
-				when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code
-					then (select assessor_group_name from assessor_group where assessor_group_id = 2)
-				when e.emp_code = y.you_emp_code
-					then (select assessor_group_name from assessor_group where assessor_group_id = 4)
-				else (select assessor_group_name from assessor_group where assessor_group_id = 3) end
-				) as group_name
-				, y.emp_result_id
-				from employee e
-				inner join appraisal_level l on e.level_id = l.level_id
-				inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = e.chief_emp_code
-				cross join (select em.emp_code as you_emp_code
-					, em.chief_emp_code as you_chief_emp
-					, (case when em.has_second_line = 1 then hs.chief_emp_code else 'No' end) as you_has_second
-					, e.emp_result_id
-					from employee em
-					inner join emp_result e on em.emp_id = e.emp_id
-					inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = em.chief_emp_code) y
-				where e.emp_code = '{$auth_group}' ";
-
+		// $auth_group = Auth::id();
+		// $query_group = "select (case when l.is_all_employee = 1 or l.is_hr = 1 then 5
+		// 		when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second then 1
+		// 		when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code then 2
+		// 		when e.emp_code = y.you_emp_code then 4
+		// 		else 3 end
+		// 		) as group_id
+		// 		, (case when l.is_all_employee = 1 or l.is_hr = 1
+		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 5)
+		// 		when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second
+		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 1)
+		// 		when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code
+		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 2)
+		// 		when e.emp_code = y.you_emp_code
+		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 4)
+		// 		else (select assessor_group_name from assessor_group where assessor_group_id = 3) end
+		// 		) as group_name
+		// 		, y.emp_result_id
+		// 		from employee e
+		// 		inner join appraisal_level l on e.level_id = l.level_id
+		// 		inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = e.chief_emp_code
+		// 		cross join (select em.emp_code as you_emp_code
+		// 			, em.chief_emp_code as you_chief_emp
+		// 			, (case when em.has_second_line = 1 then hs.chief_emp_code else 'No' end) as you_has_second
+		// 			, e.emp_result_id
+		// 			from employee em
+		// 			inner join emp_result e on em.emp_id = e.emp_id
+		// 			inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = em.chief_emp_code) y
+		// 		where e.emp_code = '{$auth_group}' ";
 		// return response()->json(['status' => 200]);
 		//ja end
-
+		
 		if ($all_emp[0]->count_no > 0) {
 			$query = "
-				select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
-				, gro.group_id, gro.group_name
-				from emp_result a
-				left outer join employee b
-				on a.emp_id = b.emp_id
-				left outer join appraisal_level d
-				on a.level_id = d.level_id
-				left outer join appraisal_type e
-				on a.appraisal_type_id = e.appraisal_type_id
-				left outer join appraisal_stage f
-				on a.stage_id = f.stage_id
-				left outer join appraisal_period g
-				on a.period_id = g.period_id
-				left outer join position p
-				on a.position_id = p.position_id
-				left outer join org o
-				on a.org_id = o.org_id
-				left outer join org po
-				on o.parent_org_code = po.org_code
-				left outer join (".$query_group.") gro on gro.emp_result_id = a.emp_result_id
-				where d.is_hr = 0
+				SELECT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
+					e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
+					po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+					concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
+				FROM emp_result a
+				LEFT OUTER JOIN employee b ON a.emp_id = b.emp_id
+				LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id
+				LEFT OUTER JOIN appraisal_type e ON a.appraisal_type_id = e.appraisal_type_id
+				LEFT OUTER JOIN appraisal_stage f ON a.stage_id = f.stage_id
+				LEFT OUTER JOIN appraisal_period g ON a.period_id = g.period_id
+				LEFT OUTER JOIN position p ON a.position_id = p.position_id
+				LEFT OUTER JOIN org o ON a.org_id = o.org_id
+				LEFT OUTER JOIN org po ON o.parent_org_code = po.org_code
+				WHERE d.is_hr = 0
 			";
 
 			empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
@@ -112,10 +107,7 @@ class AppraisalGroupController extends Controller
 			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 			empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 			empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
-			/*
-			echo $query. " order by period_id,emp_code,org_code  asc ";
-			print_r($qinput);
-			*/
+
 			$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
 		} else {
@@ -210,26 +202,19 @@ class AppraisalGroupController extends Controller
 			$dotline_code = Auth::id();
 			if ($request->appraisal_type_id == 2) {
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
-					, gro.group_id, gro.group_name
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
+						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, 
+						o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
 					from emp_result a
-					left outer join employee b
-					on a.emp_id = b.emp_id
-					left outer join appraisal_level d
-					on a.level_id = d.level_id
-					left outer join appraisal_type e
-					on a.appraisal_type_id = e.appraisal_type_id
-					left outer join appraisal_stage f
-					on a.stage_id = f.stage_id
-					left outer join appraisal_period g
-					on a.period_id = g.period_id
-					left outer join position p
-					on a.position_id = p.position_id
-					left outer join org o
-					on a.org_id = o.org_id
-					left outer join org po
-					on o.parent_org_code = po.org_code
-					left outer join (".$query_group.") gro on gro.emp_result_id = a.emp_result_id
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
 					where d.is_hr = 0
 					and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
@@ -254,26 +239,19 @@ class AppraisalGroupController extends Controller
 			} else {
 
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
-					, gro.group_id, gro.group_name
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
+						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
+						po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
 					from emp_result a
-					left outer join employee b
-					on a.emp_id = b.emp_id
-					left outer join appraisal_level d
-					on a.level_id = d.level_id
-					left outer join appraisal_type e
-					on a.appraisal_type_id = e.appraisal_type_id
-					left outer join appraisal_stage f
-					on a.stage_id = f.stage_id
-					left outer join appraisal_period g
-					on a.period_id = g.period_id
-					left outer join position p
-					on a.position_id = p.position_id
-					left outer join org o
-					on a.org_id = o.org_id
-					left outer join org po
-					on o.parent_org_code = po.org_code
-					left outer join (".$query_group.") gro on gro.emp_result_id = a.emp_result_id
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
 					where d.is_hr = 0
 				";
 
@@ -290,6 +268,18 @@ class AppraisalGroupController extends Controller
 
 			}
 
+		}
+
+		// Add Assessor Group //
+		foreach($items as $item) {
+			$assGroup = $this->getAssessorGroup($item->emp_code);
+			if($assGroup != null){
+				$item->group_id = $assGroup->assessor_group_id;
+				$item->group_name = $assGroup->assessor_group_name;
+			} else {
+				$item->group_id = null;
+				$item->group_name = null;
+			}
 		}
 
 
@@ -933,6 +923,76 @@ class AppraisalGroupController extends Controller
 		return response()->json(['status' => 200]);
 	}
 
+
+	private function getAssessorGroup($searchEmpCode)
+	{
+		$loginEmpCode = Auth::id();
+		$assGroupId = 0; 
+		$assGroupName = "";
+
+		$allChiefEmpOfAuth = collect(DB::select("
+			SELECT 
+				emp.emp_code
+			FROM (
+				SELECT emp_code, chief_emp_code
+				FROM employee
+				ORDER BY chief_emp_code desc, emp_code desc
+			) emp, 
+			(
+				SELECT @pv := chief_emp_code
+				FROM employee 
+				WHERE emp_code = '{$loginEmpCode}'
+			) init
+			WHERE find_in_set(emp.emp_code, CONVERT(@pv USING utf8))
+			AND length(@pv := concat(@pv, ',', emp.chief_emp_code))
+		"));
+
+		$allUnderEmpOfAuth = collect(DB::select("
+			SELECT 
+				emp.emp_code
+			FROM (
+				SELECT emp_code, chief_emp_code
+				FROM employee
+				ORDER BY chief_emp_code, emp_code
+			) emp, (select @pv := '{$loginEmpCode}') init
+			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
+			AND length(@pv := concat(@pv, ',', emp.emp_code))
+		"));
+		
+		$isChief = $allChiefEmpOfAuth->filter(function ($emp) use ($searchEmpCode){
+			return $emp->emp_code == $searchEmpCode;
+		});
+
+		$isUnder = $allUnderEmpOfAuth->filter(function ($emp) use ($searchEmpCode){
+			return $emp->emp_code == $searchEmpCode;
+		});
+
+		$loginEmpLevel = collect(DB::select("
+			SELECT is_all_employee, is_hr 
+			FROM appraisal_level 
+			WHERE level_id = (
+				SELECT emp.level_id 
+				FROM employee emp
+				WHERE emp.emp_code = '{$loginEmpCode}'
+			)
+		"))->first();
+		
+		if($loginEmpLevel != null){
+			if($loginEmpLevel->is_all_employee == 1 || $loginEmpLevel->is_hr == 1){
+				$assGroupId = 5;
+			} elseif ( ! $isChief->isEmpty()){
+				$assGroupId = 1;
+			} elseif ( ! $isUnder->isEmpty()){
+				$assGroupId = 2;
+			} elseif ($loginEmpCode == $searchEmpCode) {
+				$assGroupId = 4;
+			} else {
+				$assGroupId = 3;
+			}
+		}		
+
+		return AssessorGroup::find($assGroupId);
+	}
 }
 
 ?>
