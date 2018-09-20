@@ -38,11 +38,19 @@ class QuestionaireDataController extends Controller
 		if(empty($date)) {
 			return "";
 		} else {
-			$date = strtr($date, '/', '-');
-			$date_formated = date('Y-m-d', strtotime($date));
+			try {
+				$date_formated = date('Y-m-d', strtotime($date));
+			} catch (Exception $e) {
+				$date = strtr($date, '/', '-');
+				$date_formated = date('Y-m-d', strtotime($date));
+			}
 		}
 
 		return $date_formated;
+	}
+
+	function trim_text($text) {
+		return trim($text);
 	}
 
 	function role_authorize($stage_id) {

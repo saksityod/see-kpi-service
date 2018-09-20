@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\PMTL;
+use App\Http\Controllers\PMTL\QuestionaireDataController;
 
 use App\Employee;
 use App\EmployeeSnapshot;
@@ -21,10 +22,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ImportEmployeeSnapshotController extends Controller
 {
-
-	public function __construct()
+	protected $qdc_service;
+	public function __construct(QuestionaireDataController $qdc_service)
 	{
 	   $this->middleware('jwt.auth');
+	   $this->qdc_service = $qdc_service;
 	}
 
 	public function list_level() {
@@ -49,7 +51,7 @@ class ImportEmployeeSnapshotController extends Controller
 
 	public function auto_start_date(Request $request) {
 		$items = DB::select("
-			SELECT DISTINCT start_date
+			SELECT DISTINCT DATE_FORMAT(start_date,'%d/%m/%Y') start_date
 			FROM employee_snapshot
 			WHERE start_date LIKE '%{$request->start_date}%'
 			LIMIT 10
@@ -58,6 +60,8 @@ class ImportEmployeeSnapshotController extends Controller
 	}
 
 	public function auto_emp(Request $request) {
+		$request->start_date = $this->qdc_service->format_date($request->start_date);
+
 		$level_id = empty($request->level_id) ? "" : "AND es.level_id = '{$request->level_id}'";
 		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
 		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
@@ -81,6 +85,8 @@ class ImportEmployeeSnapshotController extends Controller
 
 	public function index(Request $request)
 	{
+		$request->start_date = $this->qdc_service->format_date($request->start_date);
+
 		$level_id = empty($request->level_id) ? "" : "AND al.level_id = '{$request->level_id}'";
 		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
 		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
@@ -129,7 +135,7 @@ class ImportEmployeeSnapshotController extends Controller
 		}
 
 		$items = DB::select("
-			SELECT es.*, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name
+			SELECT DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, es.emp_id, es.emp_code, es.emp_first_name, es.emp_last_name, es.email, es.chief_emp_code, es.distributor_code, es.distributor_name, es.region, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id
@@ -171,8 +177,8 @@ class ImportEmployeeSnapshotController extends Controller
 					'job_function_id' => 'required|max:11'
 				]);
 
-				$org = Org::where('org_code',trim($i->organization_code))->first();
-				$position = Position::where('position_code',trim($i->position))->first();
+				$org = Org::where('org_code',$this->qdc_service->trim_text($i->organization_code))->first();
+				$position = Position::where('position_code',$this->qdc_service->trim_text($i->position))->first();
 				$appraisal_level = AppraisalLevel::where('level_id',$i->job_function_id)->first();
 
 				if(empty($org)) {
@@ -200,16 +206,16 @@ class ImportEmployeeSnapshotController extends Controller
 				if (!empty($errors_validator)) {
 		            return response()->json(['status' => 400, 'errors' => $errors_validator]);
 				} else {
-					$emp = Employee::where('emp_code',trim($i->useraccountcode))->first();
+					$emp = Employee::where('emp_code',$this->qdc_service->trim_text($i->useraccountcode))->first();
 					if (empty($emp)) {
 						$emp = new Employee;
-						$emp->emp_code = trim($i->useraccountcode);
-						$emp->emp_name = trim($i->employeefirstname." ".$i->employeelastname);
+						$emp->emp_code = $this->qdc_service->trim_text($i->useraccountcode);
+						$emp->emp_name = $this->qdc_service->trim_text($i->employeefirstname." ".$i->employeelastname);
 						$emp->org_id = $org_id;
 						$emp->position_id = $position_id;
 						$emp->level_id = $level_id;
-						$emp->chief_emp_code = trim($i->line_manager);
-						$emp->email = trim($i->employeeemail);
+						$emp->chief_emp_code = $this->qdc_service->trim_text($i->line_manager);
+						$emp->email = $this->qdc_service->trim_text($i->employeeemail);
 						$emp->has_second_line = 0;
 						$emp->is_active = 1;
 						$emp->created_by = Auth::id();
@@ -217,19 +223,19 @@ class ImportEmployeeSnapshotController extends Controller
 						try {
 							$emp->save();
 							$emp_snap = new EmployeeSnapshot;
-							$emp_snap->start_date = date("Y-m-d", strtotime($i->start_date));
-							$emp_snap->emp_id = trim($i->employeeid);
-							$emp_snap->emp_code = trim($i->useraccountcode);
-							$emp_snap->emp_first_name = trim($i->employeefirstname);
-							$emp_snap->emp_last_name = trim($i->employeelastname);
+							$emp_snap->start_date = $this->qdc_service->format_date($i->start_date);
+							$emp_snap->emp_id = $this->qdc_service->trim_text($i->employeeid);
+							$emp_snap->emp_code = $this->qdc_service->trim_text($i->useraccountcode);
+							$emp_snap->emp_first_name = $this->qdc_service->trim_text($i->employeefirstname);
+							$emp_snap->emp_last_name = $this->qdc_service->trim_text($i->employeelastname);
 							$emp_snap->org_id = $org_id;
 							$emp_snap->position_id = $position_id;
 							$emp_snap->level_id = $level_id;
-							$emp_snap->chief_emp_code = trim($i->line_manager);
-							$emp_snap->email = trim($i->employeeemail);
-							$emp_snap->distributor_code = trim($i->dist_cd);
+							$emp_snap->chief_emp_code = $this->qdc_service->trim_text($i->line_manager);
+							$emp_snap->email = $this->qdc_service->trim_text($i->employeeemail);
+							$emp_snap->distributor_code = $this->qdc_service->trim_text($i->dist_cd);
 							$emp_snap->distributor_name = $i->busnoperationsitedescription;
-							$emp_snap->region = trim($i->region);
+							$emp_snap->region = $this->qdc_service->trim_text($i->region);
 							$emp_snap->created_by = Auth::id();
 							try {
 								$emp_snap->save();
@@ -243,31 +249,31 @@ class ImportEmployeeSnapshotController extends Controller
 							$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => substr($e,0,254)];
 						}
 					} else {
-						$emp->emp_code = trim($i->useraccountcode);
-						$emp->emp_name = trim($i->employeefirstname." ".$i->employeelastname);
+						$emp->emp_code = $this->qdc_service->trim_text($i->useraccountcode);
+						$emp->emp_name = $this->qdc_service->trim_text($i->employeefirstname." ".$i->employeelastname);
 						$emp->org_id = $org_id;
 						$emp->position_id = $position_id;
 						$emp->level_id = $level_id;
-						$emp->chief_emp_code = trim($i->line_manager);
-						$emp->email = trim($i->employeeemail);
+						$emp->chief_emp_code = $this->qdc_service->trim_text($i->line_manager);
+						$emp->email = $this->qdc_service->trim_text($i->employeeemail);
 						$emp->updated_by = Auth::id();
 						try {
 							$emp->save();
-							DB::table('employee_snapshot')->where('start_date', '=', date("Y-m-d", strtotime($i->start_date)))->where('emp_code','=',trim($i->useraccountcode))->delete();
+							DB::table('employee_snapshot')->where('start_date', '=', $this->qdc_service->format_date($i->start_date))->where('emp_code','=',$this->qdc_service->trim_text($i->useraccountcode))->delete();
 							$emp_snap = new EmployeeSnapshot;
-							$emp_snap->start_date = date("Y-m-d", strtotime($i->start_date));
-							$emp_snap->emp_id = trim($i->employeeid);
-							$emp_snap->emp_code = trim($i->useraccountcode);
-							$emp_snap->emp_first_name = trim($i->employeefirstname);
-							$emp_snap->emp_last_name = trim($i->employeelastname);
+							$emp_snap->start_date = $this->qdc_service->format_date($i->start_date);
+							$emp_snap->emp_id = $this->qdc_service->trim_text($i->employeeid);
+							$emp_snap->emp_code = $this->qdc_service->trim_text($i->useraccountcode);
+							$emp_snap->emp_first_name = $this->qdc_service->trim_text($i->employeefirstname);
+							$emp_snap->emp_last_name = $this->qdc_service->trim_text($i->employeelastname);
 							$emp_snap->org_id = $org_id;
 							$emp_snap->position_id = $position_id;
 							$emp_snap->level_id = $level_id;
-							$emp_snap->chief_emp_code = trim($i->line_manager);
-							$emp_snap->email = trim($i->employeeemail);
-							$emp_snap->distributor_code = trim($i->dist_cd);
+							$emp_snap->chief_emp_code = $this->qdc_service->trim_text($i->line_manager);
+							$emp_snap->email = $this->qdc_service->trim_text($i->employeeemail);
+							$emp_snap->distributor_code = $this->qdc_service->trim_text($i->dist_cd);
 							$emp_snap->distributor_name = $i->busnoperationsitedescription;
-							$emp_snap->region = trim($i->region);
+							$emp_snap->region = $this->qdc_service->trim_text($i->region);
 							$emp_snap->created_by = Auth::id();
 							try {
 								$emp_snap->save();

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\PMTL;
+use App\Http\Controllers\PMTL\QuestionaireDataController;
 
 use App\Customer;
 use App\CustomerPosition;
@@ -18,10 +19,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CustomerController extends Controller
 {
-
-	public function __construct()
+	protected $qdc_service;
+	public function __construct(QuestionaireDataController $qdc_service)
 	{
 	   $this->middleware('jwt.auth');
+	   $this->qdc_service = $qdc_service;
 	}
 
 	public function list_cus_type() {
@@ -124,10 +126,10 @@ class CustomerController extends Controller
 					",array($i->customer_code));
 					if (empty($cus)) {
 						$new_cus = new Customer;
-						$new_cus->customer_code = trim($i->customer_code);
-						$new_cus->customer_name = trim($i->customer_name);
-						$new_cus->customer_type = trim($i->customer_type);
-						$new_cus->industry_class = trim($i->industry_class);
+						$new_cus->customer_code = $this->qdc_service->trim_text($i->customer_code);
+						$new_cus->customer_name = $this->qdc_service->trim_text($i->customer_name);
+						$new_cus->customer_type = $this->qdc_service->trim_text($i->customer_type);
+						$new_cus->industry_class = $this->qdc_service->trim_text($i->industry_class);
 						$new_cus->created_by = Auth::id();
 						$new_cus->updated_by = Auth::id();
 						try {
@@ -141,7 +143,7 @@ class CustomerController extends Controller
 								if(!empty($value)) {
 									$cp = new CustomerPosition;
 									$cp->customer_id = $new_cus->customer_id;
-									$cp->position_code = trim($value);
+									$cp->position_code = $this->qdc_service->trim_text($value);
 									try {
 										$cp->save();
 									} catch (Exception $e) {
@@ -153,10 +155,10 @@ class CustomerController extends Controller
 
 					} else {
 						$update_cus = Customer::find($cus[0]->customer_id);
-						$update_cus->customer_code = trim($i->customer_code);
-						$update_cus->customer_name = trim($i->customer_name);
-						$update_cus->customer_type = trim($i->customer_type);
-						$update_cus->industry_class = trim($i->industry_class);
+						$update_cus->customer_code = $this->qdc_service->trim_text($i->customer_code);
+						$update_cus->customer_name = $this->qdc_service->trim_text($i->customer_name);
+						$update_cus->customer_type = $this->qdc_service->trim_text($i->customer_type);
+						$update_cus->industry_class = $this->qdc_service->trim_text($i->industry_class);
 						$update_cus->updated_by = Auth::id();
 						try {
 							$update_cus->save();
@@ -171,7 +173,7 @@ class CustomerController extends Controller
  								if(!empty($value)) {
 	 								$cp = new CustomerPosition;
 	 								$cp->customer_id = $cus[0]->customer_id;
-	 								$cp->position_code = trim($value);
+	 								$cp->position_code = $this->qdc_service->trim_text($value);
 	 								try {
 	 									$cp->save();
 	 								} catch (Exception $e) {
