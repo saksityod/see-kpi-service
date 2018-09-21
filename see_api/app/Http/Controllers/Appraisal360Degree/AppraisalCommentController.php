@@ -70,7 +70,7 @@ class AppraisalCommentController extends Controller
 
 				$user = 'admin';
 
-					if(empty($items[0]->opinion_id)){
+				if(empty($items[0]->opinion_id)){
 					return response()->json(['status' => 400, 'data' => 'admin-empty']);
 				}
 			}

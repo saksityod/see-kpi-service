@@ -9,6 +9,7 @@ use App\AssessorGroup;
 use App\AppraisalLevel;
 use App\CompetencyResult;
 use App\AppraisalItemResult;
+use  App\Http\Controllers\AppraisalController;
 
 use Auth;
 use DB;
@@ -27,15 +28,54 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AppraisalGroupController extends Controller
 {
+
 	public function __construct()
 	{
 		$this->middleware('jwt.auth');
 	}
 
 
+	public function emp_level_list(Request $request)
+	{
+		$AuthEmpCode = Auth::id();
+		$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
+		if ($empLevInfo["is_all"]) {
+			$result = DB::select("
+				SELECT level_id, appraisal_level_name
+				FROM appraisal_level
+				WHERE is_active = 1
+				AND is_individual = 1
+				ORDER BY level_id DESC
+			");
+		} else {
+			// Get chief and under //
+			$allChiefEmp = $this->GetallChiefEmp($AuthEmpCode)->lists('emp_code')->toArray();
+			$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->lists('emp_code')->toArray();
+			$empList = array_merge($allChiefEmp, $allUnderEmp);
+			$empList = implode(",",$empList);
+
+			$result = DB::select("
+				SELECT lev.level_id, lev.appraisal_level_name
+				FROM employee emp
+				INNER JOIN appraisal_level lev ON lev.level_id = emp.level_id
+				WHERE emp.is_active = 1
+				AND lev.is_active = 1
+				AND lev.is_individual = 1
+				AND (
+					find_in_set(emp.emp_code, '{$empList}')
+					OR emp.emp_code = '{$AuthEmpCode}'
+				)
+				GROUP BY lev.level_id
+				ORDER BY lev.level_id DESC
+			");
+		}
+
+		return response()->json($result);
+	}
+
+
 	public function index(Request $request)
 	{
-
 		$all_emp = DB::select("
 			SELECT sum(b.is_all_employee) count_no
 			from employee a
@@ -45,42 +85,7 @@ class AppraisalGroupController extends Controller
 		", array(Auth::id()));
 
 		$qinput = array();
-
-		$system_config = SystemConfiguration::where('current_appraisal_year', $request->appraisal_year)->first();
-
-		//ja start
-		// $auth_group = Auth::id();
-		// $query_group = "select (case when l.is_all_employee = 1 or l.is_hr = 1 then 5
-		// 		when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second then 1
-		// 		when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code then 2
-		// 		when e.emp_code = y.you_emp_code then 4
-		// 		else 3 end
-		// 		) as group_id
-		// 		, (case when l.is_all_employee = 1 or l.is_hr = 1
-		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 5)
-		// 		when e.emp_code = y.you_chief_emp or e.emp_code = y.you_has_second
-		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 1)
-		// 		when y.you_emp_code = e.chief_emp_code or y.you_emp_code = hs.chief_emp_code
-		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 2)
-		// 		when e.emp_code = y.you_emp_code
-		// 			then (select assessor_group_name from assessor_group where assessor_group_id = 4)
-		// 		else (select assessor_group_name from assessor_group where assessor_group_id = 3) end
-		// 		) as group_name
-		// 		, y.emp_result_id
-		// 		from employee e
-		// 		inner join appraisal_level l on e.level_id = l.level_id
-		// 		inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = e.chief_emp_code
-		// 		cross join (select em.emp_code as you_emp_code
-		// 			, em.chief_emp_code as you_chief_emp
-		// 			, (case when em.has_second_line = 1 then hs.chief_emp_code else 'No' end) as you_has_second
-		// 			, e.emp_result_id
-		// 			from employee em
-		// 			inner join emp_result e on em.emp_id = e.emp_id
-		// 			inner join (select emp_code, chief_emp_code from employee) hs on hs.emp_code = em.chief_emp_code) y
-		// 		where e.emp_code = '{$auth_group}' ";
-		// return response()->json(['status' => 200]);
-		//ja end
-		
+		$system_config = SystemConfiguration::where('current_appraisal_year', $request->appraisal_year)->first();	
 		if ($all_emp[0]->count_no > 0) {
 			$query = "
 				SELECT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
@@ -111,95 +116,6 @@ class AppraisalGroupController extends Controller
 			$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
 		} else {
-
-			$re_emp = array();
-
-			$emp_list = array();
-
-			$emps = DB::select("
-				select distinct emp_code
-				from employee
-				where chief_emp_code = ?
-			", array(Auth::id()));
-
-			foreach ($emps as $e) {
-				$emp_list[] = $e->emp_code;
-				$re_emp[] = $e->emp_code;
-			}
-
-			$emp_list = array_unique($emp_list);
-
-			// Get array keys
-			$arrayKeys = array_keys($emp_list);
-			// Fetch last array key
-			$lastArrayKey = array_pop($arrayKeys);
-			//iterate array
-			$in_emp = '';
-			foreach($emp_list as $k => $v) {
-				if($k == $lastArrayKey) {
-					//during array iteration this condition states the last element.
-					$in_emp .= "'" . $v . "'";
-				} else {
-					$in_emp .= "'" . $v . "'" . ',';
-				}
-			}
-
-			do {
-				empty($in_emp) ? $in_emp = "null" : null;
-
-				$emp_list = array();
-
-				$emp_items = DB::select("
-					select distinct emp_code
-					from employee
-					where chief_emp_code in ({$in_emp})
-					and is_active = 1
-					and chief_emp_code != emp_code
-				");
-
-				foreach ($emp_items as $e) {
-					$emp_list[] = $e->emp_code;
-					$re_emp[] = $e->emp_code;
-				}
-
-				$emp_list = array_unique($emp_list);
-
-				// Get array keys
-				$arrayKeys = array_keys($emp_list);
-				// Fetch last array key
-				$lastArrayKey = array_pop($arrayKeys);
-				//iterate array
-				$in_emp = '';
-				foreach($emp_list as $k => $v) {
-					if($k == $lastArrayKey) {
-						//during array iteration this condition states the last element.
-						$in_emp .= "'" . $v . "'";
-					} else {
-						$in_emp .= "'" . $v . "'" . ',';
-					}
-				}
-			} while (!empty($emp_list));
-
-			$re_emp[] = Auth::id();
-			$re_emp = array_unique($re_emp);
-
-			// Get array keys
-			$arrayKeys = array_keys($re_emp);
-			// Fetch last array key
-			$lastArrayKey = array_pop($arrayKeys);
-			//iterate array
-			$in_emp = '';
-			foreach($re_emp as $k => $v) {
-				if($k == $lastArrayKey) {
-					//during array iteration this condition states the last element.
-					$in_emp .= "'" . $v . "'";
-				} else {
-					$in_emp .= "'" . $v . "'" . ',';
-				}
-			}
-
-			empty($in_emp) ? $in_emp = "null" : null;
-			$dotline_code = Auth::id();
 			if ($request->appraisal_type_id == 2) {
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
@@ -216,7 +132,6 @@ class AppraisalGroupController extends Controller
 					left outer join org o on a.org_id = o.org_id
 					left outer join org po on o.parent_org_code = po.org_code
 					where d.is_hr = 0
-					and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
@@ -227,12 +142,6 @@ class AppraisalGroupController extends Controller
 				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
-
-				/*
-				echo $query. " order by period_id,emp_code,org_code  asc ";
-				echo "<br>";
-				print_r($qinput);
-				*/
 
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
@@ -267,21 +176,7 @@ class AppraisalGroupController extends Controller
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
 			}
-
 		}
-
-		// Add Assessor Group //
-		foreach($items as $item) {
-			$assGroup = $this->getAssessorGroup($item->emp_code);
-			if($assGroup != null){
-				$item->group_id = $assGroup->assessor_group_id;
-				$item->group_name = $assGroup->assessor_group_name;
-			} else {
-				$item->group_id = null;
-				$item->group_name = null;
-			}
-		}
-
 
 		// Get the current page from the url if it's not set default to 1
 		empty($request->page) ? $page = 1 : $page = $request->page;
@@ -293,10 +188,22 @@ class AppraisalGroupController extends Controller
 
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
 		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
-
+		
+		// Add Assessor Group //
+		foreach($itemsForCurrentPage as $item) {
+			$assGroup = $this->getAssessorGroup($item->emp_code);
+			if($assGroup != null){
+				$item->group_id = $assGroup->assessor_group_id;
+				$item->group_name = $assGroup->assessor_group_name;
+			} else {
+				$item->group_id = null;
+				$item->group_name = null;
+			}
+		}
+		
 		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
 		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
-
+		
 		$groups = array();
 		foreach ($itemsForCurrentPage as $item) {
 			$key = "p".$item->period_id;
@@ -316,6 +223,7 @@ class AppraisalGroupController extends Controller
 		$resultT['system_config'] = $system_config;
 		return response()->json($resultT);
 	}
+
 
 	public function show(Request $request)
 	{
@@ -470,23 +378,6 @@ class AppraisalGroupController extends Controller
 				", array($item->structure_id));
 			}
 
-			/*
-			$check = DB::select("
-				select ifnull(max(a.end_threshold),0) max_no
-				from result_threshold a left outer join result_threshold_group b
-				on a.result_threshold_group_id = b.result_threshold_group_id
-				where b.result_threshold_group_id = ?
-				and b.result_type = 2
-			", array($item->result_threshold_group_id));
-
-			if ($check[0]->max_no == 0) {
-				$total_weight = $item->structure_weight_percent;
-			} else {
-				$total_weight = ($check[0]->max_no * $item->structure_weight_percent) / 100;
-			}
-
-			*/
-
 			$check = DB::select("
 				SELECT nof_target_score as max_no FROM
 			appraisal_structure
@@ -514,12 +405,9 @@ class AppraisalGroupController extends Controller
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
-			//	$groups[$key]['total_weight'] += $item->weight_percent;
 				$groups[$key]['count'] += 1;
 			}
 		}
-	//	$resultT = $items->toArray();
-	//	$items['group'] = $groups;
 
 		$stage = DB::select("
 			SELECT a.created_by, a.created_dttm, b.from_action, b.to_action, a.remark
@@ -533,6 +421,7 @@ class AppraisalGroupController extends Controller
 		return response()->json(['head' => $head, 'data' => $items, 'group' => $groups, 'stage' => $stage]);
 
 	}
+
 
 	public function show_type2 (Request $request)
 	{
@@ -930,35 +819,9 @@ class AppraisalGroupController extends Controller
 		$assGroupId = 0; 
 		$assGroupName = "";
 
-		$allChiefEmpOfAuth = collect(DB::select("
-			SELECT 
-				emp.emp_code
-			FROM (
-				SELECT emp_code, chief_emp_code
-				FROM employee
-				ORDER BY chief_emp_code desc, emp_code desc
-			) emp, 
-			(
-				SELECT @pv := chief_emp_code
-				FROM employee 
-				WHERE emp_code = '{$searchEmpCode}'
-			) init
-			WHERE find_in_set(emp.emp_code, CONVERT(@pv USING utf8))
-			AND length(@pv := concat(@pv, ',', emp.chief_emp_code))
-		"));
+		$allChiefEmpOfAuth = $this->GetallChiefEmp($searchEmpCode);
+		$allUnderEmpOfAuth = $this->GetallUnderEmp($searchEmpCode);
 
-		$allUnderEmpOfAuth = collect(DB::select("
-			SELECT 
-				emp.emp_code
-			FROM (
-				SELECT emp_code, chief_emp_code
-				FROM employee
-				ORDER BY chief_emp_code, emp_code
-			) emp, (select @pv := '{$searchEmpCode}') init
-			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
-			AND length(@pv := concat(@pv, ',', emp.emp_code))
-		"));
-		
 		$isChief = $allChiefEmpOfAuth->filter(function ($emp) use ($loginEmpCode){
 			return $emp->emp_code == $loginEmpCode;
 		});
@@ -992,6 +855,41 @@ class AppraisalGroupController extends Controller
 		}		
 
 		return AssessorGroup::find($assGroupId);
+	}
+
+	private function GetallChiefEmp($paramEmp)
+	{
+		return collect(DB::select("
+			SELECT 
+				emp.emp_code
+			FROM (
+				SELECT emp_code, chief_emp_code
+				FROM employee
+				ORDER BY chief_emp_code desc, emp_code desc
+			) emp, 
+			(
+				SELECT @pv := chief_emp_code
+				FROM employee 
+				WHERE emp_code = '{$paramEmp}'
+			) init
+			WHERE find_in_set(emp.emp_code, CONVERT(@pv USING utf8))
+			AND length(@pv := concat(@pv, ',', emp.chief_emp_code))
+		"));
+	}
+
+	private function GetallUnderEmp($paramEmp)
+	{
+		return collect(DB::select("
+			SELECT 
+				emp.emp_code
+			FROM (
+				SELECT emp_code, chief_emp_code
+				FROM employee
+				ORDER BY chief_emp_code, emp_code
+			) emp, (select @pv := '{$paramEmp}') init
+			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
+			AND length(@pv := concat(@pv, ',', emp.emp_code))
+		"));
 	}
 }
 
