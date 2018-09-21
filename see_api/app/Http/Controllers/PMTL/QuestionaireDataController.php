@@ -11,6 +11,7 @@ use App\Questionaire;
 use App\Stage;
 use App\SystemConfiguration;
 use App\Customer;
+use App\User;
 
 use Auth;
 use DB;
@@ -38,12 +39,8 @@ class QuestionaireDataController extends Controller
 		if(empty($date)) {
 			return "";
 		} else {
-			try {
-				$date_formated = date('Y-m-d', strtotime($date));
-			} catch (Exception $e) {
-				$date = strtr($date, '/', '-');
-				$date_formated = date('Y-m-d', strtotime($date));
-			}
+			$date = strtr($date, '/', '-');
+			$date_formated = date('Y-m-d', strtotime($date));
 		}
 
 		return $date_formated;
@@ -52,37 +49,6 @@ class QuestionaireDataController extends Controller
 	function trim_text($text) {
 		return trim($text);
 	}
-
-	function role_authorize($stage_id) {
-        $data = [];
-        $user = DB::select("
-        	SELECT roleId
-        	FROM lportal.users_roles
-        	WHERE userId = ?
-        	",array(Auth::user()->userId));
-
-        if (empty($user)) {
-            return (object)$data;
-        }
-
-        $role = [];
-        foreach ($user as $key => $value) {
-            array_push($role, $value->roleId);
-        }
-
-        $role_id = implode(',', $role);
-
-        $data = DB::select("
-        	SELECT add_flag, edit_flag, delete_flag, view_flag
-        	FROM role_stage_authorize
-        	WHERE role_id IN ({$role_id})
-        	AND stage_id = '{$request->stage_id}'
-        	");
-
-        $data = $data[0];
-
-        return $data;
-    }
 
     function get_role() {
     	$role = [];
@@ -113,8 +79,117 @@ class QuestionaireDataController extends Controller
     	}
     }
 
+    function role_authorize($stage_id) {
+        $user = DB::select("
+        	SELECT roleId
+        	FROM lportal.users_roles
+        	WHERE userId = ?
+        	",array(Auth::user()->userId));
+
+        if (empty($user)) {
+            return ['errors' => 'user role not found'];
+        }
+
+        $role = [];
+        foreach ($user as $key => $value) {
+            array_push($role, $value->roleId);
+        }
+
+        $role_id = implode(',', $role);
+
+        $data = DB::select("
+        	SELECT view_comment_flag
+        	FROM role_stage_authorize
+        	WHERE role_id IN ({$role_id})
+        	AND stage_id = '{$stage_id}'
+        ");
+
+    	if(empty($data)) {
+    		return [
+    			'view_comment_flag' => 0
+    		];
+    	} else {
+    		return [
+    			'view_comment_flag' => $data[0]->view_comment_flag
+    		];
+    	}
+    }
+
+    function send_email($config, $from_stage_id, $emp_snapshot_id, $assessor_id) {
+    	Config::set('mail.driver',$config->mail_driver);
+		Config::set('mail.host',$config->mail_host);
+		Config::set('mail.port',$config->mail_port);
+		Config::set('mail.encryption',$config->mail_encryption);
+		Config::set('mail.username',$config->mail_username);
+		Config::set('mail.password',$config->mail_password);
+		$from = Config::get('mail.from');
+
+		$workflow_email = DB::table("workflow_stage")->select("send_email_flag")->where("from_stage_id", $from_stage_id)->first();
+		if($workflow_email->send_email_flag==1) {
+			try {
+				$emp_snap = EmployeeSnapshot::find($emp_snapshot_id);
+				$assessor = EmployeeSnapshot::find($assessor_id);
+
+				$data = ["emp_name" => $emp_snap->emp_first_name.' '.$emp_snap->emp_last_name, "status" => $s->status];
+				$to = [$emp_snap->email,$assessor->email];
+
+				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
+				{
+					$message->from($from['address'], $from['name']);
+					$message->to($to)->subject('ระบบได้ทำการประเมิน');
+				});
+			} catch (Exception $ExceptionError) {
+				return ['mail error' => $ExceptionError];
+			}
+		}
+    }
+
+    function get_emp_snapshot_id() {
+    	$is_emp = DB::select("
+			SELECT emp_snapshot_id
+			FROM employee_snapshot
+			WHERE emp_code = '".Auth::id()."'
+		");
+		return $is_emp;
+    }
+
+    public function role_authorize_add() {
+        $data = [];
+        $user = DB::select("
+        	SELECT roleId
+        	FROM lportal.users_roles
+        	WHERE userId = ?
+        	",array(Auth::user()->userId));
+
+        if (empty($user)) {
+            return response()->json(['status' => 401, 'add_flag' => 0, 'errors' => 'user role not found']);
+        }
+
+        $role = [];
+        foreach ($user as $key => $value) {
+            array_push($role, $value->roleId);
+        }
+
+        $role_id = implode(',', $role);
+
+        $data = DB::select("
+        	SELECT add_flag
+        	FROM role_stage_authorize
+        	WHERE role_id IN ({$role_id})
+        	AND stage_id = '1'
+        ");
+
+    	if(empty($data)) {
+    		return response()->json(['status' => 400, 'add_flag' => 0, 'errors' => 'role not assign to user']);
+    	} else {
+    		return response()->json(['status' => 200, 'add_flag' => $data[0]->add_flag, 'errors' => []]);
+    	}
+    }
+
 	public function auto_emp(Request $request) {
 		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+		$request->start_date = $this->format_date($request->start_date);
+		$request->end_date = $this->format_date($request->end_date);
 
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, 
@@ -123,14 +198,14 @@ class QuestionaireDataController extends Controller
 					es.emp_code
 			FROM employee_snapshot es
 			LEFT JOIN position p ON p.position_id = es.position_id
-			WHERE
-				(
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-				)
+			WHERE (
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
+			)
+			AND es.start_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
 			LIMIT 10
-			");
+		");
 		return response()->json($items);
 	}
 
@@ -149,18 +224,36 @@ class QuestionaireDataController extends Controller
 			LEFT JOIN position p ON p.position_id = es.position_id
 			LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
 			WHERE (
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-			)
-			AND es.emp_snapshot_id NOT IN (
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
+			) AND es.emp_snapshot_id NOT IN (
 				SELECT emp_snapshot_id
 				FROM questionaire_data_header
 				WHERE questionaire_date = '{$request->date}'
 				AND questionaire_id = '{$request->questionaire_id}'
-			)
-			LIMIT 10
-			");
+			) LIMIT 10
+		");
+		return response()->json($items);
+	}
+
+	public function auto_emp_permission(Request $request) {
+		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+		$emp_code = Auth::id();
+
+		$items = DB::select("
+			SELECT es.emp_snapshot_id, 
+					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
+			FROM employee_snapshot es
+			LEFT JOIN position p ON p.position_id = es.position_id
+			WHERE (
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
+			) AND (
+				es.chief_emp_code = '{$emp_code}' or es.emp_code = '{$emp_code}'
+			) LIMIT 10
+		");
 		return response()->json($items);
 	}
 
@@ -172,6 +265,11 @@ class QuestionaireDataController extends Controller
 			FROM customer c
 			LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
 			WHERE c.customer_name LIKE '%{$request->customer_name}%'
+			AND c.customer_id NOT IN (
+				SELECT customer_id
+				FROM questionaire_data_detail
+				WHERE data_header_id = '{$request->data_header_id}'
+			)
 			".$position_code."
 			LIMIT 10
 			");
@@ -259,6 +357,8 @@ class QuestionaireDataController extends Controller
 						FROM questionaire_data_detail qdd
 						INNER JOIN answer an ON an.question_id = qdd.question_id
 						AND qdd.question_id = {$anv->question_id}
+						AND qdd.data_header_id = '{$request->data_header_id}'
+						AND qdd.customer_id = '{$request->customer_id}'
 						GROUP BY is_check, an.answer_id
 						ORDER BY is_check DESC, an.answer_id
 					)d1
@@ -293,6 +393,8 @@ class QuestionaireDataController extends Controller
 							FROM questionaire_data_detail qdd
 							INNER JOIN answer an ON an.question_id = qdd.question_id
 							AND qdd.question_id = {$ssq->question_id}
+							AND qdd.data_header_id = '{$request->data_header_id}'
+							AND qdd.customer_id = '{$request->customer_id}'
 							GROUP BY is_check, an.answer_id
 							ORDER BY is_check DESC, an.answer_id
 						)d1
@@ -302,7 +404,7 @@ class QuestionaireDataController extends Controller
 			}
 		}
 
-		return response()->json(['customer' => $customer, 'data' => $sub_items]);
+		return response()->json(['customer'=> $customer, 'data' => $sub_items[0]]);
 	}
 
 	public function index(Request $request) {
@@ -310,7 +412,7 @@ class QuestionaireDataController extends Controller
 		$request->end_date = $this->format_date($request->end_date);
 
 		$between_date = "
-			WHERE qdh.questionaire_date = (
+			AND qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
 				FROM questionaire_data_header qdhh
 				WHERE qdhh.data_header_id = qdh.data_header_id
@@ -329,45 +431,70 @@ class QuestionaireDataController extends Controller
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
 		$items = DB::select("
+			SELECT qdh.data_header_id
+			FROM questionaire_data_header qdh
+			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			WHERE qdh.questionaire_id = '{$request->questionaire_id}'
+			".$between_date."
+			".$emp_snapshot_id."
+			ORDER BY qdh.questionaire_date
+		");
+
+		$header_array_id = [];
+		foreach ($items as $key => $value) {
+            array_push($header_array_id, $value->data_header_id);
+        }
+
+        $header_id = empty(implode(',', $header_array_id)) ? "''" : implode(',', $header_array_id);
+		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+		$assessor_id = $this->get_emp_snapshot_id();
+
+		$items = DB::select("
 			SELECT qdh.data_header_id, DATE_FORMAT(qdh.questionaire_date,'%d/%m/%Y') questionaire_date 
 			FROM questionaire_data_header qdh
 			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-			AND qdh.questionaire_id = '{$request->questionaire_id}'
+			WHERE qdh.questionaire_id = '{$request->questionaire_id}'
+			#AND qdh.assessor_id = '{$assessor_id[0]->emp_snapshot_id}'
 			".$between_date."
 			".$emp_snapshot_id."
 			GROUP BY qdh.questionaire_date
 			ORDER BY qdh.questionaire_date
-			");
-
-		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+		");
 
 		foreach ($items as $key => $value) {
-			$items[$key]->data = DB::select("
-				SELECT qdh.data_header_id, 
-						p.position_code, 
-						CONCAT(es.emp_first_name, '', es.emp_last_name) emp_name
-				FROM questionaire_data_header qdh
-				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-				LEFT JOIN position p ON p.position_id = es.position_id
-				LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-				WHERE qdh.data_header_id = {$value->data_header_id}
-				ORDER BY qdh.data_stage_id DESC
-				");
-
 			// $items[$key]->data = DB::select("
-			// 	SELECT qdh.data_header_id, 
+			// 	SELECT qdh.data_header_id,
+			// 			qdh.questionaire_id,
+			// 			qdh.emp_snapshot_id,
+			// 			qn.questionaire_type_id,
 			// 			p.position_code, 
-			// 			CONCAT(es.emp_first_name, '', es.emp_last_name) emp_name,
-			// 			rsa.add_flag, rsa.edit_flag, rsa.delete_flag, rsa.view_flag
+			// 			CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
 			// 	FROM questionaire_data_header qdh
 			// 	LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
 			// 	LEFT JOIN position p ON p.position_id = es.position_id
 			// 	LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-			// 	LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id
-			// 	WHERE qdh.data_header_id = {$value->data_header_id}
-			// 	AND rsa.role_id IN ({$role})
+			// 	WHERE qdh.questionaire_date = '{$this->format_date($value->questionaire_date)}'
+			// 	AND qdh.data_header_id IN ({$header_id})
 			// 	ORDER BY qdh.data_stage_id DESC
 			// 	");
+
+			$items[$key]->data = DB::select("
+				SELECT qdh.data_header_id, 
+						p.position_code, 
+						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+						#ifnull(rsa.add_flag, 0) add_flag, 
+						ifnull(rsa.edit_flag, 0) edit_flag, 
+						ifnull(rsa.delete_flag, 0) delete_flag, 
+						ifnull(rsa.view_flag, 0) view_flag
+				FROM questionaire_data_header qdh
+				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+				LEFT JOIN position p ON p.position_id = es.position_id
+				LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+				LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
+				WHERE qdh.questionaire_date = '{$this->format_date($value->questionaire_date)}'
+				AND qdh.data_header_id IN ({$header_id})
+				ORDER BY qdh.data_stage_id DESC
+				");
 		}
 
 		return response()->json($items);
@@ -422,50 +549,13 @@ class QuestionaireDataController extends Controller
 					AND q.parent_question_id IS NULL
 				");
 
-				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-					$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-						SELECT *
-						FROM (
-							SELECT
-								an.answer_id,
-								an.row_name,
-								an.answer_name,
-								an.score,
-								an.is_not_applicable,
-								qdd.desc_answer,
-							IF (
-								an.answer_id = qdd.answer_id,
-								1,
-								0
-							) is_check
-							FROM
-								questionaire_data_detail qdd
-							INNER JOIN answer an ON an.question_id = qdd.question_id
-							AND qdd.question_id = {$anv->question_id}
-							GROUP BY is_check, an.answer_id
-							ORDER BY is_check DESC, an.answer_id
-						)d1
-						GROUP BY answer_id
-					");
-				}
-
-				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-					$sub_items[$key]->sub_section[$key2]->question =  DB::select("
-						SELECT q.question_id, 
-								q.answer_type_id, 
-								at.is_show_comment, 
-								q.parent_question_id, 
-								q.question_name
-						FROM question q
-						INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
-						WHERE q.parent_question_id = {$anv->question_id}
-						");
-
-					foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
-						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
+				if($v_qdd->is_cust_search==0) {
+					foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
+						$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
 							SELECT *
 							FROM (
 								SELECT
+									qdd.data_detail_id,
 									an.answer_id,
 									an.row_name,
 									an.answer_name,
@@ -480,12 +570,86 @@ class QuestionaireDataController extends Controller
 								FROM
 									questionaire_data_detail qdd
 								INNER JOIN answer an ON an.question_id = qdd.question_id
-								AND qdd.question_id = {$ssq->question_id}
+								AND qdd.question_id = {$anv->question_id}
+								AND qdd.data_header_id = '{$request->data_header_id}'
 								GROUP BY is_check, an.answer_id
 								ORDER BY is_check DESC, an.answer_id
 							)d1
 							GROUP BY answer_id
 						");
+					}
+
+					foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
+						$sub_items[$key]->sub_section[$key2]->question =  DB::select("
+							SELECT q.question_id, 
+									q.answer_type_id, 
+									at.is_show_comment, 
+									q.parent_question_id, 
+									q.question_name
+							FROM question q
+							INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+							WHERE q.parent_question_id = {$anv->question_id}
+							");
+
+						foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
+							$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
+								SELECT *
+								FROM (
+									SELECT
+										qdd.data_detail_id,
+										an.answer_id,
+										an.row_name,
+										an.answer_name,
+										an.score,
+										an.is_not_applicable,
+										qdd.desc_answer,
+									IF (
+										an.answer_id = qdd.answer_id,
+										1,
+										0
+									) is_check
+									FROM
+										questionaire_data_detail qdd
+									INNER JOIN answer an ON an.question_id = qdd.question_id
+									AND qdd.question_id = {$ssq->question_id}
+									AND qdd.data_header_id = '{$request->data_header_id}'
+									GROUP BY is_check, an.answer_id
+									ORDER BY is_check DESC, an.answer_id
+								)d1
+								GROUP BY answer_id
+							");
+						}
+					}
+				} else {
+					foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
+						$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
+							SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
+							FROM answer
+							WHERE question_id = {$anv->question_id}
+							ORDER BY seq_no ASC
+						");
+					}
+
+					foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
+						$sub_items[$key]->sub_section[$key2]->question =  DB::select("
+							SELECT q.question_id, 
+									q.answer_type_id, 
+									at.is_show_comment, 
+									q.parent_question_id, 
+									q.question_name
+							FROM question q
+							INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+							WHERE q.parent_question_id = {$anv->question_id}
+							");
+
+						foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
+							$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
+								SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
+								FROM answer
+								WHERE question_id = {$ssq->question_id}
+								ORDER BY seq_no ASC
+							");
+						}
 					}
 				}
 			}
@@ -501,7 +665,7 @@ class QuestionaireDataController extends Controller
 			");
 
 			$current_stage = DB::select("
-                SELECT stage_id, stage_name, role_id
+                SELECT stage_id, stage_name
                 from stage
                 where stage_id = '{$data_header->data_stage_id}'
             ");
@@ -542,7 +706,7 @@ class QuestionaireDataController extends Controller
 
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
 					$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-						SELECT answer_id, row_name, answer_name, score, is_not_applicable
+						SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
 						FROM answer
 						WHERE question_id = {$anv->question_id}
 						ORDER BY seq_no ASC
@@ -560,7 +724,7 @@ class QuestionaireDataController extends Controller
 
 					foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
 						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-							SELECT answer_id, row_name, answer_name, score, is_not_applicable
+							SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
 							FROM answer
 							WHERE question_id = {$ssq->question_id}
 							ORDER BY seq_no ASC
@@ -570,14 +734,14 @@ class QuestionaireDataController extends Controller
 			}
 
 			$current_stage = DB::select("
-                SELECT stage_id, stage_name, role_id
+                SELECT stage_id, stage_name
                 from stage
                 where stage_id = '1'
             ");
 
 			$stage = [];
 
-			$role = $this->role_authorize(1);
+			$role = (object)[];
 
 		} else {
 			return response()->json(['status' => 404, 'data' => 'Parameter not found.']);
@@ -624,19 +788,7 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		Config::set('mail.driver',$config->mail_driver);
-		Config::set('mail.host',$config->mail_host);
-		Config::set('mail.port',$config->mail_port);
-		Config::set('mail.encryption',$config->mail_encryption);
-		Config::set('mail.username',$config->mail_username);
-		Config::set('mail.password',$config->mail_password);
-		$from = Config::get('mail.from');
-
-		$is_emp = DB::select("
-			SELECT emp_snapshot_id
-			FROM employee_snapshot
-			WHERE emp_code = '".Auth::id()."'
-		");
+		$is_emp = $this->get_emp_snapshot_id();
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -665,6 +817,7 @@ class QuestionaireDataController extends Controller
 					'question_id' => $d['question_id'],
 					'answer_id' => $d['answer_id'],
 					'score' => $d['score'],
+					'full_score' => $d['full_score'],
 					'is_not_applicable' => $d['is_not_applicable']
 				], [
 					'section_id' => 'required|integer',
@@ -672,6 +825,7 @@ class QuestionaireDataController extends Controller
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
 					'score' => 'required|between:0,99.99',
+					'full_score' => 'required|between:0,99.99',
 					'is_not_applicable' => 'required|integer'
 				]);
 
@@ -683,12 +837,10 @@ class QuestionaireDataController extends Controller
 
 		$validator_stage = Validator::make([
 			'from_stage_id' => $request->stage['from_stage_id'],
-			'to_stage_id' => $request->stage['to_stage_id'],
-			'remark' => $request->stage['remark']
+			'to_stage_id' => $request->stage['to_stage_id']
 		], [
 			'from_stage_id' => 'required|integer',
-			'to_stage_id' => 'required|integer',
-			'remark' => 'required|max:1000'
+			'to_stage_id' => 'required|integer'
 		]);
 
 		if($validator_stage->fails()) {
@@ -703,6 +855,7 @@ class QuestionaireDataController extends Controller
 		$h->questionaire_id = $request->questionaire_id;
 		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
+		$h->assessor_id = $is_emp[0]->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
 		$h->created_by = Auth::id();
@@ -737,6 +890,7 @@ class QuestionaireDataController extends Controller
 					$dt->question_id = $d['question_id'];
 					$dt->answer_id = $d['answer_id'];
 					$dt->score = $d['score'];
+					$dt->full_score = $d['full_score'];
 					$dt->is_not_applicable = $d['is_not_applicable'];
 					$dt->desc_answer = $d['desc_answer'];
 					$dt->created_by = Auth::id();
@@ -756,20 +910,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			try {
-				$emp_snap = EmployeeSnapshot::find($request->emp_snapshot_id);
-
-				$data = ["emp_name" => $emp_snap->emp_first_name.' '.$emp_snap->emp_last_name, "status" => $s->status];
-				$to = [$emp_snap->email];
-
-				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
-				{
-					$message->from($from['address'], $from['name']);
-					$message->to($to)->subject('ระบบได้ทำการประเมิน');
-				});
-			} catch (Exception $ExceptionError) {
-				$errors[] = ['mail error' => $ExceptionError];
-			}
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
@@ -906,19 +1047,7 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'QuestionaireDataHeader not found.']);
 		}
 
-		Config::set('mail.driver',$config->mail_driver);
-		Config::set('mail.host',$config->mail_host);
-		Config::set('mail.port',$config->mail_port);
-		Config::set('mail.encryption',$config->mail_encryption);
-		Config::set('mail.username',$config->mail_username);
-		Config::set('mail.password',$config->mail_password);
-		$from = Config::get('mail.from');
-
-		$is_emp = DB::select("
-			SELECT emp_snapshot_id
-			FROM employee_snapshot
-			WHERE emp_code = '".Auth::id()."'
-		");
+		$is_emp = $this->get_emp_snapshot_id();
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -942,20 +1071,20 @@ class QuestionaireDataController extends Controller
 		if(!empty($request['detail'])) {
 			foreach ($request['detail'] as $d) {
 				$validator_detail = Validator::make([
-					'data_detail_id' => $d['data_detail_id'],
 					'section_id' => $d['section_id'],
 					'customer_id' => $d['customer_id'],
 					'question_id' => $d['question_id'],
 					'answer_id' => $d['answer_id'],
 					'score' => $d['score'],
+					'full_score' => $d['full_score'],
 					'is_not_applicable' => $d['is_not_applicable']
 				], [
-					'data_detail_id' => 'required|integer',
 					'section_id' => 'required|integer',
 					'customer_id' => 'integer',
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
 					'score' => 'required|between:0,99.99',
+					'full_score' => 'required|between:0,99.99',
 					'is_not_applicable' => 'required|integer'
 				]);
 
@@ -967,12 +1096,10 @@ class QuestionaireDataController extends Controller
 
 		$validator_stage = Validator::make([
 			'from_stage_id' => $request->stage['from_stage_id'],
-			'to_stage_id' => $request->stage['to_stage_id'],
-			'remark' => $request->stage['remark']
+			'to_stage_id' => $request->stage['to_stage_id']
 		], [
 			'from_stage_id' => 'required|integer',
-			'to_stage_id' => 'required|integer',
-			'remark' => 'required|max:1000'
+			'to_stage_id' => 'required|integer'
 		]);
 
 		if($validator_stage->fails()) {
@@ -986,6 +1113,7 @@ class QuestionaireDataController extends Controller
 		$h->questionaire_id = $request->questionaire_id;
 		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
+		$h->assessor_id = $is_emp[0]->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
 		$h->updated_by = Auth::id();
@@ -1012,17 +1140,32 @@ class QuestionaireDataController extends Controller
 
 			if(!empty($request['detail'])) {
 				foreach ($request['detail'] as $keyD => $d) {
-					$dt = QuestionaireDataDetail::find($d['data_detail_id']);
-					$dt->data_header_id = $h->data_header_id;
-					$dt->section_id = $d['section_id'];
-					$dt->customer_id = $d['customer_id'];
-					$dt->question_id = $d['question_id'];
-					$dt->answer_id = $d['answer_id'];
-					$dt->score = $d['score'];
-					$dt->is_not_applicable = $d['is_not_applicable'];
-					$dt->desc_answer = $d['desc_answer'];
-					$dt->created_by = Auth::id();
-					$dt->updated_by = Auth::id();
+					if(empty($d['data_detail_id'])) {
+						$dt = new QuestionaireDataDetail;
+						$dt->data_header_id = $h->data_header_id;
+						$dt->section_id = $d['section_id'];
+						$dt->customer_id = $d['customer_id'];
+						$dt->question_id = $d['question_id'];
+						$dt->answer_id = $d['answer_id'];
+						$dt->score = $d['score'];
+						$dt->full_score = $d['full_score'];
+						$dt->is_not_applicable = $d['is_not_applicable'];
+						$dt->desc_answer = $d['desc_answer'];
+						$dt->created_by = Auth::id();
+						$dt->updated_by = Auth::id();
+					} else {
+						$dt = QuestionaireDataDetail::find($d['data_detail_id']);
+						$dt->data_header_id = $h->data_header_id;
+						$dt->section_id = $d['section_id'];
+						$dt->customer_id = $d['customer_id'];
+						$dt->question_id = $d['question_id'];
+						$dt->answer_id = $d['answer_id'];
+						$dt->score = $d['score'];
+						$dt->full_score = $d['full_score'];
+						$dt->is_not_applicable = $d['is_not_applicable'];
+						$dt->desc_answer = $d['desc_answer'];
+						$dt->updated_by = Auth::id();
+					}
 					try {
 						$dt->save();
 					} catch (Exception $e) {
@@ -1038,20 +1181,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			try {
-				$emp_snap = EmployeeSnapshot::find($request->emp_snapshot_id);
-
-				$data = ["emp_name" => $emp_snap->emp_first_name.' '.$emp_snap->emp_last_name, "status" => $s->status];
-				$to = [$emp_snap->email];
-
-				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
-				{
-					$message->from($from['address'], $from['name']);
-					$message->to($to)->subject('ระบบได้ทำการประเมิน');
-				});
-			} catch (Exception $ExceptionError) {
-				$errors[] = ['mail error' => $ExceptionError];
-			}
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);

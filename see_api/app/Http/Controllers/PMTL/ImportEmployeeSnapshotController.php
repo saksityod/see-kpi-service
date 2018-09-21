@@ -94,7 +94,7 @@ class ImportEmployeeSnapshotController extends Controller
 		$org_id = empty($request->org_id) ? "" : "AND es.org_id = '{$request->org_id}'";
 
 		$items = DB::select("
-			SELECT es.*, al.appraisal_level_name, p.position_code, o.org_name
+			SELECT es.*, DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id

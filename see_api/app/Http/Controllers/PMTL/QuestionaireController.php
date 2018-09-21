@@ -608,6 +608,33 @@ class QuestionaireController extends Controller
 		}
 
 		try {
+			$questionaire_section = DB::select("
+				SELECT section_id 
+				FROM questionaire_section 
+				WHERE questionaire_id = '{$questionaire_id}'
+			");
+
+			foreach ($questionaire_section as $key => $value) {
+				$question = DB::select("
+					SELECT question_id 
+					FROM question 
+					WHERE section_id = '{$value->section_id}'
+				");
+
+				foreach ($question as $key2 => $value2) {
+					$answer = DB::select("
+						SELECT answer_id 
+						FROM answer
+						WHERE question_id = '{$value2->question_id}'
+					");
+
+					foreach ($answer as $key3 => $value3) {
+						$this->destroy_answer($value3->answer_id);
+					}
+					$this->destroy_question($value2->question_id);
+				}
+				$this->destroy_section($value->section_id);
+			}
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
@@ -630,6 +657,24 @@ class QuestionaireController extends Controller
 		}
 
 		try {
+			$question = DB::select("
+				SELECT question_id 
+				FROM question 
+				WHERE section_id = '{$section_id}'
+				");
+
+			foreach ($question as $key2 => $value2) {
+				$answer = DB::select("
+					SELECT answer_id 
+					FROM answer
+					WHERE question_id = '{$value2->question_id}'
+					");
+
+				foreach ($answer as $key3 => $value3) {
+					$this->destroy_answer($value3->answer_id);
+				}
+				$this->destroy_question($value2->question_id);
+			}
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
@@ -652,6 +697,15 @@ class QuestionaireController extends Controller
 		}
 
 		try {
+			$answer = DB::select("
+				SELECT answer_id 
+				FROM answer
+				WHERE question_id = '{$question_id}'
+				");
+
+			foreach ($answer as $key3 => $value3) {
+				$this->destroy_answer($value3->answer_id);
+			}
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
