@@ -150,7 +150,8 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
     }
 
-    public function al_list_organization(Request $request) {
+	public function al_list_organization(Request $request) 
+	{
     	$all_emp = DB::select("
     		SELECT sum(b.is_all_employee) count_no
     		from employee a
@@ -192,7 +193,8 @@ class AppraisalItemController extends Controller
     	return response()->json($orgs);
     }
 
-    public function al_list_position(Request $request) {
+	public function al_list_position(Request $request) 
+	{
     	$all_emp = DB::select("
     		SELECT sum(b.is_all_employee) count_no
     		from employee a
@@ -1111,7 +1113,7 @@ class AppraisalItemController extends Controller
 					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 					'is_active' => 'required|boolean',
 					'org' => $org_required,
-					'no_raise_value' => 'required|numeric'
+					'no_raise_value' => 'numeric'
 				]);
 			}
 			else {
@@ -1477,7 +1479,7 @@ class AppraisalItemController extends Controller
 					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
 					'is_active' => 'required|boolean',
 					'org' => $org_required,
-					'no_raise_value' => 'required|numeric' 
+					'no_raise_value' => 'numeric' 
 				]);
 			} else {
 				$validator = Validator::make($request->all(), [
