@@ -422,6 +422,13 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('dashboard/performance/line_chart','DashboardPerformanceComparisonController@line_chart');
 	Route::get('dashboard/performance/table_structure','DashboardPerformanceComparisonController@table_structure');
 
+	// Appraisal Form //
+	Route::get('appraisal_form', 'AppraisalFormController@index');
+	Route::post('appraisal_form', 'AppraisalFormController@store');
+	Route::get('appraisal_form/{form_id}', 'AppraisalFormController@show');
+	Route::patch('appraisal_form/{form_id}', 'AppraisalFormController@update');
+	Route::delete('appraisal_form/{form_id}', 'AppraisalFormController@destroy');
+
 
 	// Editting
 	// Appraisal //
