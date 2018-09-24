@@ -2804,8 +2804,8 @@ class AppraisalAssignmentController extends Controller
 								|| array_key_exists('score3', $i)
 								|| array_key_exists('score4', $i)
 								|| array_key_exists('score5', $i)
-								|| array_key_exists('forecast_value', $i)
 								|| array_key_exists('target_value', $i)
+								//|| array_key_exists('forecast_value', $i)
 								|| array_key_exists('weight_percent', $i)) {
 								if($aitem->score0!=$i['score0']
 									|| $aitem->score1!=$i['score1']
@@ -2813,7 +2813,7 @@ class AppraisalAssignmentController extends Controller
 									|| $aitem->score3!=$i['score3']
 									|| $aitem->score4!=$i['score4']
 									|| $aitem->score5!=$i['score5']
-									|| $aitem->forecast_value!=$i['forecast_value']
+									//|| $aitem->forecast_value!=$i['forecast_value']
 									|| $aitem->target_value!=$i['target_value']
 									|| $aitem->weight_percent!=$i['weight_percent']) {
 										
