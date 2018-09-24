@@ -111,7 +111,7 @@ class QuestionaireDataController extends Controller
     	}
     }
 
-    function send_email($config, $from_stage_id, $to_stage_id, $emp_snapshot_id, $assessor_id) {
+    function send_email($config, $from_stage_id, $to_stage_id, $data_header_id, $assessor_id, $status) {
     	Config::set('mail.driver',$config->mail_driver);
 		Config::set('mail.host',$config->mail_host);
 		Config::set('mail.port',$config->mail_port);
@@ -121,30 +121,31 @@ class QuestionaireDataController extends Controller
 		$from = Config::get('mail.from');
 
 		$workflow_email = DB::table("workflow_stage")->select("send_email_flag")->where("from_stage_id", $from_stage_id)->first();
-		if($workflow_email->send_email_flag==1) {
+		if($to_stage_id==3) {
 			try {
 				$assessor = EmployeeSnapshot::find($assessor_id);
 				$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
 				$emp_snap = DB::select("
 					SELECT qdh.data_header_id, 
-						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
-						es.email,
-						ifnull(rsa.edit_flag, 0) edit_flag
+					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+					es.email,
+					ifnull(rsa.edit_flag, 0) edit_flag
 					FROM questionaire_data_header qdh
 					LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
 					LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
-					WHERE qdh.data_header_id = '{$to_stage_id}'
+					WHERE qdh.data_header_id = '{$data_header_id}'
 					");
 
 				$data = [
-					"emp_name" => $emp_snap[0]->emp_first_name.' '.$emp_snap[0]->emp_last_name, 
-					"status" => $s->status,
+					"emp_name" => $emp_snap[0]->emp_name, 
+					"status" => $status,
 					"web_domain" => $config->web_domain,
 					"data_header_id" => $emp_snap[0]->data_header_id,
 					"edit_flag" => $emp_snap[0]->edit_flag
 				];
 
-				$to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
+				// $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
+				$to = ['thawatchai@goingjesse.com','chokanan@goingjesse.com'];
 
 				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
 				{
@@ -152,7 +153,7 @@ class QuestionaireDataController extends Controller
 					$message->to($to)->subject('ระบบได้ทำการประเมิน');
 				});
 			} catch (Exception $ExceptionError) {
-				return ['mail error' => $ExceptionError];
+				return ['mail error' => substr($ExceptionError, 0, 255)];
 			}
 		}
     }
@@ -163,6 +164,7 @@ class QuestionaireDataController extends Controller
 			FROM employee_snapshot
 			WHERE emp_code = '".Auth::id()."'
 		");
+
 		return $is_emp;
     }
 
@@ -207,7 +209,7 @@ class QuestionaireDataController extends Controller
 					es.emp_code
 			FROM employee_snapshot es
 			LEFT JOIN position p ON p.position_id = es.position_id
-			LEFT JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+			INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
 			WHERE (
 				es.emp_first_name LIKE '%{$emp_name}%'
 				OR es.emp_last_name LIKE '%{$emp_name}%'
@@ -358,6 +360,7 @@ class QuestionaireDataController extends Controller
 					SELECT *
 					FROM (
 						SELECT
+							qdd.data_detail_id,
 							an.answer_id,
 							an.row_name,
 							an.answer_name,
@@ -395,6 +398,7 @@ class QuestionaireDataController extends Controller
 						SELECT *
 						FROM (
 							SELECT
+							qdd.data_detail_id,
 							an.answer_id,
 							an.row_name,
 							an.answer_name,
@@ -460,14 +464,29 @@ class QuestionaireDataController extends Controller
 
         $header_id = empty(implode(',', $header_array_id)) ? "''" : implode(',', $header_array_id);
 		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
-		$assessor_id = $this->get_emp_snapshot_id();
+
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+			", array(Auth::id()));
+
+		if ($all_emp[0]->count_no > 0) {
+			$assessor = "";
+		} else {
+			$assessor_id = $this->get_emp_snapshot_id();
+			$assessor_idd = $assessor_id[0]->emp_snapshot_id;
+			$assessor = "AND qdh.assessor_id = '{$assessor_idd}'";
+		}
 
 		$items = DB::select("
 			SELECT qdh.data_header_id, DATE_FORMAT(qdh.questionaire_date,'%d/%m/%Y') questionaire_date 
 			FROM questionaire_data_header qdh
 			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
 			WHERE qdh.questionaire_id = '{$request->questionaire_id}'
-			#AND qdh.assessor_id = '{$assessor_id[0]->emp_snapshot_id}'
+			".$assessor."
 			".$between_date."
 			".$emp_snapshot_id."
 			GROUP BY qdh.questionaire_date
@@ -475,21 +494,6 @@ class QuestionaireDataController extends Controller
 		");
 
 		foreach ($items as $key => $value) {
-			// $items[$key]->data = DB::select("
-			// 	SELECT qdh.data_header_id,
-			// 			qdh.questionaire_id,
-			// 			qdh.emp_snapshot_id,
-			// 			qn.questionaire_type_id,
-			// 			p.position_code, 
-			// 			CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
-			// 	FROM questionaire_data_header qdh
-			// 	LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			// 	LEFT JOIN position p ON p.position_id = es.position_id
-			// 	LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-			// 	WHERE qdh.questionaire_date = '{$this->format_date($value->questionaire_date)}'
-			// 	AND qdh.data_header_id IN ({$header_id})
-			// 	ORDER BY qdh.data_stage_id DESC
-			// 	");
 
 			$items[$key]->data = DB::select("
 				SELECT qdh.data_header_id, 
@@ -730,6 +734,7 @@ class QuestionaireDataController extends Controller
 								ans.score, 
 								ans.is_not_applicable, 
 								'' desc_answer,
+								1 full_score,
 								IF(
 									is_applicable > 0 AND ans.is_not_applicable = 1, 
 									1, 
@@ -773,6 +778,7 @@ class QuestionaireDataController extends Controller
 								ans.score, 
 								ans.is_not_applicable, 
 								'' desc_answer,
+								1 full_score,
 								IF(
 									is_applicable > 0 AND ans.is_not_applicable = 1, 
 									1, 
@@ -855,6 +861,10 @@ class QuestionaireDataController extends Controller
 		}
 
 		$is_emp = $this->get_emp_snapshot_id();
+
+		if(empty($is_emp)) {
+			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
+		}
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -976,129 +986,12 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
 
 	}
-
-	// public function auto_save(Request $request) {
-	// 	DB::beginTransaction();
-	// 	$errors = [];
-	// 	$errors_validator = [];
-	// 	$validator = Validator::make([
-	// 		'questionaire_id' => $request->questionaire_id,
-	// 		'questionaire_date' => $request->questionaire_date,
-	// 		'emp_snapshot_id' => $request->emp_snapshot_id,
-	// 		'total_score' => $request->total_score
-	// 	], [
-	// 		'questionaire_id' => 'required|integer',
-	// 		'questionaire_date' => 'required|date|date_format:Y-m-d',
-	// 		'emp_snapshot_id' => 'required|integer',
-	// 		'total_score' => 'required|integer'
-	// 	]);
-
-	// 	if($validator->fails()) {
-	// 		$errors_validator[] = $validator->errors();
-	// 	}
-
-	// 	if(!empty($request['detail'])) {
-	// 		foreach ($request['detail'] as $d) {
-	// 			$validator_detail = Validator::make([
-	// 				'section_id' => $d['section_id'],
-	// 				'customer_id' => $d['customer_id'],
-	// 				'question_id' => $d['question_id'],
-	// 				'answer_id' => $d['answer_id'],
-	// 				'score' => $d['score'],
-	// 				'is_not_applicable' => $d['is_not_applicable']
-	// 			], [
-	// 				'section_id' => 'required|integer',
-	// 				'customer_id' => 'integer',
-	// 				'question_id' => 'required|integer',
-	// 				'answer_id' => 'required|integer',
-	// 				'score' => 'required|integer',
-	// 				'is_not_applicable' => 'required|integer'
-	// 			]);
-
-	// 			if($validator_detail->fails()) {
-	// 				$errors_validator[] = $validator_detail->errors();
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if($validator_stage->fails()) {
-	// 		$errors_validator[] = $validator_stage->errors();
-	// 	}
-
-	// 	if(!empty($errors_validator)) {
-	// 		return response()->json(['status' => 400, 'errors' => $errors_validator]);
-	// 	}
-
-	// 	if(empty($request->data_header_id)) {
-	// 		$h = new QuestionaireDataHeader;
-	// 		$h->questionaire_id = $request->questionaire_id;
-	// 		$h->questionaire_date = $request->questionaire_date;
-	// 		$h->emp_snapshot_id = $request->emp_snapshot_id;
-	// 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
-	// 		$h->total_score = $request->total_score;
-	// 		$h->created_by = Auth::id();
-	// 		$h->updated_by = Auth::id();
-	// 	} else {
-	// 		$h = QuestionaireDataHeader::find($request->data_header_id);
-	// 		$h->questionaire_id = $request->questionaire_id;
-	// 		$h->questionaire_date = $request->questionaire_date;
-	// 		$h->emp_snapshot_id = $request->emp_snapshot_id;
-	// 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
-	// 		$h->total_score = $request->total_score;
-	// 		$h->updated_by = Auth::id();
-	// 	}
-
-	// 	try {
-	// 		$h->save();
-	// 		if(!empty($request['detail'])) {
-	// 			foreach ($request['detail'] as $keyD => $d) {
-	// 				if(empty($request->data_header_id)) {
-	// 					$dt = new QuestionaireDataDetail;
-	// 					$dt->data_header_id = $h->data_header_id;
-	// 					$dt->section_id = $d['section_id'];
-	// 					$dt->customer_id = $d['customer_id'];
-	// 					$dt->question_id = $d['question_id'];
-	// 					$dt->answer_id = $d['answer_id'];
-	// 					$dt->score = $d['score'];
-	// 					$dt->is_not_applicable = $d['is_not_applicable'];
-	// 					$dt->desc_answer = $d['desc_answer'];
-	// 					$dt->created_by = Auth::id();
-	// 					$dt->updated_by = Auth::id();
-	// 				} else {
-	// 					$dt = QuestionaireDataDetail::find($d['data_detail_id']);
-	// 					$dt->data_header_id = $h->data_header_id;
-	// 					$dt->section_id = $d['section_id'];
-	// 					$dt->customer_id = $d['customer_id'];
-	// 					$dt->question_id = $d['question_id'];
-	// 					$dt->answer_id = $d['answer_id'];
-	// 					$dt->score = $d['score'];
-	// 					$dt->is_not_applicable = $d['is_not_applicable'];
-	// 					$dt->desc_answer = $d['desc_answer'];
-	// 					$dt->updated_by = Auth::id();
-	// 				}
-
-	// 				try {
-	// 					$dt->save();
-	// 				} catch (Exception $e) {
-	// 					$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
-	// 				}
-	// 			}
-	// 		}
-	// 	} catch (Exception $e) {
-	// 		$errors[] = ['QuestionaireDataHeader' => substr($e, 0, 255)];
-	// 	}
-
-	// 	empty($errors) ? DB::commit() : DB::rollback();
-	// 	empty($errors) ? $status = 200 : $status = 400;
-
- //        return response()->json(['status' => $status, 'errors' => $errors]);
-	// }
 
 	public function update(Request $request) {
 		try {
@@ -1114,6 +1007,10 @@ class QuestionaireDataController extends Controller
 		}
 
 		$is_emp = $this->get_emp_snapshot_id();
+
+		if(empty($is_emp)) {
+			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
+		}
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -1247,7 +1144,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
