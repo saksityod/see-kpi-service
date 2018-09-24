@@ -38,6 +38,7 @@ class CustomerController extends Controller
 		$items = DB::select("
 			SELECT DISTINCT industry_class
 			FROM customer
+			ORDER BY industry_class
 		");
 		return response()->json($items);
 	}
@@ -99,7 +100,7 @@ class CustomerController extends Controller
 	public function import(Request $request)
 	{
 		set_time_limit(0);
-		ini_set('memory_limit', '1024M');
+		ini_set('memory_limit', '5012M');
 		$errors = array();
 		$errors_validator = array();
 		// DB::beginTransaction();
@@ -135,7 +136,7 @@ class CustomerController extends Controller
 						try {
 							$new_cus->save();
 						} catch (Exception $e) {
-							$errors[] = ['customer_code' => $i->customer_code, 'errors' => substr($e,0,254)];
+							$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
 						}
 
 						if(!empty($pc)) {
@@ -147,7 +148,7 @@ class CustomerController extends Controller
 									try {
 										$cp->save();
 									} catch (Exception $e) {
-										$errors[] = ['customer_code' => $i->customer_code, 'errors' => substr($e,0,254)];
+										$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
 									}
 								}
 							}
@@ -163,7 +164,7 @@ class CustomerController extends Controller
 						try {
 							$update_cus->save();
 						} catch (Exception $e) {
-							$errors[] = ['customer_code' => $i->customer_code, 'errors' => substr($e,0,254)];
+							$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
 						}
 
  						DB::table('customer_position')->where('customer_id', '=', $cus[0]->customer_id);
@@ -177,7 +178,7 @@ class CustomerController extends Controller
 	 								try {
 	 									$cp->save();
 	 								} catch (Exception $e) {
-	 									$errors[] = ['customer_code' => $i->customer_code, 'errors' => substr($e,0,254)];
+	 									$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
 	 								}
  								}
  							}

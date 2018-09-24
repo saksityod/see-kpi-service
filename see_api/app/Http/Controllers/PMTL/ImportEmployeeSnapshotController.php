@@ -206,6 +206,9 @@ class ImportEmployeeSnapshotController extends Controller
 				if (!empty($errors_validator)) {
 		            return response()->json(['status' => 400, 'errors' => $errors_validator]);
 				} else {
+					$i->useraccountcode = $this->qdc_service->strtolower_text($i->useraccountcode);
+					$i->line_manager = $this->qdc_service->strtolower_text($i->line_manager);
+
 					$emp = Employee::where('emp_code',$this->qdc_service->trim_text($i->useraccountcode))->first();
 					if (empty($emp)) {
 						$emp = new Employee;
@@ -242,11 +245,11 @@ class ImportEmployeeSnapshotController extends Controller
 								// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
 								$newEmp[] = ["emp_code"=> $i->useraccountcode, "emp_name"=>$i->employeefirstname." ".$i->employeelastname, "email"=>$i->employeeemail];
 							} catch (Exception $e) {
-								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => substr($e,0,254)];
+								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 							}
 
 						} catch (Exception $e) {
-							$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => substr($e,0,254)];
+							$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 						}
 					} else {
 						$emp->emp_code = $this->qdc_service->trim_text($i->useraccountcode);
@@ -278,10 +281,10 @@ class ImportEmployeeSnapshotController extends Controller
 							try {
 								$emp_snap->save();
 							} catch (Exception $e) {
-								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => substr($e,0,254)];
+								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 							}
 						} catch (Exception $e) {
-							$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => substr($e,0,254)];
+							$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 						}
 					}
 				}

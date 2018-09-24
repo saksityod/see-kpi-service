@@ -1,7 +1,8 @@
 To {{$emp_name}}
 <br/>
 <br/>
-	<p>ข้อมูลของคุณ {{$emp_name}} อยู่ที่สถานะ "{{$status}}" กรุณาเข้าระบบเพื่อทำการประเมิน</p>
+	<p>ข้อมูลของคุณ {{$emp_name}} อยู่ที่สถานะ "{{$status}}" กรุณา Click Link เพื่อทำการประเมิน</p>
+	<a href="{{$web_domain}}questionairedata/?data_header_id={{$data_header_id}}&action=edit&action_modal={{$edit_flag}}">{{$web_domain}}questionairedata/?data_header_id={{$emp_result_id}}&action=edit&action_modal={{$edit_flag}}</a>
 <br/>
 <br/>
 From SEE-KPI System	

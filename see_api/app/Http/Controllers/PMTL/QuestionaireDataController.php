@@ -11,7 +11,7 @@ use App\Questionaire;
 use App\Stage;
 use App\SystemConfiguration;
 use App\Customer;
-use App\User;
+use App\UsersRoles;
 
 use Auth;
 use DB;
@@ -50,13 +50,13 @@ class QuestionaireDataController extends Controller
 		return trim($text);
 	}
 
+	function strtolower_text($text) {
+		return strtolower($text);
+	}
+
     function get_role() {
     	$role = [];
-        $user = DB::select("
-        	SELECT roleId
-        	FROM lportal.users_roles
-        	WHERE userId = ?
-        	",array(Auth::user()->userId));
+        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
 
         if (empty($user)) {
             return $role;
@@ -80,11 +80,7 @@ class QuestionaireDataController extends Controller
     }
 
     function role_authorize($stage_id) {
-        $user = DB::select("
-        	SELECT roleId
-        	FROM lportal.users_roles
-        	WHERE userId = ?
-        	",array(Auth::user()->userId));
+        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
 
         if (empty($user)) {
             return ['errors' => 'user role not found'];
@@ -115,7 +111,7 @@ class QuestionaireDataController extends Controller
     	}
     }
 
-    function send_email($config, $from_stage_id, $emp_snapshot_id, $assessor_id) {
+    function send_email($config, $from_stage_id, $to_stage_id, $emp_snapshot_id, $assessor_id) {
     	Config::set('mail.driver',$config->mail_driver);
 		Config::set('mail.host',$config->mail_host);
 		Config::set('mail.port',$config->mail_port);
@@ -127,11 +123,28 @@ class QuestionaireDataController extends Controller
 		$workflow_email = DB::table("workflow_stage")->select("send_email_flag")->where("from_stage_id", $from_stage_id)->first();
 		if($workflow_email->send_email_flag==1) {
 			try {
-				$emp_snap = EmployeeSnapshot::find($emp_snapshot_id);
 				$assessor = EmployeeSnapshot::find($assessor_id);
+				$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+				$emp_snap = DB::select("
+					SELECT qdh.data_header_id, 
+						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+						es.email,
+						ifnull(rsa.edit_flag, 0) edit_flag
+					FROM questionaire_data_header qdh
+					LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+					LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
+					WHERE qdh.data_header_id = '{$to_stage_id}'
+					");
 
-				$data = ["emp_name" => $emp_snap->emp_first_name.' '.$emp_snap->emp_last_name, "status" => $s->status];
-				$to = [$emp_snap->email,$assessor->email];
+				$data = [
+					"emp_name" => $emp_snap[0]->emp_first_name.' '.$emp_snap[0]->emp_last_name, 
+					"status" => $s->status,
+					"web_domain" => $config->web_domain,
+					"data_header_id" => $emp_snap[0]->data_header_id,
+					"edit_flag" => $emp_snap[0]->edit_flag
+				];
+
+				$to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
 
 				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
 				{
@@ -155,11 +168,7 @@ class QuestionaireDataController extends Controller
 
     public function role_authorize_add() {
         $data = [];
-        $user = DB::select("
-        	SELECT roleId
-        	FROM lportal.users_roles
-        	WHERE userId = ?
-        	",array(Auth::user()->userId));
+        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
 
         if (empty($user)) {
             return response()->json(['status' => 401, 'add_flag' => 0, 'errors' => 'user role not found']);
@@ -198,12 +207,14 @@ class QuestionaireDataController extends Controller
 					es.emp_code
 			FROM employee_snapshot es
 			LEFT JOIN position p ON p.position_id = es.position_id
+			LEFT JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
 			WHERE (
 				es.emp_first_name LIKE '%{$emp_name}%'
 				OR es.emp_last_name LIKE '%{$emp_name}%'
 				OR p.position_code LIKE '%{$emp_name}%'
 			)
-			AND es.start_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+			AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+			GROUP BY es.emp_snapshot_id
 			LIMIT 10
 		");
 		return response()->json($items);
@@ -353,6 +364,7 @@ class QuestionaireDataController extends Controller
 							an.score,
 							an.is_not_applicable,
 							qdd.desc_answer,
+							qdd.full_score,
 							IF ( an.answer_id = qdd.answer_id, 1, 0) is_check
 						FROM questionaire_data_detail qdd
 						INNER JOIN answer an ON an.question_id = qdd.question_id
@@ -389,6 +401,7 @@ class QuestionaireDataController extends Controller
 							an.score,
 							an.is_not_applicable,
 							qdd.desc_answer,
+							qdd.full_score,
 							IF ( an.answer_id = qdd.answer_id, 1, 0) is_check
 							FROM questionaire_data_detail qdd
 							INNER JOIN answer an ON an.question_id = qdd.question_id
@@ -415,7 +428,7 @@ class QuestionaireDataController extends Controller
 			AND qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
 				FROM questionaire_data_header qdhh
-				WHERE qdhh.data_header_id = qdh.data_header_id
+				WHERE qdhh.emp_snapshot_id = qdh.emp_snapshot_id
 		";
 
 		if(empty($request->start_date) && empty($request->end_date)) {
@@ -493,6 +506,7 @@ class QuestionaireDataController extends Controller
 				LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
 				WHERE qdh.questionaire_date = '{$this->format_date($value->questionaire_date)}'
 				AND qdh.data_header_id IN ({$header_id})
+				GROUP BY qdh.data_header_id
 				ORDER BY qdh.data_stage_id DESC
 				");
 		}
@@ -562,6 +576,7 @@ class QuestionaireDataController extends Controller
 									an.score,
 									an.is_not_applicable,
 									qdd.desc_answer,
+									qdd.full_score,
 								IF (
 									an.answer_id = qdd.answer_id,
 									1,
@@ -603,6 +618,7 @@ class QuestionaireDataController extends Controller
 										an.score,
 										an.is_not_applicable,
 										qdd.desc_answer,
+										qdd.full_score,
 									IF (
 										an.answer_id = qdd.answer_id,
 										1,
@@ -706,10 +722,35 @@ class QuestionaireDataController extends Controller
 
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
 					$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-						SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
-						FROM answer
-						WHERE question_id = {$anv->question_id}
-						ORDER BY seq_no ASC
+							SELECT 
+								ans.question_id,
+								ans.answer_id, 
+								ans.row_name, 
+								ans.answer_name, 
+								ans.score, 
+								ans.is_not_applicable, 
+								'' desc_answer,
+								IF(
+									is_applicable > 0 AND ans.is_not_applicable = 1, 
+									1, 
+									IF(
+										is_applicable > 0, 
+										0, 
+										IF(
+											ans.score = 0,
+											1,
+											0
+										)
+									)
+								) is_check
+							FROM answer ans
+							LEFT OUTER JOIN (
+								SELECT question_id, SUM(is_not_applicable) is_applicable
+								FROM answer
+								GROUP BY question_id
+							)cab ON cab.question_id = ans.question_id
+							WHERE ans.question_id = {$anv->question_id}
+							ORDER BY ans.seq_no ASC
 						");
 				}
 
@@ -724,10 +765,35 @@ class QuestionaireDataController extends Controller
 
 					foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
 						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-							SELECT answer_id, row_name, answer_name, score, is_not_applicable, '' desc_answer
-							FROM answer
-							WHERE question_id = {$ssq->question_id}
-							ORDER BY seq_no ASC
+							SELECT 
+								ans.question_id,
+								ans.answer_id, 
+								ans.row_name, 
+								ans.answer_name, 
+								ans.score, 
+								ans.is_not_applicable, 
+								'' desc_answer,
+								IF(
+									is_applicable > 0 AND ans.is_not_applicable = 1, 
+									1, 
+									IF(
+										is_applicable > 0, 
+										0, 
+										IF(
+											ans.score = 0,
+											1,
+											0
+										)
+									)
+								) is_check
+							FROM answer ans
+							LEFT OUTER JOIN (
+								SELECT question_id, SUM(is_not_applicable) is_applicable
+								FROM answer
+								GROUP BY question_id
+							)cab ON cab.question_id = ans.question_id
+							WHERE ans.question_id = {$ssq->question_id}
+							ORDER BY ans.seq_no ASC
 							");
 					}
 				}
@@ -910,7 +976,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
@@ -1181,7 +1247,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
+			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $request->emp_snapshot_id, $h->assessor_id);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);

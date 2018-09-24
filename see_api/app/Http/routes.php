@@ -10,13 +10,13 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-	header('Access-Control-Allow-Credentials: true');
-	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
-	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
-	header('Keep-Alive: off');
-}
+// if (isset($_SERVER['HTTP_ORIGIN'])) {
+// 	header('Access-Control-Allow-Credentials: true');
+// 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+// 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+// 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
+// 	header('Keep-Alive: off');
+// }
 // Route::get('/', function () {
     // return Response::json(array('hello' => 'hehe'));
 // });

@@ -612,26 +612,41 @@ class QuestionaireController extends Controller
 				SELECT section_id 
 				FROM questionaire_section 
 				WHERE questionaire_id = '{$questionaire_id}'
-			");
+				");
 
 			foreach ($questionaire_section as $key => $value) {
 				$question = DB::select("
-					SELECT question_id 
+					SELECT question_id
 					FROM question 
 					WHERE section_id = '{$value->section_id}'
-				");
+					AND parent_question_id IS NOT NULL
+					");
 
 				foreach ($question as $key2 => $value2) {
 					$answer = DB::select("
 						SELECT answer_id 
 						FROM answer
 						WHERE question_id = '{$value2->question_id}'
-					");
+						");
 
 					foreach ($answer as $key3 => $value3) {
 						$this->destroy_answer($value3->answer_id);
 					}
 					$this->destroy_question($value2->question_id);
+				}
+
+				$question = DB::select("
+					SELECT question_id
+					FROM question 
+					WHERE section_id = '{$value->section_id}'
+					AND parent_question_id IS NULL
+					");
+
+				foreach ($question as $key2 => $value2) {
+					$question_head = Question::where('parent_question_id', $value2->question_id)->first();
+					if(empty($question_head)) {
+						$this->destroy_question($value2->question_id);
+					}
 				}
 				$this->destroy_section($value->section_id);
 			}
@@ -661,6 +676,7 @@ class QuestionaireController extends Controller
 				SELECT question_id 
 				FROM question 
 				WHERE section_id = '{$section_id}'
+				AND parent_question_id IS NOT NULL
 				");
 
 			foreach ($question as $key2 => $value2) {
@@ -675,6 +691,21 @@ class QuestionaireController extends Controller
 				}
 				$this->destroy_question($value2->question_id);
 			}
+
+			$question = DB::select("
+				SELECT question_id
+				FROM question 
+				WHERE section_id = '{$section_id}'
+				AND parent_question_id IS NULL
+				");
+
+			foreach ($question as $key2 => $value2) {
+				$question_head = Question::where('parent_question_id', $value2->question_id)->first();
+				if(empty($question_head)) {
+					$this->destroy_question($value2->question_id);
+				}
+			}
+
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
@@ -706,7 +737,18 @@ class QuestionaireController extends Controller
 			foreach ($answer as $key3 => $value3) {
 				$this->destroy_answer($value3->answer_id);
 			}
-			$item->delete();
+
+			if(empty($item->parent_question_id)) {
+				$question_head = Question::where('parent_question_id', $item->question_id)->first();
+				if(empty($question_head)) {
+					$item->delete();
+				} else {
+					return response()->json(['status' => 400, 'data' => 'Cannot delete because this Question in Subsection is in use.']);
+				}
+			} else {
+				$item->delete();
+			}
+
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Question is in use.']);
