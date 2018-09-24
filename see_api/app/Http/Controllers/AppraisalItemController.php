@@ -26,9 +26,9 @@ class AppraisalItemController extends Controller
 
 	public function __construct()
 	{
-
 	   $this->middleware('jwt.auth');
 	}
+
 
 	public function al_list_emp(Request $request)
     {
@@ -69,6 +69,7 @@ class AppraisalItemController extends Controller
     	return response()->json($items);
     }
 
+
     public function al_list_emp2(Request $request)
     {
     	$all_emp = DB::select("
@@ -102,6 +103,7 @@ class AppraisalItemController extends Controller
 
     	return response()->json($items);
     }
+
 
 	public function al_list_org(Request $request)
     {
@@ -150,6 +152,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
     }
 
+
 	public function al_list_organization(Request $request) 
 	{
     	$all_emp = DB::select("
@@ -193,6 +196,7 @@ class AppraisalItemController extends Controller
     	return response()->json($orgs);
     }
 
+
 	public function al_list_position(Request $request) 
 	{
     	$all_emp = DB::select("
@@ -229,6 +233,7 @@ class AppraisalItemController extends Controller
     	return response()->json($orgs);
     }
 	
+
 	public function remind_list()
 	{
 		$items = DB::select("
@@ -240,6 +245,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
 	}
 	
+
 	public function value_type_list()
 	{
 		$items = DB::select("
@@ -251,6 +257,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);	
 	}
 	
+
 	public function index(Request $request)
 	{	
 		$qinput = array();
@@ -702,12 +709,13 @@ class AppraisalItemController extends Controller
 				$groups[$key]['count'] += 1;
 			}
 		}		
-	//	$resultT = $result->toArray();
-	//	$resultT['group'] = $groups;
+		//	$resultT = $result->toArray();
+		//	$resultT['group'] = $groups;
 		return response()->json(['group' => $groups]);	
 
 	}
 	
+
 	public function connection_list()
 	{
 		$items = DB::select("
@@ -717,7 +725,8 @@ class AppraisalItemController extends Controller
 		");
 		return response()->json($items);
 	}
-   
+
+
     public function al_list()
     {
 		$items = DB::select("
@@ -730,6 +739,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
     }
 	
+
 	public function department_list()
 	{
 		$items = DB::select("
@@ -740,6 +750,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);	
 	}
 	
+
 	public function perspective_list()
 	{
 		$items = DB::select("
@@ -750,6 +761,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
 	}
 	
+
 	public function structure_list()
 	{
 		$items = DB::select("
@@ -762,6 +774,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
 	}
 	
+
 	public function uom_list()
 	{
 		$items = DB::select("
@@ -772,6 +785,7 @@ class AppraisalItemController extends Controller
 		return response()->json($items);
 	}	
 	
+
 	public function auto_appraisal_name(Request $request)
 	{
 		$all_emp = DB::select("
@@ -890,6 +904,7 @@ class AppraisalItemController extends Controller
 		
 	}
 	
+
 	public function show($item_id)
 	{
 		try {
@@ -950,6 +965,7 @@ class AppraisalItemController extends Controller
 		return response()->json($item);		
 	}
 	
+
 	public function store(Request $request)
 	{
 		$all_emp = DB::select("
@@ -959,7 +975,7 @@ class AppraisalItemController extends Controller
     		on a.level_id = b.level_id
     		where emp_code = '".Auth::id()."'
     	");
-	$request->item_name = str_replace('"',"'",$request->item_name);
+		$request->item_name = str_replace('"',"'",$request->item_name);
     	if($all_emp[0]->count_no > 0) {
     		$org_required="";
     	} else {
@@ -1158,6 +1174,7 @@ class AppraisalItemController extends Controller
 					$map = new KPICDSMapping;
 					$map->item_id = $item->item_id;
 					$map->cds_id = $cds->cds_id;
+					$map->function_type = "sum";
 					$map->created_by = Auth::id();
 					$map->save();
 				}
@@ -1236,6 +1253,7 @@ class AppraisalItemController extends Controller
 					$map = new KPICDSMapping;
 					$map->item_id = $item->item_id;
 					$map->cds_id = $cds->cds_id;
+					$map->function_type = "sum";
 					$map->created_by = Auth::id();
 					$map->save();
 				}
@@ -1286,6 +1304,7 @@ class AppraisalItemController extends Controller
 		return response()->json(['status' => 200, 'data' => $item]);
 	}
 	
+
 	public function cds_list(Request $request)
 	{
 		$items = DB::select("
@@ -1314,6 +1333,7 @@ class AppraisalItemController extends Controller
 		
 	}	
 	
+
 	public function update(Request $request, $item_id)
 	{
 		try {
@@ -1329,7 +1349,7 @@ class AppraisalItemController extends Controller
     		on a.level_id = b.level_id
     		where emp_code = '".Auth::id()."'
     	");
-	$request->item_name = str_replace('"',"'",$request->item_name);
+		$request->item_name = str_replace('"',"'",$request->item_name);
 		if($all_emp[0]->count_no > 0) {
     		$org_required="";
     	} else {
@@ -1539,9 +1559,9 @@ class AppraisalItemController extends Controller
 						$org->created_by = Auth::id();
 						$org->updated_by = Auth::id();
 						$org->save();
-					}								
-				}								
-			}				
+					}
+				}
+			}
 		
 		} elseif ($request->form_id == 4) {
 			
@@ -1607,6 +1627,7 @@ class AppraisalItemController extends Controller
 				
 	}
 	
+
 	public function destroy($item_id)
 	{
 		try {
@@ -1640,6 +1661,7 @@ class AppraisalItemController extends Controller
 		
 	}	
 	
+
 	public function copy(Request $request)
 	{
 		if (!empty($request->appraisal_level)) {
