@@ -79,8 +79,10 @@ class QuestionaireDataController extends Controller
     	}
     }
 
-    function role_authorize($stage_id) {
+    function role_authorize($stage_id, $data_header_id) {
         $user = UsersRoles::where('userId', Auth::user()->userId)->get();
+        $assessor = $this->get_emp_snapshot_id();
+        $emp_code = Auth::id();
 
         if (empty($user)) {
             return ['errors' => 'user role not found'];
@@ -93,11 +95,22 @@ class QuestionaireDataController extends Controller
 
         $role_id = implode(',', $role);
 
-        $data = DB::select("
-        	SELECT view_comment_flag
-        	FROM role_stage_authorize
-        	WHERE role_id IN ({$role_id})
-        	AND stage_id = '{$stage_id}'
+        // $data = DB::select("
+        // 	SELECT view_comment_flag
+        // 	FROM role_stage_authorize
+        // 	WHERE role_id IN ({$role_id})
+        // 	AND stage_id = '{$stage_id}'
+        // ");
+
+         $data = DB::select("
+        	SELECT rsa.view_comment_flag
+			FROM role_stage_authorize rsa
+			LEFT JOIN questionaire_data_header qdh ON qdh.data_stage_id = rsa.stage_id
+			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+			WHERE rsa.role_id IN ({$role_id})
+        	AND rsa.stage_id = '{$stage_id}'
+        	AND qdh.data_header_id = '{$data_header_id}'
+        	AND (es.emp_code = '{$emp_code}' OR qdh.assessor_id = '{$assessor->emp_snapshot_id}' )
         ");
 
     	if(empty($data)) {
@@ -145,7 +158,7 @@ class QuestionaireDataController extends Controller
 				];
 
 				// $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
-				$to = ['thawatchai@goingjesse.com','chokanan@goingjesse.com'];
+				$to = ['thawatchai@goingjesse.com'];
 
 				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
 				{
@@ -159,13 +172,49 @@ class QuestionaireDataController extends Controller
     }
 
     function get_emp_snapshot_id() {
+    	$is_emp = EmployeeSnapshot::select("emp_snapshot_id")->where("emp_code", Auth::id())->first();
+		return $is_emp;
+    }
+
+    function get_emp_snapshot_id_with_date($start, $end) {
+    	$between_date = "
+    		AND qdh.questionaire_date = (
+				SELECT MAX(qdhh.questionaire_date)
+				FROM employee_snapshot ess
+				INNER JOIN questionaire_data_header qdhh ON qdhh.emp_snapshot_id = ess.emp_snapshot_id
+				WHERE ess.emp_code = es.emp_code
+    	";
+    	if(empty($start) && empty($end)) {
+            $between_date .= " )";
+        } else if(empty($start)) {
+            $between_date .= " AND qdhh.questionaire_date BETWEEN '' AND '{$end}' )";
+        } else if(empty($end)) {
+            $between_date .= " AND qdhh.questionaire_date >= '{$start}' )";
+        } else {
+            $between_date .= " AND qdhh.questionaire_date BETWEEN '{$start}' AND '{$end}' )";
+        }
+
     	$is_emp = DB::select("
-			SELECT emp_snapshot_id
-			FROM employee_snapshot
-			WHERE emp_code = '".Auth::id()."'
+			SELECT es.emp_snapshot_id
+			FROM employee_snapshot es
+			INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+			WHERE es.emp_code = '".Auth::id()."'
+			".$between_date."
 		");
 
 		return $is_emp;
+    }
+
+    function all_emp() {
+    	$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+			", array(Auth::id()));
+
+    	return $all_emp;
     }
 
     public function role_authorize_add() {
@@ -293,6 +342,7 @@ class QuestionaireDataController extends Controller
 		$items = DB::select("
 			SELECT questionaire_id, questionaire_name
 			FROM questionaire
+			WHERE is_active = 1
 			ORDER BY questionaire_id
 			");
 		return response()->json($items);
@@ -447,38 +497,17 @@ class QuestionaireDataController extends Controller
 
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
-		$items = DB::select("
-			SELECT qdh.data_header_id
-			FROM questionaire_data_header qdh
-			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-			WHERE qdh.questionaire_id = '{$request->questionaire_id}'
-			".$between_date."
-			".$emp_snapshot_id."
-			ORDER BY qdh.questionaire_date
-		");
-
-		$header_array_id = [];
-		foreach ($items as $key => $value) {
-            array_push($header_array_id, $value->data_header_id);
-        }
-
-        $header_id = empty(implode(',', $header_array_id)) ? "''" : implode(',', $header_array_id);
-		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
-
-		$all_emp = DB::select("
-			SELECT sum(b.is_all_employee) count_no
-			from employee a
-			left outer join appraisal_level b
-			on a.level_id = b.level_id
-			where emp_code = ?
-			", array(Auth::id()));
+		$all_emp = $this->all_emp();
 
 		if ($all_emp[0]->count_no > 0) {
 			$assessor = "";
 		} else {
 			$assessor_id = $this->get_emp_snapshot_id();
-			$assessor_idd = $assessor_id[0]->emp_snapshot_id;
-			$assessor = "AND qdh.assessor_id = '{$assessor_idd}'";
+
+			$emp_snapshot_id_with_date = $this->get_emp_snapshot_id_with_date($request->start_date, $request->end_date);
+			$emp_snapshot_id_with_datee = empty($emp_snapshot_id_with_date[0]->emp_snapshot_id) ? "" : $emp_snapshot_id_with_date[0]->emp_snapshot_id;
+
+			$assessor = "AND (qdh.emp_snapshot_id = '{$emp_snapshot_id_with_datee}' OR qdh.assessor_id = '{$assessor_id->emp_snapshot_id}')";
 		}
 
 		$items = DB::select("
@@ -492,6 +521,25 @@ class QuestionaireDataController extends Controller
 			GROUP BY qdh.questionaire_date
 			ORDER BY qdh.questionaire_date
 		");
+
+		$header_query = DB::select("
+			SELECT qdh.data_header_id
+			FROM questionaire_data_header qdh
+			LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			WHERE qdh.questionaire_id = '{$request->questionaire_id}'
+			".$assessor."
+			".$between_date."
+			".$emp_snapshot_id."
+			ORDER BY qdh.questionaire_date
+		");
+
+		$header_array_id = [];
+		foreach ($header_query as $key => $value) {
+            array_push($header_array_id, $value->data_header_id);
+        }
+
+        $header_id = empty(implode(',', $header_array_id)) ? "''" : implode(',', $header_array_id);
+		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
 
 		foreach ($items as $key => $value) {
 
@@ -675,7 +723,7 @@ class QuestionaireDataController extends Controller
 			}
 
 			$stage = DB::select("
-				SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.remark, qds.created_dttm, qds.created_by, s.stage_name from_action, st.stage_name to_action
+				SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.remark, DATE_FORMAT(qds.created_dttm, '%d/%m/%Y %H:%i:%s') created_dttm, qds.created_by, s.stage_name from_action, st.stage_name to_action
 				FROM questionaire_data_stage qds
 				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qds.to_emp_snapshot_id
 				LEFT JOIN employee_snapshot chief ON chief.emp_snapshot_id = qds.from_emp_snapshot_id
@@ -690,7 +738,7 @@ class QuestionaireDataController extends Controller
                 where stage_id = '{$data_header->data_stage_id}'
             ");
 
- 			$role = $this->role_authorize($data_header->data_stage_id);
+ 			$role = $this->role_authorize($data_header->data_stage_id, $data_header->data_header_id);
 
 		} else if(!empty($request->questionaire_id)) {
 			try {
@@ -860,9 +908,9 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		$is_emp = $this->get_emp_snapshot_id();
+		$assessor = $this->get_emp_snapshot_id();
 
-		if(empty($is_emp)) {
+		if(empty($assessor)) {
 			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
 		}
 		
@@ -931,7 +979,7 @@ class QuestionaireDataController extends Controller
 		$h->questionaire_id = $request->questionaire_id;
 		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
-		$h->assessor_id = $is_emp[0]->emp_snapshot_id;
+		$h->assessor_id = $assessor->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
 		$h->created_by = Auth::id();
@@ -940,7 +988,7 @@ class QuestionaireDataController extends Controller
 			$h->save();
 			$s = new QuestionaireDataStage;
 			$s->data_header_id = $h->data_header_id;
-			$s->from_emp_snapshot_id = $is_emp[0]->emp_snapshot_id;
+			$s->from_emp_snapshot_id = $assessor->emp_snapshot_id;
 			$s->from_stage_id = $request->stage['from_stage_id'];
 			$s->to_emp_snapshot_id = $request->emp_snapshot_id;
 			$s->to_stage_id = $request->stage['to_stage_id'];
@@ -1006,9 +1054,9 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'QuestionaireDataHeader not found.']);
 		}
 
-		$is_emp = $this->get_emp_snapshot_id();
+		$assessor = $this->get_emp_snapshot_id();
 
-		if(empty($is_emp)) {
+		if(empty($assessor)) {
 			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
 		}
 		
@@ -1076,7 +1124,6 @@ class QuestionaireDataController extends Controller
 		$h->questionaire_id = $request->questionaire_id;
 		$h->questionaire_date = $this->format_date($request->questionaire_date);
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
-		$h->assessor_id = $is_emp[0]->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
 		$h->updated_by = Auth::id();
@@ -1084,7 +1131,7 @@ class QuestionaireDataController extends Controller
 			$h->save();
 			$s = new QuestionaireDataStage;
 			$s->data_header_id = $h->data_header_id;
-			$s->from_emp_snapshot_id = $is_emp[0]->emp_snapshot_id;
+			$s->from_emp_snapshot_id = $assessor->emp_snapshot_id;
 			$s->from_stage_id = $request->stage['from_stage_id'];
 			$s->to_emp_snapshot_id = $request->emp_snapshot_id;
 			$s->to_stage_id = $request->stage['to_stage_id'];
@@ -1187,7 +1234,13 @@ class QuestionaireDataController extends Controller
 		}
 
 		try {
-			DB::table('questionaire_data_detail')->where('data_header_id', '=', $request->data_header_id)->where('customer_id', '=', $request->customer_id)->delete();
+			QuestionaireSection::findOrFail($request->section_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'QuestionaireSection not found.']);
+		}
+
+		try {
+			DB::table('questionaire_data_detail')->where('data_header_id', '=', $request->data_header_id)->where('customer_id', '=', $request->customer_id)->where('section_id', '=', $request->section_id)->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this QuestionaireDataDetail is in use.']);
