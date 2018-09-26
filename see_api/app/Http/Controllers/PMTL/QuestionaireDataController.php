@@ -172,7 +172,12 @@ class QuestionaireDataController extends Controller
     }
 
     function get_emp_snapshot_id() {
-    	$is_emp = EmployeeSnapshot::select("emp_snapshot_id")->where("emp_code", Auth::id())->first();
+    	try {
+    		$is_emp = EmployeeSnapshot::select("emp_snapshot_id")->where("emp_code", Auth::id())->orderBy('start_date', 'desc')->firstOrFail();
+    	} catch (ModelNotFoundException $e) {
+			exit(json_encode(['status' => 404, 'data' => 'get_emp_snapshot_id not found.']));
+		}
+
 		return $is_emp;
     }
 
@@ -628,7 +633,7 @@ class QuestionaireDataController extends Controller
 									an.score,
 									an.is_not_applicable,
 									qdd.desc_answer,
-									qdd.full_score,
+									(SELECT MAX(score) FROM answer WHERE question_id = '{$anv->question_id}') full_score,
 								IF (
 									an.answer_id = qdd.answer_id,
 									1,
@@ -670,7 +675,7 @@ class QuestionaireDataController extends Controller
 										an.score,
 										an.is_not_applicable,
 										qdd.desc_answer,
-										qdd.full_score,
+										(SELECT MAX(score) FROM answer WHERE question_id = '{$ssq->question_id}') full_score,
 									IF (
 										an.answer_id = qdd.answer_id,
 										1,
@@ -782,7 +787,7 @@ class QuestionaireDataController extends Controller
 								ans.score, 
 								ans.is_not_applicable, 
 								'' desc_answer,
-								1 full_score,
+								(SELECT MAX(score) FROM answer WHERE question_id = '{$anv->question_id}') full_score,
 								IF(
 									is_applicable > 0 AND ans.is_not_applicable = 1, 
 									1, 
@@ -802,7 +807,7 @@ class QuestionaireDataController extends Controller
 								FROM answer
 								GROUP BY question_id
 							)cab ON cab.question_id = ans.question_id
-							WHERE ans.question_id = {$anv->question_id}
+							WHERE ans.question_id = '{$anv->question_id}'
 							ORDER BY ans.seq_no ASC
 						");
 				}
@@ -826,7 +831,7 @@ class QuestionaireDataController extends Controller
 								ans.score, 
 								ans.is_not_applicable, 
 								'' desc_answer,
-								1 full_score,
+								(SELECT MAX(score) FROM answer WHERE question_id = '{$ssq->question_id}') full_score,
 								IF(
 									is_applicable > 0 AND ans.is_not_applicable = 1, 
 									1, 
@@ -909,10 +914,6 @@ class QuestionaireDataController extends Controller
 		}
 
 		$assessor = $this->get_emp_snapshot_id();
-
-		if(empty($assessor)) {
-			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
-		}
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -1055,10 +1056,6 @@ class QuestionaireDataController extends Controller
 		}
 
 		$assessor = $this->get_emp_snapshot_id();
-
-		if(empty($assessor)) {
-			return response()->json(['status' => 404, 'data' => 'Assessor not found in Employee Snapshot.']);
-		}
 		
 		DB::beginTransaction();
 		$errors = [];

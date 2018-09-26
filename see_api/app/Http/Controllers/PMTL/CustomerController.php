@@ -69,7 +69,8 @@ class CustomerController extends Controller
 					customer_code, 
 					customer_name, 
 					customer_type, 
-					industry_class
+					industry_class,
+					is_active
 			FROM customer
 			WHERE 1=1
 			".$customer_type."
@@ -99,99 +100,230 @@ class CustomerController extends Controller
 
 	public function import(Request $request)
 	{
-		set_time_limit(0);
-		ini_set('memory_limit', '5012M');
-		$errors = array();
-		$errors_validator = array();
-		// DB::beginTransaction();
-		foreach ($request->file() as $f) {
-			$items = Excel::load($f, function($reader){})->get();
-			foreach ($items as $i) {
+		if(empty($_FILES)) {
+			return response()->json(['status' => 404, 'errors' => 'File empty']);
+		}
 
-				$pc = array($i->tse, $i->vsm, $i->lex);
-				$validator = Validator::make($i->toArray(), [
-					'customer_code' => 'required|max:20',
-					'customer_name' => 'required|max:255',
-					'customer_type' => 'required|max:255',
-					'industry_class' => 'max:255'
-				]);
+		$csv_file = $_FILES[0]['tmp_name'];
 
-				$i->customer_code = $this->qdc_service->trim_text($i->customer_code);
-				$i->customer_name = $this->qdc_service->trim_text($i->customer_name);
-				$i->customer_type = $this->qdc_service->trim_text($i->customer_type);
-				$i->industry_class = $this->qdc_service->trim_text($i->industry_class);
+		if (!is_file($csv_file)) {
+			return response()->json(['status' => 404, 'errors' => 'File not found']);
+		}
 
-				if ($validator->fails()) {
-					$errors_validator[] = ['customer_code' => $i->customer_code, 'errors' => $validator->errors()];
-		            return response()->json(['status' => 400, 'errors' => $errors_validator]);
-				} else {
-					$cus = DB::select("
-						select customer_id
-						from customer
-						where customer_code = ?
-					",array($i->customer_code));
-					if (empty($cus)) {
-						$new_cus = new Customer;
-						$new_cus->customer_code = $i->customer_code;
-						$new_cus->customer_name = $i->customer_name;
-						$new_cus->customer_type = $i->customer_type;
-						$new_cus->industry_class = $i->industry_class;
-						$new_cus->created_by = Auth::id();
-						$new_cus->updated_by = Auth::id();
-						try {
-							$new_cus->save();
-						} catch (Exception $e) {
-							$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
-						}
+		if (($handle = fopen( $csv_file, "r")) !== FALSE) {
+			set_time_limit(0);
+			ini_set('memory_limit', '5012M');
+			$errors = array();
+			$errors_validator = array();
 
-						if(!empty($pc)) {
-							foreach ($pc as $key => $value) {
-								if(!empty($value)) {
-									$cp = new CustomerPosition;
-									$cp->customer_id = $new_cus->customer_id;
-									$cp->position_code = $this->qdc_service->trim_text($value);
-									try {
-										$cp->save();
-									} catch (Exception $e) {
-										$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+			$di = 0;
+			while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+				if($di > 0) {
+
+					$i = [
+						'customer_code' => $data[0],
+						'customer_name' => $data[1],
+						'customer_type' => $data[2],
+						'tse' => $data[3],
+						'vsm' => $data[4],
+						'lex' => $data[5],
+						'industry_class' => $data[6],
+						'is_active' => $data[7]
+					];
+
+					$pc = array($i['tse'], $i['vsm'], $i['lex']);
+					$validator = Validator::make($i, [
+						'customer_code' => 'required|max:20',
+						'customer_name' => 'required|max:255',
+						'customer_type' => 'required|max:255',
+						'industry_class' => 'max:255',
+						'is_active' => 'required|integer|between:0,1'
+					]);
+
+					$i['customer_code'] = $this->qdc_service->trim_text($i['customer_code']);
+					$i['customer_name'] = $this->qdc_service->trim_text($i['customer_name']);
+					$i['customer_type'] = $this->qdc_service->trim_text($i['customer_type']);
+					$i['industry_class'] = $this->qdc_service->trim_text($i['industry_class']);
+
+					if ($validator->fails()) {
+						$errors[] = ['customer_code' => $i['customer_code'], 'errors' => $validator->errors()];
+			            // return response()->json(['status' => 400, 'errors' => $errors_validator]);
+					} else {
+						$cus = DB::select("
+							select customer_id
+							from customer
+							where customer_code = ?
+						",array($i['customer_code']));
+						if (empty($cus)) {
+							$new_cus = new Customer;
+							$new_cus->customer_code = $i['customer_code'];
+							$new_cus->customer_name = $i['customer_name'];
+							$new_cus->customer_type = $i['customer_type'];
+							$new_cus->industry_class = $i['industry_class'];
+							$new_cus->is_active = $i['is_active'];
+							$new_cus->created_by = Auth::id();
+							$new_cus->updated_by = Auth::id();
+							try {
+								$new_cus->save();
+							} catch (Exception $e) {
+								$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
+							}
+
+							if(!empty($pc)) {
+								foreach ($pc as $key => $value) {
+									if(!empty($value)) {
+										$cp = new CustomerPosition;
+										$cp->customer_id = $new_cus->customer_id;
+										$cp->position_code = $this->qdc_service->trim_text($value);
+										try {
+											$cp->save();
+										} catch (Exception $e) {
+											$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
+										}
 									}
 								}
 							}
-						}
 
-					} else {
-						$update_cus = Customer::find($cus[0]->customer_id);
-						$update_cus->customer_code = $i->customer_code;
-						$update_cus->customer_name = $i->customer_name;
-						$update_cus->customer_type = $i->customer_type;
-						$update_cus->industry_class = $i->industry_class;
-						$update_cus->updated_by = Auth::id();
-						try {
-							$update_cus->save();
-						} catch (Exception $e) {
-							$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
-						}
+						} else {
+							$update_cus = Customer::find($cus[0]->customer_id);
+							$update_cus->customer_code = $i['customer_code'];
+							$update_cus->customer_name = $i['customer_name'];
+							$update_cus->customer_type = $i['customer_type'];
+							$update_cus->industry_class = $i['industry_class'];
+							$update_cus->is_active = $i['is_active'];
+							$update_cus->updated_by = Auth::id();
+							try {
+								$update_cus->save();
+							} catch (Exception $e) {
+								$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
+							}
 
- 						DB::table('customer_position')->where('customer_id', '=', $cus[0]->customer_id);
+	 						$cp_customer_id = DB::table('customer_position')->select("customer_position_id")->where('customer_id', $cus[0]->customer_id)->first();
 
- 						if(!empty($pc)) {
- 							foreach ($pc as $key => $value) {
- 								if(!empty($value)) {
-	 								$cp = new CustomerPosition;
-	 								$cp->customer_id = $cus[0]->customer_id;
-	 								$cp->position_code = $this->qdc_service->trim_text($value);
-	 								try {
-	 									$cp->save();
-	 								} catch (Exception $e) {
-	 									$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+	 						if(!empty($pc)) {
+	 							foreach ($pc as $key => $value) {
+	 								if(!empty($value)) {
+	 									if(empty($cp_customer_id)) {
+	 										$cp = new CustomerPosition;
+			 								$cp->customer_id = $cus[0]->customer_id;
+			 								$cp->position_code = $this->qdc_service->trim_text($value);
+	 									} else {
+	 										$cp = CustomerPosition::find($cp_customer_id->customer_position_id);
+			 								$cp->position_code = $this->qdc_service->trim_text($value);
+	 									}
+
+		 								try {
+		 									$cp->save();
+		 								} catch (Exception $e) {
+		 									$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
+		 								}
 	 								}
- 								}
- 							}
- 						}
+	 							}
+	 						}
+						}
 					}
 				}
+
+				$di ++;
 			}
+
+			fclose($handle);
 		}
+
+		// set_time_limit(0);
+		// ini_set('memory_limit', '5012M');
+		// $errors = array();
+		// $errors_validator = array();
+		// // DB::beginTransaction();
+		// foreach ($request->file() as $f) {
+		// 	$items = Excel::load($f, function($reader){})->get();
+		// 	foreach ($items as $i) {
+
+		// 		$pc = array($i->tse, $i->vsm, $i->lex);
+		// 		$validator = Validator::make($i->toArray(), [
+		// 			'customer_code' => 'required|max:20',
+		// 			'customer_name' => 'required|max:255',
+		// 			'customer_type' => 'required|max:255',
+		// 			'industry_class' => 'max:255'
+		// 		]);
+
+		// 		$i->customer_code = $this->qdc_service->trim_text($i->customer_code);
+		// 		$i->customer_name = $this->qdc_service->trim_text($i->customer_name);
+		// 		$i->customer_type = $this->qdc_service->trim_text($i->customer_type);
+		// 		$i->industry_class = $this->qdc_service->trim_text($i->industry_class);
+
+		// 		if ($validator->fails()) {
+		// 			$errors_validator[] = ['customer_code' => $i->customer_code, 'errors' => $validator->errors()];
+		//             return response()->json(['status' => 400, 'errors' => $errors_validator]);
+		// 		} else {
+		// 			$cus = DB::select("
+		// 				select customer_id
+		// 				from customer
+		// 				where customer_code = ?
+		// 			",array($i->customer_code));
+		// 			if (empty($cus)) {
+		// 				$new_cus = new Customer;
+		// 				$new_cus->customer_code = $i->customer_code;
+		// 				$new_cus->customer_name = $i->customer_name;
+		// 				$new_cus->customer_type = $i->customer_type;
+		// 				$new_cus->industry_class = $i->industry_class;
+		// 				$new_cus->created_by = Auth::id();
+		// 				$new_cus->updated_by = Auth::id();
+		// 				try {
+		// 					$new_cus->save();
+		// 				} catch (Exception $e) {
+		// 					$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+		// 				}
+
+		// 				if(!empty($pc)) {
+		// 					foreach ($pc as $key => $value) {
+		// 						if(!empty($value)) {
+		// 							$cp = new CustomerPosition;
+		// 							$cp->customer_id = $new_cus->customer_id;
+		// 							$cp->position_code = $this->qdc_service->trim_text($value);
+		// 							try {
+		// 								$cp->save();
+		// 							} catch (Exception $e) {
+		// 								$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+		// 							}
+		// 						}
+		// 					}
+		// 				}
+
+		// 			} else {
+		// 				$update_cus = Customer::find($cus[0]->customer_id);
+		// 				$update_cus->customer_code = $i->customer_code;
+		// 				$update_cus->customer_name = $i->customer_name;
+		// 				$update_cus->customer_type = $i->customer_type;
+		// 				$update_cus->industry_class = $i->industry_class;
+		// 				$update_cus->updated_by = Auth::id();
+		// 				try {
+		// 					$update_cus->save();
+		// 				} catch (Exception $e) {
+		// 					$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+		// 				}
+
+ 	// 					DB::table('customer_position')->where('customer_id', '=', $cus[0]->customer_id);
+
+ 	// 					if(!empty($pc)) {
+ 	// 						foreach ($pc as $key => $value) {
+ 	// 							if(!empty($value)) {
+	 // 								$cp = new CustomerPosition;
+	 // 								$cp->customer_id = $cus[0]->customer_id;
+	 // 								$cp->position_code = $this->qdc_service->trim_text($value);
+	 // 								try {
+	 // 									$cp->save();
+	 // 								} catch (Exception $e) {
+	 // 									$errors[] = ['customer_code' => $i->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+	 // 								}
+ 	// 							}
+ 	// 						}
+ 	// 					}
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return response()->json(['status' => 200, 'errors' => $errors]);
 	}
 
@@ -205,54 +337,4 @@ class CustomerController extends Controller
 		}
 		return response()->json($item);
 	}
-
-	// public function update(Request $request, $customer_id)
-	// {
-	// 	try {
-	// 		$item = Customer::findOrFail($customer_id);
-	// 	} catch (ModelNotFoundException $e) {
-	// 		return response()->json(['status' => 404, 'data' => 'Customer not found.']);
-	// 	}
-
-	// 	$validator = Validator::make($request->all(), [
-	// 		'customer_code' => 'required|max:20',
-	// 		'customer_name' => 'required|max:255',
-	// 		'customer_type' => 'required|max:255',
-	// 		'industry_class' => 'required|max:10'
-	// 	]);
-
-	// 	if ($validator->fails()) {
-	// 		return response()->json(['status' => 400, 'data' => $validator->errors()]);
-	// 	} else {
-	// 		$item->fill($request->all());
-	// 		$item->updated_by = Auth::id();
-	// 		$item->save();
-	// 	}
-
-	// 	return response()->json(['status' => 200, 'data' => $item]);
-
-	// }
-
-	// public function destroy($customer_id)
-	// {
-	// 	try {
-	// 		$item = Customer::findOrFail($customer_id);
-	// 	} catch (ModelNotFoundException $e) {
-	// 		return response()->json(['status' => 404, 'data' => 'Customer not found.']);
-	// 	}
-
-	// 	try {
-	// 		$item->delete();
-	// 	} catch (Exception $e) {
-	// 		if ($e->errorInfo[1] == 1451) {
-	// 			return response()->json(['status' => 400, 'data' => 'Cannot delete because this Customer is in use.']);
-	// 		} else {
-	// 			return response()->json($e->errorInfo);
-	// 		}
-	// 	}
-
-	// 	return response()->json(['status' => 200]);
-
-	// }
-
 }

@@ -6,6 +6,7 @@ use App\Questionaire;
 use App\QuestionaireSection;
 use App\Question;
 use App\Answer;
+use App\QuestionaireDataDetail;
 
 use Auth;
 use DB;
@@ -85,6 +86,9 @@ class QuestionaireController extends Controller
 			return response()->json(['status' => 404, 'data' => 'Questionaire not found.']);
 		}
 
+		$qdh = DB::table("questionaire_data_header")->select("questionaire_id")->where("questionaire_id", $questionaire_id)->first();
+		$items->is_use = empty($qdh->questionaire_id) ? 0 : 1;
+
 		$sub_items = DB::select("
 			SELECT section_id, section_name, is_cust_search, is_show_report, report_url
 			FROM questionaire_section
@@ -137,12 +141,14 @@ class QuestionaireController extends Controller
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
 			'pass_score' => $request->pass_score,
-			'is_active' => $request->is_active
+			'is_active' => $request->is_active,
+			'level_id' => $request->level_id
 		], [
 			'questionaire_name' => 'required|max:255',
 			'questionaire_type_id' => 'required|integer',
 			'pass_score' => 'required|between:0,99.99',
-			'is_active' => 'required|integer'
+			'is_active' => 'required|integer',
+			'level_id' => 'required|integer'
 		]);
 
 		if($validator->fails()) {
@@ -255,7 +261,15 @@ class QuestionaireController extends Controller
 		$qn = new Questionaire;
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->level_id = $request->level_id;
 		$qn->pass_score = $request->pass_score;
+
+		if($request->is_active==1) {
+			Questionaire::where("level_id", $request->level_id)
+			->where("is_active", $request->is_active)
+			->update(['is_active' => 0]);
+		}
+
 		$qn->is_active = $request->is_active;
 		$qn->created_by = Auth::id();
 		$qn->updated_by = Auth::id();
@@ -349,12 +363,14 @@ class QuestionaireController extends Controller
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
 			'pass_score' => $request->pass_score,
-			'is_active' => $request->is_active
+			'is_active' => $request->is_active,
+			'level_id' => $request->level_id
 		], [
 			'questionaire_name' => 'required|max:255',
 			'questionaire_type_id' => 'required|integer',
 			'pass_score' => 'required|between:0,99.99',
-			'is_active' => 'required|integer'
+			'is_active' => 'required|integer',
+			'level_id' => 'required|integer'
 		]);
 
 		if($validator->fails()) {
@@ -467,7 +483,15 @@ class QuestionaireController extends Controller
 		$qn = Questionaire::find($request->questionaire_id);
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->level_id = $request->level_id;
 		$qn->pass_score = $request->pass_score;
+
+		if($request->is_active==1) {
+			Questionaire::where("level_id", $request->level_id)
+			->where("is_active", $request->is_active)
+			->update(['is_active' => 0]);
+		}
+
 		$qn->is_active = $request->is_active;
 		$qn->updated_by = Auth::id();
 		$qn->save();
@@ -630,7 +654,7 @@ class QuestionaireController extends Controller
 						");
 
 					foreach ($answer as $key3 => $value3) {
-						$this->destroy_answer($value3->answer_id);
+						$this->destroy_answer($value3->answer_id, $value2->question_id);
 					}
 					$this->destroy_question($value2->question_id);
 				}
@@ -687,7 +711,7 @@ class QuestionaireController extends Controller
 					");
 
 				foreach ($answer as $key3 => $value3) {
-					$this->destroy_answer($value3->answer_id);
+					$this->destroy_answer($value3->answer_id, $value2->question_id);
 				}
 				$this->destroy_question($value2->question_id);
 			}
@@ -735,7 +759,7 @@ class QuestionaireController extends Controller
 				");
 
 			foreach ($answer as $key3 => $value3) {
-				$this->destroy_answer($value3->answer_id);
+				$this->destroy_answer($value3->answer_id, $question_id);
 			}
 
 			if(empty($item->parent_question_id)) {
@@ -761,7 +785,7 @@ class QuestionaireController extends Controller
 
 	}
 
-	public function destroy_answer($answer_id)
+	public function destroy_answer($answer_id, $question_id)
 	{
 		try {
 			$item = Answer::findOrFail($answer_id);
@@ -770,7 +794,18 @@ class QuestionaireController extends Controller
 		}
 
 		try {
-			$item->delete();
+			Question::findOrFail($question_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Question not found.']);
+		}
+
+		try {
+			$ques = QuestionaireDataDetail::where('question_id', $question_id)->first();
+			if(empty($ques)) {
+				$item->delete();
+			} else {
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Answer is in use.']);
+			}
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Answer is in use.']);
