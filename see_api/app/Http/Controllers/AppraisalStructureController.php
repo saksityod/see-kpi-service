@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\AppraisalStructure;
+use App\AppraisalLevel;
 use App\SystemConfiguration;
 
 use Auth;
@@ -25,6 +26,7 @@ class AppraisalStructureController extends Controller
 	   $this->middleware('jwt.auth');
 	}
 	
+
 	public function form_list(Request $request)
 	{
 		$items = DB::select("
@@ -34,23 +36,33 @@ class AppraisalStructureController extends Controller
 		
 		return response()->json($items);
 	}
+
+
+	public function level_list(Request $request)
+	{
+		$items = AppraisalLevel::select('level_id', 'appraisal_level_name')->get();
+		return response()->json($items);
+	}
 	
+
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			SELECT structure_id, seq_no, structure_name, nof_target_score, 
+			SELECT a.structure_id, a.seq_no, a.structure_name, a.nof_target_score, 
 				a.form_id, b.form_name, a.is_unlimited_reward, a.is_unlimited_deduction, 
-				a.is_value_get_zero, a.is_active, a.is_no_raise_value
+				a.is_value_get_zero, a.is_active, a.is_no_raise_value,
+				al.level_id, al.appraisal_level_name level_name, a.is_derive
 			FROM appraisal_structure a
 			LEFT OUTER JOIN form_type b ON a.form_id = b.form_id
+			LEFT OUTER JOIN appraisal_level al ON al.level_id = a.level_id
 			ORDER BY seq_no ASC
 		");
 		return response()->json($items);
 	}
 	
+
 	public function store(Request $request)
 	{
-	
 		try {
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
@@ -91,11 +103,6 @@ class AppraisalStructureController extends Controller
 				if (empty($check)) {
 					return response()->json(['status' => 400, 'data' => ['is_active' => 'Please set Result Type to Score in System Configuration and set a Result Threshold Group of type Score to active.']]);
 				}
-				
-				// if ($request->nof_target_score != $check[0]->max_no && ($request->form_id == 1 || $request->form_id == 2)) {
-				// 	return response()->json(['status' => 400, 'data' => ['nof_target_score' => 'Number of Target Score must be equal to max Result Threshold Score']]);
-				// }
-				
 			}
 
 			$item = new AppraisalStructure;
@@ -108,6 +115,7 @@ class AppraisalStructureController extends Controller
 		return response()->json(['status' => 200, 'data' => $item]);	
 	}
 	
+
 	public function show($structure_id)
 	{
 		try {
@@ -118,6 +126,7 @@ class AppraisalStructureController extends Controller
 		return response()->json($item);
 	}
 	
+
 	public function update(Request $request, $structure_id)
 	{
 	
@@ -181,6 +190,7 @@ class AppraisalStructureController extends Controller
 				
 	}
 	
+
 	public function destroy($perspective_id)
 	{
 		try {

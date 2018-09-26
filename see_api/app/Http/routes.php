@@ -247,6 +247,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Appraisal Structure //
 	Route::get('appraisal_structure', 'AppraisalStructureController@index');
 	Route::get('appraisal_structure/form_list', 'AppraisalStructureController@form_list');
+	Route::get('appraisal_structure/level_list', 'AppraisalStructureController@level_list');
 	Route::post('appraisal_structure', 'AppraisalStructureController@store');
 	Route::get('appraisal_structure/{structure_id}', 'AppraisalStructureController@show');
 	Route::patch('appraisal_structure/{structure_id}', 'AppraisalStructureController@update');
