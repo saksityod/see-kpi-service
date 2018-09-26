@@ -294,6 +294,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Appraisal Grade //
 	Route::get('appraisal_grade', 'AppraisalGradeController@index');
 	Route::get('appraisal_grade/al_list', 'AppraisalGradeController@al_list');
+	Route::get('appraisal_grade/form_list', 'AppraisalGradeController@form_list');
 	Route::get('appraisal_grade/struc_list', 'AppraisalGradeController@struc_list');
 	Route::post('appraisal_grade', 'AppraisalGradeController@store');
 	Route::get('appraisal_grade/{grade_id}', 'AppraisalGradeController@show');

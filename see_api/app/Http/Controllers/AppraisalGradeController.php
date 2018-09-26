@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\AppraisalGrade;
 use App\SystemConfiguration;
 use App\AppraisalStructure;
+use App\AppraisalForm;
 
 use Auth;
 use DB;
@@ -36,6 +37,7 @@ class AppraisalGradeController extends Controller
 		return response()->json($items);
 	}
 	
+
 	public function struc_list()
 	{
 		$objStruc = DB::select("
@@ -48,6 +50,14 @@ class AppraisalGradeController extends Controller
 		return response()->json($objStruc);
 	}
 	
+
+	public function form_list()
+    {
+		$items = AppraisalForm::select('appraisal_form_id', 'appraisal_form_name')->get();
+		return response()->json($items);
+	}
+
+
 	public function index(Request $request)
 	{
 	
@@ -61,30 +71,37 @@ class AppraisalGradeController extends Controller
 		
 		if ($config->raise_type == 1) {
 			$query = "
-				select a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, a.begin_score, a.end_score, ifnull(a.salary_raise_amount, '') salary_raise_amount, a.is_active
-				from appraisal_grade a
-				left outer join appraisal_level b
-				on a.appraisal_level_id = b.level_id
+			SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, 
+				a.begin_score, a.end_score, ifnull(a.salary_raise_amount, '') salary_raise_amount, 
+				a.is_active, a.appraisal_form_id, f.appraisal_form_name
+			FROM appraisal_grade a
+			LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
+			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 			";
 		} else if($config->raise_type == 2) {
 			$query = "
-				select a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, a.begin_score, a.end_score, ifnull(a.salary_raise_percent, '') salary_raise_amount, a.is_active
-				from appraisal_grade a
-				left outer join appraisal_level b
-				on a.appraisal_level_id = b.level_id
+			SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, 
+				a.begin_score, a.end_score, ifnull(a.salary_raise_percent, '') salary_raise_amount, 
+				a.is_active, a.appraisal_form_id, f.appraisal_form_name
+			FROM appraisal_grade a
+			LEFT OUTER JOIN appraisal_level b on a.appraisal_level_id = b.level_id
+			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 			";		
 		} else if($config->raise_type == 3) {
 			$query = "
-				select a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, a.begin_score, a.end_score, ifnull(a.salary_raise_step, '') salary_raise_amount, a.is_active
-				from appraisal_grade a
-				left outer join appraisal_level b
-				on a.appraisal_level_id = b.level_id
+				SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade, 
+					a.begin_score, a.end_score, ifnull(a.salary_raise_step, '') salary_raise_amount, 
+					a.is_active, a.appraisal_form_id, f.appraisal_form_name
+				FROM appraisal_grade a
+				LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
+				LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 			";
 		}
-				
-		empty($request->appraisal_level_id) ?: ($query .= " where a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 		
-		$qfooter = " Order by a.appraisal_level_id, a.begin_score";
+		empty($request->appraisal_form_id) ?: ($query .= " WHERE a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+		
+		$qfooter = " ORDER BY a.appraisal_form_id, a.appraisal_level_id, a.begin_score";
 		
 		$items = DB::select($query . $qfooter, $qinput);
 		
@@ -107,6 +124,7 @@ class AppraisalGradeController extends Controller
 		return response()->json($result);
 	}
 	
+
 	public function store(Request $request)
 	{
 		$errors = array();
@@ -118,6 +136,7 @@ class AppraisalGradeController extends Controller
 		}
 
 		$validator = Validator::make($request->all(), [
+			'appraisal_form_id' => 'required|integer',
 			'appraisal_level_id' => 'required|integer',
 			'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
 			'begin_score' => 'required|numeric',
@@ -175,6 +194,7 @@ class AppraisalGradeController extends Controller
 		return response()->json(['status' => 200, 'data' => $item]);	
 	}
 	
+
 	public function show($grade_id)
 	{
 		try {
@@ -197,6 +217,7 @@ class AppraisalGradeController extends Controller
 		return response()->json($item);
 	}
 	
+
 	public function update(Request $request, $grade_id)
 	{
 		try {
@@ -213,6 +234,7 @@ class AppraisalGradeController extends Controller
 		
 		$errors = array();
 		$validator = Validator::make($request->all(), [	
+			'appraisal_form_id' => 'required|integer',
 			'appraisal_level_id' => 'required|integer',	
 			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
 			'begin_score' => 'required|numeric',
@@ -266,6 +288,7 @@ class AppraisalGradeController extends Controller
 		return response()->json(['status' => 200, 'data' => $item]);	
 	}
 	
+
 	public function destroy($grade_id)
 	{
 		try {
