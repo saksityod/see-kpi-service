@@ -27,17 +27,24 @@ class AppraisalLevelController extends Controller
 	
 	public function index(Request $request)
 	{		
+		// $items = DB::select("
+		// 	SELECT a.level_id, a.appraisal_level_name, a.seq_no, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.is_group_action, a.is_show_quality, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
+		// 	FROM appraisal_level a
+		// 	left outer join appraisal_level b
+		// 	on a.parent_id = b.level_id
+		// 	order by
+		// 	FIELD(a.level_id, 1) DESC,
+		// 	FIELD(a.is_individual, 1) DESC,
+		// 	FIELD(a.is_org, 1) DESC,
+		// 	a.seq_no ASC,
+		// 	a.level_id ASC
+		// ");
 		$items = DB::select("
 			SELECT a.level_id, a.appraisal_level_name, a.seq_no, a.is_all_employee, a.district_flag, a.is_org, a.is_individual, a.is_active, a.parent_id, a.is_hr, a.is_self_assign, a.is_group_action, a.is_show_quality, a.no_weight, b.appraisal_level_name parent_level_name, a.default_stage_id
 			FROM appraisal_level a
 			left outer join appraisal_level b
 			on a.parent_id = b.level_id
-			order by
-			FIELD(a.level_id, 1) DESC,
-			FIELD(a.is_individual, 1) DESC,
-			FIELD(a.is_org, 1) DESC,
-			a.seq_no ASC,
-			a.level_id ASC
+			order by a.seq_no, a.level_id
 		");
 		return response()->json($items);
 	}

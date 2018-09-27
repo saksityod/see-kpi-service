@@ -18,6 +18,6 @@ class CompetencyCriteria extends Model
     protected $table = 'competency_criteria';
 	protected $primaryKey = null;
 	public $incrementing = false;
-	protected $fillable = array('appraisal_level_id','structure_id','assessor_group_id', 'weight_percent');
+	protected $fillable = array('appraisal_form_id', 'appraisal_level_id','structure_id','assessor_group_id', 'weight_percent');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }

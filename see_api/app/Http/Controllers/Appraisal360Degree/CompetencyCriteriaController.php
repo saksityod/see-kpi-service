@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Appraisal360Degree;
 
 use App\CompetencyCriteria;
 use App\AppraisalCriteria;
+use App\AppraisalForm;
 
 use Auth;
 use DB;
@@ -24,7 +25,9 @@ class CompetencyCriteriaController extends Controller
 		$this->middleware('jwt.auth');
 	}
 
-	public function show(Request $request) {
+	
+	public function show(Request $request) 
+	{
 		$items = DB::select("
 			select ag.*, cc.appraisal_level_id, cc.structure_id, ifnull(cc.weight_percent,0) weight_percent, if(cc.appraisal_level_id is null,0,1) checkbox
 			from assessor_group ag
@@ -36,12 +39,34 @@ class CompetencyCriteriaController extends Controller
 		return response()->json($items);
 	}
 
+
+	public function form_list(Request $request)
+    {
+		//$items = AppraisalForm::select('appraisal_form_id', 'appraisal_form_name')->get();
+		$items = DB::select("
+			SELECT af.appraisal_form_id, af.appraisal_form_name,
+				IF(
+					(
+						SELECT count(1) 
+						FROM appraisal_criteria ac
+						WHERE ac.appraisal_form_id = af.appraisal_form_id
+						AND ac.appraisal_level_id = '{$request->level_id}'
+					) > 0, 1, 0
+				) used_flag
+			FROM appraisal_form af
+			ORDER BY used_flag desc, appraisal_form_id asc
+		");
+		return response()->json($items);
+	}
+
+	
 	public function update(Request $request, $appraisal_level_id, $structure_id)
 	{
 		// Insert appraisal_criteria if not exists //
 		$appCriteria = AppraisalCriteria::where('appraisal_level_id', $appraisal_level_id)->where('structure_id', $structure_id);
 		if ($appCriteria->count() == 0) {
 			$criteria = new AppraisalCriteria();
+			$criteria->appraisal_form_id = $request->appraisal_form_id;
 			$criteria->appraisal_level_id = $appraisal_level_id;
 			$criteria->structure_id = $structure_id;
 			$criteria->weight_percent = 00.00;
@@ -80,6 +105,7 @@ class CompetencyCriteriaController extends Controller
 							]);
 				} else {
 					$item = new CompetencyCriteria;
+					$item->appraisal_form_id = $request->appraisal_form_id;
 					$item->appraisal_level_id = $appraisal_level_id;
 					$item->structure_id = $c['structure_id'];
 					$item->assessor_group_id = $c['assessor_group_id'];
@@ -89,7 +115,8 @@ class CompetencyCriteriaController extends Controller
 					$item->save();
 				}
 			} else {
-				CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)
+				CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id)
+					->where('appraisal_level_id',$appraisal_level_id)
 					->where('structure_id', $c['structure_id'])
 					->where('assessor_group_id', $c['assessor_group_id'])
 					->delete();

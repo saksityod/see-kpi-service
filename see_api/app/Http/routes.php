@@ -469,6 +469,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@appraisal_criteria');
 	Route::patch('appraisal_level_360/{level_id}/criteria', 'Appraisal360Degree\AppraisalLevel360Controller@update_criteria');
 	Route::get('competency_criteria', 'Appraisal360Degree\CompetencyCriteriaController@show');
+	Route::get('competency_criteria/form_list', 'Appraisal360Degree\CompetencyCriteriaController@form_list');
 	Route::patch('competency_criteria/{appraisal_level_id}/{structure_id}', 'Appraisal360Degree\CompetencyCriteriaController@update');
 	// Appraisal 360 Degree --> Appraisal Comment //
 	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
