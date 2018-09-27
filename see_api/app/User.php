@@ -21,10 +21,10 @@ class User extends Model implements AuthenticatableContract,
      *
      * @var string
      */
-    protected $table = 'lportal-ghb.User_';
-	protected $primaryKey = 'screenName';
-	public $incrementing = false;
-//	public $timestamps = false;
+    protected $table = 'lportal.User_';
+    protected $primaryKey = 'screenName';
+    public $incrementing = false;
+//  public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -40,8 +40,42 @@ class User extends Model implements AuthenticatableContract,
      */
     protected $hidden = ['password', 'remember_token'];
 
-	public function getAuthPassword()
-	{
-	   return $this->password_;
-	}
+    public function getAuthPassword()
+    {
+       return $this->password_;
+    }
+}
+
+class UsersRoles extends Model
+{
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+     
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+    protected $table = 'lportal.users_roles';
+    protected $primaryKey = null;
+    public $incrementing = true;
+    //public $timestamps = false;
+    //protected $guarded = array();
+}
+
+class Role extends Model
+{
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+     
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
+    protected $table = 'lportal.role_';
+    protected $primaryKey = null;
+    public $incrementing = true;
+    //public $timestamps = false;
+    //protected $guarded = array();
 }

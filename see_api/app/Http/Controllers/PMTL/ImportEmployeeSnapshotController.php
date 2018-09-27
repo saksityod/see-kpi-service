@@ -8,6 +8,7 @@ use App\EmployeeSnapshot;
 use App\AppraisalLevel;
 use App\Position;
 use App\Org;
+use App\Role;
 
 use Auth;
 use DB;
@@ -27,6 +28,11 @@ class ImportEmployeeSnapshotController extends Controller
 	{
 	   $this->middleware('jwt.auth');
 	   $this->qdc_service = $qdc_service;
+	}
+
+	function get_role_by_level($level_name) {
+		$role = Role::select("roleId")->where("name", $level_name)->first();
+		return $role->roleId;
 	}
 
 	public function list_level() {
@@ -215,6 +221,7 @@ class ImportEmployeeSnapshotController extends Controller
 					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Job Function ID' => 'Job Function ID not found']];
 				} else {
 					$level_id = $appraisal_level->level_id;
+					$level_id_name = $appraisal_level->appraisal_level_name;
 				}
 
 				if ($validator->fails()) {
@@ -258,7 +265,12 @@ class ImportEmployeeSnapshotController extends Controller
 							try {
 								$emp_snap->save();
 								// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
-								$newEmp[] = ["emp_code"=> $i->useraccountcode, "emp_name"=>$i->employeefirstname." ".$i->employeelastname, "email"=>$i->employeeemail];
+								$newEmp[] = [
+									"emp_code" => $i->useraccountcode, 
+									"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+									"email" => $i->employeeemail,
+									"role_id" => $this->get_role_by_level($level_id_name)
+								];
 							} catch (Exception $e) {
 								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 							}
