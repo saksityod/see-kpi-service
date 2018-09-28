@@ -90,7 +90,7 @@ class QuestionaireController extends Controller
 		$items->is_use = empty($qdh->questionaire_id) ? 0 : 1;
 
 		$sub_items = DB::select("
-			SELECT section_id, section_name, is_cust_search, is_show_report, report_url
+			SELECT section_id, section_name, is_cust_search, is_show_report, report_url, is_before_work, is_workin_shop
 			FROM questionaire_section
 			WHERE questionaire_id = {$questionaire_id}
 			");
@@ -141,14 +141,12 @@ class QuestionaireController extends Controller
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
 			'pass_score' => $request->pass_score,
-			'is_active' => $request->is_active,
-			'level_id' => $request->level_id
+			'is_active' => $request->is_active
 		], [
 			'questionaire_name' => 'required|max:255',
 			'questionaire_type_id' => 'required|integer',
 			'pass_score' => 'required|between:0,99.99',
-			'is_active' => 'required|integer',
-			'level_id' => 'required|integer'
+			'is_active' => 'required|integer'
 		]);
 
 		if($validator->fails()) {
@@ -161,12 +159,16 @@ class QuestionaireController extends Controller
 					'section_name' => $qs['section_name'],
 					'is_show_report' => $qs['is_show_report'],
 					'report_url' => $qs['report_url'],
-					'is_cust_search' => $qs['is_cust_search']
+					'is_cust_search' => $qs['is_cust_search'],
+					'is_before_work' => $qs['is_before_work'],
+					'is_workin_shop' => $qs['is_workin_shop']
 				], [
 					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
-					'is_cust_search' => 'required|integer'
+					'is_cust_search' => 'required|integer',
+					'is_before_work' => 'required|integer',
+					'is_workin_shop' => 'required|integer'
 				]);
 
 				if($validator_questionaire_section->fails()) {
@@ -261,15 +263,7 @@ class QuestionaireController extends Controller
 		$qn = new Questionaire;
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
-		$qn->level_id = $request->level_id;
 		$qn->pass_score = $request->pass_score;
-
-		if($request->is_active==1) {
-			Questionaire::where("level_id", $request->level_id)
-			->where("is_active", $request->is_active)
-			->update(['is_active' => 0]);
-		}
-
 		$qn->is_active = $request->is_active;
 		$qn->created_by = Auth::id();
 		$qn->updated_by = Auth::id();
@@ -283,6 +277,8 @@ class QuestionaireController extends Controller
 				$qs->is_show_report = $qsv['is_show_report'];
 				$qs->report_url = $qsv['report_url'];
 				$qs->is_cust_search = $qsv['is_cust_search'];
+				$qs->is_before_work = $qsv['is_before_work'];
+				$qs->is_workin_shop = $qsv['is_workin_shop'];
 				$qs->created_by = Auth::id();
 				$qs->updated_by = Auth::id();
 				$qs->save();
@@ -363,14 +359,12 @@ class QuestionaireController extends Controller
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
 			'pass_score' => $request->pass_score,
-			'is_active' => $request->is_active,
-			'level_id' => $request->level_id
+			'is_active' => $request->is_active
 		], [
 			'questionaire_name' => 'required|max:255',
 			'questionaire_type_id' => 'required|integer',
 			'pass_score' => 'required|between:0,99.99',
-			'is_active' => 'required|integer',
-			'level_id' => 'required|integer'
+			'is_active' => 'required|integer'
 		]);
 
 		if($validator->fails()) {
@@ -383,12 +377,16 @@ class QuestionaireController extends Controller
 					'section_name' => $qs['section_name'],
 					'is_show_report' => $qs['is_show_report'],
 					'report_url' => $qs['report_url'],
-					'is_cust_search' => $qs['is_cust_search']
+					'is_cust_search' => $qs['is_cust_search'],
+					'is_before_work' => $qs['is_before_work'],
+					'is_workin_shop' => $qs['is_workin_shop']
 				], [
 					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
-					'is_cust_search' => 'required|integer'
+					'is_cust_search' => 'required|integer',
+					'is_before_work' => 'required|integer',
+					'is_workin_shop' => 'required|integer'
 				]);
 
 				if($validator_questionaire_section->fails()) {
@@ -483,15 +481,7 @@ class QuestionaireController extends Controller
 		$qn = Questionaire::find($request->questionaire_id);
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
-		$qn->level_id = $request->level_id;
 		$qn->pass_score = $request->pass_score;
-
-		if($request->is_active==1) {
-			Questionaire::where("level_id", $request->level_id)
-			->where("is_active", $request->is_active)
-			->update(['is_active' => 0]);
-		}
-
 		$qn->is_active = $request->is_active;
 		$qn->updated_by = Auth::id();
 		$qn->save();
@@ -505,6 +495,8 @@ class QuestionaireController extends Controller
 					$qs->is_show_report = $qsv['is_show_report'];
 					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->is_before_work = $qsv['is_before_work'];
+					$qs->is_workin_shop = $qsv['is_workin_shop'];
 					$qs->created_by = Auth::id();
 					$qs->updated_by = Auth::id();
 				} else {
@@ -514,6 +506,8 @@ class QuestionaireController extends Controller
 					$qs->is_show_report = $qsv['is_show_report'];
 					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
+					$qs->is_before_work = $qsv['is_before_work'];
+					$qs->is_workin_shop = $qsv['is_workin_shop'];
 					$qs->updated_by = Auth::id();
 				}
 				$qs->save();

@@ -317,9 +317,9 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									$emp_update_date = [$emp_snap->start_date];
-									$emp_update_code = [$emp_snap->emp_code];
-									$emp_update_position = [$emp_snap->position_id];
+									$emp_update_date[] = $emp_snap->start_date;
+									$emp_update_code[] = $emp_snap->emp_code;
+									$emp_update_position[] = $emp_snap->position_id;
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -340,9 +340,9 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									$emp_update_date = [$emp_snap->start_date];
-									$emp_update_code = [$emp_snap->emp_code];
-									$emp_update_position = [$emp_snap->position_id];
+									$emp_update_date[] = $emp_snap->start_date;
+									$emp_update_code[] = $emp_snap->emp_code;
+									$emp_update_position[] = $emp_snap->position_id;
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -354,7 +354,7 @@ class ImportEmployeeSnapshotController extends Controller
 				}
 			}
 
-			EmployeeSnapshot::whereIn("start_date", $emp_update_date)->whereNotIn("emp_code", $emp_update_code)->whereNotIn("position", $emp_update_position)->update(["is_active" => 0]);
+			EmployeeSnapshot::whereIn("start_date", $emp_update_date)->whereNotIn("emp_code", $emp_update_code)->whereNotIn("position_id", $emp_update_position)->update(["is_active" => 0]);
 		}
 
 		// License Verification //
