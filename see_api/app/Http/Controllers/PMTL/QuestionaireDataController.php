@@ -11,7 +11,8 @@ use App\Questionaire;
 use App\Stage;
 use App\SystemConfiguration;
 use App\Customer;
-use App\UsersRoles;
+//use App\UsersRoles;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -54,19 +55,24 @@ class QuestionaireDataController extends Controller
 		return strtolower($text);
 	}
 
-    function get_role() {
-    	$role = [];
-        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
+    function get_level() {
+    	// $role = [];
+     //    $user = UsersRoles::where('userId', Auth::user()->userId)->get();
 
-        if (empty($user)) {
-            return $role;
-        }
+     //    if (empty($user)) {
+     //        return $role;
+     //    }
 
-        foreach ($user as $key => $value) {
-            array_push($role, $value->roleId);
-        }
+     //    foreach ($user as $key => $value) {
+     //        array_push($role, $value->roleId);
+     //    }
 
-        return $role;
+     //    return $role;
+
+    	$level = $this->get_emp_snapshot();
+        $user = AppraisalLevel::where('level_id', $level->level_id)->first();
+
+        return $user;
     }
 
     function concat_emp_first_last_code($emp) {
@@ -80,20 +86,21 @@ class QuestionaireDataController extends Controller
     }
 
     function role_authorize($stage_id, $data_header_id) {
-        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
-        $assessor = $this->get_emp_snapshot_id();
+        // $user = UsersRoles::where('userId', Auth::user()->userId)->get();
+        $assessor = $this->get_emp_snapshot();
+        $user = AppraisaLevel::where('level_id', $assessor->level_id)->first();
         $emp_code = Auth::id();
 
         if (empty($user)) {
-            return ['errors' => 'user role not found'];
+            return ['errors' => 'Level not found in AppraisaLevel'];
         }
 
-        $role = [];
-        foreach ($user as $key => $value) {
-            array_push($role, $value->roleId);
-        }
+        // $role = [];
+        // foreach ($user as $key => $value) {
+        //     array_push($role, $value->roleId);
+        // }
 
-        $role_id = implode(',', $role);
+        // $role_id = implode(',', $role);
 
         // $data = DB::select("
         // 	SELECT view_comment_flag
@@ -104,10 +111,10 @@ class QuestionaireDataController extends Controller
 
          $data = DB::select("
         	SELECT rsa.view_comment_flag
-			FROM role_stage_authorize rsa
+			FROM level_stage_authorize rsa
 			LEFT JOIN questionaire_data_header qdh ON qdh.data_stage_id = rsa.stage_id
 			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			WHERE rsa.role_id IN ({$role_id})
+			WHERE rsa.level_id = '{$user->level_id}'
         	AND rsa.stage_id = '{$stage_id}'
         	AND qdh.data_header_id = '{$data_header_id}'
         	AND (es.emp_code = '{$emp_code}' OR qdh.assessor_id = '{$assessor->emp_snapshot_id}' )
@@ -133,11 +140,13 @@ class QuestionaireDataController extends Controller
 		Config::set('mail.password',$config->mail_password);
 		$from = Config::get('mail.from');
 
-		$workflow_email = DB::table("workflow_stage")->select("send_email_flag")->where("from_stage_id", $from_stage_id)->first();
-		if($to_stage_id==3) {
+		$stage_email = DB::table("stage")->select("send_email_flag")->where("stage", $from_stage_id)->first();
+
+		if($stage_email->send_email_flag==1) {
 			try {
 				$assessor = EmployeeSnapshot::find($assessor_id);
-				$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+				// $role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+				$level = $this->get_level();
 				$emp_snap = DB::select("
 					SELECT qdh.data_header_id, 
 					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
@@ -145,7 +154,8 @@ class QuestionaireDataController extends Controller
 					ifnull(rsa.edit_flag, 0) edit_flag
 					FROM questionaire_data_header qdh
 					LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-					LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
+					LEFT JOIN level_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id 
+					AND rsa.level_id = '{$level->level_id}'
 					WHERE qdh.data_header_id = '{$data_header_id}'
 					");
 
@@ -171,11 +181,11 @@ class QuestionaireDataController extends Controller
 		}
     }
 
-    function get_emp_snapshot_id() {
+    function get_emp_snapshot() {
     	try {
-    		$is_emp = EmployeeSnapshot::select("emp_snapshot_id")->where("emp_code", Auth::id())->orderBy('start_date', 'desc')->firstOrFail();
+    		$is_emp = EmployeeSnapshot::select("emp_snapshot_id","level_id")->where("emp_code", Auth::id())->orderBy('start_date', 'desc')->firstOrFail();
     	} catch (ModelNotFoundException $e) {
-			exit(json_encode(['status' => 404, 'data' => 'get_emp_snapshot_id not found.']));
+			exit(json_encode(['status' => 404, 'data' => 'get_emp_snapshot not found.']));
 		}
 
 		return $is_emp;
@@ -224,28 +234,29 @@ class QuestionaireDataController extends Controller
 
     public function role_authorize_add() {
         $data = [];
-        $user = UsersRoles::where('userId', Auth::user()->userId)->get();
+        $level = $this->get_emp_snapshot();
+        $user = AppraisalLevel::where('level_id', $level->level_id)->first();
 
         if (empty($user)) {
-            return response()->json(['status' => 401, 'add_flag' => 0, 'errors' => 'user role not found']);
+            return response()->json(['status' => 401, 'add_flag' => 0, 'errors' => 'Level not found in AppraisaLevel']);
         }
 
-        $role = [];
-        foreach ($user as $key => $value) {
-            array_push($role, $value->roleId);
-        }
+        // $role = [];
+        // foreach ($user as $key => $value) {
+        //     array_push($role, $value->roleId);
+        // }
 
-        $role_id = implode(',', $role);
+        // $role_id = implode(',', $role);
 
         $data = DB::select("
         	SELECT add_flag
-        	FROM role_stage_authorize
-        	WHERE role_id IN ({$role_id})
+        	FROM level_stage_authorize
+        	WHERE level_id = '{$user->level_id}'
         	AND stage_id = '1'
         ");
 
     	if(empty($data)) {
-    		return response()->json(['status' => 400, 'add_flag' => 0, 'errors' => 'role not assign to user']);
+    		return response()->json(['status' => 400, 'add_flag' => 0, 'errors' => 'Level not Assign to LevelStageAuthorize']);
     	} else {
     		return response()->json(['status' => 200, 'add_flag' => $data[0]->add_flag, 'errors' => []]);
     	}
@@ -507,7 +518,7 @@ class QuestionaireDataController extends Controller
 		if ($all_emp[0]->count_no > 0) {
 			$assessor = "";
 		} else {
-			$assessor_id = $this->get_emp_snapshot_id();
+			$assessor_id = $this->get_emp_snapshot();
 
 			$emp_snapshot_id_with_date = $this->get_emp_snapshot_id_with_date($request->start_date, $request->end_date);
 			$emp_snapshot_id_with_datee = empty($emp_snapshot_id_with_date[0]->emp_snapshot_id) ? "" : $emp_snapshot_id_with_date[0]->emp_snapshot_id;
@@ -544,7 +555,8 @@ class QuestionaireDataController extends Controller
         }
 
         $header_id = empty(implode(',', $header_array_id)) ? "''" : implode(',', $header_array_id);
-		$role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+		// $role = empty(implode(',', $this->get_role())) ? "''" : implode(',', $this->get_role());
+		$level = $this->get_level();
 
 		foreach ($items as $key => $value) {
 
@@ -560,7 +572,8 @@ class QuestionaireDataController extends Controller
 				LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
 				LEFT JOIN position p ON p.position_id = es.position_id
 				LEFT JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-				LEFT JOIN role_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id AND rsa.role_id IN ({$role})
+				LEFT JOIN level_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id 
+				AND rsa.level_id  = '{$level->level_id}'
 				WHERE qdh.questionaire_date = '{$this->format_date($value->questionaire_date)}'
 				AND qdh.data_header_id IN ({$header_id})
 				GROUP BY qdh.data_header_id
@@ -913,7 +926,7 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		$assessor = $this->get_emp_snapshot_id();
+		$assessor = $this->get_emp_snapshot();
 		
 		DB::beginTransaction();
 		$errors = [];
@@ -1055,7 +1068,7 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'QuestionaireDataHeader not found.']);
 		}
 
-		$assessor = $this->get_emp_snapshot_id();
+		$assessor = $this->get_emp_snapshot();
 		
 		DB::beginTransaction();
 		$errors = [];

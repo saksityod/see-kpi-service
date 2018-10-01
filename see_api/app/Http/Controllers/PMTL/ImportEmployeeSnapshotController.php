@@ -155,7 +155,7 @@ class ImportEmployeeSnapshotController extends Controller
 	public function import(Request $request)
 	{
 		set_time_limit(0);
-		ini_set('memory_limit', '1024M');
+		ini_set('memory_limit', '5012M');
 		$errors = array();
 		$errors_validator = array();
 		$newEmp = array();
@@ -185,7 +185,8 @@ class ImportEmployeeSnapshotController extends Controller
 					'region' => 'required|max:20',
 					'organization_code' => 'required|max:100',
 					'position' => 'required|max:100',
-					'job_function_id' => 'required|max:11'
+					'job_function_id' => 'required|max:11',
+					'levelid' => 'required|max:11'
 				]);
 
 				$i->start_date = $this->qdc_service->format_date($i->start_date);
@@ -207,7 +208,8 @@ class ImportEmployeeSnapshotController extends Controller
 
 				$org = Org::where('org_code', $i->organization_code)->first();
 				$position = Position::where('position_code', $i->position)->first();
-				$appraisal_level = AppraisalLevel::where('level_id', $i->job_function_id)->first();
+				$appraisal_level = AppraisalLevel::where('level_id', $i->levelid)->first();
+				$job_function = DB::table('job_function')->where('job_function_id', $i->job_function_id)->first();
 
 				if(empty($org)) {
 					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Organization Code' => 'Organization Code not found']];
@@ -222,10 +224,16 @@ class ImportEmployeeSnapshotController extends Controller
 				}
 
 				if(empty($appraisal_level)) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Job Function ID' => 'Job Function ID not found']];
+					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Level ID' => 'Job Function ID not found']];
 				} else {
 					$level_id = $appraisal_level->level_id;
 					$level_id_name = $appraisal_level->appraisal_level_name;
+				}
+
+				if(empty($job_function)) {
+					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Job Function ID' => 'Job Function ID not found']];
+				} else {
+					$job_function_id = $job_function->job_function_id;
 				}
 
 				if ($validator->fails()) {
@@ -260,6 +268,7 @@ class ImportEmployeeSnapshotController extends Controller
 							$emp_snap->org_id = $org_id;
 							$emp_snap->position_id = $position_id;
 							$emp_snap->level_id = $level_id;
+							$emp_snap->job_function_id = $job_function_id;
 							$emp_snap->chief_emp_code = $i->line_manager;
 							$emp_snap->email = $i->employeeemail;
 							$emp_snap->distributor_code = $i->dist_cd;
@@ -308,6 +317,7 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->org_id = $org_id;
 								$emp_snap->position_id = $position_id;
 								$emp_snap->level_id = $level_id;
+								$emp_snap->job_function_id = $job_function_id;
 								$emp_snap->chief_emp_code = $i->line_manager;
 								$emp_snap->email = $i->employeeemail;
 								$emp_snap->distributor_code = $i->dist_cd;
@@ -332,6 +342,7 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->org_id = $org_id;
 								$emp_snap->position_id = $position_id;
 								$emp_snap->level_id = $level_id;
+								$emp_snap->job_function_id = $job_function_id;
 								$emp_snap->chief_emp_code = $i->line_manager;
 								$emp_snap->email = $i->employeeemail;
 								$emp_snap->distributor_code = $i->dist_cd;
@@ -382,6 +393,7 @@ class ImportEmployeeSnapshotController extends Controller
 			'EmployeeFirstName',
 			'EmployeeLastName',
 			'EmployeeEmail',
+			'Level ID',
 			'Job Function ID',
 			'Line Manager',
 			'Position',
@@ -399,15 +411,22 @@ class ImportEmployeeSnapshotController extends Controller
 		");
 
 		$level = DB::select("
-			SELECT level_id 'Job Function ID', appraisal_level_name 'Job Function Name'
+			SELECT level_id, appraisal_level_name
 			FROM appraisal_level
 			WHERE is_active = 1
 			ORDER BY level_id
 		");
 
+		$job_function = DB::select("
+			SELECT job_function_id, job_function_name
+			FROM job_function 
+			ORDER BY job_function_id
+		");
+
 		$data['Employee'] = $emp_snap;
 		$data['Org'] = $org;
-		$data['Job Function'] = $level;
+		$data['Level'] = $level;
+		$data['Job Function'] = $job_function;
 
 		$data = json_decode(json_encode($data), true);
 

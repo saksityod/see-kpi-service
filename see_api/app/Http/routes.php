@@ -498,8 +498,16 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('questionaire_data', 'PMTL\QuestionaireDataController@store');
 	Route::patch('questionaire_data', 'PMTL\QuestionaireDataController@update');
 	Route::delete('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@destroy');
-	Route::delete('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@destroy_evaluated_retailer_list');
+	// Route::delete('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@destroy_evaluated_retailer_list');
 	// Route::delete('questionaire_data/data_detail/{data_detail_id}', 'PMTL\QuestionaireDataController@destroy_data_detail');
+
+	Route::get('questionaire_type', 'PMTL\QuestionaireTypeController@index');
+	Route::get('questionaire_type/{id}', 'PMTL\QuestionaireTypeController@show');
+	Route::post('questionaire_type', 'PMTL\QuestionaireTypeController@store');
+	Route::patch('questionaire_type/{id}', 'PMTL\QuestionaireTypeController@update');
+	Route::delete('questionaire_type/{id}', 'PMTL\QuestionaireTypeController@destroy');
+	Route::get('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage');
+	Route::patch('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage_update');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
