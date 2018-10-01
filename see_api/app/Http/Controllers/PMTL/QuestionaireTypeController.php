@@ -46,7 +46,7 @@ class QuestionaireTypeController extends Controller
 		$validator = Validator::make([
 			'questionaire_type' => $request->questionaire_type
 		], [
-			'questionaire_type' => 'required|max:255'
+			'questionaire_type' => 'required|max:255|unique:questionaire_type,questionaire_type'
 		]);
 
 		if($validator->fails()) {
@@ -77,7 +77,7 @@ class QuestionaireTypeController extends Controller
 		$validator = Validator::make([
 			'questionaire_type' => $request->questionaire_type
 		], [
-			'questionaire_type_id' => 'required|integer'
+			'questionaire_type' => 'required|max:255|unique:questionaire_type,questionaire_type,'.$id.',questionaire_type_id'
 		]);
 
 		if($validator->fails()) {
@@ -110,7 +110,7 @@ class QuestionaireTypeController extends Controller
 			");
 
 		foreach ($data as $key => $value) {
-			$data['questionaire'] = DB::select("
+			$data[$key]->questionaire = DB::select("
 				SELECT q.questionaire_id, 
 						q.questionaire_name, 
 						if(qa.questionaire_id is null, 0, 1) is_check
