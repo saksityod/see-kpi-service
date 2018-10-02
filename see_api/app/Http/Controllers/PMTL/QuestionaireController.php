@@ -163,7 +163,7 @@ class QuestionaireController extends Controller
 					'is_before_work' => $qs['is_before_work'],
 					'is_workin_shop' => $qs['is_workin_shop']
 				], [
-					'section_name' => 'required|max:255|unique:questionaire_section,section_name',
+					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer',
@@ -182,7 +182,7 @@ class QuestionaireController extends Controller
 							'question_name' => $ss['question_name']
 						], [
 							'answer_type_id' => 'required|integer',
-							'question_name' => 'required|max:255|unique:question,question_name'
+							'question_name' => 'required|max:255'
 						]);
 
 						if($validator_sub_section->fails()) {
@@ -214,7 +214,7 @@ class QuestionaireController extends Controller
 									'question_name' => $q['question_name']
 								], [
 									'answer_type_id' => 'required|integer',
-									'question_name' => 'required|max:255|unique:question,question_name'
+									'question_name' => 'required|max:255'
 								]);
 
 								if($validator_question->fails()) {
@@ -373,12 +373,6 @@ class QuestionaireController extends Controller
 
 		if(!empty($request['questionaire_section'])) {
 			foreach ($request['questionaire_section'] as $qs_k => $qs) {
-				if(empty($qs['section_id'])) {
-					$unique = "";
-				} else {
-					$unique = ",".$qs['section_id'].",section_id'";
-				}
-
 				$validator_questionaire_section = Validator::make([
 					'section_name' => $qs['section_name'],
 					'is_show_report' => $qs['is_show_report'],
@@ -387,7 +381,7 @@ class QuestionaireController extends Controller
 					'is_before_work' => $qs['is_before_work'],
 					'is_workin_shop' => $qs['is_workin_shop']
 				], [
-					'section_name' => 'required|max:255|unique:questionaire_section,section_name'.$unique,
+					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer',
@@ -401,18 +395,12 @@ class QuestionaireController extends Controller
 
 				if(!empty($request['questionaire_section'][$qs_k]['sub_section'])) {
 					foreach ($request['questionaire_section'][$qs_k]['sub_section'] as $ss_key => $ss) {
-						if(empty($ss['question_id'])) {
-							$unique = "";
-						} else {
-							$unique = ",".$ss['question_id'].",question_id'";
-						}
-
 						$validator_sub_section = Validator::make([
 							'answer_type_id' => $ss['answer_type_id'],
 							'question_name' => $ss['question_name']
 						], [
 							'answer_type_id' => 'required|integer',
-							'question_name' => 'required|max:255|unique:question,question_name'.$unique
+							'question_name' => 'required|max:255'
 						]);
 
 						if($validator_sub_section->fails()) {
@@ -439,18 +427,12 @@ class QuestionaireController extends Controller
 							}
 						} else if(!empty($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'])) {
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'] as $q_k => $q) {
-								if(empty($q['question_id'])) {
-									$unique = "";
-								} else {
-									$unique = ",".$q['question_id'].",question_id'";
-								}
-
 								$validator_question = Validator::make([
 									'answer_type_id' => $q['answer_type_id'],
 									'question_name' => $q['question_name']
 								], [
 									'answer_type_id' => 'required|integer',
-									'question_name' => 'required|max:255|unique:question,question_name'.$unique
+									'question_name' => 'required|max:255'
 								]);
 
 								if($validator_question->fails()) {

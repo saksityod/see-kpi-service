@@ -95,7 +95,7 @@ class ImportEmployeeSnapshotController extends Controller
 		$org_id = empty($request->org_id) ? "" : "AND es.org_id = '{$request->org_id}'";
 
 		$items = DB::select("
-			SELECT es.*, DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name
+			SELECT es.*, DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name, es.is_active
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id
@@ -136,7 +136,7 @@ class ImportEmployeeSnapshotController extends Controller
 		}
 
 		$items = DB::select("
-			SELECT DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, es.emp_id, es.emp_code, es.emp_first_name, es.emp_last_name, es.email, es.chief_emp_code, es.distributor_code, es.distributor_name, es.region, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name
+			SELECT DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, es.emp_id, es.emp_code, es.emp_first_name, es.emp_last_name, es.email, es.chief_emp_code, es.distributor_code, es.distributor_name, es.region, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name, es.is_active
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id
@@ -153,9 +153,9 @@ class ImportEmployeeSnapshotController extends Controller
 		$errors = array();
 		$errors_validator = array();
 		$newEmp = array();
-		$emp_update_date = array();
-		$emp_update_code = array();
-		$emp_update_position = array();
+		// $emp_update_date = array();
+		// $emp_update_code = array();
+		// $emp_update_position = array();
 
 		foreach ($request->file() as $f) {
 			$items = Excel::load($f, function($reader){})->get();
@@ -180,7 +180,8 @@ class ImportEmployeeSnapshotController extends Controller
 					'organization_code' => 'required|max:100',
 					'position' => 'required|max:100',
 					'job_function_id' => 'required|max:11',
-					'levelid' => 'required|max:11'
+					'level_id' => 'required|max:11',
+					'is_active' => 'required|integer|between:0,1'
 				]);
 
 				$i->start_date = $this->qdc_service->format_date($i->start_date);
@@ -202,7 +203,7 @@ class ImportEmployeeSnapshotController extends Controller
 
 				$org = Org::where('org_code', $i->organization_code)->first();
 				$position = Position::where('position_code', $i->position)->first();
-				$appraisal_level = AppraisalLevel::where('level_id', $i->levelid)->first();
+				$appraisal_level = AppraisalLevel::where('level_id', $i->level_id)->first();
 				$job_function = DB::table('job_function')->where('job_function_id', $i->job_function_id)->first();
 
 				if(empty($org)) {
@@ -267,7 +268,7 @@ class ImportEmployeeSnapshotController extends Controller
 							$emp_snap->distributor_code = $i->dist_cd;
 							$emp_snap->distributor_name = $i->busnoperationsitedescription;
 							$emp_snap->region = $i->region;
-							$emp_snap->is_active = 1;
+							$emp_snap->is_active = $i->is_active;
 							$emp_snap->created_by = Auth::id();
 							$emp_snap->updated_by = Auth::id();
 							try {
@@ -315,13 +316,13 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->distributor_code = $i->dist_cd;
 								$emp_snap->distributor_name = $i->busnoperationsitedescription;
 								$emp_snap->region = $i->region;
-								$emp_snap->is_active = 1;
+								$emp_snap->is_active = $i->is_active;
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									$emp_update_date[] = $emp_snap->start_date;
-									$emp_update_code[] = $emp_snap->emp_code;
-									$emp_update_position[] = $emp_snap->position_id;
+									// $emp_update_date[] = $emp_snap->start_date;
+									// $emp_update_code[] = $emp_snap->emp_code;
+									// $emp_update_position[] = $emp_snap->position_id;
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -340,12 +341,14 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->distributor_code = $i->dist_cd;
 								$emp_snap->distributor_name = $i->busnoperationsitedescription;
 								$emp_snap->region = $i->region;
+								$emp_snap->is_active = $i->is_active;
+								$emp_snap->created_by = Auth::id();
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									$emp_update_date[] = $emp_snap->start_date;
-									$emp_update_code[] = $emp_snap->emp_code;
-									$emp_update_position[] = $emp_snap->position_id;
+									// $emp_update_date[] = $emp_snap->start_date;
+									// $emp_update_code[] = $emp_snap->emp_code;
+									// $emp_update_position[] = $emp_snap->position_id;
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -357,7 +360,7 @@ class ImportEmployeeSnapshotController extends Controller
 				}
 			}
 
-			EmployeeSnapshot::whereIn("start_date", $emp_update_date)->whereNotIn("emp_code", $emp_update_code)->whereNotIn("position_id", $emp_update_position)->update(["is_active" => 0]);
+			// EmployeeSnapshot::whereIn("start_date", $emp_update_date)->whereNotIn("emp_code", $emp_update_code)->whereNotIn("position_id", $emp_update_position)->update(["is_active" => 0]);
 		}
 
 		// License Verification //
@@ -392,7 +395,8 @@ class ImportEmployeeSnapshotController extends Controller
 			'DIST_CD',
 			'BusnOperationSiteDescription',
 			'Region',
-			'Organization Code'
+			'Organization Code',
+			'Is Active'
 		];
 
 		$org = DB::select("

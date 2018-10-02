@@ -138,7 +138,7 @@ class CustomerController extends Controller
 						'customer_name' => 'required|max:255',
 						'customer_type' => 'required|max:255',
 						'industry_class' => 'max:255',
-						'is_active' => 'required|integer|between:1,1'
+						'is_active' => 'required|integer|between:0,1'
 					]);
 
 					$i['customer_code'] = $this->qdc_service->trim_text($i['customer_code']);

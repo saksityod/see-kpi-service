@@ -134,7 +134,7 @@ class QuestionaireTypeController extends Controller
 
 		$errors = [];
 		$errors_validator = [];
-		foreach ($request->all() as $key => $value) {
+		foreach ($request['data'] as $key => $value) {
 			$validator = Validator::make([
 				'job_function_id' => $value['job_function_id'],
 				'questionaire_id' => $value['questionaire_id']
@@ -154,7 +154,7 @@ class QuestionaireTypeController extends Controller
 
 		QuestionaireAuthorize::where("questionaire_type_id", $id)->delete();
 
-		foreach ($request->all() as $key => $value) {
+		foreach ($request['data'] as $key => $value) {
 			$qt = new QuestionaireAuthorize;
 			$qt->questionaire_type_id = $id;
 			$qt->job_function_id = $value['job_function_id'];
@@ -188,5 +188,4 @@ class QuestionaireTypeController extends Controller
 
 		return response()->json(['status' => 200]);
 	}
-
 }
