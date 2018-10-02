@@ -8,7 +8,6 @@ use App\EmployeeSnapshot;
 use App\AppraisalLevel;
 use App\Position;
 use App\Org;
-use App\Role;
 
 use Auth;
 use DB;
@@ -28,11 +27,6 @@ class ImportEmployeeSnapshotController extends Controller
 	{
 	   $this->middleware('jwt.auth');
 	   $this->qdc_service = $qdc_service;
-	}
-
-	function get_role_by_level($level_name) {
-		$role = Role::select("roleId")->where("name", $level_name)->first();
-		return $role->roleId;
 	}
 
 	public function list_level() {
@@ -227,7 +221,6 @@ class ImportEmployeeSnapshotController extends Controller
 					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Level ID' => 'Job Function ID not found']];
 				} else {
 					$level_id = $appraisal_level->level_id;
-					$level_id_name = $appraisal_level->appraisal_level_name;
 				}
 
 				if(empty($job_function)) {
@@ -283,8 +276,7 @@ class ImportEmployeeSnapshotController extends Controller
 								$newEmp[] = [
 									"emp_code" => $i->useraccountcode, 
 									"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
-									"email" => $i->employeeemail,
-									"role_id" => $this->get_role_by_level($level_id_name)
+									"email" => $i->employeeemail
 								];
 							} catch (Exception $e) {
 								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
