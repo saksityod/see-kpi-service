@@ -1179,7 +1179,7 @@ class DashboardController extends Controller
 					$perspective = DB::select("
 					select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
 					round(sum(a.weight_percent),2) perspective_weight,
-					round(sum(a.weigh_score)/(select count(1) from appraisal_item_result where emp_result_id = a.emp_result_id)) total_score
+					round(sum(a.weigh_score)/a.structure_weight_percent,2) total_score
 					from appraisal_item_result a
 					left outer join appraisal_item b
 					on a.item_id = b.item_id
@@ -1240,7 +1240,7 @@ class DashboardController extends Controller
 			}
 			
 			$subtotal_score = number_format((float)$subtotal_score,2,'.','');
-			$subtotal_weight_pct = number_format((float)$subtotal_weight_pct,2,'.','');
+			$subtotal_weight_pct = number_format((float)$subtotal_weight_pct,0,'.','');
 			$subtotal_result_score = number_format((float)round($subtotal_score/$subtotal_weight_pct,2),2,'.','');
 			/*$e->color_code*/
 			$cat1[] = ['label' => $e->name . ' ' . $subtotal_score /*$e->total_weigh_score*/ .'%', 'color' => "#2aaae6", 'value' => $subtotal_result_score /*$e->result_score*/, 'category' => $cat2,
