@@ -1608,7 +1608,7 @@ class AppraisalAssignmentController extends Controller
 		empty($request->appraisal_level_id) ?: ($query .= "and (d.level_id = ? or ar.level_id = ?) " AND $qinput[] = $request->appraisal_level_id AND $qinput[] = $request->appraisal_level_id);
 		empty($request->appraisal_level_id) ?: ($query .= " and c.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
-		$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
+		$qfooter = " order by b.seq_no, a.kpi_id, a.item_name, ar.structure_weight_percent desc ";
 
 		// echo $query . $qfooter;
 		// echo"<br>";

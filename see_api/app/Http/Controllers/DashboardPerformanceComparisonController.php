@@ -590,7 +590,7 @@ class DashboardPerformanceComparisonController extends Controller
 					, per.perspective_name
 					, ai.item_id
 					, ai.item_name
-					order by ai.structure_id asc, per.perspective_id asc, ai.item_name asc";
+					order by ai.structure_id asc, per.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc";
 				// ,array($request->period_id, $request->period_id, $request->emp_id, $request->level_id, $request->org_id, $request->position_id
 				// , $request->period_id, $request->emp_id, $request->level_id, $request->org_id, $request->position_id));
 
@@ -688,7 +688,7 @@ class DashboardPerformanceComparisonController extends Controller
 				, per.perspective_name
 				, ai.item_id
 				, ai.item_name
-				order by ai.structure_id asc, per.perspective_id asc, ai.item_name asc";
+				order by ai.structure_id asc, per.perspective_id asc ,ai.kpi_id asc , ai.item_name asc";
 
 				$sql_detail = "
 					select aps.structure_name

@@ -386,7 +386,7 @@ class AppraisalItemController extends Controller
 			";
 		}
 
-		$qfooter = " Order by isnull(i.kpi_id), i.kpi_id asc, i.item_id asc";
+		$qfooter = " Order by s.seq_no asc, i.kpi_id asc, i.item_name asc"; 
 		
 		$items = DB::select($query . $qfooter, $qinput);
 		
