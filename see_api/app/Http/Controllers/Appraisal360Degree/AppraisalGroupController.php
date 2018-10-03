@@ -37,6 +37,13 @@ class AppraisalGroupController extends Controller
 
 	public function emp_level_list(Request $request)
 	{
+		$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
+			->where('is_active', 1)
+			->where('is_individual', 1)
+			->orderBy('level_id')
+			->get();
+		
+		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง
 		$AuthEmpCode = Auth::id();
 		$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
 		if ($empLevInfo["is_all"]) {
@@ -69,6 +76,7 @@ class AppraisalGroupController extends Controller
 				ORDER BY lev.level_id DESC
 			");
 		}
+		*/
 
 		return response()->json($result);
 	}
@@ -433,7 +441,8 @@ class AppraisalGroupController extends Controller
 
 		$auth = Auth::id();
 
-		if($request->assessor_group_id == 5){
+		//if($request->assessor_group_id == 5){
+		if(in_array($request->assessor_group_id, [1,5])){
 			$items = DB::select("
 				select * from (
 					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
@@ -461,10 +470,10 @@ class AppraisalGroupController extends Controller
 						and air.level_id = g.appraisal_level_id
 						and g.assessor_group_id = com.assessor_group_id
 					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
-						and ags.assessor_group_id = 5
+						and ags.assessor_group_id = '{$request->assessor_group_id}'
 					where aps.form_id = 2
 					and emp.emp_result_id = ?
-					and 5 = ?
+					and ? in(1,5)
 					union
 					select DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url
 					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code
