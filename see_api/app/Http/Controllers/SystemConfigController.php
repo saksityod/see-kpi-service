@@ -76,6 +76,7 @@ class SystemConfigController extends Controller
 			'nof_date_bonus' => 'required|integer',
 			'salary_raise_frequency_id' => 'required|integer',
 			'result_type' => 'required|integer',
+			'entity_type_resorting' => 'required|integer',
 			'raise_type' => 'required|integer',
 			'theme_color' => 'required|max:15',
 			'email_reminder_flag' => 'boolean',
