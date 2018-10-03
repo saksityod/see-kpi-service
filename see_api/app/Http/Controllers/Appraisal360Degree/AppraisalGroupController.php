@@ -9,7 +9,8 @@ use App\AssessorGroup;
 use App\AppraisalLevel;
 use App\CompetencyResult;
 use App\AppraisalItemResult;
-use  App\Http\Controllers\AppraisalController;
+use App\WorkflowStage;
+use App\Http\Controllers\AppraisalController;
 
 use Auth;
 use DB;
@@ -899,6 +900,35 @@ class AppraisalGroupController extends Controller
 			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
 			AND length(@pv := concat(@pv, ',', emp.emp_code))
 		"));
+	}
+
+
+	public function edit_action_to(Request $request)
+	{
+		$items = DB::select("
+			SELECT stage_id, to_action
+			FROM appraisal_stage 
+			WHERE from_stage_id = {$request->stage_id}
+			AND appraisal_flag = 1
+			AND appraisal_type_id = {$request->appraisal_type_id}
+			AND find_in_set({$request->appraisal_group_id}, assessor_see)
+		");
+
+
+		if (empty($items)) {
+			$workflow = WorkflowStage::find($request->stage_id);
+			empty($workflow->to_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->to_stage_id;
+			$items = DB::select("	
+				SELECT stage_id, to_action
+				FROM appraisal_stage
+				WHERE stage_id in ({$to_stage_id})
+				AND appraisal_flag = 1
+				AND appraisal_type_id = '{$request->appraisal_type_id}'
+				AND find_in_set('{$request->appraisal_group_id}', assessor_see)
+			");
+		}
+
+		return response()->json($items);
 	}
 }
 
