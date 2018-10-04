@@ -1127,26 +1127,48 @@ class AppraisalAssignmentController extends Controller
 						select 'Unassigned' to_action, 'Unassigned' status
 			    	");
 				} else {
-
-					$items = DB::select("
-			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
-	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
-	    				And er.emp_result_id = ir.emp_result_id
-	    				and ir.item_id = I.item_id
-	    				and er.period_id = p.period_id
-	    				and o.level_id = al.level_id
-	    				and er.stage_id = ast.stage_id
-						".$org_level."
-						".$org_id."
-						".$period_id."
-						".$appraisal_frequency_id."
-						".$appraisal_year."
-						".$appraisal_type_id."
-						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
-						union all
-						select 'Unassigned' to_action, 'Unassigned' status
-			    	");
+					if( ! empty($request->org_id)){
+						$getOrg = Org::find($request->org_id);
+						$items = DB::select("
+							select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+							From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
+							Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+							And er.emp_result_id = ir.emp_result_id
+							and ir.item_id = I.item_id
+							and er.period_id = p.period_id
+							and o.level_id = al.level_id
+							and er.stage_id = ast.stage_id
+							".$org_level."
+							".$org_id."
+							".$period_id."
+							".$appraisal_frequency_id."
+							".$appraisal_year."
+							".$appraisal_type_id."
+							and (o.org_id = '{$getOrg->org_code}' or o.parent_org_code = '{$getOrg->org_code}')
+							union all
+							select 'Unassigned' to_action, 'Unassigned' status
+						");
+					} else {
+						$items = DB::select("
+							select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+							From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
+							Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+							And er.emp_result_id = ir.emp_result_id
+							and ir.item_id = I.item_id
+							and er.period_id = p.period_id
+							and o.level_id = al.level_id
+							and er.stage_id = ast.stage_id
+							".$org_level."
+							".$org_id."
+							".$period_id."
+							".$appraisal_frequency_id."
+							".$appraisal_year."
+							".$appraisal_type_id."
+							union all
+							select 'Unassigned' to_action, 'Unassigned' status
+						");
+					}
+					
 				}
 				// $items = DB::select("
 		  //   		select CONCAT(to_action,'-',from_action) to_action, CONCAT(to_action,' (',from_action,')') status
