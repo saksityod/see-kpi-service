@@ -34,7 +34,7 @@ class AppraisalCommentController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
-		//return Auth::id();
+		
 		$authen = DB::select("SELECT emp.emp_id, emp.emp_code, u.is_all_employee
 			FROM emp_result em
 			INNER JOIN employee emp ON em.emp_id = emp.emp_id
@@ -47,7 +47,7 @@ class AppraisalCommentController extends Controller
 
 		foreach($authen as $au){
 
-			if($au->is_all_employee == 1){
+			if($au->is_all_employee == 1 || $request->group_id == 1){
 				$items = DB::select("
 					SELECT ao.opinion_id
 					, ao.emp_result_id

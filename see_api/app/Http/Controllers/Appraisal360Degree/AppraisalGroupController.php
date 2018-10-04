@@ -9,7 +9,8 @@ use App\AssessorGroup;
 use App\AppraisalLevel;
 use App\CompetencyResult;
 use App\AppraisalItemResult;
-use  App\Http\Controllers\AppraisalController;
+use App\WorkflowStage;
+use App\Http\Controllers\AppraisalController;
 
 use Auth;
 use DB;
@@ -37,6 +38,13 @@ class AppraisalGroupController extends Controller
 
 	public function emp_level_list(Request $request)
 	{
+		$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
+			->where('is_active', 1)
+			->where('is_individual', 1)
+			->orderBy('level_id')
+			->get();
+		
+		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง
 		$AuthEmpCode = Auth::id();
 		$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
 		if ($empLevInfo["is_all"]) {
@@ -69,7 +77,54 @@ class AppraisalGroupController extends Controller
 				ORDER BY lev.level_id DESC
 			");
 		}
+		*/
 
+		return response()->json($result);
+	}
+
+
+	public function org_level_list_individual(Request $request){
+		$AuthEmpCode = Auth::id();
+		$result = DB::select("
+			SELECT DISTINCT org.level_id, vel.appraisal_level_name,
+				CASE 
+					WHEN org.level_id = 
+						(
+							SELECT so.level_id
+							FROM org so 
+							INNER JOIN employee se ON se.org_id = so.org_id 
+							WHERE emp_code = '{$AuthEmpCode}'
+						)
+					THEN 1 
+					ELSE 0
+				END AS default_flag
+			FROM org
+			INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+			WHERE EXISTS(
+				SELECT 1
+				FROM employee emp 
+				WHERE emp.org_id = org.org_id
+				AND emp.level_id = {$request->level_id}
+			)
+			ORDER BY org.level_id
+		");
+
+		return response()->json($result);
+	}
+
+
+	public function org_individual(Request $request){
+		$AuthEmpCode = Auth::id();
+		$result = DB::select("
+			SELECT org.org_id, org.org_name,
+				CASE 
+					WHEN org.org_id = (SELECT org_id FROM employee WHERE emp_code = '{$AuthEmpCode}')
+					THEN 1 
+					ELSE 0
+				END AS default_flag
+			FROM org
+			WHERE org.level_id = '{$request->org_level}'
+		");
 		return response()->json($result);
 	}
 
@@ -435,74 +490,203 @@ class AppraisalGroupController extends Controller
 
 		if($request->assessor_group_id == 5){
 			$items = DB::select("
-				select * from (
-					select distinct com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id
-					, ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id
-					, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
-					, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
-					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
-					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement
-					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
-					, 0 as total_weigh_score
-					, air.structure_weight_percent
-					from competency_result com
-					left outer join appraisal_level le on com.level_id = le.level_id
-					left outer join appraisal_item ai on com.item_id = ai.item_id
-					left outer join appraisal_structure aps on ai.structure_id = aps.structure_id
-					left outer join form_type ft on aps.form_id = ft.form_id
-					left outer join assessor_group gr on com.assessor_group_id = gr.assessor_group_id
-					left outer join employee em on com.assessor_id = em.emp_id
-					left outer join appraisal_item_result air on com.item_result_id = air.item_result_id
-					left outer join emp_result emp on air.emp_result_id = emp.emp_result_id
-					left outer join structure_result f on emp.emp_result_id = f.emp_result_id
-					-- left outer join appraisal_criteria g on aps.structure_id = g.structure_id
-					-- 	and air.level_id = g.appraisal_level_id
-					left outer join competency_criteria g on aps.structure_id = g.structure_id
-						and air.level_id = g.appraisal_level_id
-						and g.assessor_group_id = com.assessor_group_id
-					inner join assessor_group_structure ags on ags.structure_id = ai.structure_id
-						and ags.assessor_group_id = 5
-					where aps.form_id = 2
-					and emp.emp_result_id = ?
-					and 5 = ?
-					union
-					select DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url
-					,0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code
-					, 0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name
-					, a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, a.score, a.threshold_group_id
-					, a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id
-					, c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score
-					, a.structure_weight_percent
-					from appraisal_item_result a
-					left outer join appraisal_item b
-					on a.item_id = b.item_id
-					INNER JOIN appraisal_item ai
-					on ai.item_id = a.item_id
-					left outer join appraisal_structure c
-					on b.structure_id = c.structure_id
-					left outer join form_type d
-					on c.form_id = d.form_id
-					left outer join perspective e
-					on b.perspective_id = e.perspective_id
-					left outer join structure_result f
-					on a.emp_result_id = f.emp_result_id
-					and c.structure_id = f.structure_id
-					left outer join appraisal_criteria g
-					on c.structure_id = g.structure_id
-					and a.level_id = g.appraisal_level_id
-					left outer join appraisal_level al
-					on a.level_id = al.level_id
-					left outer join emp_result h
-					on a.emp_result_id = h.emp_result_id
-					left join uom on  b.uom_id= uom.uom_id
-					inner join assessor_group_structure ags on ags.structure_id = b.structure_id
-							and ags.assessor_group_id = ?
-					where a.emp_result_id = ?
-					and c.form_id = 2
-				) re 
-				order by re.structure_id asc, re.assessor_group_id asc, re.assessor_id asc,  re.item_id asc"
-					,array($request->emp_result_id, $request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id));
-		}else {
+				SELECT * 
+				FROM (
+					SELECT DISTINCT com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id, 
+						ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id, 
+						com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
+						CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
+						com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
+						com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+						emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
+						0 as total_weigh_score, air.structure_weight_percent
+					FROM competency_result com
+					LEFT OUTER JOIN appraisal_level le on com.level_id = le.level_id
+					LEFT OUTER JOIN appraisal_item ai on com.item_id = ai.item_id
+					LEFT OUTER JOIN	appraisal_structure aps on ai.structure_id = aps.structure_id
+					LEFT OUTER JOIN	form_type ft on aps.form_id = ft.form_id
+					LEFT OUTER JOIN	assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+					LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
+					LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
+					LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
+					LEFT OUTER JOIN	structure_result f on emp.emp_result_id = f.emp_result_id
+					LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id 
+						AND air.level_id = g.appraisal_level_id
+						AND g.assessor_group_id = com.assessor_group_id
+					INNER JOIN assessor_group_structure ags on ags.structure_id = ai.structure_id
+						AND ags.assessor_group_id = '{$request->assessor_group_id}'
+					WHERE aps.form_id = 2
+					AND emp.emp_result_id = ?
+					AND 5 = ?
+					UNION ALL
+					SELECT DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url,
+						0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code, 
+						0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name, 
+						a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, a.score, a.threshold_group_id, 
+						a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id, 
+						c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score, a.structure_weight_percent
+					FROM appraisal_item_result a
+					LEFT OUTER JOIN appraisal_item b on a.item_id = b.item_id
+					INNER JOIN appraisal_item ai on ai.item_id = a.item_id
+					LEFT OUTER JOIN appraisal_structure c on b.structure_id = c.structure_id
+					LEFT OUTER JOIN form_type d on c.form_id = d.form_id
+					LEFT OUTER JOIN perspective e on b.perspective_id = e.perspective_id
+					LEFT OUTER JOIN structure_result f on a.emp_result_id = f.emp_result_id and c.structure_id = f.structure_id
+					LEFT OUTER JOIN appraisal_criteria g on c.structure_id = g.structure_id and a.level_id = g.appraisal_level_id
+					LEFT OUTER JOIN appraisal_level al on a.level_id = al.level_id
+					LEFT OUTER JOIN emp_result h on a.emp_result_id = h.emp_result_id
+					LEFT OUTER JOIN uom on  b.uom_id= uom.uom_id
+					INNER JOIN assessor_group_structure ags on ags.structure_id = b.structure_id and ags.assessor_group_id = ?
+					WHERE a.emp_result_id = ?
+					AND c.form_id = 2
+				) re
+				ORDER BY re.structure_id ASC, re.assessor_group_id ASC, re.assessor_id ASC,  re.item_id ASC"
+				,array($request->emp_result_id, $request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id)
+			);
+		} elseif($request->assessor_group_id == 1){
+			$check = DB::select("
+				SELECT count(competency_result_id) AS num
+				FROM competency_result c
+				INNER JOIN appraisal_item_result i ON c.item_result_id = i.item_result_id
+				INNER JOIN employee e ON c.assessor_id = e.emp_id
+				WHERE i.emp_result_id = '{$request->emp_result_id}'
+				AND assessor_group_id = '{$request->assessor_group_id}'
+				AND e.emp_code = '{$auth}'");
+
+			if($check[0]->num == 0){
+				$items = DB::select("
+					SELECT DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url,
+						0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, a.emp_id, emp.emp_code, 
+						gg.assessor_group_id, gg.assessor_group_name, emp.emp_id as assessor_id, c.is_value_get_zero, emp.emp_name, 
+						a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, 0 as score, a.threshold_group_id, 
+						a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id, 
+						c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score, a.structure_weight_percent
+					FROM appraisal_item_result a
+					LEFT OUTER JOIN appraisal_item b ON a.item_id = b.item_id
+					INNER JOIN appraisal_item ai ON ai.item_id = a.item_id
+					LEFT OUTER JOIN appraisal_structure c ON b.structure_id = c.structure_id
+					LEFT OUTER JOIN form_type d ON c.form_id = d.form_id
+					LEFT OUTER JOIN perspective e ON b.perspective_id = e.perspective_id
+					LEFT OUTER JOIN structure_result f ON a.emp_result_id = f.emp_result_id AND c.structure_id = f.structure_id
+					LEFT OUTER JOIN appraisal_level al ON a.level_id = al.level_id
+					LEFT OUTER JOIN emp_result h ON a.emp_result_id = h.emp_result_id
+					LEFT OUTER JOIN uom ON b.uom_id= uom.uom_id
+					LEFT OUTER JOIN assessor_group gg ON gg.assessor_group_id = '{$request->assessor_group_id}'
+					CROSS JOIN employee emp ON emp.emp_code = '{$auth}'
+					LEFT OUTER JOIN competency_criteria g ON c.structure_id = g.structure_id AND a.level_id = g.appraisal_level_id AND g.assessor_group_id = '{$request->assessor_group_id}'
+					INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id AND ags.assessor_group_id = '{$request->assessor_group_id}'
+					WHERE a.emp_result_id = '{$request->emp_result_id}'
+					AND c.form_id = 2
+					UNION ALL
+					SELECT * 
+					FROM (
+						SELECT DISTINCT com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id, 
+							ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id, 
+							com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
+							CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
+							com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
+							com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+							emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
+							0 as total_weigh_score, air.structure_weight_percent
+						FROM competency_result com
+						LEFT OUTER JOIN appraisal_level le on com.level_id = le.level_id
+						LEFT OUTER JOIN appraisal_item ai on com.item_id = ai.item_id
+						LEFT OUTER JOIN	appraisal_structure aps on ai.structure_id = aps.structure_id
+						LEFT OUTER JOIN	form_type ft on aps.form_id = ft.form_id
+						LEFT OUTER JOIN	assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+						LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
+						LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
+						LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
+						LEFT OUTER JOIN	structure_result f on emp.emp_result_id = f.emp_result_id
+						LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id 
+							AND air.level_id = g.appraisal_level_id
+							AND g.assessor_group_id = com.assessor_group_id
+						INNER JOIN assessor_group_structure ags on ags.structure_id = ai.structure_id
+							AND ags.assessor_group_id = '{$request->assessor_group_id}'
+						WHERE aps.form_id = 2
+						AND emp.emp_result_id = '{$request->emp_result_id}'
+						AND 1 = '{$request->assessor_group_id}'
+						UNION ALL
+						SELECT DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url,
+							0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code, 
+							0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name, 
+							a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, a.score, a.threshold_group_id, 
+							a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id, 
+							c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score, a.structure_weight_percent
+						FROM appraisal_item_result a
+						LEFT OUTER JOIN appraisal_item b on a.item_id = b.item_id
+						INNER JOIN appraisal_item ai on ai.item_id = a.item_id
+						LEFT OUTER JOIN appraisal_structure c on b.structure_id = c.structure_id
+						LEFT OUTER JOIN form_type d on c.form_id = d.form_id
+						LEFT OUTER JOIN perspective e on b.perspective_id = e.perspective_id
+						LEFT OUTER JOIN structure_result f on a.emp_result_id = f.emp_result_id and c.structure_id = f.structure_id
+						LEFT OUTER JOIN appraisal_criteria g on c.structure_id = g.structure_id and a.level_id = g.appraisal_level_id
+						LEFT OUTER JOIN appraisal_level al on a.level_id = al.level_id
+						LEFT OUTER JOIN emp_result h on a.emp_result_id = h.emp_result_id
+						LEFT OUTER JOIN uom on  b.uom_id= uom.uom_id
+						INNER JOIN assessor_group_structure ags on ags.structure_id = b.structure_id and ags.assessor_group_id = '{$request->assessor_group_id}'
+						WHERE a.emp_result_id = '{$request->emp_result_id}'
+						AND c.form_id = 2
+					) re
+					ORDER BY structure_id ASC, assessor_group_id ASC, assessor_id ASC,  item_id ASC");
+
+			} else {
+				$items = DB::select("
+					SELECT * 
+					FROM (
+						SELECT DISTINCT com.item_id, ai.item_name, ai.formula_desc, ai.structure_id, aps.structure_name, aps.form_id, 
+							ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id, 
+							com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
+							CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
+							com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
+							com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+							emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
+							0 as total_weigh_score, air.structure_weight_percent
+						FROM competency_result com
+						LEFT OUTER JOIN appraisal_level le on com.level_id = le.level_id
+						LEFT OUTER JOIN appraisal_item ai on com.item_id = ai.item_id
+						LEFT OUTER JOIN	appraisal_structure aps on ai.structure_id = aps.structure_id
+						LEFT OUTER JOIN	form_type ft on aps.form_id = ft.form_id
+						LEFT OUTER JOIN	assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+						LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
+						LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
+						LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
+						LEFT OUTER JOIN	structure_result f on emp.emp_result_id = f.emp_result_id
+						LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id 
+							AND air.level_id = g.appraisal_level_id
+							AND g.assessor_group_id = com.assessor_group_id
+						INNER JOIN assessor_group_structure ags on ags.structure_id = ai.structure_id
+							AND ags.assessor_group_id = '{$request->assessor_group_id}'
+						WHERE aps.form_id = 2
+						AND emp.emp_result_id = ?
+						AND 1 = ?
+						UNION ALL
+						SELECT DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url,
+							0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code, 
+							0 as assessor_group_id, 'ทั้งหมด' as assessor_group_name, '0' as assessor_id, c.is_value_get_zero, 'ทั้งหมด' as emp_name, 
+							a.org_id, a.position_id, a.level_id, a.chief_emp_id, a.target_value, a.score, a.threshold_group_id, 
+							a.weight_percent, 0 as group_weight_percent, a.weigh_score, a.percent_achievement, h.result_threshold_group_id, 
+							c.nof_target_score, al.no_weight, g.weight_percent total_weight_percent, f.weigh_score total_weigh_score, a.structure_weight_percent
+						FROM appraisal_item_result a
+						LEFT OUTER JOIN appraisal_item b on a.item_id = b.item_id
+						INNER JOIN appraisal_item ai on ai.item_id = a.item_id
+						LEFT OUTER JOIN appraisal_structure c on b.structure_id = c.structure_id
+						LEFT OUTER JOIN form_type d on c.form_id = d.form_id
+						LEFT OUTER JOIN perspective e on b.perspective_id = e.perspective_id
+						LEFT OUTER JOIN structure_result f on a.emp_result_id = f.emp_result_id and c.structure_id = f.structure_id
+						LEFT OUTER JOIN appraisal_criteria g on c.structure_id = g.structure_id and a.level_id = g.appraisal_level_id
+						LEFT OUTER JOIN appraisal_level al on a.level_id = al.level_id
+						LEFT OUTER JOIN emp_result h on a.emp_result_id = h.emp_result_id
+						LEFT OUTER JOIN uom on  b.uom_id= uom.uom_id
+						INNER JOIN assessor_group_structure ags on ags.structure_id = b.structure_id and ags.assessor_group_id = ?
+						WHERE a.emp_result_id = ?
+						AND c.form_id = 2
+					) re
+					ORDER BY re.structure_id ASC, re.assessor_group_id ASC, re.assessor_id ASC,  re.item_id ASC"
+					,array($request->emp_result_id, $request->assessor_group_id, $request->assessor_group_id, $request->emp_result_id)
+				);
+			}
+		} else {
 			$check = DB::select("select count(competency_result_id) as num
 				from competency_result c
 				inner join appraisal_item_result i on c.item_result_id = i.item_result_id
@@ -511,8 +695,6 @@ class AppraisalGroupController extends Controller
 				and assessor_group_id = ?
 				and e.emp_code = '{$auth}' "
 			,array($request->emp_result_id, $request->assessor_group_id));
-
-			// return ($auth);
 
 			if($check[0]->num == 0){
 				$items = DB::select("
@@ -890,6 +1072,35 @@ class AppraisalGroupController extends Controller
 			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
 			AND length(@pv := concat(@pv, ',', emp.emp_code))
 		"));
+	}
+
+
+	public function edit_action_to(Request $request)
+	{
+		$items = DB::select("
+			SELECT stage_id, to_action
+			FROM appraisal_stage 
+			WHERE from_stage_id = {$request->stage_id}
+			AND appraisal_flag = 1
+			AND appraisal_type_id = {$request->appraisal_type_id}
+			AND find_in_set({$request->appraisal_group_id}, assessor_see)
+		");
+
+
+		if (empty($items)) {
+			$workflow = WorkflowStage::find($request->stage_id);
+			empty($workflow->to_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->to_stage_id;
+			$items = DB::select("	
+				SELECT stage_id, to_action
+				FROM appraisal_stage
+				WHERE stage_id in ({$to_stage_id})
+				AND appraisal_flag = 1
+				AND appraisal_type_id = '{$request->appraisal_type_id}'
+				AND find_in_set('{$request->appraisal_group_id}', assessor_see)
+			");
+		}
+
+		return response()->json($items);
 	}
 }
 

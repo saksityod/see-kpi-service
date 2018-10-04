@@ -480,6 +480,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal/show/emp_result/type_2','Appraisal360degree\AppraisalGroupController@show_type2');
 	Route::patch('appraisal/update/type_2','Appraisal360degree\AppraisalGroupController@update');
 	Route::get('appraisal360/parameter/emp_level','Appraisal360degree\AppraisalGroupController@emp_level_list');
+	Route::post('appraisal360/edit_action_to','Appraisal360degree\AppraisalGroupController@edit_action_to');
+	Route::get('appraisal360/parameter/org_level_individual', 'Appraisal360degree\AppraisalGroupController@org_level_list_individual');
+	Route::get('appraisal360/parameter/org_individual', 'Appraisal360degree\AppraisalGroupController@org_individual');
 
 	
 	
