@@ -55,10 +55,17 @@ class AppraisalAssignmentController extends Controller
 
 	public function appraisal_type_list()
 	{
+		$config = SystemConfiguration::firstOrFail();
+		if($config->entity_type_resorting == 1){
+			$orderby = 'ASC';
+		}else{
+			$orderby = 'DESC';
+		}
+
 		$items = DB::select("
 			Select appraisal_type_id, appraisal_type_name
 			From appraisal_type
-			Order by appraisal_type_id DESC
+			Order by appraisal_type_id {$orderby}
 			");
 		return response()->json($items);
 	}
