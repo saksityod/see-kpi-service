@@ -597,27 +597,28 @@ class QuestionaireDataController extends Controller
 
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
+		$between_date = "
+			AND qdh.questionaire_date = (
+				SELECT MAX(qdhh.questionaire_date) questionaire_date
+				FROM questionaire_data_header qdhh
+				WHERE qdhh.emp_snapshot_id = qdh.emp_snapshot_id
+		";
+
+		if(empty($request->start_date) && empty($request->end_date)) {
+			$between_date .= " )";
+		} else if(empty($request->start_date)) {
+			$between_date .= " AND qdhh.questionaire_date BETWEEN '' AND '{$request->end_date}' )";
+		} else if(empty($request->end_date)) {
+			$between_date .= " AND qdhh.questionaire_date >= '{$request->start_date}' )";
+		} else {
+			$between_date .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
+		}
+
 		$all_emp = $this->all_emp();
 
 		if ($all_emp[0]->count_no > 0) {
 			$level = "";
-			$assessor = "
-				AND qdh.questionaire_date = (
-					SELECT MAX(qdhh.questionaire_date) questionaire_date
-					FROM questionaire_data_header qdhh
-					WHERE qdhh.emp_snapshot_id = qdh.emp_snapshot_id
-			";
-
-			if(empty($request->start_date) && empty($request->end_date)) {
-				$assessor .= " )";
-			} else if(empty($request->start_date)) {
-				$assessor .= " AND qdhh.questionaire_date BETWEEN '' AND '{$request->end_date}' )";
-			} else if(empty($request->end_date)) {
-				$assessor .= " AND qdhh.questionaire_date >= '{$request->start_date}' )";
-			} else {
-				$assessor .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
-			}
-			// $assessor = "";
+			$assessor = "";
 		} else {
 			$assessor_id = $this->get_emp_snapshot();
 
@@ -635,6 +636,7 @@ class QuestionaireDataController extends Controller
 			INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
 			INNER JOIN questionaire_type qt ON qt.questionaire_type_id = qn.questionaire_type_id
 			WHERE qn.questionaire_type_id = '{$request->questionaire_type_id}'
+			".$between_date."
 			".$assessor."
 			".$emp_snapshot_id."
 			GROUP BY qdh.data_stage_id
@@ -648,6 +650,7 @@ class QuestionaireDataController extends Controller
 			INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
 			INNER JOIN questionaire_type qt ON qt.questionaire_type_id = qn.questionaire_type_id
 			WHERE qn.questionaire_type_id = '{$request->questionaire_type_id}'
+			".$between_date."
 			".$assessor."
 			".$emp_snapshot_id."
 			ORDER BY qdh.data_stage_id
