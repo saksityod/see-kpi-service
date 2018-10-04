@@ -65,7 +65,7 @@ class QuestionaireDataController extends Controller
     	}
     }
 
-    function role_authorize($stage_id, $data_header_id) {
+    function check_permission($stage_id, $data_header_id) {
         $assessor = $this->get_emp_snapshot();
         $emp_code = Auth::id();
 
@@ -81,17 +81,11 @@ class QuestionaireDataController extends Controller
         ");
 
     	if(empty($data)) {
-    		return [
-    			'view_comment_flag' => 0
-    		];
-    	} else {
-    		return [
-    			'view_comment_flag' => $data[0]->view_comment_flag
-    		];
+    		exit(json_encode(['status' => 401, 'data' => 'Permission Fail']));
     	}
     }
 
-    function send_email($config, $from_stage_id, $to_stage_id, $data_header_id, $assessor_id, $status) {
+    function send_email($config, $to_stage_id, $data_header_id, $assessor_id, $status) {
     	Config::set('mail.driver',$config->mail_driver);
 		Config::set('mail.host',$config->mail_host);
 		Config::set('mail.port',$config->mail_port);
@@ -100,7 +94,7 @@ class QuestionaireDataController extends Controller
 		Config::set('mail.password',$config->mail_password);
 		$from = Config::get('mail.from');
 
-		$stage_email = Stage::select("send_email_flag")->where("stage_id", $from_stage_id)->first();
+		$stage_email = Stage::select("send_email_flag")->where("stage_id", $to_stage_id)->first();
 
 		if($stage_email->send_email_flag==1) {
 			try {
@@ -315,13 +309,18 @@ class QuestionaireDataController extends Controller
 			SELECT es.emp_snapshot_id, 
 					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name, 
 					es.distributor_name,
-					CONCAT(chief.emp_first_name, ' ', chief.emp_last_name) chief_emp_name,
+					#CONCAT(chief.emp_first_name, ' ', chief.emp_last_name) chief_emp_name,
+					(
+					 SELECT CONCAT(am.emp_first_name, ' ', am.emp_last_name)
+					 FROM employee_snapshot am
+					 WHERE am.emp_snapshot_id = '{$this->get_emp_snapshot()->emp_snapshot_id}'
+					) chief_emp_name,
 					p.position_code,
 					es.emp_code
 			FROM employee_snapshot es
 			INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
 			INNER JOIN position p ON p.position_id = es.position_id
-			LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
+			#LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
 			WHERE (
 				es.emp_first_name LIKE '%{$emp_name}%'
 				OR es.emp_last_name LIKE '%{$emp_name}%'
@@ -669,7 +668,8 @@ class QuestionaireDataController extends Controller
 						qdh.questionaire_id,
 						qn.questionaire_type_id,
 						qdh.questionaire_date,
-						p.position_code, 
+						p.position_code,
+						qdh.assessor_id,
 						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
 						ifnull(rsa.edit_flag, 0) edit_flag, 
 						ifnull(rsa.delete_flag, 0) delete_flag, 
@@ -797,7 +797,7 @@ class QuestionaireDataController extends Controller
 
 		$stage = [];
 
-		$role = (object)[];
+		// $role = (object)[];
 
         $actions = $this->check_action($current_stage->stage_id, $level);
 
@@ -806,8 +806,8 @@ class QuestionaireDataController extends Controller
 			'data' => $sub_items, 
 			'stage' => $stage, 
 			'current_stage' => $current_stage, 
-			'to_stage' => $actions,
-			'role' => $role
+			'to_stage' => $actions
+			// 'role' => $role
 		]);
 	}
 
@@ -823,14 +823,17 @@ class QuestionaireDataController extends Controller
 			es.emp_snapshot_id,
 			CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name, 
 			es.distributor_name,
-			CONCAT(chief.emp_first_name, ' ', chief.emp_last_name) chief_emp_name,
+			#CONCAT(chief.emp_first_name, ' ', chief.emp_last_name) chief_emp_name,
+			qdh.assessor_id,
+			CONCAT(ases.emp_first_name, ' ', ases.emp_last_name) chief_emp_name,
 			p.position_code,
 			q.questionaire_type_id,
 			q.questionaire_id,
 			q.questionaire_name
 			FROM questionaire_data_header qdh
 			LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
+			#LEFT JOIN employee_snapshot chief ON chief.emp_code = es.chief_emp_code
+			LEFT JOIN employee_snapshot ases ON ases.emp_snapshot_id = qdh.assessor_id
 			LEFT JOIN position p ON p.position_id = es.position_id
 			INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
 			WHERE qdh.data_header_id = {$request->data_header_id}
@@ -1015,7 +1018,7 @@ class QuestionaireDataController extends Controller
 		$level = $this->get_emp_snapshot();
 		$current_stage = DB::table("stage")->select("stage_id")->where("stage_id", $data_header->data_stage_id)->first();
 
-		$role = $this->role_authorize($data_header->data_stage_id, $data_header->data_header_id);
+		$this->check_permission($data_header->data_stage_id, $data_header->data_header_id);
         
         $actions = $this->check_action($current_stage->stage_id, $level);
 
@@ -1024,8 +1027,8 @@ class QuestionaireDataController extends Controller
 			'data' => $sub_items, 
 			'stage' => $stage, 
 			'current_stage' => $current_stage,
-			'to_stage' => $actions,
-			'role' => $role
+			'to_stage' => $actions
+			// 'role' => $role
 		]);
 	}
 
@@ -1158,7 +1161,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
+			$errors[] = $this->send_email($config, $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
@@ -1304,7 +1307,7 @@ class QuestionaireDataController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
 
 		if($status==200) {
-			$errors[] = $this->send_email($config, $request->stage['from_stage_id'], $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
+			$errors[] = $this->send_email($config, $request->stage['to_stage_id'], $h->data_header_id, $h->assessor_id, $s->status);
 		}
 
         return response()->json(['status' => $status, 'errors' => $errors]);
