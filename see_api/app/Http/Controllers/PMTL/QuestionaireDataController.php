@@ -12,6 +12,7 @@ use App\Stage;
 use App\SystemConfiguration;
 use App\Customer;
 use App\QuestionaireType;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -99,7 +100,7 @@ class QuestionaireDataController extends Controller
 		Config::set('mail.password',$config->mail_password);
 		$from = Config::get('mail.from');
 
-		$stage_email = DB::table("stage")->select("send_email_flag")->where("stage_id", $from_stage_id)->first();
+		$stage_email = Stage::select("send_email_flag")->where("stage_id", $from_stage_id)->first();
 
 		if($stage_email->send_email_flag==1) {
 			try {
@@ -126,7 +127,7 @@ class QuestionaireDataController extends Controller
 				];
 
 				// $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
-				$to = ['thawatchai@goingjesse.com'];
+				$to = ['thawatchai@goingjesse.com', 'chokanan@goingjesse.com'];
 
 				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
 				{
@@ -212,8 +213,7 @@ class QuestionaireDataController extends Controller
     	}
     }
 
-    function check_action($current_stage_id) {
-    	$level = $this->get_emp_snapshot();
+    function check_action($current_stage_id, $level) {
         $check_button = DB::select("
             SELECT lsa.add_flag, 
             		lsa.edit_flag, 
@@ -618,6 +618,7 @@ class QuestionaireDataController extends Controller
 			} else {
 				$assessor .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
 			}
+			// $assessor = "";
 		} else {
 			$assessor_id = $this->get_emp_snapshot();
 
@@ -786,13 +787,19 @@ class QuestionaireDataController extends Controller
 			}
 		}
 
-		$current_stage = DB::table("stage")->select("stage_id")->where("stage_id", 1)->first();
+		try {
+			$level = $this->get_emp_snapshot();
+			$default_stage_id = AppraisalLevel::find($level->level_id)->default_stage_id;
+			$current_stage = Stage::findOrFail($default_stage_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Stage not found.']);
+		}
 
 		$stage = [];
 
 		$role = (object)[];
 
-        $actions = $this->check_action($current_stage->stage_id);
+        $actions = $this->check_action($current_stage->stage_id, $level);
 
 		return response()->json([
 			'head' => $head, 
@@ -1005,11 +1012,12 @@ class QuestionaireDataController extends Controller
 			WHERE data_header_id = '{$request->data_header_id}'
 			");
 
+		$level = $this->get_emp_snapshot();
 		$current_stage = DB::table("stage")->select("stage_id")->where("stage_id", $data_header->data_stage_id)->first();
 
 		$role = $this->role_authorize($data_header->data_stage_id, $data_header->data_header_id);
         
-        $actions = $this->check_action($current_stage->stage_id);
+        $actions = $this->check_action($current_stage->stage_id, $level);
 
 		return response()->json([
 			'head' => $head, 
