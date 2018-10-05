@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_base"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="org_id" class="java.lang.String"/>
 	<parameter name="appraisal_type_id" class="java.lang.String"/>
@@ -10,6 +10,7 @@
 	<parameter name="subreport_path" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT lev.level_id
+, CASE WHEN sys.threshold = 1 THEN "Report KPI org threshold.jasper" ELSE "Report KPI org.jasper" END as threshold
 , lev.appraisal_level_name as level
 , org.org_id
 , org.org_code
@@ -37,6 +38,7 @@ from (
 		AND org2.level_id = air.level_id
 	)total 
 	group by total.org_id) stuc ON org.org_id = stuc.org_id 
+cross join system_config sys
 WHERE (org.org_id IN( $P!{org_id} ) )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 ) 
@@ -53,6 +55,9 @@ ORDER BY  lev.level_id ASC
 	<field name="level_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="threshold" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="threshold"/>
 	</field>
 	<field name="level" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="level"/>
@@ -75,7 +80,6 @@ ORDER BY  lev.level_id ASC
 	</field>
 	<field name="grade" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="grade"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 	</field>
 	<field name="appraisal_type_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_type_id"/>
@@ -83,7 +87,6 @@ ORDER BY  lev.level_id ASC
 	</field>
 	<field name="result_score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 	</field>
 	<field name="one" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="one"/>
@@ -296,7 +299,7 @@ ORDER BY  lev.level_id ASC
 					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/Report KPI org.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/"+$F{threshold}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
