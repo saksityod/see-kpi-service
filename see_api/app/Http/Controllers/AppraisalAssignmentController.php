@@ -17,6 +17,7 @@ use App\Org;
 use App\SystemConfiguration;
 use App\Phase;
 use App\ActionPlan;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -1014,6 +1015,9 @@ class AppraisalAssignmentController extends Controller
 
 	    public function status_list(Request $request)
 	    {
+			$cu = Employee::find(Auth::id());
+			$co = Org::find($cu->org_id);
+			
 	    	$all_emp = DB::select("
 				SELECT sum(b.is_all_employee) count_no
 				from employee a
@@ -1127,48 +1131,25 @@ class AppraisalAssignmentController extends Controller
 						select 'Unassigned' to_action, 'Unassigned' status
 			    	");
 				} else {
-					if( ! empty($request->org_id)){
-						$getOrg = Org::find($request->org_id);
-						$items = DB::select("
-							select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-							From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
-							Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
-							And er.emp_result_id = ir.emp_result_id
-							and ir.item_id = I.item_id
-							and er.period_id = p.period_id
-							and o.level_id = al.level_id
-							and er.stage_id = ast.stage_id
-							".$org_level."
-							".$org_id."
-							".$period_id."
-							".$appraisal_frequency_id."
-							".$appraisal_year."
-							".$appraisal_type_id."
-							and (o.org_id = '{$getOrg->org_code}' or o.parent_org_code = '{$getOrg->org_code}')
-							union all
-							select 'Unassigned' to_action, 'Unassigned' status
-						");
-					} else {
-						$items = DB::select("
-							select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
-							From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
-							Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
-							And er.emp_result_id = ir.emp_result_id
-							and ir.item_id = I.item_id
-							and er.period_id = p.period_id
-							and o.level_id = al.level_id
-							and er.stage_id = ast.stage_id
-							".$org_level."
-							".$org_id."
-							".$period_id."
-							".$appraisal_frequency_id."
-							".$appraisal_year."
-							".$appraisal_type_id."
-							union all
-							select 'Unassigned' to_action, 'Unassigned' status
-						");
-					}
-					
+					$items = DB::select("
+			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
+						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
+	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+	    				And er.emp_result_id = ir.emp_result_id
+	    				and ir.item_id = I.item_id
+	    				and er.period_id = p.period_id
+	    				and o.level_id = al.level_id
+	    				and er.stage_id = ast.stage_id
+						".$org_level."
+						".$org_id."
+						".$period_id."
+						".$appraisal_frequency_id."
+						".$appraisal_year."
+						".$appraisal_type_id."
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
+						union all
+						select 'Unassigned' to_action, 'Unassigned' status
+			    	");
 				}
 				// $items = DB::select("
 		  //   		select CONCAT(to_action,'-',from_action) to_action, CONCAT(to_action,' (',from_action,')') status
@@ -1184,6 +1165,9 @@ class AppraisalAssignmentController extends Controller
 
 	    public function index(Request $request)
 	    {
+		$cu = Employee::find(Auth::id());
+		$co = Org::find($cu->org_id);
+		
 	    	$all_emp = DB::select("
 	    		SELECT sum(b.is_all_employee) count_no
 	    		from employee a
@@ -1299,7 +1283,8 @@ class AppraisalAssignmentController extends Controller
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
-	    				Where o.is_active = 1
+	    				Where o.is_active = 1 
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				";
 					//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
 	    				empty($request->org_id) ?: ($query_unassign .= " and o.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1351,6 +1336,7 @@ class AppraisalAssignmentController extends Controller
 	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						and (a.org_code = '{$co->org_code}' or a.parent_org_code = '{$co->org_code}')
 	    				And er.emp_result_id = ir.emp_result_id
 	    				and ir.item_id = I.item_id
 	    				and er.period_id = p.period_id
@@ -1485,6 +1471,7 @@ class AppraisalAssignmentController extends Controller
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
 	    				Where o.is_active = 1
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				";
 					//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
 	    				empty($request->org_id) ?: ($query_unassign .= " and o.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1536,6 +1523,7 @@ class AppraisalAssignmentController extends Controller
 	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				And er.emp_result_id = ir.emp_result_id
 	    				and ir.item_id = I.item_id
 	    				and er.period_id = p.period_id
@@ -2781,6 +2769,7 @@ class AppraisalAssignmentController extends Controller
 			if ($i['select_flag'] == 1) {
 				if ($i['form_id'] == 1) {
 					$aitem = AppraisalItemResult::find($i['item_result_id']);
+					$noweight = AppraisalLevel::find($level_id);
 					if (empty($aitem)) {
 						$aitem = new AppraisalItemResult;
 						$aitem->org_id = $org_id;
@@ -2844,7 +2833,7 @@ class AppraisalAssignmentController extends Controller
 									|| $aitem->score5!=$i['score5']
 									//|| $aitem->forecast_value!=$i['forecast_value']
 									|| $aitem->target_value!=$i['target_value']
-									|| ($aitem->weight_percent!=$i['weight_percent'] && $config->no_weight!=1)) {
+									|| ($aitem->weight_percent!=$i['weight_percent'] && $noweight->no_weight==0)) {
 										
 									$aitemlog = new AppraisalItemResultLog;
 									$aitemlog->org_id = $aitem->org_id;
@@ -2986,7 +2975,7 @@ class AppraisalAssignmentController extends Controller
 					}else {
 						if($config->item_result_log == 1 &&
 						( $aitem->target_value != $i['target_value']
-						|| ($aitem->weight_percent != $i['weight_percent']&& $config->no_weight!=1))
+						|| ($aitem->weight_percent != $i['weight_percent']&& $noweight->no_weight==0))
 						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
