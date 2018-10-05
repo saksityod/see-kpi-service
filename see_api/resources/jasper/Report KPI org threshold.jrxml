@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_base"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="one" class="java.lang.Integer"/>
 	<parameter name="level_id" class="java.lang.Integer"/>
@@ -44,9 +44,9 @@ FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
-LEFT JOIN structure_result str ON str.emp_id = air.emp_id
-	 AND str.period_id = air.period_id
+LEFT JOIN structure_result str ON  str.period_id = air.period_id
 	 AND str.structure_id = api.structure_id
+	 AND air.emp_result_id = str.emp_result_id
 CROSS JOIN system_config sc
 WHERE  air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
