@@ -2844,7 +2844,7 @@ class AppraisalAssignmentController extends Controller
 									|| $aitem->score5!=$i['score5']
 									//|| $aitem->forecast_value!=$i['forecast_value']
 									|| $aitem->target_value!=$i['target_value']
-									|| $aitem->weight_percent!=$i['weight_percent']) {
+									|| ($aitem->weight_percent!=$i['weight_percent'] && $config->no_weight!=1)) {
 										
 									$aitemlog = new AppraisalItemResultLog;
 									$aitemlog->org_id = $aitem->org_id;
@@ -2986,7 +2986,7 @@ class AppraisalAssignmentController extends Controller
 					}else {
 						if($config->item_result_log == 1 &&
 						( $aitem->target_value != $i['target_value']
-						|| $aitem->weight_percent != $i['weight_percent'])
+						|| ($aitem->weight_percent != $i['weight_percent']&& $config->no_weight!=1))
 						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
