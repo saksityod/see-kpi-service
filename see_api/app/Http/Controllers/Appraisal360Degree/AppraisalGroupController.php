@@ -83,7 +83,8 @@ class AppraisalGroupController extends Controller
 	}
 
 
-	public function org_level_list_individual(Request $request){
+	public function org_level_list_individual(Request $request)
+	{
 		$AuthEmpCode = Auth::id();
 		$result = DB::select("
 			SELECT DISTINCT org.level_id, vel.appraisal_level_name,
@@ -113,7 +114,8 @@ class AppraisalGroupController extends Controller
 	}
 
 
-	public function org_individual(Request $request){
+	public function org_individual(Request $request)
+	{
 		$AuthEmpCode = Auth::id();
 		$result = DB::select("
 			SELECT org.org_id, org.org_name,
@@ -1001,16 +1003,8 @@ class AppraisalGroupController extends Controller
 		$assGroupId = 0; 
 		$assGroupName = "";
 
-		$allChiefEmpOfAuth = $this->GetallChiefEmp($searchEmpCode);
-		$allUnderEmpOfAuth = $this->GetallUnderEmp($searchEmpCode);
-
-		$isChief = $allChiefEmpOfAuth->filter(function ($emp) use ($loginEmpCode){
-			return $emp->emp_code == $loginEmpCode;
-		});
-
-		$isUnder = $allUnderEmpOfAuth->filter(function ($emp) use ($loginEmpCode){
-			return $emp->emp_code == $loginEmpCode;
-		});
+		$isChief = $this->GetallChiefEmp($searchEmpCode)->contains($loginEmpCode);
+		$isUnder = $this->GetallUnderEmp($searchEmpCode)->contains($loginEmpCode);
 
 		$loginEmpLevel = collect(DB::select("
 			SELECT is_all_employee, is_hr 
@@ -1025,53 +1019,81 @@ class AppraisalGroupController extends Controller
 		if($loginEmpLevel != null){
 			if($loginEmpLevel->is_all_employee == 1 || $loginEmpLevel->is_hr == 1){
 				$assGroupId = 5;
-			} elseif ( ! $isChief->isEmpty()){
+			} elseif ($isChief){
 				$assGroupId = 1;
-			} elseif ( ! $isUnder->isEmpty()){
+			} elseif ($isUnder){
 				$assGroupId = 2;
 			} elseif ($loginEmpCode == $searchEmpCode) {
 				$assGroupId = 4;
 			} else {
 				$assGroupId = 3;
 			}
-		}		
+		}
 
 		return AssessorGroup::find($assGroupId);
 	}
 
 	private function GetallChiefEmp($paramEmp)
 	{
-		return collect(DB::select("
-			SELECT 
-				emp.emp_code
-			FROM (
-				SELECT emp_code, chief_emp_code
+		$chiefEmpCollect = collect([]);
+
+		$initChiefEmp = DB::select("
+			SELECT chief_emp_code
+			FROM employee
+			WHERE emp_code = '{$paramEmp}'
+		");
+		$chiefEmpCollect->push($initChiefEmp[0]->chief_emp_code);
+		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
+
+		while ($curChiefEmp != "0") {
+			$getChief = DB::select("
+				SELECT chief_emp_code
 				FROM employee
-				ORDER BY chief_emp_code desc, emp_code desc
-			) emp, 
-			(
-				SELECT @pv := chief_emp_code
-				FROM employee 
-				WHERE emp_code = '{$paramEmp}'
-			) init
-			WHERE find_in_set(emp.emp_code, CONVERT(@pv USING utf8))
-			AND length(@pv := concat(@pv, ',', emp.chief_emp_code))
-		"));
+				WHERE emp_code = '{$curChiefEmp}'
+			");
+
+			if($chiefEmpCollect->contains($getChief[0]->chief_emp_code)){
+				$curChiefEmp = "0";
+			} else {
+				$chiefEmpCollect->push($getChief[0]->chief_emp_code);
+				$curChiefEmp = $getChief[0]->chief_emp_code;
+			}
+		} 
+		
+		return $chiefEmpCollect;
 	}
 
 	private function GetallUnderEmp($paramEmp)
 	{
-		return collect(DB::select("
-			SELECT 
-				emp.emp_code
-			FROM (
-				SELECT emp_code, chief_emp_code
+		$globalEmpCodeSet = "";
+		$inLoop = true;
+		$loopCnt = 1;
+
+		while ($inLoop){
+			if($loopCnt == 1){
+				$LoopEmpCodeSet = $paramEmp.",";
+			}
+			
+			// Check each under //
+			$eachUnder = DB::select("
+				SELECT emp_code
 				FROM employee
-				ORDER BY chief_emp_code, emp_code
-			) emp, (select @pv := '{$paramEmp}') init
-			WHERE find_in_set(emp.chief_emp_code, CONVERT(@pv USING utf8))
-			AND length(@pv := concat(@pv, ',', emp.emp_code))
-		"));
+				WHERE find_in_set(chief_emp_code, '{$LoopEmpCodeSet}')
+			");
+
+			if(empty($eachUnder)){
+				$inLoop = false;
+			} else {
+				$LoopEmpCodeSet = "";
+				foreach ($eachUnder as $emp) {
+					$LoopEmpCodeSet .= $emp->emp_code.",";
+				}
+				$globalEmpCodeSet .= $LoopEmpCodeSet;
+			}
+			$loopCnt = $loopCnt + 1;
+		}
+		
+		return collect(explode(',', $globalEmpCodeSet));
 	}
 
 

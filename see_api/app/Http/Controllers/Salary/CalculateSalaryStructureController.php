@@ -25,7 +25,7 @@ class CalculateSalaryStructureController extends Controller
 {
     public function __construct()
 	{
-	   //$this->middleware('jwt.auth');
+	   $this->middleware('jwt.auth');
     }
 
 
@@ -74,10 +74,10 @@ class CalculateSalaryStructureController extends Controller
      *          2.3.2 ผ่านการประเมิณเพียงแค่บาง Item ที่อยู่ภายใต้ Struc
      *              - ไม่ปรับเงินเดือน
      *          2.3.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc 
-     *              2.3.3.1 ตรวจสอบว่า appraisal_structure.is_no_raise_value (ต้องผ่านการพิจารณาหรือไม่)
-     *                  2.3.3.1.1 กรณี is_no_raise_value = 0 (ไม่ต้องผ่านการพิจารณา)
+     *              2.3.3.1 ตรวจสอบว่า appraisal_grade.is_judgement (ต้องผ่านการพิจารณาหรือไม่)
+     *                  2.3.3.1.1 กรณี is_judgement = 0 (ไม่ต้องผ่านการพิจารณา)
      *                      - ปรับเงินเดือน Raise Step
-     *                  2.3.3.1.2 กรณี is_no_raise_value = 1 (จำเป็นต้องผ่านการพิจารณา)
+     *                  2.3.3.1.2 กรณี is_judgement = 1 (จำเป็นต้องผ่านการพิจารณา)
      *                      - บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result
      * 3. ปรับเงินเดือน (สั่งงานจากหน้า Judgement)
      *      3.1 ดึง emp judgement_status = 2-พิจารณาแล้ว 
@@ -102,7 +102,7 @@ class CalculateSalaryStructureController extends Controller
         $calgrade = $this->GradeCalculate($periodInfo);
         if ($calgrade->status == 404) {
             return response()->json(["status"=>$gradeResult->status, "data"=>$gradeResult->data]);
-        }
+        } 
         
         // 2. ทำการปรับเงินเดือน //
         // 2.1 ค้นหา emp ที่ได้ Grade ที่ไม่มี Struc (Step-1) และทำการปรับเงินเดือน //
@@ -192,7 +192,7 @@ class CalculateSalaryStructureController extends Controller
                     AND grade.position_id = empr.position_id
                     AND grade.level_id = empr.level_id
                 LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = grade.result_grade
-                SET 
+                SET
                     empr.salary_grade_id = grade.result_grade,
                     empr.grade = ag.grade,
                     empr.updated_by = '{$authId}',
@@ -292,13 +292,12 @@ class CalculateSalaryStructureController extends Controller
                     // Do not thing //
                 } else { 
                     // 2.3.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc //
-                    // 2.3.3.1 ตรวจสอบว่า appraisal_structure.is_no_raise_value (ต้องผ่านการพิจารณาหรือไม่) //
-                    $appraisalStructure = AppraisalStructure::find($grade->structure_id);
-                    if($appraisalStructure->is_no_raise_value == 0){
-                        // 2.3.3.1.1 กรณี is_no_raise_value = 0 (ไม่ต้องผ่านการพิจารณา) - ปรับเงินเดือน //
+                    // 2.3.3.1 ตรวจสอบว่า appraisal_grade.is_judgement (ต้องผ่านการพิจารณาหรือไม่) //
+                    if($grade->is_judgement == 0){
+                        // 2.3.3.1.1 กรณี is_judgement = 0 (ไม่ต้องผ่านการพิจารณา) - ปรับเงินเดือน //
                         $empLog[] = $this->RaiseUp($periodInfo, $grade, $emp);
                     } else {
-                        // 2.3.3.1.2 กรณี is_no_raise_value = 1 (จำเป็นต้องผ่านการพิจารณา) //
+                        // 2.3.3.1.2 กรณี is_judgement = 1 (จำเป็นต้องผ่านการพิจารณา) //
                         // บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result //
                         EmpResult::where("emp_result_id", $emp->emp_result_id)->update(["judgement_status_id" => 1]);
                         $empLog[] = [
