@@ -108,10 +108,10 @@ class AppraisalCommentController extends Controller
 				if($isUseritems->count() == 0){					
 					$nullCommment = collect(DB::select("
 						select  0 as opinion_id
-						, ? as emp_result_id -- ?
+						, ? as emp_result_id
 						, emp_id
 						, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
-						, ? as assessor_group_id -- ?
+						, ? as assessor_group_id
 						, 'no' as comment
 						, '' as assessor_strength_opinion
 						, '' as assessor_weakness_opinion
@@ -119,57 +119,12 @@ class AppraisalCommentController extends Controller
 						, '' as emp_weakness_opinion
 						from employee
 						cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
-						where emp_code = ? "
-					, array($request->emp_result_id, $request->emp_result_id, $request->assessor_group_id
-					, $request->assessor_group_id, Auth::id())));
+						where emp_code = ?"
+						,array($request->emp_result_id, $request->emp_result_id, $request->group_id, $request->group_id, Auth::id())
+					));
 
 					$items = $items->merge($nullCommment);
 				}
-
-				// $existsComment = collect(DB::select("
-				// 	SELECT ao.opinion_id
-				// 	, ao.emp_result_id
-				// 	, em.emp_id
-				// 	, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
-				// 	, ag.assessor_group_id
-				// 	, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
-				// 	THEN 'yes' ELSE 'no' END) AS comment
-				// 	, ao.assessor_strength_opinion
-				// 	, ao.assessor_weakness_opinion
-				// 	, ao.emp_strength_opinion
-				// 	, ao.emp_weakness_opinion
-				// 	-- , 'other' as user
-				// 	FROM assessment_opinion ao
-				// 	INNER JOIN employee em ON ao.assessor_id = em.emp_id
-				// 	INNER JOIN assessor_group ag ON ao.assessor_group_id = ag.assessor_group_id
-				// 	WHERE ao.emp_result_id = ?
-				// 	AND em.emp_code = ?
-				// 	ORDER BY ag.assessor_group_id ASC, em.emp_id ASC
-				// ",array($request->emp_result_id, Auth::id())));
-
-				// if(empty($existsComment[0]->opinion_id)){
-				// 	$nullCommment = collect(DB::select("
-				// 		select  0 as opinion_id
-				// 		, ? as emp_result_id -- ?
-				// 		, emp_id
-				// 		, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
-				// 		, ? as assessor_group_id -- ?
-				// 		, 'no' as comment
-				// 		, '' as assessor_strength_opinion
-				// 		, '' as assessor_weakness_opinion
-				// 		, '' as emp_strength_opinion
-				// 		, '' as emp_weakness_opinion
-				// 		-- , 'other' as user
-				// 		from employee
-				// 		cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
-				// 		where emp_code = ? "
-				// 	, array($request->emp_result_id, $request->emp_result_id, $request->assessor_group_id
-				// 	, $request->assessor_group_id, Auth::id())));
-
-				// 	$items = $items->merge($nullCommment);
-				// } else {
-				// 	$items = $items->merge($existsComment);
-				// }
 
 				$user = 'admin';
 
@@ -190,7 +145,6 @@ class AppraisalCommentController extends Controller
 					, ao.assessor_weakness_opinion
 					, ao.emp_strength_opinion
 					, ao.emp_weakness_opinion
-					-- , 'my' as user
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
 					INNER JOIN assessor_group ag ON ao.assessor_group_id = ag.assessor_group_id
@@ -229,21 +183,20 @@ class AppraisalCommentController extends Controller
 				if(empty($items[0]->opinion_id)){
 					$items = DB::select("
 						select  0 as opinion_id
-						, ? as emp_result_id -- ?
+						, ? as emp_result_id
 						, emp_id
 						, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
-						, ? as assessor_group_id -- ?
+						, ? as assessor_group_id
 						, 'no' as comment
 						, '' as assessor_strength_opinion
 						, '' as assessor_weakness_opinion
 						, '' as emp_strength_opinion
 						, '' as emp_weakness_opinion
-						-- , 'other' as user
 						from employee
 						cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
 						where emp_code = ? "
-					, array($request->emp_result_id, $request->emp_result_id, $request->assessor_group_id
-					, $request->assessor_group_id, Auth::id()));
+					, array($request->emp_result_id, $request->emp_result_id, $request->group_id
+					, $request->group_id, Auth::id()));
 				}
 
 				$user = 'other';
