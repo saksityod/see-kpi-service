@@ -499,7 +499,7 @@ class AppraisalGroupController extends Controller
 						com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
 						CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
 						com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
-						com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+						air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
 						emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
 						0 as total_weigh_score, air.structure_weight_percent
 					FROM competency_result com
@@ -587,7 +587,7 @@ class AppraisalGroupController extends Controller
 							com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
 							CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
 							com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
-							com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+							air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
 							emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
 							0 as total_weigh_score, air.structure_weight_percent
 						FROM competency_result com
@@ -607,7 +607,6 @@ class AppraisalGroupController extends Controller
 							AND ags.assessor_group_id = '{$request->assessor_group_id}'
 						WHERE aps.form_id = 2
 						AND emp.emp_result_id = '{$request->emp_result_id}'
-						AND 1 = '{$request->assessor_group_id}'
 						UNION ALL
 						SELECT DISTINCT b.item_id, b.item_name, b.formula_desc, b.structure_id, c.structure_name, d.form_id, d.form_name, d.app_url,
 							0 as competency_result_id, a.item_result_id, a.emp_result_id, a.period_id, 0 as emp_id, 'ALL' as emp_code, 
@@ -641,7 +640,7 @@ class AppraisalGroupController extends Controller
 							com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
 							CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
 							com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
-							com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+							air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
 							emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent, 
 							0 as total_weigh_score, air.structure_weight_percent
 						FROM competency_result com
@@ -750,7 +749,7 @@ class AppraisalGroupController extends Controller
 					, com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero
 					, CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name
 					, com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id
-					, com.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, air.structure_weight_percent
+					, air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, air.structure_weight_percent
 					, emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, g.weight_percent total_weight_percent
 					, 0 as total_weigh_score
 					from competency_result com
@@ -889,24 +888,6 @@ class AppraisalGroupController extends Controller
 					}
 				}
 			}
-
-			// $key = $item->structure_name;
-			// if (!isset($groups[$key])) {
-			// 	$groups[$key] = array(
-			// 		'items' => array($item),
-			// 		'count' => 1,
-			// 		'form_id' => $item->form_id,
-			// 		'form_url' => $item->app_url,
-			// 		'structure_name' => $item->structure_name,
-			// 		'group_name' => $item->assessor_group_name,
-			// 		'group_id' => $item->assessor_group_id,
-			// 		'hint' => $hint,
-			// 		'total_weigh_score' => $item->total_weigh_score,
-			// 	);
-			// } else {
-			// 	$groups[$key]['items'][] = $item;
-			// 	$groups[$key]['count'] += 1;
-			// }
 		}
 
 		return response()->json($groups);
@@ -983,6 +964,7 @@ class AppraisalGroupController extends Controller
 						$competency->created_dttm = $now;
 						$competency->save();
 					}
+					$competency->weight_percent = $da->weight_percent;
 					$competency->score = $da->score;
 					$competency->group_weight_percent = $da->group_weight_percent ;
 					$competency->updated_by = $auth;
