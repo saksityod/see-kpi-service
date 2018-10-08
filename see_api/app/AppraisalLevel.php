@@ -22,7 +22,7 @@ class AppraisalLevel extends Model
 	protected $fillable = array('appraisal_level_name','is_all_employee','is_org','is_individual','is_active','is_hr','is_self_assign','is_group_action','is_show_quality','no_weight','parent_id','district_flag','default_stage_id','seq_no');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 
-	public static function getTree($id, $tree = []) {
+	public static function getLevelParentDown($id, $tree = []) {
 		$lowestLevel = AppraisalLevel::select("level_id", "parent_id")->where('level_id', $id)->first();
 
 		if (empty($lowestLevel)) {
@@ -32,7 +32,7 @@ class AppraisalLevel extends Model
 		$tree[] = $lowestLevel->toArray();
 
 		if ($lowestLevel->parent_id !== 0) {
-			$tree = AppraisalLevel::getTree($lowestLevel->parent_id, $tree);
+			$tree = AppraisalLevel::getLevelParentDown($lowestLevel->parent_id, $tree);
 		}
 
 		return $tree;

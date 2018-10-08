@@ -458,10 +458,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('customer', 'PMTL\CustomerController@index');
 	Route::get('customer/{customer_id}', 'PMTL\CustomerController@show');
 	Route::post('customer/import', 'PMTL\CustomerController@import');
-	// Route::patch('customer/{customer_id}', 'PMTL\CustomerController@update');
-	// Route::delete('customer/{customer_id}', 'PMTL\CustomerController@destroy');
 
-	//Route::get('employee_snap/list_level', 'PMTL\ImportEmployeeSnapshotController@list_level');
 	Route::get('employee_snap/list_level', 'AppraisalLevelController@index');
 	Route::get('employee_snap/auto_position', 'PMTL\ImportEmployeeSnapshotController@auto_position');
 	Route::get('employee_snap/auto_start_date', 'PMTL\ImportEmployeeSnapshotController@auto_start_date');
@@ -485,8 +482,6 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('questionaire_data/auto_emp', 'PMTL\QuestionaireDataController@auto_emp');
 	Route::get('questionaire_data/auto_emp2', 'PMTL\QuestionaireDataController@auto_emp2');
-	Route::get('questionaire_data/auto_emp_report', 'PMTL\QuestionaireTypeController@auto_emp_report');
-	Route::get('questionaire_data/auto_assessor_report', 'PMTL\QuestionaireTypeController@auto_assessor_report');
 	Route::get('questionaire_data/role_authorize', 'PMTL\QuestionaireDataController@role_authorize_add');
 	Route::delete('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@destroy_evaluated_retailer_list');
 	Route::get('questionaire_data/auto_store', 'PMTL\QuestionaireDataController@auto_store');
@@ -508,6 +503,10 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('questionaire_type/{id}', 'PMTL\QuestionaireTypeController@destroy');
 	Route::get('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage');
 	Route::patch('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage_update');
+
+	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@auto_emp_report');
+	Route::get('questionaire_report/auto_assessor_report', 'PMTL\QuestionaireDataController@auto_assessor_report');
+	Route::get('questionaire_report/export_transaction', 'PMTL\QuestionaireDataController@export_transaction');
 
 
 	Route::get('404', ['as' => 'notfound', function () {

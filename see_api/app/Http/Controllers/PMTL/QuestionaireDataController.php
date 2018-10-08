@@ -136,7 +136,7 @@ class QuestionaireDataController extends Controller
 
     function get_emp_snapshot() {
     	try {
-    		$is_emp = EmployeeSnapshot::select("emp_snapshot_id","level_id")->where("emp_code", Auth::id())->orderBy('start_date', 'desc')->firstOrFail();
+    		$is_emp = EmployeeSnapshot::select("emp_snapshot_id","level_id","job_function_id")->where("emp_code", Auth::id())->orderBy('start_date', 'desc')->firstOrFail();
     	} catch (ModelNotFoundException $e) {
 			exit(json_encode(['status' => 404, 'data' => Auth::id().' not found in EmployeeSnapshot.']));
 		}
@@ -260,6 +260,125 @@ class QuestionaireDataController extends Controller
         return $actions;
     }
 
+    function get_tree_emp($emp_code) {
+    	$re_emp = array();
+    	$emp_list = array();
+
+    	$emps = DB::select("
+    		select distinct emp_code
+    		from employee_snapshot
+    		where chief_emp_code = ?
+    		", array($emp_code));
+
+    	foreach ($emps as $e) {
+    		$emp_list[] = $e->emp_code;
+    		$re_emp[] = $e->emp_code;
+    	}
+
+    	$emp_list = array_unique($emp_list);
+		// Get array keys
+    	$arrayKeys = array_keys($emp_list);
+		// Fetch last array key
+    	$lastArrayKey = array_pop($arrayKeys);
+		//iterate array
+    	$in_emp = '';
+    	foreach($emp_list as $k => $v) {
+    		if($k == $lastArrayKey) {
+				//during array iteration this condition states the last element.
+    			$in_emp .= "'" . $v . "'";
+    		} else {
+    			$in_emp .= "'" . $v . "'" . ',';
+    		}
+    	}
+
+    	do {
+
+    		if(empty($in_emp)) {
+    			$in_emp = "null";
+    			$re_emp[] = $emp_code;
+    		}
+
+    		$emp_list = array();
+    		$emp_items = DB::select("
+    			select distinct emp_code
+    			from employee_snapshot
+    			where chief_emp_code in ({$in_emp})
+    			and chief_emp_code != emp_code
+    			and is_active = 1
+    			");
+
+    		foreach ($emp_items as $e) {
+    			$emp_list[] = $e->emp_code;
+    			$re_emp[] = $e->emp_code;
+    		}
+
+    		$emp_list = array_unique($emp_list);
+			// Get array keys
+    		$arrayKeys = array_keys($emp_list);
+			// Fetch last array key
+    		$lastArrayKey = array_pop($arrayKeys);
+			//iterate array
+    		$in_emp = '';
+    		foreach($emp_list as $k => $v) {
+    			if($k == $lastArrayKey) {
+						//during array iteration this condition states the last element.
+    				$in_emp .= "'" . $v . "'";
+    			} else {
+    				$in_emp .= "'" . $v . "'" . ',';
+    			}
+    		}
+    	} while (!empty($emp_list));
+
+    	$re_emp = array_unique($re_emp);
+		// Get array keys
+    	$arrayKeys = array_keys($re_emp);
+		// Fetch last array key
+    	$lastArrayKey = array_pop($arrayKeys);
+		//iterate array
+    	$in_emp = '';
+    	foreach($re_emp as $k => $v) {
+    		if($k == $lastArrayKey) {
+				//during array iteration this condition states the last element.
+    			$in_emp .= "'" . $v . "'";
+    		} else {
+    			$in_emp .= "'" . $v . "'" . ',';
+    		}
+    	}
+    	return $in_emp;
+    }
+
+    function calculate_score($data_header_id, $in_section) {
+    	$cal_score = DB::select("
+    		SELECT COUNT(DISTINCT customer_id) count_customer, 
+		    		SUM(qdd.score) score, 
+		    		SUM(qdd.full_score) full_score, 
+		    		COUNT(DISTINCT qdd.question_id) count_question
+    		FROM questionaire_data_detail qdd
+    		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+    		WHERE qs.is_cust_search = 1
+    		AND qdd.data_header_id = '{$data_header_id}'
+    		AND qdd.section_id IN ({$in_section})
+    	");
+
+    	if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
+    		&& !empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score)) {
+
+    		$total = $cal_score[0]->full_score - $cal_score[0]->count_question;
+    		$total_score = $total / $cal_score[0]->count_customer;
+    		$full_score = $cal_score[0]->score / $cal_score[0]->count_customer;
+
+    		$items = QuestionaireDataHeader::select("full_score", "total_score")
+    				->where("data_header_id", $data_header_id)->first();
+    		$full_score = $full_score + $items->full_score;
+    		$total_score = $total_score + $items->total_score;
+    	} else {
+    		$full_score = null;
+    		$total_score = null;
+    	}
+
+    	return ['full_score' => $full_score, 'total_score' => $total_score];
+    }
+
 	public function auto_emp(Request $request) {
 		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
 		$request->start_date = $this->format_date($request->start_date);
@@ -334,106 +453,6 @@ class QuestionaireDataController extends Controller
 			) AND jf.is_evaluated = 1
 			LIMIT 10
 		");
-		return response()->json($items);
-	}
-
-	public function auto_emp_report(Request $request) {
-		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
-		$emp_code = Auth::id();
-		$all_emp = $this->all_emp();
-
-		if ($all_emp[0]->count_no > 0) {
-			$items = DB::select("
-				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
-				FROM employee_snapshot es
-				INNER JOIN position p ON p.position_id = es.position_id
-				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-				WHERE es.start_date IN (
-					SELECT MAX(start_date) start_date
-					FROM employee_snapshot
-					WHERE is_active = 1
-					AND es.emp_snapshot_id = emp_snapshot_id
-				) AND (
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-				) AND jf.is_evaluated = 1
-				ORDER BY es.emp_first_name, es.emp_last_name
-				LIMIT 15
-			");
-		} else {
-			$items = DB::select("
-				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
-				FROM employee_snapshot es
-				INNER JOIN position p ON p.position_id = es.position_id
-				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-				WHERE es.start_date IN (
-					SELECT MAX(start_date) start_date
-					FROM employee_snapshot
-					WHERE is_active = 1
-					AND es.emp_snapshot_id = emp_snapshot_id
-				) AND (
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-				) AND (
-					es.chief_emp_code = '{$emp_code}' or es.emp_code = '{$emp_code}'
-				) AND jf.is_evaluated = 1
-				ORDER BY es.emp_first_name, es.emp_last_name
-				LIMIT 15
-			");
-		}
-
-		return response()->json($items);
-	}
-
-	public function auto_assessor_report(Request $request) {
-		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
-		$emp_code = Auth::id();
-		$all_emp = $this->all_emp();
-
-		if ($all_emp[0]->count_no > 0) {
-			$items = DB::select("
-				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
-				FROM employee_snapshot es
-				INNER JOIN position p ON p.position_id = es.position_id
-				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-				WHERE es.start_date IN (
-					SELECT MAX(start_date) start_date
-					FROM employee_snapshot
-					WHERE is_active = 1
-					AND es.emp_snapshot_id = emp_snapshot_id
-				) AND (
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-				) AND jf.is_evaluated = 0
-				ORDER BY es.emp_first_name, es.emp_last_name
-				LIMIT 15
-			");
-		} else {
-			$items = DB::select("
-				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
-				FROM employee_snapshot es
-				INNER JOIN position p ON p.position_id = es.position_id
-				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-				WHERE es.start_date IN (
-					SELECT MAX(start_date) start_date
-					FROM employee_snapshot
-					WHERE is_active = 1
-					AND es.emp_snapshot_id = emp_snapshot_id
-				) AND (
-					es.emp_first_name LIKE '%{$emp_name}%'
-					OR es.emp_last_name LIKE '%{$emp_name}%'
-					OR p.position_code LIKE '%{$emp_name}%'
-				) AND (
-					es.chief_emp_code = '{$emp_code}' or es.emp_code = '{$emp_code}'
-				) AND jf.is_evaluated = 0
-				ORDER BY es.emp_first_name, es.emp_last_name
-				LIMIT 15
-			");
-		}
-
 		return response()->json($items);
 	}
 
@@ -1047,6 +1066,7 @@ class QuestionaireDataController extends Controller
 		DB::beginTransaction();
 		$errors = [];
 		$errors_validator = [];
+		$section_unique = [];
 		$validator = Validator::make([
 			'questionaire_id' => $request->questionaire_id,
 			'questionaire_date' => $request->questionaire_date,
@@ -1151,9 +1171,20 @@ class QuestionaireDataController extends Controller
 					$dt->updated_by = Auth::id();
 					try {
 						$dt->save();
+						$section_unique[] = $d['section_id'];
 					} catch (Exception $e) {
 						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
 					}
+				}
+
+				$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
+				$cal_score = $this->calculate_score($h->data_header_id, $in_section);
+				if(!empty($cal_score['full_score']) && !empty($cal_score['total_score'])) {
+					QuestionaireDataHeader::where('data_header_id', $h->data_header_id)->update([
+						'full_score' => $cal_score['full_score'],
+						'total_score' => $cal_score['total_score'], 
+						'updated_by' => Auth::id()
+					]);
 				}
 			}
 		} catch (Exception $e) {
@@ -1189,6 +1220,7 @@ class QuestionaireDataController extends Controller
 		DB::beginTransaction();
 		$errors = [];
 		$errors_validator = [];
+		$section_unique = [];
 		$validator = Validator::make([
 			'emp_snapshot_id' => $request->emp_snapshot_id,
 			'total_score' => $request->total_score
@@ -1297,9 +1329,20 @@ class QuestionaireDataController extends Controller
 					}
 					try {
 						$dt->save();
+						$section_unique[] = $d['section_id'];
 					} catch (Exception $e) {
 						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
 					}
+				}
+
+				$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
+				$cal_score = $this->calculate_score($h->data_header_id, $in_section);
+				if(!empty($cal_score['full_score']) && !empty($cal_score['total_score'])) {
+					QuestionaireDataHeader::where('data_header_id', $h->data_header_id)->update([
+						'full_score' => $cal_score['full_score'],
+						'total_score' => $cal_score['total_score'], 
+						'updated_by' => Auth::id()
+					]);
 				}
 			}
 		} catch (Exception $e) {
@@ -1369,5 +1412,188 @@ class QuestionaireDataController extends Controller
 		}
 
 		return response()->json(['status' => 200]);
+	}
+
+	// Report
+	public function auto_emp_report(Request $request) {
+		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+		$all_emp = $this->all_emp();
+		$in_emp = $this->get_tree_emp(Auth::id());
+
+		if ($all_emp[0]->count_no > 0) {
+			$items = DB::select("
+				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+				FROM employee_snapshot es
+				INNER JOIN position p ON p.position_id = es.position_id
+				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+				WHERE es.start_date IN (
+					SELECT MAX(start_date) start_date
+					FROM employee_snapshot
+					WHERE is_active = 1
+					AND es.emp_snapshot_id = emp_snapshot_id
+				) AND (
+					es.emp_first_name LIKE '%{$emp_name}%'
+					OR es.emp_last_name LIKE '%{$emp_name}%'
+					OR p.position_code LIKE '%{$emp_name}%'
+				) AND jf.is_evaluated = 1
+				ORDER BY es.emp_first_name, es.emp_last_name
+				LIMIT 15
+			");
+		} else {
+			$items = DB::select("
+				SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+				FROM employee_snapshot es
+				INNER JOIN position p ON p.position_id = es.position_id
+				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+				WHERE es.start_date IN (
+					SELECT MAX(start_date) start_date
+					FROM employee_snapshot
+					WHERE is_active = 1
+					AND es.emp_snapshot_id = emp_snapshot_id
+				) AND (
+					es.emp_first_name LIKE '%{$emp_name}%'
+					OR es.emp_last_name LIKE '%{$emp_name}%'
+					OR p.position_code LIKE '%{$emp_name}%'
+				)
+				AND es.emp_code IN ({$in_emp})
+				AND jf.is_evaluated = 1
+				ORDER BY es.emp_first_name, es.emp_last_name
+				LIMIT 15
+			");
+			// $emp_code = Auth::id();
+			// $emp_snap = $this->get_emp_snapshot();
+			// $level = AppraisalLevel::getLevelParentDown($emp_snap->level_id);
+			// $level_array = [];
+			// foreach ($level as $key => $value) {
+			// 	array_push($level_array, $value['level_id']);
+			// }
+			// $level_array= implode(",",$level_array);
+
+			// $job_function = DB::table("job_function")->select("is_evaluated")->where("job_function_id", $emp_snap->job_function_id)->first();
+
+			// $query = "
+			// 	SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+			// 	FROM employee_snapshot es
+			// 	INNER JOIN position p ON p.position_id = es.position_id
+			// 	INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+			// 	WHERE es.start_date IN (
+			// 		SELECT MAX(start_date) start_date
+			// 		FROM employee_snapshot
+			// 		WHERE is_active = 1
+			// 		AND es.emp_snapshot_id = emp_snapshot_id
+			// 	) AND (
+			// 		es.emp_first_name LIKE '%{$emp_name}%'
+			// 		OR es.emp_last_name LIKE '%{$emp_name}%'
+			// 		OR p.position_code LIKE '%{$emp_name}%'
+			// 	) AND jf.is_evaluated = 1 
+			// ";
+
+			// if($job_function->is_evaluated==1) {
+			// 	$query .= "AND es.level_id IN ({$level_array}) AND es.emp_code = '{$emp_code}' ";
+			// } else {
+			// 	$query .= "AND es.level_id IN ({$level_array}) ";
+			// }
+
+			// $query .= "ORDER BY es.emp_first_name, es.emp_last_name LIMIT 15";
+
+			// $items = DB::select($query);
+		}
+
+		return response()->json($items);
+	}
+
+	public function auto_assessor_report(Request $request) {
+		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
+		$items = DB::select("
+			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+			FROM employee_snapshot es
+			INNER JOIN position p ON p.position_id = es.position_id
+			INNER JOIN appraisal_level al ON al.level_id = es.level_id
+			WHERE es.start_date IN (
+				SELECT MAX(start_date) start_date
+				FROM employee_snapshot
+				WHERE is_active = 1
+				AND es.emp_snapshot_id = emp_snapshot_id
+			) AND (
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
+			) AND al.appraisal_level_name = 'ASM'
+			ORDER BY es.emp_first_name, es.emp_last_name
+			LIMIT 15
+		");
+		return response()->json($items);
+	}
+
+	public function export_transaction(Request $request) {
+		set_time_limit(1000);
+		ini_set('memory_limit', '5012M');
+		$fileName = "WWWR Transaction Report ".date('Ymd His');
+
+		// $request->questionaire_type_id = 1;
+		// $request->assessor_id = "";
+		// $request->emp_snapshot_id = 2;
+		// $request->start_date = "2018-10-04";
+		// $request->end_date = "2018-10-04";
+
+		try {
+			QuestionaireType::findOrFail($request->questionaire_type_id);
+		} catch (Exception $e) {
+			return response()->json(['status' => 404, 'data' => 'QuestionaireType not found.']);
+		}
+
+		$assessor_id = empty($request->assessor_id) ? "" : "AND qdh.assessor_id = '{$request->assessor_id}' ";
+		$items = DB::select("
+			SELECT qnt.questionaire_type,
+					qn.questionaire_name,
+					qdh.questionaire_date,
+					asess.emp_code assessor_code,
+					CONCAT(asess.emp_first_name, ' ', asess.emp_last_name) assessor_name,
+					asm.emp_code asm_code,
+					CONCAT(asm.emp_first_name, ' ', asm.emp_last_name) asm_name,
+					es.emp_code tse_code,
+					CONCAT(es.emp_first_name, ' ', es.emp_last_name) tse_name,
+					jf.job_function_name,
+					es.distributor_code,
+					es.distributor_name,
+					es.region,
+					qds.status,
+					qs.section_name,
+					q.question_name,
+					(SELECT MAX(score) FROM answer WHERE question_id = q.question_id) full_score,
+					ans.answer_name,
+					qdd.score,
+					qdd.desc_answer,
+					c.customer_code, 
+					c.customer_name, 
+					c.customer_type, 
+					c.industry_class
+				FROM questionaire_data_header qdh
+				INNER JOIN questionaire_data_stage qds ON qds.data_header_id = qdh.data_header_id
+				LEFT JOIN stage st ON st.stage_id = qdh.data_stage_id AND st.stage_id = qds.data_stage_id
+				INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+				INNER JOIN questionaire_type qnt ON qnt.questionaire_type_id = qn.questionaire_type_id
+				INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+				LEFT JOIN customer c ON c.customer_id = qdd.customer_id
+				INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+				INNER JOIN question q ON q.question_id = qdd.question_id
+				INNER JOIN answer ans ON ans.answer_id = qdd.answer_id
+				INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+				LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
+				LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
+				WHERE q.parent_question_id IS NOT NULL
+				AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+				AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
+				".$assessor_id."
+				GROUP BY qdd.answer_id
+		");
+
+	    $resultArray = json_decode(json_encode($items), true);
+	    Excel::create($fileName, function($excel) use ($resultArray) {
+	    	$excel->sheet('WWWR Transaction Report', function($sheet) use ($resultArray) {
+	    		$sheet->fromArray($resultArray);
+	    	});
+	    })->download('xlsx');
 	}
 }
