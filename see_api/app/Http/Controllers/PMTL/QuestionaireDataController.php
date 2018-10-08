@@ -13,6 +13,7 @@ use App\SystemConfiguration;
 use App\Customer;
 use App\QuestionaireType;
 use App\AppraisalLevel;
+use App\Question;
 
 use Auth;
 use DB;
@@ -66,22 +67,24 @@ class QuestionaireDataController extends Controller
     }
 
     function check_permission($stage_id, $data_header_id) {
-        $assessor = $this->get_emp_snapshot();
-        $emp_code = Auth::id();
+    	$is_all = $this->all_emp();
+    	if($is_all[0]->count_no == 0) {
+	        $assessor = $this->get_emp_snapshot();
+	        $emp_code = Auth::id();
+	    	$data = DB::select("
+	        	SELECT rsa.view_comment_flag
+				FROM level_stage_authorize rsa
+				LEFT JOIN questionaire_data_header qdh ON qdh.data_stage_id = rsa.stage_id
+				INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+				WHERE rsa.level_id = '{$assessor->level_id}'
+	        	AND rsa.stage_id = '{$stage_id}'
+	        	AND qdh.data_header_id = '{$data_header_id}'
+	        	AND (es.emp_code = '{$emp_code}' OR qdh.assessor_id = '{$assessor->emp_snapshot_id}' )
+	        ");
 
-         $data = DB::select("
-        	SELECT rsa.view_comment_flag
-			FROM level_stage_authorize rsa
-			LEFT JOIN questionaire_data_header qdh ON qdh.data_stage_id = rsa.stage_id
-			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			WHERE rsa.level_id = '{$assessor->level_id}'
-        	AND rsa.stage_id = '{$stage_id}'
-        	AND qdh.data_header_id = '{$data_header_id}'
-        	AND (es.emp_code = '{$emp_code}' OR qdh.assessor_id = '{$assessor->emp_snapshot_id}' )
-        ");
-
-    	if(empty($data)) {
-    		exit(json_encode(['status' => 401, 'data' => 'Permission Fail']));
+	    	if(empty($data)) {
+	    		exit(json_encode(['status' => 401, 'data' => 'Permission Fail']));
+	    	}
     	}
     }
 
@@ -352,7 +355,16 @@ class QuestionaireDataController extends Controller
     		SELECT COUNT(DISTINCT customer_id) count_customer, 
 		    		SUM(qdd.score) score, 
 		    		SUM(qdd.full_score) full_score, 
-		    		COUNT(DISTINCT qdd.question_id) count_question
+		    		COUNT(DISTINCT qdd.question_id) count_question,
+		    		(
+		    			SELECT SUM(qdd.full_score)
+			    		FROM questionaire_data_detail qdd
+			    		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+			    		WHERE qs.is_cust_search = 1
+			    		AND qdd.is_not_applicable = 1
+			    		AND qdd.data_header_id = '{$data_header_id}'
+			    		AND qdd.section_id IN ({$in_section})
+		    		) sum_applicable
     		FROM questionaire_data_detail qdd
     		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
     		WHERE qs.is_cust_search = 1
@@ -363,7 +375,7 @@ class QuestionaireDataController extends Controller
     	if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
     		&& !empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score)) {
 
-    		$total = $cal_score[0]->full_score - $cal_score[0]->count_question;
+    		$total = $cal_score[0]->full_score - $cal_score[0]->sum_applicable;
     		$total_score = $total / $cal_score[0]->count_customer;
     		$full_score = $cal_score[0]->score / $cal_score[0]->count_customer;
 
@@ -371,12 +383,122 @@ class QuestionaireDataController extends Controller
     				->where("data_header_id", $data_header_id)->first();
     		$full_score = $full_score + $items->full_score;
     		$total_score = $total_score + $items->total_score;
+
     	} else {
     		$full_score = null;
     		$total_score = null;
     	}
 
     	return ['full_score' => $full_score, 'total_score' => $total_score];
+    }
+
+    function query_answer($answer_type_id, $question_id, $data_header_id, $customer_id) {
+
+    	if($answer_type_id==3 || $answer_type_id==4) {
+    		$select_score = "SUM(score)";
+    	} else {
+    		$select_score = "MAX(score)";
+    	}
+
+    	if(!empty($customer_id) && !empty($data_header_id) && !empty($question_id)) { //edit store
+    		$item = DB::select("
+				SELECT *
+				FROM (
+					SELECT
+						qdd.data_detail_id,
+						an.answer_id,
+						an.row_name,
+						an.answer_name,
+						an.score,
+						an.is_not_applicable,
+						qdd.desc_answer,
+						(
+							SELECT {$select_score}
+							FROM answer 
+							WHERE question_id = '{$question_id}'
+							AND is_not_applicable = 0
+						) full_score,
+						IF ( an.answer_id = qdd.answer_id, 1, 0) is_check
+					FROM questionaire_data_detail qdd
+					INNER JOIN answer an ON an.question_id = qdd.question_id
+					AND qdd.question_id = '{$question_id}'
+					AND qdd.data_header_id = '{$data_header_id}'
+					AND qdd.customer_id = '{$customer_id}'
+					GROUP BY is_check, an.answer_id
+					ORDER BY is_check DESC, an.answer_id
+				)d1
+				GROUP BY answer_id
+			");
+		} else if(!empty($data_header_id) && !empty($question_id)) { // assign template
+			$item = DB::select("
+				SELECT *
+				FROM (
+					SELECT qdd.data_detail_id,
+						an.answer_id,
+						an.row_name,
+						an.answer_name,
+						an.score,
+						an.is_not_applicable,
+						qdd.desc_answer,
+						(
+							SELECT {$select_score}
+							FROM answer 
+							WHERE question_id = '{$question_id}'
+							AND is_not_applicable = 0
+						) full_score,
+						IF (an.answer_id = qdd.answer_id, 1, 0) is_check
+					FROM questionaire_data_detail qdd
+					INNER JOIN answer an ON an.question_id = qdd.question_id
+					AND qdd.question_id = '{$question_id}'
+					AND qdd.data_header_id = '{$data_header_id}'
+					GROUP BY is_check, an.answer_id
+					ORDER BY is_check DESC, an.answer_id
+				)d1
+				GROUP BY answer_id
+			");
+		} else { // generate template
+			$item = DB::select("
+				SELECT ans.question_id,
+						ans.answer_id, 
+						ans.row_name, 
+						ans.answer_name, 
+						ans.score, 
+						ans.is_not_applicable, 
+						'' desc_answer,
+						(
+							SELECT {$select_score}
+							FROM answer 
+							WHERE question_id = '{$question_id}'
+							AND is_not_applicable = 0
+						) full_score,
+						IF(is_applicable > 0 AND ans.is_not_applicable = 1, 1,
+							IF(is_applicable > 0, 0, 
+								IF(ans.score = 0, 1, 0)
+							)
+						) is_check
+				FROM answer ans
+				LEFT OUTER JOIN (
+					SELECT question_id, SUM(is_not_applicable) is_applicable
+					FROM answer
+					GROUP BY question_id
+				)cab ON cab.question_id = ans.question_id
+				WHERE ans.question_id = '{$question_id}'
+				ORDER BY ans.seq_no ASC
+			");
+		}
+
+		return $item;
+    }
+
+    function filter_checkbox($data_checkbox, $in_question) {
+    	$checkbox_data = array_filter($data_checkbox, function($data) use ($in_question) {
+    		foreach($in_question as $v) {
+    			if ($data['question_id'] == $v) {
+    				return true;
+    			}
+    		}
+    	});
+    	return $checkbox_data;
     }
 
 	public function auto_emp(Request $request) {
@@ -502,6 +624,7 @@ class QuestionaireDataController extends Controller
 				AND qdhh.questionaire_date BETWEEN '' AND '{$request->date}'
 			)
 			GROUP BY qdd.customer_id
+			ORDER BY c.customer_name
 		");
 		return response()->json($items);
 	}
@@ -539,32 +662,11 @@ class QuestionaireDataController extends Controller
 				INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = {$v_qdd->section_id}
 				AND q.parent_question_id IS NULL
+				AND at.is_active = 1
 			");
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-				$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-					SELECT *
-					FROM (
-						SELECT
-							qdd.data_detail_id,
-							an.answer_id,
-							an.row_name,
-							an.answer_name,
-							an.score,
-							an.is_not_applicable,
-							qdd.desc_answer,
-							qdd.full_score,
-							IF ( an.answer_id = qdd.answer_id, 1, 0) is_check
-						FROM questionaire_data_detail qdd
-						INNER JOIN answer an ON an.question_id = qdd.question_id
-						AND qdd.question_id = {$anv->question_id}
-						AND qdd.data_header_id = '{$request->data_header_id}'
-						AND qdd.customer_id = '{$request->customer_id}'
-						GROUP BY is_check, an.answer_id
-						ORDER BY is_check DESC, an.answer_id
-					)d1
-					GROUP BY answer_id
-				");
+				$sub_items[$key]->sub_section[$key2]->answer = $this->query_answer($anv->answer_type_id, $anv->question_id, $request->data_header_id, $request->customer_id);
 			}
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
@@ -577,32 +679,11 @@ class QuestionaireDataController extends Controller
 					FROM question q
 					INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 					WHERE q.parent_question_id = {$anv->question_id}
+					AND at.is_active = 1
 					");
 
 				foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
-					$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-						SELECT *
-						FROM (
-							SELECT
-							qdd.data_detail_id,
-							an.answer_id,
-							an.row_name,
-							an.answer_name,
-							an.score,
-							an.is_not_applicable,
-							qdd.desc_answer,
-							qdd.full_score,
-							IF ( an.answer_id = qdd.answer_id, 1, 0) is_check
-							FROM questionaire_data_detail qdd
-							INNER JOIN answer an ON an.question_id = qdd.question_id
-							AND qdd.question_id = {$ssq->question_id}
-							AND qdd.data_header_id = '{$request->data_header_id}'
-							AND qdd.customer_id = '{$request->customer_id}'
-							GROUP BY is_check, an.answer_id
-							ORDER BY is_check DESC, an.answer_id
-						)d1
-						GROUP BY answer_id
-						");
+					$sub_items[$key]->sub_section[$key2]->question[$key3]->answer = $this->query_answer($ssq->answer_type_id, $ssq->question_id, $request->data_header_id, $request->customer_id);
 				}
 			}
 		}
@@ -689,7 +770,7 @@ class QuestionaireDataController extends Controller
 						qdh.emp_snapshot_id,
 						qdh.questionaire_id,
 						qn.questionaire_type_id,
-						qdh.questionaire_date,
+						DATE_FORMAT(qdh.questionaire_date, '%d/%m/%Y') questionaire_date,
 						p.position_code,
 						qdh.assessor_id,
 						CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
@@ -740,71 +821,29 @@ class QuestionaireDataController extends Controller
 			$sub_items[$key]->sub_section =  DB::select("
 				SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name, q.pass_score
 				FROM question q
-				LEFT JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+				INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = {$qsv->section_id}
 				AND q.parent_question_id IS NULL
+				AND at.is_active = 1
 				ORDER BY q.seq_no ASC
 				");
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-				$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-					SELECT ans.question_id,
-							ans.answer_id, 
-							ans.row_name, 
-							ans.answer_name, 
-							ans.score, 
-							ans.is_not_applicable, 
-							'' desc_answer,
-							(SELECT MAX(score) FROM answer WHERE question_id = '{$anv->question_id}') full_score,
-							IF(is_applicable > 0 AND ans.is_not_applicable = 1, 1,
-								IF(is_applicable > 0, 0, 
-									IF(ans.score = 0, 1, 0)
-								)
-							) is_check
-					FROM answer ans
-					LEFT OUTER JOIN (
-						SELECT question_id, SUM(is_not_applicable) is_applicable
-						FROM answer
-						GROUP BY question_id
-					)cab ON cab.question_id = ans.question_id
-					WHERE ans.question_id = '{$anv->question_id}'
-					ORDER BY ans.seq_no ASC
-					");
+				$sub_items[$key]->sub_section[$key2]->answer = $this->query_answer($anv->answer_type_id, $anv->question_id, null, null);
 			}
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
 				$sub_items[$key]->sub_section[$key2]->question =  DB::select("
 					SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name
 					FROM question q
-					LEFT JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+					INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 					WHERE q.parent_question_id = {$anv->question_id}
+					AND at.is_active = 1
 					ORDER BY q.seq_no ASC
 					");
 
 				foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
-					$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-						SELECT ans.question_id,
-								ans.answer_id, 
-								ans.row_name, 
-								ans.answer_name, 
-								ans.score, 
-								ans.is_not_applicable, 
-								'' desc_answer,
-								(SELECT MAX(score) FROM answer WHERE question_id = '{$ssq->question_id}') full_score,
-								IF(is_applicable > 0 AND ans.is_not_applicable = 1, 1, 
-									IF(is_applicable > 0, 0,
-										IF(ans.score = 0, 1, 0)
-									)
-								) is_check
-						FROM answer ans
-						LEFT OUTER JOIN (
-						SELECT question_id, SUM(is_not_applicable) is_applicable
-						FROM answer
-						GROUP BY question_id
-						)cab ON cab.question_id = ans.question_id
-						WHERE ans.question_id = {$ssq->question_id}
-						ORDER BY ans.seq_no ASC
-						");
+					$sub_items[$key]->sub_section[$key2]->question[$key3]->answer = $this->query_answer($ssq->answer_type_id, $ssq->question_id, null, null);
 				}
 			}
 		}
@@ -819,17 +858,15 @@ class QuestionaireDataController extends Controller
 
 		$stage = [];
 
-		// $role = (object)[];
-
         $actions = $this->check_action($current_stage->stage_id, $level);
 
 		return response()->json([
+			'status' => 200,
 			'head' => $head, 
 			'data' => $sub_items, 
 			'stage' => $stage, 
 			'current_stage' => $current_stage, 
 			'to_stage' => $actions
-			// 'role' => $role
 		]);
 	}
 
@@ -863,14 +900,6 @@ class QuestionaireDataController extends Controller
 
 		$head = $head[0];
 
-		// $sub_items = DB::select("
-		// 	SELECT qdd.section_id, qs.section_name, qs.is_cust_search, qs.is_show_report, qs.report_url
-		// 	FROM questionaire_data_detail qdd
-		// 	INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-		// 	WHERE qdd.data_header_id = '{$request->data_header_id}'
-		// 	GROUP BY qdd.section_id
-		// 	");
-
 		$sub_items = DB::select("
 			SELECT section_id, section_name, is_cust_search, is_show_report, report_url
 			FROM questionaire_section
@@ -888,35 +917,12 @@ class QuestionaireDataController extends Controller
 				INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = {$v_qdd->section_id}
 				AND q.parent_question_id IS NULL
+				AND at.is_active = 1
 				");
 
 			if($v_qdd->is_cust_search==0) {
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-					$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-						SELECT *
-						FROM (
-							SELECT qdd.data_detail_id,
-									an.answer_id,
-									an.row_name,
-									an.answer_name,
-									an.score,
-									an.is_not_applicable,
-									qdd.desc_answer,
-									(
-										SELECT MAX(score) 
-										FROM answer 
-										WHERE question_id = '{$anv->question_id}'
-									) full_score,
-									IF (an.answer_id = qdd.answer_id, 1, 0) is_check
-							FROM questionaire_data_detail qdd
-							INNER JOIN answer an ON an.question_id = qdd.question_id
-							AND qdd.question_id = {$anv->question_id}
-							AND qdd.data_header_id = '{$request->data_header_id}'
-							GROUP BY is_check, an.answer_id
-							ORDER BY is_check DESC, an.answer_id
-						)d1
-						GROUP BY answer_id
-					");
+					$sub_items[$key]->sub_section[$key2]->answer = $this->query_answer($anv->answer_type_id, $anv->question_id, $request->data_header_id, null);
 				}
 
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
@@ -929,61 +935,16 @@ class QuestionaireDataController extends Controller
 						FROM question q
 						INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 						WHERE q.parent_question_id = {$anv->question_id}
+						AND at.is_active = 1
 						");
 
 					foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
-						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-							SELECT *
-							FROM (
-								SELECT qdd.data_detail_id,
-										an.answer_id,
-										an.row_name,
-										an.answer_name,
-										an.score,
-										an.is_not_applicable,
-										qdd.desc_answer,
-										(
-											SELECT MAX(score) 
-											FROM answer 
-											WHERE question_id = '{$ssq->question_id}'
-										) full_score,
-										IF (an.answer_id = qdd.answer_id, 1, 0) is_check
-								FROM questionaire_data_detail qdd
-								INNER JOIN answer an ON an.question_id = qdd.question_id
-								AND qdd.question_id = {$ssq->question_id}
-								AND qdd.data_header_id = '{$request->data_header_id}'
-								GROUP BY is_check, an.answer_id
-								ORDER BY is_check DESC, an.answer_id
-							)d1
-							GROUP BY answer_id
-						");
+						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer = $this->query_answer($ssq->answer_type_id, $ssq->question_id, $request->data_header_id, null);
 					}
 				}
 			} else {
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
-					$sub_items[$key]->sub_section[$key2]->answer =  DB::select("
-						SELECT ans.question_id,
-								ans.answer_id, 
-								ans.row_name, 
-								ans.answer_name, 
-								ans.score, 
-								ans.is_not_applicable, 
-								'' desc_answer,
-								(SELECT MAX(score) FROM answer WHERE question_id = '{$anv->question_id}') full_score,
-								IF(is_applicable > 0 AND ans.is_not_applicable = 1, 1,
-									IF(is_applicable > 0, 0, 
-										IF(ans.score = 0, 1, 0)
-									)
-								) is_check
-						FROM answer ans
-						LEFT OUTER JOIN (
-							SELECT question_id, SUM(is_not_applicable) is_applicable
-							FROM answer
-							GROUP BY question_id
-						)cab ON cab.question_id = ans.question_id
-						WHERE ans.question_id = '{$anv->question_id}'
-						ORDER BY ans.seq_no ASC
-					");
+					$sub_items[$key]->sub_section[$key2]->answer = $this->query_answer($anv->answer_type_id, $anv->question_id, null, null);
 				}
 
 				foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
@@ -996,32 +957,11 @@ class QuestionaireDataController extends Controller
 						FROM question q
 						INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 						WHERE q.parent_question_id = {$anv->question_id}
+						AND at.is_active = 1
 						");
 
 					foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
-						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer =  DB::select("
-							SELECT ans.question_id,
-									ans.answer_id, 
-									ans.row_name, 
-									ans.answer_name, 
-									ans.score, 
-									ans.is_not_applicable, 
-									'' desc_answer,
-									(SELECT MAX(score) FROM answer WHERE question_id = '{$ssq->question_id}') full_score,
-									IF(is_applicable > 0 AND ans.is_not_applicable = 1, 1, 
-										IF(is_applicable > 0, 0,
-											IF(ans.score = 0, 1, 0)
-										)
-									) is_check
-							FROM answer ans
-							LEFT OUTER JOIN (
-								SELECT question_id, SUM(is_not_applicable) is_applicable
-								FROM answer
-								GROUP BY question_id
-							)cab ON cab.question_id = ans.question_id
-							WHERE ans.question_id = {$ssq->question_id}
-							ORDER BY ans.seq_no ASC
-						");
+						$sub_items[$key]->sub_section[$key2]->question[$key3]->answer = $this->query_answer($ssq->answer_type_id, $ssq->question_id, null, null);
 					}
 				}
 			}
@@ -1045,12 +985,12 @@ class QuestionaireDataController extends Controller
         $actions = $this->check_action($current_stage->stage_id, $level);
 
 		return response()->json([
+			'status' => 200,
 			'head' => $head, 
 			'data' => $sub_items, 
 			'stage' => $stage, 
 			'current_stage' => $current_stage,
 			'to_stage' => $actions
-			// 'role' => $role
 		]);
 	}
 
@@ -1071,12 +1011,14 @@ class QuestionaireDataController extends Controller
 			'questionaire_id' => $request->questionaire_id,
 			'questionaire_date' => $request->questionaire_date,
 			'emp_snapshot_id' => $request->emp_snapshot_id,
-			'total_score' => $request->total_score
+			'total_score' => $request->total_score,
+			'full_score' => $request->full_score
 		], [
 			'questionaire_id' => 'required|integer',
 			'questionaire_date' => 'required|date_format:d/m/Y',
 			'emp_snapshot_id' => 'required|integer',
-			'total_score' => 'required|between:0,99.99'
+			'total_score' => 'required|between:0,99.99',
+			'full_score' => 'required|between:0,99.99'
 		]);
 
 		if($validator->fails()) {
@@ -1132,6 +1074,7 @@ class QuestionaireDataController extends Controller
 		$h->assessor_id = $assessor->emp_snapshot_id;
 		$h->pass_score = Questionaire::find($request->questionaire_id)->pass_score;
 		$h->total_score = $request->total_score;
+		$h->full_score = $request->full_score;
 		$h->created_by = Auth::id();
 		$h->updated_by = Auth::id();
 		try {
@@ -1221,12 +1164,15 @@ class QuestionaireDataController extends Controller
 		$errors = [];
 		$errors_validator = [];
 		$section_unique = [];
+		$question_unique = [];
 		$validator = Validator::make([
 			'emp_snapshot_id' => $request->emp_snapshot_id,
-			'total_score' => $request->total_score
+			'total_score' => $request->total_score,
+			'full_score' => $request->full_score
 		], [
 			'emp_snapshot_id' => 'required|integer',
-			'total_score' => 'required|between:0,99.99'
+			'total_score' => 'required|between:0,99.99',
+			'full_score' => 'required|between:0,99.99'
 		]);
 
 		if($validator->fails()) {
@@ -1277,6 +1223,7 @@ class QuestionaireDataController extends Controller
 
 		$h->emp_snapshot_id = $request->emp_snapshot_id;
 		$h->total_score = $request->total_score;
+		$h->full_score = $request->full_score;
 		$h->updated_by = Auth::id();
 		try {
 			$h->save();
@@ -1296,45 +1243,78 @@ class QuestionaireDataController extends Controller
 					'updated_by' => Auth::id()
 				]);
 			} catch (Exception $e) {
-				$errors[] = ['QuestionaireDataStage or QuestionaireDataHeader' => substr($e, 0, 255)];
+				$errors[] = ['QuestionaireDataStage or QuestionaireDataHeader' => substr($e, 0, 400)];
 			}
 
 			if(!empty($request['detail'])) {
 				foreach ($request['detail'] as $keyD => $d) {
-					if(empty($d['data_detail_id'])) {
-						$dt = new QuestionaireDataDetail;
-						$dt->data_header_id = $h->data_header_id;
-						$dt->section_id = $d['section_id'];
-						$dt->customer_id = $d['customer_id'];
-						$dt->question_id = $d['question_id'];
-						$dt->answer_id = $d['answer_id'];
-						$dt->score = $d['score'];
-						$dt->full_score = $d['full_score'];
-						$dt->is_not_applicable = $d['is_not_applicable'];
-						$dt->desc_answer = $d['desc_answer'];
-						$dt->created_by = Auth::id();
-						$dt->updated_by = Auth::id();
+					$ans_type = Question::select("answer_type_id")->where("question_id", $d['question_id'])->first();
+					if($ans_type->answer_type_id==3 || $ans_type->answer_type_id==4) {
+						$question_unique[] = $d['question_id'];
 					} else {
-						$dt = QuestionaireDataDetail::find($d['data_detail_id']);
-						$dt->data_header_id = $h->data_header_id;
-						$dt->section_id = $d['section_id'];
-						$dt->customer_id = $d['customer_id'];
-						$dt->question_id = $d['question_id'];
-						$dt->answer_id = $d['answer_id'];
-						$dt->score = $d['score'];
-						$dt->full_score = $d['full_score'];
-						$dt->is_not_applicable = $d['is_not_applicable'];
-						$dt->desc_answer = $d['desc_answer'];
-						$dt->updated_by = Auth::id();
+						if(empty($d['data_detail_id'])) {
+							$dt = new QuestionaireDataDetail;
+							$dt->data_header_id = $h->data_header_id;
+							$dt->section_id = $d['section_id'];
+							$dt->customer_id = $d['customer_id'];
+							$dt->question_id = $d['question_id'];
+							$dt->answer_id = $d['answer_id'];
+							$dt->score = $d['score'];
+							$dt->full_score = $d['full_score'];
+							$dt->is_not_applicable = $d['is_not_applicable'];
+							$dt->desc_answer = $d['desc_answer'];
+							$dt->created_by = Auth::id();
+							$dt->updated_by = Auth::id();
+						} else {
+							$dt = QuestionaireDataDetail::find($d['data_detail_id']);
+							$dt->data_header_id = $h->data_header_id;
+							$dt->section_id = $d['section_id'];
+							$dt->customer_id = $d['customer_id'];
+							$dt->question_id = $d['question_id'];
+							$dt->answer_id = $d['answer_id'];
+							$dt->score = $d['score'];
+							$dt->full_score = $d['full_score'];
+							$dt->is_not_applicable = $d['is_not_applicable'];
+							$dt->desc_answer = $d['desc_answer'];
+							$dt->updated_by = Auth::id();
+						}
 					}
 					try {
 						$dt->save();
 						$section_unique[] = $d['section_id'];
 					} catch (Exception $e) {
-						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
+						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 400)];
 					}
 				}
 
+				//destroy checkbox and insert new
+				$in_question = array_unique($question_unique);
+				foreach ($in_question as $key) {
+					QuestionaireDataDetail::where('question_id', $key)->delete();
+				}
+				$checkbox_data = $this->filter_checkbox($request['detail'], $in_question);
+
+				foreach ($checkbox_data as $keyD => $d) {
+					$dc = new QuestionaireDataDetail;
+					$dc->data_header_id = $h->data_header_id;
+					$dc->section_id = $d['section_id'];
+					$dc->customer_id = $d['customer_id'];
+					$dc->question_id = $d['question_id'];
+					$dc->answer_id = $d['answer_id'];
+					$dc->score = $d['score'];
+					$dc->full_score = $d['full_score'];
+					$dc->is_not_applicable = $d['is_not_applicable'];
+					$dc->desc_answer = $d['desc_answer'];
+					$dc->created_by = Auth::id();
+					$dc->updated_by = Auth::id();
+					try {
+						$dc->save();
+					} catch (Exception $e) {
+						$errors[] = ['QuestionaireDataDetail(checkbox)' => substr($e, 0, 400)];
+					}
+				}
+
+				//calculate total_score and full_score
 				$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
 				$cal_score = $this->calculate_score($h->data_header_id, $in_section);
 				if(!empty($cal_score['full_score']) && !empty($cal_score['total_score'])) {
@@ -1346,7 +1326,7 @@ class QuestionaireDataController extends Controller
 				}
 			}
 		} catch (Exception $e) {
-			$errors[] = ['QuestionaireDataHeader' => substr($e, 0, 255)];
+			$errors[] = ['QuestionaireDataHeader' => substr($e, 0, 400)];
 		}
 
 		empty($errors) ? DB::commit() : DB::rollback();
@@ -1529,12 +1509,6 @@ class QuestionaireDataController extends Controller
 		set_time_limit(1000);
 		ini_set('memory_limit', '5012M');
 		$fileName = "WWWR Transaction Report ".date('Ymd His');
-
-		// $request->questionaire_type_id = 1;
-		// $request->assessor_id = "";
-		// $request->emp_snapshot_id = 2;
-		// $request->start_date = "2018-10-04";
-		// $request->end_date = "2018-10-04";
 
 		try {
 			QuestionaireType::findOrFail($request->questionaire_type_id);

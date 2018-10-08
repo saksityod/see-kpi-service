@@ -40,6 +40,7 @@ class QuestionaireController extends Controller
 		$items = DB::select("
 			SELECT *
 			FROM answer_type
+			WHERE is_active = 1
 			ORDER BY answer_type_id
 		");
 		return response()->json($items);
@@ -98,9 +99,10 @@ class QuestionaireController extends Controller
 			$sub_items[$key]->sub_section =  DB::select("
 				SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name, q.pass_score
 				FROM question q
-				LEFT JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+				INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = '{$qsv->section_id}'
 				AND q.parent_question_id IS NULL
+				AND at.is_active = 1
 				ORDER BY q.seq_no ASC
 				");
 
@@ -115,10 +117,12 @@ class QuestionaireController extends Controller
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
 				$sub_items[$key]->sub_section[$key2]->question =  DB::select("
-					SELECT question_id, answer_type_id, parent_question_id, question_name
-					FROM question
-					WHERE parent_question_id = '{$anv->question_id}'
-					ORDER BY seq_no ASC
+					SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name
+					FROM question q
+					INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
+					WHERE q.parent_question_id = '{$anv->question_id}'
+					AND at.is_active = 1
+					ORDER BY q.seq_no ASC
 					");
 
 				foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
