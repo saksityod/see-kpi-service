@@ -1505,6 +1505,9 @@ class QuestionaireDataController extends Controller
 		set_time_limit(1000);
 		ini_set('memory_limit', '5012M');
 		$fileName = "WWWR Transaction Report ".date('Ymd His');
+		
+		$request->start_date = $this->format_date($request->start_date);
+		$request->end_date = $this->format_date($request->end_date);
 
 		try {
 			QuestionaireType::findOrFail($request->questionaire_type_id);
