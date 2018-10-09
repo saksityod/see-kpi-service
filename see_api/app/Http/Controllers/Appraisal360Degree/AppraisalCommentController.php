@@ -79,33 +79,29 @@ class AppraisalCommentController extends Controller
 				
 				$items = collect(DB::select("
 					SELECT ao.opinion_id
-					, ao.emp_result_id
-					, em.emp_id
-					, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
-					, ag.assessor_group_id
-					, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
-					THEN 'yes' ELSE 'no' END) AS comment
-					, ao.assessor_strength_opinion
-					, ao.assessor_weakness_opinion
-					, ao.emp_strength_opinion
-					, ao.emp_weakness_opinion
-					-- , 'admin' as user
+						, ao.emp_result_id
+						, em.emp_id
+						, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
+						, ag.assessor_group_id
+						, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
+						THEN 'yes' ELSE 'no' END) AS comment
+						, ao.assessor_strength_opinion
+						, ao.assessor_weakness_opinion
+						, ao.emp_strength_opinion
+						, ao.emp_weakness_opinion
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
 					INNER JOIN assessor_group ag ON ao.assessor_group_id = ag.assessor_group_id
 					WHERE ao.emp_result_id = ?
 					ORDER BY ag.assessor_group_id ASC, em.emp_id ASC
 				",array($request->emp_result_id)));
-
 				
 				$isUseritems = $items->filter(function ($value) {
 					$empInfo = Employee::find(Auth::id());
-					return $value->emp_id == $empInfo->emp_code;
+					return $value->emp_id == $empInfo->emp_id;
 				});
-
 				
-
-				if($isUseritems->count() == 0){					
+				if($isUseritems->count() == 0){ 
 					$nullCommment = collect(DB::select("
 						select  0 as opinion_id
 						, ? as emp_result_id
@@ -125,10 +121,11 @@ class AppraisalCommentController extends Controller
 
 					$items = $items->merge($nullCommment);
 				}
-
+				
+				
 				$user = 'admin';
 
-				if(empty($items[0]->opinion_id)){
+				if($items->count() == 0){
 					return response()->json(['status' => 400, 'data' => 'admin-empty']);
 				}
 			} 
