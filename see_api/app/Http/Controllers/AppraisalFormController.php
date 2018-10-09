@@ -23,7 +23,7 @@ class AppraisalFormController extends Controller
 
 	public function index(Request $request)
 	{
-		$items = AppraisalForm::all()->sortBy('appraisal_form_id');
+		$items = AppraisalForm::where('is_active', '1')->orderBy('appraisal_form_id')->get();
 		return response()->json($items);
 	}
 	
