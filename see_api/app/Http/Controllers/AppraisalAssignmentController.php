@@ -66,7 +66,7 @@ class AppraisalAssignmentController extends Controller
 		$items = DB::select("
 			Select appraisal_type_id, appraisal_type_name
 			From appraisal_type
-			Order by appraisal_type_id {$orderby}
+			Order by appraisal_type_name {$orderby}
 			");
 		return response()->json($items);
 	}
@@ -1336,7 +1336,7 @@ class AppraisalAssignmentController extends Controller
 	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
-						and (a.org_code = '{$co->org_code}' or a.parent_org_code = '{$co->org_code}')
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				And er.emp_result_id = ir.emp_result_id
 	    				and ir.item_id = I.item_id
 	    				and er.period_id = p.period_id
