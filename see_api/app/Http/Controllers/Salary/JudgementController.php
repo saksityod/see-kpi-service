@@ -26,7 +26,8 @@ class JudgementController extends Controller
 		$this->middleware('jwt.auth');
 	}
 
-	public function list_status() {
+	public function list_status() 
+	{
 		$items = DB::select("
 			SELECT judgement_status_id, judgement_status
 			FROM judgement_status
@@ -36,7 +37,9 @@ class JudgementController extends Controller
 		return response()->json($items);
 	}
 
-	public function index(Request $request) {
+
+	public function index(Request $request) 
+	{
 		$year = empty($request->year) ? "" : "AND ap.appraisal_year = '{$request->year}'";
 		$period = empty($request->period) ? "" : "AND ap.period_id = '{$request->period}'";
 		$status = empty($request->status) ? "" : "AND er.judgement_status_id = '{$request->status}'";
@@ -80,7 +83,9 @@ class JudgementController extends Controller
 		return response()->json($result);
 	}
 
-	public function assign_judgement(Request $request) {
+
+	public function assign_judgement(Request $request) 
+	{
 		$emp_result_id = "";
 		$eri = json_decode($request['emp_result_id'], true);
 		$last_key = count($eri) -1;
@@ -101,6 +106,7 @@ class JudgementController extends Controller
 				ORDER BY j.judgement_item_id
 			");
 		} else {
+			/*
 			$head = DB::select("
 				SELECT e.emp_code, 
 						e.emp_name, 
@@ -118,7 +124,51 @@ class JudgementController extends Controller
 				LEFT OUTER JOIN position p ON p.position_id = er.position_id
 				LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
 				WHERE er.emp_result_id IN ({$emp_result_id})
-			"); 
+			");
+			*/
+			// อันนี้ยังทำงานช้าต้องแก้ไข ทำเพื่อเชื่อคราว //
+			$head = DB::select("
+				SELECT mq.*, CONCAT(ROUND(mq.avg_result_score, 2),' (',mq.salary_raise_step, ' ขั้น)') grand_total
+				FROM (
+					SELECT e.emp_code, 
+						e.emp_name, 
+						p.position_name, 
+						o.org_name, 
+						chief.emp_code chief_emp_code, 
+						chief.emp_name chief_emp_name,
+						ap.appraisal_period_desc,
+						ag.salary_raise_step,
+						(
+							SELECT AVG(er.result_score)
+							FROM emp_result er 
+							INNER JOIN (
+								SELECT emp_id, org_id, position_id, level_id, appraisal_type_id
+								FROM emp_result ser 
+								WHERE emp_result_id IN ({$emp_result_id})
+							) jer ON jer.emp_id = er.emp_id AND jer.org_id = er.org_id
+								AND jer.position_id = er.position_id AND jer.level_id = er.level_id
+								AND jer.appraisal_type_id = er.appraisal_type_id
+							WHERE er.period_id IN(
+								SELECT period_id
+								FROM appraisal_period ap
+								INNER JOIN (
+									SELECT end_date, appraisal_frequency_id
+									FROM appraisal_period sap
+									WHERE period_id = {$request->appraisal_period}
+								) sap ON ap.end_date <= sap.end_date 
+									AND ap.appraisal_frequency_id = sap.appraisal_frequency_id
+							)
+						) avg_result_score						
+					FROM emp_result er
+					LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
+					LEFT OUTER JOIN employee e ON e.emp_id = er.emp_id
+					LEFT OUTER JOIN employee chief ON chief.emp_code = e.chief_emp_code
+					LEFT OUTER JOIN org o ON o.org_id = er.org_id
+					LEFT OUTER JOIN position p ON p.position_id = er.position_id
+					LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
+					WHERE er.emp_result_id IN ({$emp_result_id})
+				)mq
+			");
 
 			$detail = DB::select("
 				SELECT j.judgement_item_id, j.judgement_item_name, IF(ej.is_pass IS NULL, 0, 1) is_pass
@@ -133,7 +183,9 @@ class JudgementController extends Controller
 		return response()->json(['head' => $head, 'detail' => $detail]);
 	}
 
-	public function store(Request $request) {
+
+	public function store(Request $request) 
+	{
 		$emp_result_id = "";
 		//$eri = json_decode($request['emp_result_id'], true);
 		$eri = $request['emp_result_id'];
@@ -198,4 +250,6 @@ class JudgementController extends Controller
 		empty($errors) ? $status = 200 : $status = 400;
         return response()->json(['status' => $status, 'errors' => $errors]);
 	}
+
+	
 }

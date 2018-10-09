@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Appraisal360degree;
 
 use App\SystemConfiguration;
 use App\AssessmentOpinion;
+use App\Employee;
 
 use Auth;
 use DateTime;
@@ -47,7 +48,7 @@ class AppraisalCommentController extends Controller
 
 		foreach($authen as $au){
 
-			if($au->is_all_employee == 1 || $request->group_id == 1){
+			if($au->is_all_employee == 1){
 				$items = DB::select("
 					SELECT ao.opinion_id
 					, ao.emp_result_id
@@ -73,8 +74,62 @@ class AppraisalCommentController extends Controller
 				if(empty($items[0]->opinion_id)){
 					return response()->json(['status' => 400, 'data' => 'admin-empty']);
 				}
-			}
-			else if ($au->emp_code == Auth::id()){
+			} 
+			elseif ($request->group_id == 1) {
+				
+				$items = collect(DB::select("
+					SELECT ao.opinion_id
+						, ao.emp_result_id
+						, em.emp_id
+						, CONCAT('#',ag.assessor_group_id,ao.emp_result_id,em.emp_id,' (',ag.assessor_group_name,')') as emp_name
+						, ag.assessor_group_id
+						, (CASE WHEN LENGTH(ao.emp_strength_opinion) and  LENGTH(ao.emp_weakness_opinion)
+						THEN 'yes' ELSE 'no' END) AS comment
+						, ao.assessor_strength_opinion
+						, ao.assessor_weakness_opinion
+						, ao.emp_strength_opinion
+						, ao.emp_weakness_opinion
+					FROM assessment_opinion ao
+					INNER JOIN employee em ON ao.assessor_id = em.emp_id
+					INNER JOIN assessor_group ag ON ao.assessor_group_id = ag.assessor_group_id
+					WHERE ao.emp_result_id = ?
+					ORDER BY ag.assessor_group_id ASC, em.emp_id ASC
+				",array($request->emp_result_id)));
+				
+				$isUseritems = $items->filter(function ($value) {
+					$empInfo = Employee::find(Auth::id());
+					return $value->emp_id == $empInfo->emp_id;
+				});
+				
+				if($isUseritems->count() == 0){ 
+					$nullCommment = collect(DB::select("
+						select  0 as opinion_id
+						, ? as emp_result_id
+						, emp_id
+						, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
+						, ? as assessor_group_id
+						, 'no' as comment
+						, '' as assessor_strength_opinion
+						, '' as assessor_weakness_opinion
+						, '' as emp_strength_opinion
+						, '' as emp_weakness_opinion
+						from employee
+						cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
+						where emp_code = ?"
+						,array($request->emp_result_id, $request->emp_result_id, $request->group_id, $request->group_id, Auth::id())
+					));
+
+					$items = $items->merge($nullCommment);
+				}
+				
+				
+				$user = 'admin';
+
+				if($items->count() == 0){
+					return response()->json(['status' => 400, 'data' => 'admin-empty']);
+				}
+			} 
+			elseif ($au->emp_code == Auth::id()){
 				$items = DB::select("
 					SELECT ao.opinion_id
 					, ao.emp_result_id
@@ -87,7 +142,6 @@ class AppraisalCommentController extends Controller
 					, ao.assessor_weakness_opinion
 					, ao.emp_strength_opinion
 					, ao.emp_weakness_opinion
-					-- , 'my' as user
 					FROM assessment_opinion ao
 					INNER JOIN employee em ON ao.assessor_id = em.emp_id
 					INNER JOIN assessor_group ag ON ao.assessor_group_id = ag.assessor_group_id
@@ -126,22 +180,20 @@ class AppraisalCommentController extends Controller
 				if(empty($items[0]->opinion_id)){
 					$items = DB::select("
 						select  0 as opinion_id
-						, ? as emp_result_id -- ?
+						, ? as emp_result_id
 						, emp_id
 						, CONCAT('#',ag.assessor_group_id,?,emp_id,' (',ag.assessor_group_name,')') as emp_name
-						, ? as assessor_group_id -- ?
+						, ? as assessor_group_id
 						, 'no' as comment
 						, '' as assessor_strength_opinion
 						, '' as assessor_weakness_opinion
 						, '' as emp_strength_opinion
 						, '' as emp_weakness_opinion
-						-- , 'other' as user
 						from employee
 						cross join (select assessor_group_name, assessor_group_id from assessor_group where assessor_group_id = ?) ag
 						where emp_code = ? "
-					, array($request->emp_result_id, $request->emp_result_id, $request->assessor_group_id
-					, $request->assessor_group_id, Auth::id()));
-					//return response()->json(['status' => 400, 'data' => 'other-empty']);
+					, array($request->emp_result_id, $request->emp_result_id, $request->group_id
+					, $request->group_id, Auth::id()));
 				}
 
 				$user = 'other';
