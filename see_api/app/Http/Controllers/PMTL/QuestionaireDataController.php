@@ -1029,7 +1029,6 @@ class QuestionaireDataController extends Controller
 			foreach ($request['detail'] as $d) {
 				$validator_detail = Validator::make([
 					'section_id' => $d['section_id'],
-					'customer_id' => $d['customer_id'],
 					'question_id' => $d['question_id'],
 					'answer_id' => $d['answer_id'],
 					'score' => $d['score'],
@@ -1037,7 +1036,6 @@ class QuestionaireDataController extends Controller
 					'is_not_applicable' => $d['is_not_applicable']
 				], [
 					'section_id' => 'required|integer',
-					'customer_id' => 'integer',
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
 					'score' => 'required|between:0,99.99',
@@ -1103,7 +1101,7 @@ class QuestionaireDataController extends Controller
 					$dt = new QuestionaireDataDetail;
 					$dt->data_header_id = $h->data_header_id;
 					$dt->section_id = $d['section_id'];
-					$dt->customer_id = $d['customer_id'];
+					$dt->customer_id = empty($d['customer_id']) ? null : $d['customer_id'];
 					$dt->question_id = $d['question_id'];
 					$dt->answer_id = $d['answer_id'];
 					$dt->score = $d['score'];
@@ -1183,7 +1181,6 @@ class QuestionaireDataController extends Controller
 			foreach ($request['detail'] as $d) {
 				$validator_detail = Validator::make([
 					'section_id' => $d['section_id'],
-					'customer_id' => $d['customer_id'],
 					'question_id' => $d['question_id'],
 					'answer_id' => $d['answer_id'],
 					'score' => $d['score'],
@@ -1191,7 +1188,6 @@ class QuestionaireDataController extends Controller
 					'is_not_applicable' => $d['is_not_applicable']
 				], [
 					'section_id' => 'required|integer',
-					'customer_id' => 'integer',
 					'question_id' => 'required|integer',
 					'answer_id' => 'required|integer',
 					'score' => 'required|between:0,99.99',
@@ -1256,7 +1252,7 @@ class QuestionaireDataController extends Controller
 							$dt = new QuestionaireDataDetail;
 							$dt->data_header_id = $h->data_header_id;
 							$dt->section_id = $d['section_id'];
-							$dt->customer_id = $d['customer_id'];
+							$dt->customer_id = empty($d['customer_id']) ? null : $d['customer_id'];
 							$dt->question_id = $d['question_id'];
 							$dt->answer_id = $d['answer_id'];
 							$dt->score = $d['score'];
@@ -1269,7 +1265,7 @@ class QuestionaireDataController extends Controller
 							$dt = QuestionaireDataDetail::find($d['data_detail_id']);
 							$dt->data_header_id = $h->data_header_id;
 							$dt->section_id = $d['section_id'];
-							$dt->customer_id = $d['customer_id'];
+							$dt->customer_id = empty($d['customer_id']) ? null : $d['customer_id'];
 							$dt->question_id = $d['question_id'];
 							$dt->answer_id = $d['answer_id'];
 							$dt->score = $d['score'];
@@ -1298,7 +1294,7 @@ class QuestionaireDataController extends Controller
 					$dc = new QuestionaireDataDetail;
 					$dc->data_header_id = $h->data_header_id;
 					$dc->section_id = $d['section_id'];
-					$dc->customer_id = $d['customer_id'];
+					$dc->customer_id = empty($d['customer_id']) ? null : $d['customer_id'];
 					$dc->question_id = $d['question_id'];
 					$dc->answer_id = $d['answer_id'];
 					$dc->score = $d['score'];
