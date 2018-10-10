@@ -66,6 +66,18 @@ class AppraisalController extends Controller
 		", array($request->appraisal_year));
 		return response()->json($items);
 	}
+	
+	public function period_list_salary(Request $request)
+	{
+		$items = DB::select("
+			Select period_id, period_no, appraisal_period_desc
+			from appraisal_period
+			where appraisal_year = ? and is_raise = 1 
+			order by period_id asc
+		", array($request->appraisal_year));
+		return response()->json($items);
+	}
+
 
     public function al_list()
     {

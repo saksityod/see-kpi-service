@@ -106,27 +106,6 @@ class JudgementController extends Controller
 				ORDER BY j.judgement_item_id
 			");
 		} else {
-			/*
-			$head = DB::select("
-				SELECT e.emp_code, 
-						e.emp_name, 
-						p.position_name, 
-						o.org_name, 
-						chief.emp_code chief_emp_code, 
-						chief.emp_name chief_emp_name,
-						ap.appraisal_period_desc,
-						CONCAT(er.result_score,' (',ag.salary_raise_step, ' ขั้น)') grand_total
-				FROM emp_result er
-				LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
-				LEFT OUTER JOIN employee e ON e.emp_id = er.emp_id
-				LEFT OUTER JOIN employee chief ON chief.emp_code = e.chief_emp_code
-				LEFT OUTER JOIN org o ON o.org_id = er.org_id
-				LEFT OUTER JOIN position p ON p.position_id = er.position_id
-				LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id AND ag.is_judgement = 1
-				WHERE er.emp_result_id IN ({$emp_result_id})
-			");
-			*/
-			// อันนี้ยังทำงานช้าต้องแก้ไข ทำเพื่อเชื่อคราว //
 			$head = DB::select("
 				SELECT mq.*, CONCAT(ROUND(mq.avg_result_score, 2),' (',mq.salary_raise_step, ' ขั้น)') grand_total
 				FROM (
@@ -149,14 +128,12 @@ class JudgementController extends Controller
 								AND jer.position_id = er.position_id AND jer.level_id = er.level_id
 								AND jer.appraisal_type_id = er.appraisal_type_id
 							WHERE er.period_id IN(
-								SELECT period_id
-								FROM appraisal_period ap
-								INNER JOIN (
-									SELECT end_date, appraisal_frequency_id
-									FROM appraisal_period sap
-									WHERE period_id = {$request->appraisal_period}
-								) sap ON ap.end_date <= sap.end_date 
-									AND ap.appraisal_frequency_id = sap.appraisal_frequency_id
+								SELECT DISTINCT ap.period_id
+								FROM appraisal_period ap 
+								INNER JOIN appraisal_period aps ON aps.salary_period_desc = ap.salary_period_desc
+								WHERE aps.period_id = (
+									SELECT period_id FROM emp_result WHERE emp_result_id = '{$emp_result_id}'
+								)
 							)
 						) avg_result_score						
 					FROM emp_result er
