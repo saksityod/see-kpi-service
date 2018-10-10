@@ -16,6 +16,7 @@ use App\AppraisalPeriod;
 use App\SalaryStructure;
 use App\EmpResult;
 use App\Employee;
+use App\EmpJudgement;
 use App\AppraisalGrade;
 use App\AppraisalStructure;
 
@@ -102,52 +103,16 @@ class CalculateSalaryStructureController extends Controller
         $calgrade = $this->GradeCalculate($periodInfo);
         if ($calgrade->status == 404) {
             return response()->json(["status"=>$gradeResult->status, "data"=>$gradeResult->data]);
-        } 
+        }
         
         // 2. ทำการปรับเงินเดือน //
         // 2.1 ค้นหา emp ที่ได้ Grade ที่ไม่มี Struc (Step-1) และทำการปรับเงินเดือน //
-        $raiseStep[] = $this->SalaryRaiseStep1($periodInfo);
+        $raiseStep["raise-step-1"] = $this->SalaryRaiseStep1($periodInfo);
 
         // 2.2 ค้นหา emp ที่ได้ Grade ที่มี Struc ผูกอยู่ (Step-2, Step-3) //
-        $raiseStep[] = $this->SalaryRaiseStep2_3($periodInfo);
+        $raiseStep["raise-step-2-3"] = $this->SalaryRaiseStep2_3($periodInfo);
 
         return response()->json(["status"=>200, "data"=>$raiseStep]);
-    }
-
-
-    public function SalaryRieseJudgement(Request $request)
-    {
-        try {
-			$periodInfo = AppraisalPeriod::FindOrFail($request->period_id);
-		} catch(ModelNotFoundException $e) {
-			return response()->json(["status"=>404, "data"=>"Salary Appraisal Period not found."]);
-        }
-
-        $empLog = [];
-        foreach ($request->emp_result_id as $id) {
-            $empGrade = DB::select("
-                SELECT er.emp_result_id, emp.emp_id, emp.level_id, salary_grade_id,
-                    IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
-                FROM emp_result er
-                INNER JOIN employee emp 
-                    ON emp.emp_id = er.emp_id 
-                    AND er.org_id = er.org_id
-                    AND er.position_id = er.position_id
-                    AND er.level_id = er.level_id
-                WHERE er.emp_result_id = '{$id}'"
-            );
-
-            $grade = DB::select("
-                SELECT grade_id, appraisal_level_id, grade, salary_raise_step
-                FROM appraisal_grade
-                WHERE grade_id = '{$empGrade[0]->salary_grade_id}'"
-            );
-
-            // Update เงินเดือนให้ emp //
-            $empLog[] = $this->RaiseUp($periodInfo, $grade[0], $empGrade[0]);
-        }
-
-        return response()->json(["status"=>200, "data"=>$empLog]);
     }
 
 
@@ -247,23 +212,26 @@ class CalculateSalaryStructureController extends Controller
     private function SalaryRaiseStep2_3($periodInfo)
     {
         // ดึงข้อมูล grade ที่ขึ้นเงินเดือน step2(Structure_id ไม่เท่ากับค่าว่าง) เพื่อนำไปหา Item ที่ต้องการประเมิณ //
-        $gradeStep = AppraisalGrade::select("grade_id", "appraisal_level_id", "grade", "salary_raise_step", "structure_id", "is_judgement")
-            ->whereNotNull("structure_id")
-            ->where("structure_id", "!=", "0")
-            ->get();
+        $gradeStep = DB::select("
+            SELECT grade_id, appraisal_level_id, grade, salary_raise_step, 
+                structure_id, is_judgement
+            FROM appraisal_grade
+            WHERE IFNULL(structure_id,0) != 0 
+            OR is_judgement != 0
+        ");
 
         $empLog = [];
-        foreach ($gradeStep as $grade) {            
+        foreach ($gradeStep as $grade) {
             // ดึงข้อมูลของ emp ที่ถูกคิด grade ว่าอยู่ที่ level ไหน และปัจจุบันมี step และ salary เท่าไหร่ //
             $empGrade = DB::select("
-                SELECT er.emp_result_id, emp.emp_id, emp.level_id,
+                SELECT er.emp_result_id, emp.emp_id, emp.level_id, emp.org_id, emp.position_id,
                     IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
                 FROM emp_result er
-                INNER JOIN employee emp 
+                INNER JOIN employee emp
                     ON emp.emp_id = er.emp_id 
-                    AND er.org_id = er.org_id
-                    AND er.position_id = er.position_id
-                    AND er.level_id = er.level_id
+                    AND emp.org_id = er.org_id
+                    AND emp.position_id = er.position_id
+                    AND emp.level_id = er.level_id
                 WHERE (er.judgement_status_id IS NULL OR er.judgement_status_id = 0)
                 AND er.period_id = '{$periodInfo->period_id}'
                 AND er.salary_grade_id = '{$grade->grade_id}'
@@ -271,42 +239,63 @@ class CalculateSalaryStructureController extends Controller
             ");
 
             foreach ($empGrade as $emp){
-                // 2.3 ตรวจสอบผลผลการประเมิณของ item ที่อยู่ภายใต้ ข้อ 2.2 (เช็คที่ตาราง appraisal_item_result ที่ no_raise_value กับ actual_value) //
-                $appraisalItemResult = DB::select("
-                    SELECT air.item_result_id, air.emp_result_id, air.item_id, 
-                        air.no_raise_value, air.actual_value
-                    FROM appraisal_item_result air
-                    INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
-                    INNER JOIN appraisal_structure stc ON stc.structure_id = ai.structure_id
-                    WHERE emp_result_id = '{$emp->emp_result_id}'
-                    AND stc.structure_id = '{$grade->structure_id}'
-                ");
-                $appraisalItemResult = collect($appraisalItemResult);
-                $itemInvalid = $appraisalItemResult->filter(function ($item){
-                    return $item->actual_value > $item->no_raise_value;
-                });
+                // กรณีไม่มี structure แต่ต้องผ่านการพิจารณา ให้บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result //
+                if($grade->structure_id == null){
+                    EmpResult::where("emp_result_id", $emp->emp_result_id)->update(["judgement_status_id" => 1]);
+                    $empLog[] = [ "emp_result_id"=>$emp->emp_result_id, "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id,
+                        "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary, "grade"=>$grade->grade, 
+                        "salary_raise_step"=>$grade->salary_raise_step, "new_step"=>0, "new_salary"=>0, 
+                        "raise_amount"=>0, "judgement_status_id"=>1
+                    ];
+                } else {
+                    // 2.3 ตรวจสอบผลผลการประเมิณของ item ที่อยู่ภายใต้ ข้อ 2.2 (เช็คที่ตาราง appraisal_item_result ที่ no_raise_value กับ actual_value) //
+                    $appraisalItemResult = DB::select("
+                        SELECT air.emp_id, air.level_id, air.org_id, air.position_id, air.period_id, 
+                            air.item_id, sum(air.no_raise_value) no_raise_value, sum(air.actual_value) actual_value
+                        FROM appraisal_item_result air
+                        INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+                        INNER JOIN appraisal_structure stc ON stc.structure_id = ai.structure_id
+                        WHERE stc.structure_id = '{$grade->structure_id}'
+                        AND air.emp_id = '{$emp->emp_id}' 
+                        AND air.level_id = '{$emp->level_id}' 
+                        AND air.org_id = '{$emp->org_id}'
+                        AND air.position_id = '{$emp->position_id}'
+                        AND air.period_id in(
+                            SELECT ap.period_id
+                            FROM appraisal_period ap 
+                            WHERE salary_period_desc = (
+                                SELECT sap.salary_period_desc
+                                FROM appraisal_period sap
+                                WHERE sap.period_id = '{$periodInfo->period_id}'
+                            )
+                        )
+                        GROUP BY air.emp_id, air.level_id, air.org_id, air.position_id, air.period_id, air.item_id
+                    ");
+                    $appraisalItemResult = collect($appraisalItemResult);
+                    $itemInvalid = $appraisalItemResult->filter(function ($item){
+                        return $item->actual_value > $item->no_raise_value;
+                    });
 
-                if( ! $itemInvalid->isEmpty()){
-                    // 2.3.1 ไม่ผ่านการประเมิณเลยซัก Item เดียวที่อยู่ภายใต้ Struc - ไม่ปรับเงินเดือน //
-                    // 2.3.2 ผ่านการประเมิณเพียงแค่บาง Item ที่อยู่ภายใต้ Struc - ไม่ปรับเงินเดือน //
-                    // Do not thing //
-                } else { 
-                    // 2.3.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc //
-                    // 2.3.3.1 ตรวจสอบว่า appraisal_grade.is_judgement (ต้องผ่านการพิจารณาหรือไม่) //
-                    if($grade->is_judgement == 0){
-                        // 2.3.3.1.1 กรณี is_judgement = 0 (ไม่ต้องผ่านการพิจารณา) - ปรับเงินเดือน //
-                        $empLog[] = $this->RaiseUp($periodInfo, $grade, $emp);
-                    } else {
-                        // 2.3.3.1.2 กรณี is_judgement = 1 (จำเป็นต้องผ่านการพิจารณา) //
-                        // บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result //
-                        EmpResult::where("emp_result_id", $emp->emp_result_id)->update(["judgement_status_id" => 1]);
-                        $empLog[] = [
-                            "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id,
-                            "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary,
-                            "grade"=>$grade->grade, "salary_raise_step"=>$grade->salary_raise_step,
-                            "new_step"=>0, "new_salary"=>0, "raise_amount"=>0,
-                            "judgement_status_id"=>1
-                        ];
+                    if( ! $itemInvalid->isEmpty()){
+                        // 2.3.1 ไม่ผ่านการประเมิณเลยซัก Item เดียวที่อยู่ภายใต้ Struc - ไม่ปรับเงินเดือน //
+                        // 2.3.2 ผ่านการประเมิณเพียงแค่บาง Item ที่อยู่ภายใต้ Struc - ไม่ปรับเงินเดือน //
+                        // Do not thing //
+                    } else { 
+                        // 2.3.3 ผ่านการประเมิณของทุก Item ที่อยู่ภายใต้ Struc //
+                        // 2.3.3.1 ตรวจสอบว่า appraisal_grade.is_judgement (ต้องผ่านการพิจารณาหรือไม่) //
+                        if($grade->is_judgement == 0){
+                            // 2.3.3.1.1 กรณี is_judgement = 0 (ไม่ต้องผ่านการพิจารณา) - ปรับเงินเดือน //
+                            $empLog[] = $this->RaiseUp($periodInfo, $grade, $emp);
+                        } else {
+                            // 2.3.3.1.2 กรณี is_judgement = 1 (จำเป็นต้องผ่านการพิจารณา) //
+                            // บันทึก Grade, judgement_status(status = 1-รอการพิจารณา) ลงที่ emp_result //
+                            EmpResult::where("emp_result_id", $emp->emp_result_id)->update(["judgement_status_id" => 1]);
+                            $empLog[] = [ "emp_result_id"=>$emp->emp_result_id, "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id,
+                                "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary, "grade"=>$grade->grade, 
+                                "salary_raise_step"=>$grade->salary_raise_step, "new_step"=>0, "new_salary"=>0, 
+                                "raise_amount"=>0, "judgement_status_id"=>1
+                            ];
+                        }
                     }
                 }
             }
@@ -358,7 +347,9 @@ class CalculateSalaryStructureController extends Controller
             ->update([
                 "judgement_status_id" => 3, 
                 "raise_amount" => ((float)$salaryStruc->s_amount) - ((float)$emp->emp_cur_salary),
-                "new_s_amount" => $salaryStruc->s_amount
+                "new_s_amount" => $salaryStruc->s_amount,
+                "raise_step" => $grade->salary_raise_step,
+                "new_step" => $salaryStruc->step
             ]);
         
         // Update ข้อมูลเงินเดือนที่ตาราง emp //
@@ -369,13 +360,56 @@ class CalculateSalaryStructureController extends Controller
             ]);
 
         // Log //
-        return [
-            "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id, 
-            "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary,
-            "grade"=>$grade->grade, "salary_raise_step"=>$grade->salary_raise_step,
-            "new_step"=>$salaryStruc->step, "new_salary"=>$salaryStruc->s_amount, 
-            "raise_amount"=>((float)$salaryStruc->s_amount) - ((float)$emp->emp_cur_salary),
-            "judgement_status_id" => 3
+        return ["emp_result_id"=>$emp->emp_result_id, "emp_id"=>$emp->emp_id, "level_id"=>$emp->level_id, 
+            "cur_step"=>$emp->emp_cur_step, "cur_salary"=>$emp->emp_cur_salary, "grade"=>$grade->grade, 
+            "salary_raise_step"=>$grade->salary_raise_step, "new_step"=>$salaryStruc->step, "new_salary"=>$salaryStruc->s_amount, 
+            "raise_amount"=>((float)$salaryStruc->s_amount) - ((float)$emp->emp_cur_salary), "judgement_status_id" => 3
         ];
+    }
+
+
+    public function SalaryRieseJudgement(Request $request)
+    {
+        try {
+			$periodInfo = AppraisalPeriod::FindOrFail($request->period_id);
+		} catch(ModelNotFoundException $e) {
+			return response()->json(["status"=>404, "data"=>"Salary Appraisal Period not found."]);
+        }
+
+        $empLog = [];
+        foreach ($request->emp_result_id as $id) {
+            $empGrade = DB::select("
+                SELECT er.emp_result_id, emp.emp_id, emp.level_id, salary_grade_id,
+                    IFNULL(emp.step,0.00) emp_cur_step, IFNULL(emp.s_amount,0.00) emp_cur_salary
+                FROM emp_result er
+                INNER JOIN employee emp 
+                    ON emp.emp_id = er.emp_id 
+                    AND emp.org_id = er.org_id
+                    AND emp.position_id = er.position_id
+                    AND emp.level_id = er.level_id
+                WHERE er.emp_result_id = '{$id}'"
+            );
+
+            $grade = DB::select("
+                SELECT grade_id, appraisal_level_id, grade, salary_raise_step
+                FROM appraisal_grade
+                WHERE grade_id = '{$empGrade[0]->salary_grade_id}'"
+            );
+
+            
+            $empJudgementCnt = DB::select("
+                SELECT count(1) cnt
+                FROM emp_judgement ej 
+                WHERE emp_result_id = '{$id}'
+                AND is_pass = 0
+            ");
+            if($empJudgementCnt[0]->cnt == 0){
+                // Update เงินเดือนให้ emp //
+                $empLog[] = $this->RaiseUp($periodInfo, $grade[0], $empGrade[0]);
+            }
+            
+        }
+
+        return response()->json(["status"=>200, "data"=>$empLog]);
     }
 }
