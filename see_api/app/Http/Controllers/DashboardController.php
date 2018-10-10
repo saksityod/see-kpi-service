@@ -1179,7 +1179,7 @@ class DashboardController extends Controller
 					$perspective = DB::select("
 					select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
 					round(sum(a.weight_percent),2) perspective_weight,
-					round(sum(a.weigh_score)/a.structure_weight_percent,2) total_score
+					round(sum(a.weigh_score),2) total_score
 					from appraisal_item_result a
 					left outer join appraisal_item b
 					on a.item_id = b.item_id
