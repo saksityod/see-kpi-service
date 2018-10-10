@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="CopyOfsee-kpi-mpn"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_base"/>
 	<parameter name="emp_id" class="java.lang.String"/>
 	<parameter name="level_id" class="java.lang.String"/>
 	<parameter name="position_id" class="java.lang.String"/>
@@ -11,6 +11,7 @@
 	<parameter name="level_org_id" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="subreport_path" class="java.lang.String"/>
+	<parameter name="appraisal_year" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT lev.level_id
 , lev.appraisal_level_name as level
@@ -42,6 +43,7 @@ INNER JOIN (select max(total.one) as one
 , max(total.four) as four
 , total.emp_id
 , total.num_stucture
+, total.appraisal_year
 from (
 	select (CASE WHEN aps.form_id = 1 THEN 1 ELSE 0 END) AS one
 	, (CASE WHEN aps.form_id = 2 THEN 2 ELSE 0 END) AS three
@@ -53,13 +55,16 @@ from (
 			INNER JOIN appraisal_structure aps1 ON aps1.structure_id = api1.structure_id
 			where air1.emp_id = air.emp_id
 			group by emp_id) as num_stucture
+	,app.appraisal_year
 	FROM appraisal_item_result air
+	INNER JOIN appraisal_period app ON app.period_id = air.period_id
 	INNER JOIN appraisal_item api ON api.item_id = air.item_id
 	INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 	)total 
 	group by total.emp_id) stuc ON emp1.emp_id = stuc.emp_id 
 WHERE (emp.emp_id =  $P{emp_id} OR '' = $P{emp_id} OR  ISNULL($P{emp_id}) = 1 )
 AND (emp.position_id = $P{position_id}  OR '' = $P{position_id} OR  ISNULL($P{position_id}) = 1  )
+AND stuc.appraisal_year = $P{appraisal_year}
 AND (emp1.org_id IN( $P{org_id} ))
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_id}  OR '' = $P{level_id}  OR  ISNULL($P{level_id}) = 1 )

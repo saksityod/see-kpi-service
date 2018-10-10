@@ -8,6 +8,7 @@
 	<parameter name="level_org_id" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="subreport_path" class="java.lang.String"/>
+	<parameter name="appraisal_year" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT lev.level_id
 , CASE WHEN sys.threshold = 1 THEN "Report KPI org threshold.jasper" ELSE "Report KPI org.jasper" END as threshold
@@ -28,10 +29,13 @@ INNER JOIN appraisal_level lev ON emp.level_id = lev.level_id
 INNER JOIN org ON emp.org_id = org.org_id
 INNER JOIN (select max(total.one) as one
 , total.org_id
+, total.appraisal_year
 from (
 	select (CASE WHEN api.structure_id = 1 THEN 1 ELSE 0 END) AS one
 	, air.org_id
+	, app.appraisal_year
 	FROM appraisal_item_result air
+	INNER JOIN appraisal_period app ON app.period_id = air.period_id
 	INNER JOIN appraisal_item api ON api.item_id = air.item_id
 	INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 	INNER JOIN (select org_id, level_id from emp_result where appraisal_type_id = 1) org2 ON  org2.org_id = air.org_id
@@ -41,7 +45,8 @@ from (
 cross join system_config sys
 WHERE (org.org_id IN( $P!{org_id} ) )
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
-AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 ) 
+AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 )
+AND  stuc.appraisal_year = $P{appraisal_year}
 GROUP BY lev.level_id
 , lev.appraisal_level_name
 , org.org_id
