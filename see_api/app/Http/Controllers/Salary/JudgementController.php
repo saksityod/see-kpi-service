@@ -171,7 +171,7 @@ class JudgementController extends Controller
 			");
 
 			$detail = DB::select("
-				SELECT j.judgement_item_id, j.judgement_item_name, IF(ej.is_pass IS NULL, 0, 1) is_pass
+				SELECT j.judgement_item_id, j.judgement_item_name, IFNULL(ej.is_pass,0) is_pass
 				FROM judgement_item j
 				LEFT OUTER JOIN emp_judgement ej ON ej.judgement_item_id = j.judgement_item_id 
 				AND ej.emp_result_id IN ({$emp_result_id})
@@ -230,15 +230,13 @@ class JudgementController extends Controller
 			}
 			
 			foreach ($request['items'] as $i) {
-				if($i['is_pass']==1) {
-					foreach ($eri as $d) {
-						$ej = new EmpJudgement;
-						$ej->emp_result_id = $d['id'];
-						$ej->judgement_item_id = $i['judgement_item_id'];
-						$ej->is_pass = $i['is_pass'];
-						$ej->created_by = Auth::id();
-						$ej->save();
-					}
+				foreach ($eri as $d) {
+					$ej = new EmpJudgement;
+					$ej->emp_result_id = $d['id'];
+					$ej->judgement_item_id = $i['judgement_item_id'];
+					$ej->is_pass = $i['is_pass'];
+					$ej->created_by = Auth::id();
+					$ej->save();
 				}
 			}
 		}
