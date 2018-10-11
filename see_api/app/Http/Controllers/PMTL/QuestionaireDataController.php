@@ -566,26 +566,32 @@ class QuestionaireDataController extends Controller
 				es.emp_first_name LIKE '%{$emp_name}%'
 				OR es.emp_last_name LIKE '%{$emp_name}%'
 				OR p.position_code LIKE '%{$emp_name}%'
-			) AND es.emp_snapshot_id NOT IN (
-				SELECT qdh.emp_snapshot_id
-				FROM questionaire_data_header qdh
-				INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-				WHERE qdh.questionaire_date = '{$request->date}'
-				AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
 			) AND jf.is_evaluated = 1
 			LIMIT 10
 		");
+
+		// AND es.emp_snapshot_id NOT IN (
+		// 		SELECT qdh.emp_snapshot_id
+		// 		FROM questionaire_data_header qdh
+		// 		INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+		// 		WHERE qdh.questionaire_date = '{$request->date}'
+		// 		AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
+		// 	)
 		return response()->json($items);
 	}
 
 	public function auto_store(Request $request) {
 		$position_code = empty($request->position_code) ? "" : "AND cp.position_code = '{$request->position_code}'";
+		$cus_name = $this->concat_emp_first_last_code($request->customer_name);
 
 		$items = DB::select("
 			SELECT c.customer_id, c.customer_code, c.customer_name, c.customer_type
 			FROM customer c
 			LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
-			WHERE c.customer_name LIKE '%{$request->customer_name}%'
+			WHERE (
+				c.customer_name LIKE '%{$cus_name}%'
+				OR c.customer_code LIKE '%{$cus_name}%'
+			)
 			AND c.customer_id NOT IN (
 				SELECT customer_id
 				FROM questionaire_data_detail
@@ -637,6 +643,12 @@ class QuestionaireDataController extends Controller
 		}
 
 		try {
+			QuestionaireSection::findOrFail($request->section_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'QuestionaireSection not found.']);
+		}
+
+		try {
 			$customer = Customer::select('customer_id', 'customer_name')->where('customer_id', $request->customer_id)->firstOrFail();
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Customer not found.']);
@@ -648,6 +660,7 @@ class QuestionaireDataController extends Controller
 			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 			WHERE qdd.data_header_id = '{$request->data_header_id}'
 			AND qdd.customer_id = '{$request->customer_id}'
+			AND qdd.section_id = '{$request->section_id}'
 			GROUP BY qdd.section_id
 		");
 
@@ -663,6 +676,7 @@ class QuestionaireDataController extends Controller
 				WHERE q.section_id = {$v_qdd->section_id}
 				AND q.parent_question_id IS NULL
 				AND at.is_active = 1
+				ORDER BY q.seq_no ASC
 			");
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
@@ -680,6 +694,7 @@ class QuestionaireDataController extends Controller
 					INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 					WHERE q.parent_question_id = {$anv->question_id}
 					AND at.is_active = 1
+					ORDER BY q.seq_no ASC
 					");
 
 				foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
@@ -701,7 +716,9 @@ class QuestionaireDataController extends Controller
 			AND qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
 				FROM questionaire_data_header qdhh
-				WHERE qdhh.emp_snapshot_id = qdh.emp_snapshot_id
+				INNER JOIN questionaire qnn ON qnn.questionaire_id = qdhh.questionaire_id
+				WHERE qnn.questionaire_type_id = qn.questionaire_type_id
+				AND qdhh.emp_snapshot_id = qdh.emp_snapshot_id
 		";
 
 		if(empty($request->start_date) && empty($request->end_date)) {
@@ -795,9 +812,34 @@ class QuestionaireDataController extends Controller
 
 	public function generate_template(Request $request) {
 		try {
-			QuestionaireType::findOrFail($request->questionaire_type_id);
+			$quesionaire_type = QuestionaireType::findOrFail($request->questionaire_type_id);
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'QuestionaireType not found.']);
+		}
+
+		try {
+			EmployeeSnapshot::findOrFail($request->emp_snapshot_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Please Search Employee.']);
+		}
+
+		$req_date = $this->format_date($request->date);
+
+		$check_assign = DB::select("
+			SELECT qdh.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
+			FROM questionaire_data_header qdh
+			INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+			WHERE qdh.questionaire_date = '{$req_date}'
+			AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
+			AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
+		");
+
+		if(!empty($check_assign)) {
+			return response()->json([
+				'status' => 404, 
+				'data' => $request->date.' '.$check_assign[0]->emp_name.' was already evaluated '.$quesionaire_type->questionaire_type
+			]);
 		}
 
 		$head = DB::select("
@@ -1505,7 +1547,7 @@ class QuestionaireDataController extends Controller
 		set_time_limit(1000);
 		ini_set('memory_limit', '5012M');
 		$fileName = "WWWR Transaction Report ".date('Ymd His');
-		
+
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
 
