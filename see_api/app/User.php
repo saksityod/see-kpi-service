@@ -45,3 +45,21 @@ class User extends Model implements AuthenticatableContract,
        return $this->password_;
     }
 }
+
+class Roles extends Model  
+{   
+    /** 
+     * The table associated with the model. 
+     *  
+     * @var string  
+     */ 
+        
+    const CREATED_AT = null;    
+    const UPDATED_AT = null;    
+    protected $table = 'lportal.role_';   
+    protected $primaryKey = null;   
+    public $incrementing = true;    
+    //public $timestamps = false;   
+    //protected $guarded = array(); 
+} 
+

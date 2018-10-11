@@ -8,6 +8,7 @@ use App\EmployeeSnapshot;
 use App\AppraisalLevel;
 use App\Position;
 use App\Org;
+use App\Roles;
 
 use Auth;
 use DB;
@@ -222,6 +223,7 @@ class ImportEmployeeSnapshotController extends Controller
 					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Level ID' => 'Job Function ID not found']];
 				} else {
 					$level_id = $appraisal_level->level_id;
+					$role = Roles::select("roleId")->where("name" ,$appraisal_level->appraisal_level_name)->first();
 				}
 
 				if(empty($job_function)) {
@@ -277,7 +279,8 @@ class ImportEmployeeSnapshotController extends Controller
 								$newEmp[] = [
 									"emp_code" => $i->useraccountcode, 
 									"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
-									"email" => $i->employeeemail
+									"email" => $i->employeeemail,
+									"role_id" => $role->roleId
 								];
 							} catch (Exception $e) {
 								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
