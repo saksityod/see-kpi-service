@@ -107,15 +107,22 @@ class QuestionaireDataController extends Controller
 					SELECT qdh.data_header_id, 
 					CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
 					es.email,
-					ifnull(rsa.edit_flag, 0) edit_flag
+					ifnull(rsa.edit_flag, 0) edit_flag,
+					CONCAT(ases.emp_first_name, ' ', ases.emp_last_name) assessor_name,
+					qt.questionaire_type
 					FROM questionaire_data_header qdh
 					LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-					LEFT JOIN level_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id 
+					LEFT JOIN level_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id
+					LEFT JOIN employee_snapshot ases ON ases.emp_snapshot_id = qdh.assessor_id
+					INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+					INNER JOIN questionaire_type qt ON qt.questionaire_type_id = qn.questionaire_type_id
 					AND rsa.level_id = '{$assessor_id->level_id}'
 					WHERE qdh.data_header_id = '{$data_header_id}'
 					");
 
 				$data = [
+					"assessor_name" => $emp_snap[0]->assessor_name,
+					"form_type" => $emp_snap[0]->questionaire_type,
 					"emp_name" => $emp_snap[0]->emp_name, 
 					"status" => $status,
 					"web_domain" => $config->web_domain,
@@ -716,9 +723,7 @@ class QuestionaireDataController extends Controller
 			AND qdh.questionaire_date = (
 				SELECT MAX(qdhh.questionaire_date) questionaire_date
 				FROM questionaire_data_header qdhh
-				INNER JOIN questionaire qnn ON qnn.questionaire_id = qdhh.questionaire_id
-				WHERE qnn.questionaire_type_id = qn.questionaire_type_id
-				AND qdhh.emp_snapshot_id = qdh.emp_snapshot_id
+				WHERE qdhh.data_header_id = qdh.data_header_id
 		";
 
 		if(empty($request->start_date) && empty($request->end_date)) {

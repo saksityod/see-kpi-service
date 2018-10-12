@@ -69,7 +69,8 @@ class QuestionaireController extends Controller
 			SELECT q.questionaire_id, 
 					qt.questionaire_type,
 					q.questionaire_name,
-					q.pass_score
+					q.pass_score,
+					q.is_active
 			FROM questionaire q
 			INNER JOIN questionaire_type qt ON qt.questionaire_type_id = q.questionaire_type_id
 			".$questionaire_type_id."
