@@ -1562,12 +1562,7 @@ class QuestionaireDataController extends Controller
 	}
 
 	public function list_assessor_report($emp_snapshot_id, Request $request) {
-		try {
-			QuestionaireDataHeader::where("emp_snapshot_id", $emp_snapshot_id)->firstOrFail();	
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Employee not found in Questionaire Data Header.']);
-		}
-
+		$emp_snapshot = empty($emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$emp_snapshot_id}'";
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
 
@@ -1576,8 +1571,9 @@ class QuestionaireDataController extends Controller
 			FROM questionaire_data_header qdh
 			LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.assessor_id
 			INNER JOIN position p ON p.position_id = es.position_id
-			WHERE qdh.emp_snapshot_id = '{$emp_snapshot_id}'
+			WHERE 1=1
 			AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+			".$emp_snapshot."
 			GROUP BY es.emp_snapshot_id
 			ORDER BY es.emp_first_name, es.emp_last_name
 		");
