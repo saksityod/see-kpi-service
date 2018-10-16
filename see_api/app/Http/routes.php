@@ -506,7 +506,7 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@auto_emp_report');
 	Route::get('questionaire_report/auto_assessor_report', 'PMTL\QuestionaireDataController@auto_assessor_report');
-	Route::get('questionaire_report/list_assessor_report/{emp_snapshot_id}', 'PMTL\QuestionaireDataController@list_assessor_report');
+	Route::get('questionaire_report/list_assessor_report', 'PMTL\QuestionaireDataController@list_assessor_report');
 	Route::get('questionaire_report/export_transaction', 'PMTL\QuestionaireDataController@export_transaction');
 
 

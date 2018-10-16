@@ -1561,8 +1561,8 @@ class QuestionaireDataController extends Controller
 		return response()->json($items);
 	}
 
-	public function list_assessor_report($emp_snapshot_id, Request $request) {
-		$emp_snapshot = empty($emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$emp_snapshot_id}'";
+	public function list_assessor_report(Request $request) {
+		$emp_snapshot = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
 
