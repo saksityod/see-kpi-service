@@ -55,7 +55,7 @@ return [
     */
 
 
-    'from' => ['address' => 'Administrator@tfg.co.th', 'name' => 'TFG KPI Winner'],
+    'from' => ['address' => 'Administrator@tfg.co.th', 'name' => 'PMTL WWWR'],
 
     /*
     |--------------------------------------------------------------------------

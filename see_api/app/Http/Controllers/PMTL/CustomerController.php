@@ -46,13 +46,18 @@ class CustomerController extends Controller
 	public function auto_cus(Request $request) {
 		$customer_type = empty($request->customer_type) ? "" : "AND customer_type = '{$request->customer_type}'";
 		$industry_class = empty($request->industry_class) ? "" : "AND industry_class = '{$request->industry_class}'";
+		$customer_name = $this->qdc_service->concat_emp_first_last_code($request->customer_name);
 
 		$items = DB::select("
 			SELECT customer_id, customer_code, customer_name
 			FROM customer
-			WHERE customer_name LIKE '%{$request->customer_name}%'
+			WHERE (
+				customer_name LIKE '%{$customer_name}%'
+				OR customer_code LIKE '%{$customer_name}%'
+			)
 			".$customer_type."
 			".$industry_class."
+			ORDER BY customer_name
 			LIMIT 10
 		");
 		return response()->json($items);

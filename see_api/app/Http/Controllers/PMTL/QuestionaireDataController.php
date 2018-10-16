@@ -136,7 +136,7 @@ class QuestionaireDataController extends Controller
 				Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
 				{
 					$message->from($from['address'], $from['name']);
-					$message->to($to)->subject('ระบบได้ทำการประเมิน');
+					$message->to($to)->subject('WWWR ยืนยันผลการประเมิน');
 				});
 			} catch (Exception $ExceptionError) {
 				return ['mail error' => substr($ExceptionError, 0, 255)];
@@ -508,10 +508,24 @@ class QuestionaireDataController extends Controller
     	return $checkbox_data;
     }
 
+    function between_date_search($start_date, $end_date) {
+    	if(empty($start_date) && empty($end_date)) {
+    		$between_date = "";
+    	} else if(empty($start_date)) {
+    		$between_date = "AND qdh.questionaire_date BETWEEN '' AND '{$end_date}' ";
+    	} else if(empty($end_date)) {
+    		$between_date = "AND qdh.questionaire_date >= '{$start_date}' ";
+    	} else {
+    		$between_date = "AND qdh.questionaire_date BETWEEN '{$start_date}' AND '{$end_date}' ";
+    	}
+    	return $between_date;
+    }
+
 	public function auto_emp(Request $request) {
 		$emp_name = $this->concat_emp_first_last_code($request->emp_name);
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
+		$between_date = $this->between_date_search($request->start_date, $request->end_date);
 
 		$all_emp = $this->all_emp();
 
@@ -519,10 +533,8 @@ class QuestionaireDataController extends Controller
 			$assessor = "";
 		} else {
 			$assessor_id = $this->get_emp_snapshot();
-
 			$emp_snapshot_id_with_date = $this->get_emp_snapshot_id_with_date($request->start_date, $request->end_date);
 			$emp_snapshot_id_with_datee = empty($emp_snapshot_id_with_date[0]->emp_snapshot_id) ? "" : $emp_snapshot_id_with_date[0]->emp_snapshot_id;
-
 			$assessor = "AND (qdh.emp_snapshot_id = '{$emp_snapshot_id_with_datee}' OR qdh.assessor_id = '{$assessor_id->emp_snapshot_id}')";
 		}
 
@@ -540,8 +552,8 @@ class QuestionaireDataController extends Controller
 				OR es.emp_last_name LIKE '%{$emp_name}%'
 				OR p.position_code LIKE '%{$emp_name}%'
 			)
-			AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
 			AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
+			".$between_date."
 			".$assessor."
 			GROUP BY es.emp_snapshot_id
 			LIMIT 10
@@ -716,25 +728,26 @@ class QuestionaireDataController extends Controller
 	public function index(Request $request) {
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
+		$between_date = $this->between_date_search($request->start_date, $request->end_date);
 
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
-		$between_date = "
-			AND qdh.questionaire_date = (
-				SELECT MAX(qdhh.questionaire_date) questionaire_date
-				FROM questionaire_data_header qdhh
-				WHERE qdhh.data_header_id = qdh.data_header_id
-		";
+		// $between_date = "
+		// 	AND qdh.questionaire_date = (
+		// 		SELECT MAX(qdhh.questionaire_date) questionaire_date
+		// 		FROM questionaire_data_header qdhh
+		// 		WHERE qdhh.data_header_id = qdh.data_header_id
+		// ";
 
-		if(empty($request->start_date) && empty($request->end_date)) {
-			$between_date .= " )";
-		} else if(empty($request->start_date)) {
-			$between_date .= " AND qdhh.questionaire_date BETWEEN '' AND '{$request->end_date}' )";
-		} else if(empty($request->end_date)) {
-			$between_date .= " AND qdhh.questionaire_date >= '{$request->start_date}' )";
-		} else {
-			$between_date .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
-		}
+		// if(empty($request->start_date) && empty($request->end_date)) {
+		// 	$between_date .= " )";
+		// } else if(empty($request->start_date)) {
+		// 	$between_date .= " AND qdhh.questionaire_date BETWEEN '' AND '{$request->end_date}' )";
+		// } else if(empty($request->end_date)) {
+		// 	$between_date .= " AND qdhh.questionaire_date >= '{$request->start_date}' )";
+		// } else {
+		// 	$between_date .= " AND qdhh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}' )";
+		// }
 
 		$all_emp = $this->all_emp();
 
@@ -1546,6 +1559,25 @@ class QuestionaireDataController extends Controller
 			LIMIT 15
 		");
 		return response()->json($items);
+	}
+
+	public function list_assessor_report($emp_snapshot_id) {
+		try {
+			QuestionaireDataHeader::where("emp_snapshot_id", $emp_snapshot_id)->firstOrFail();	
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Employee not found in Questionaire Data Header.']);
+		}
+
+		$items = DB::select("
+			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+			FROM questionaire_data_header qdh
+			LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.assessor_id
+			INNER JOIN position p ON p.position_id = es.position_id
+			WHERE qdh.emp_snapshot_id = '{$emp_snapshot_id}'
+			GROUP BY es.emp_snapshot_id
+			ORDER BY es.emp_first_name, es.emp_last_name
+		");
+		return response()->json(['status' => 200, 'data' => $items]);
 	}
 
 	public function export_transaction(Request $request) {

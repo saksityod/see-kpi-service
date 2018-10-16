@@ -10,13 +10,13 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-// if (isset($_SERVER['HTTP_ORIGIN'])) {
-// 	header('Access-Control-Allow-Credentials: true');
-// 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
-// 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-// 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
-// 	header('Keep-Alive: off');
-// }
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+	header('Access-Control-Allow-Credentials: true');
+	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
+	header('Keep-Alive: off');
+}
 // Route::get('/', function () {
     // return Response::json(array('hello' => 'hehe'));
 // });
@@ -506,6 +506,7 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@auto_emp_report');
 	Route::get('questionaire_report/auto_assessor_report', 'PMTL\QuestionaireDataController@auto_assessor_report');
+	Route::get('questionaire_report/list_assessor_report/{emp_snapshot_id}', 'PMTL\QuestionaireDataController@list_assessor_report');
 	Route::get('questionaire_report/export_transaction', 'PMTL\QuestionaireDataController@export_transaction');
 
 

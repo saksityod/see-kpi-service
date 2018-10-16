@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\PMTL\QuestionaireDataController;
 
 use App\Position;
 
@@ -17,22 +18,27 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PositionController extends Controller
 {
-
-	public function __construct()
+	protected $qdc_service;
+	public function __construct(QuestionaireDataController $qdc_service)
 	{
 
 	   $this->middleware('jwt.auth');
+	   $this->qdc_service = $qdc_service;
 	}
 	
 	public function auto(Request $request)
 	{
+		$position = $this->qdc_service->concat_emp_first_last_code($request->q);
 		$items = DB::select("
-			select position_id, position_name, position_code
+			select position_id, CONCAT(position_name, ' ', '(', position_code,')') position_name, position_code
 			from position
 			where is_active = 1
-			and position_name like ?
+			and (
+				position_name like '%{$position}%'
+				or position_code like '%{$position}%'
+			)
 			order by position_name asc
-		", array('%'.$request->q.'%'));
+		");
 		return response()->json($items);	
 	}
 	
