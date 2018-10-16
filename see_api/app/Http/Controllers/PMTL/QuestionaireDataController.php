@@ -1561,7 +1561,7 @@ class QuestionaireDataController extends Controller
 		return response()->json($items);
 	}
 
-	public function list_assessor_report($emp_snapshot_id) {
+	public function list_assessor_report($emp_snapshot_id, Request $request) {
 		try {
 			QuestionaireDataHeader::where("emp_snapshot_id", $emp_snapshot_id)->firstOrFail();	
 		} catch (ModelNotFoundException $e) {
