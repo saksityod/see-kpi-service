@@ -1568,12 +1568,16 @@ class QuestionaireDataController extends Controller
 			return response()->json(['status' => 404, 'data' => 'Employee not found in Questionaire Data Header.']);
 		}
 
+		$request->start_date = $this->format_date($request->start_date);
+		$request->end_date = $this->format_date($request->end_date);
+
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
 			FROM questionaire_data_header qdh
 			LEFT JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.assessor_id
 			INNER JOIN position p ON p.position_id = es.position_id
 			WHERE qdh.emp_snapshot_id = '{$emp_snapshot_id}'
+			AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
 			GROUP BY es.emp_snapshot_id
 			ORDER BY es.emp_first_name, es.emp_last_name
 		");
@@ -1595,6 +1599,7 @@ class QuestionaireDataController extends Controller
 		}
 
 		$assessor_id = empty($request->assessor_id) ? "" : "AND qdh.assessor_id = '{$request->assessor_id}' ";
+		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}' ";
 		$items = DB::select("
 			SELECT qnt.questionaire_type,
 					qn.questionaire_name,
@@ -1636,7 +1641,7 @@ class QuestionaireDataController extends Controller
 				LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
 				WHERE q.parent_question_id IS NOT NULL
 				AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
-				AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
+				".$emp_snapshot_id."
 				".$assessor_id."
 				GROUP BY qdd.answer_id
 		");
