@@ -197,11 +197,9 @@ class QuestionaireController extends Controller
 						if(!empty($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'])) {
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'] as $an) {
 								$validator_s_answer = Validator::make([
-									'answer_name' => $an['answer_name'],
 									'is_not_applicable' => $an['is_not_applicable'],
 									'score' => $an['score']
 								], [
-									'answer_name' => 'required|max:255',
 									'is_not_applicable' => 'required|integer',
 									'score' => 'required|between:0,99.99'
 								]);
@@ -227,11 +225,9 @@ class QuestionaireController extends Controller
 								try {
 									foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'][$q_k]['answer'] as $an) {
 										$validator_answer = Validator::make([
-											'answer_name' => $an['answer_name'],
 											'is_not_applicable' => $an['is_not_applicable'],
 											'score' => $an['score']
 										], [
-											'answer_name' => 'required|max:255',
 											'is_not_applicable' => 'required|integer',
 											'score' => 'required|between:0,99.99'
 										]);
@@ -301,8 +297,8 @@ class QuestionaireController extends Controller
 								$an = new Answer;
 								$an->question_id = $q->question_id;
 								$an->seq_no = $ansv_k;
-								$an->row_name = $ansv['row_name'];
-								$an->answer_name = $ansv['answer_name'];
+								$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+								$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 								$an->is_not_applicable = $ansv['is_not_applicable'];
 								$an->score = $ansv['score'];
 								$an->created_by = Auth::id();
@@ -328,8 +324,8 @@ class QuestionaireController extends Controller
 										$an = new Answer;
 										$an->question_id = $ques->question_id;
 										$an->seq_no = $ansv_k;
-										$an->row_name = $ansv['row_name'];
-										$an->answer_name = $ansv['answer_name'];
+										$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+										$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 										$an->is_not_applicable = $ansv['is_not_applicable'];
 										$an->score = $ansv['score'];
 										$an->created_by = Auth::id();
@@ -411,11 +407,9 @@ class QuestionaireController extends Controller
 						if(!empty($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'])) {
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'] as $an) {
 								$validator_s_answer = Validator::make([
-									'answer_name' => $an['answer_name'],
 									'is_not_applicable' => $an['is_not_applicable'],
 									'score' => $an['score']
 								], [
-									'answer_name' => 'required|max:255',
 									'is_not_applicable' => 'required|integer',
 									'score' => 'required|between:0,99.99'
 								]);
@@ -441,11 +435,9 @@ class QuestionaireController extends Controller
 								try {
 									foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'][$q_k]['answer'] as $an) {
 										$validator_answer = Validator::make([
-											'answer_name' => $an['answer_name'],
 											'is_not_applicable' => $an['is_not_applicable'],
 											'score' => $an['score']
 										], [
-											'answer_name' => 'required|max:255',
 											'is_not_applicable' => 'required|integer',
 											'score' => 'required|between:0,99.99'
 										]);
@@ -537,8 +529,8 @@ class QuestionaireController extends Controller
 									$an = new Answer;
 									$an->question_id = $q->question_id;
 									$an->seq_no = $ansv_k;
-									$an->row_name = $ansv['row_name'];
-									$an->answer_name = $ansv['answer_name'];
+									$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+									$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 									$an->is_not_applicable = $ansv['is_not_applicable'];
 									$an->score = $ansv['score'];
 									$an->created_by = Auth::id();
@@ -547,8 +539,8 @@ class QuestionaireController extends Controller
 									$an = Answer::find($ansv['answer_id']);
 									$an->question_id = $q->question_id;
 									$an->seq_no = $ansv_k;
-									$an->row_name = $ansv['row_name'];
-									$an->answer_name = $ansv['answer_name'];
+									$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+									$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 									$an->is_not_applicable = $ansv['is_not_applicable'];
 									$an->score = $ansv['score'];
 									$an->updated_by = Auth::id();
@@ -585,8 +577,8 @@ class QuestionaireController extends Controller
 											$an = new Answer;
 											$an->question_id = $ques->question_id;
 											$an->seq_no = $ansv_k;
-											$an->row_name = $ansv['row_name'];
-											$an->answer_name = $ansv['answer_name'];
+											$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+											$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 											$an->is_not_applicable = $ansv['is_not_applicable'];
 											$an->score = $ansv['score'];
 											$an->created_by = Auth::id();
@@ -595,8 +587,8 @@ class QuestionaireController extends Controller
 											$an = Answer::find($ansv['answer_id']);
 											$an->question_id = $ques->question_id;
 											$an->seq_no = $ansv_k;
-											$an->row_name = $ansv['row_name'];
-											$an->answer_name = $ansv['answer_name'];
+											$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
+											$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
 											$an->is_not_applicable = $ansv['is_not_applicable'];
 											$an->score = $ansv['score'];
 											$an->updated_by = Auth::id();
