@@ -43,13 +43,21 @@ class PositionController extends Controller
 	}
 	
 	public function index(Request $request)
-	{		
+	{
+		if(empty($request->position_name)) {
+			$position = "";
+		} else {
+			$position = $this->qdc_service->concat_emp_first_last_code($request->position_name);
+		}
 		$items = DB::select("
 			select position_id, position_name, position_code, is_active
 			from position
-			where position_name like ?
+			where (
+				position_name like '%{$position}%'
+				or position_code like '%{$position}%'
+			)
 			order by position_code asc
-		", array('%'.$request->position_name.'%'));
+		");
 		return response()->json($items);
 	}
 	
