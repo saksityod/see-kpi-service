@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary-head" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty" uuid="f45b8231-2931-49fb-82f8-8d5d5f9eedf6">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="param_data_header_id" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+	que.questionaire_name,
+	head.questionaire_date,
+	emp.distributor_name,
+	ps.position_code,
+	emp.emp_code AS employee_code,
+	CONCAT(emp.emp_first_name,' ', emp.emp_last_name) AS employee_name,
+	CONCAT(asor.emp_first_name,' ', asor.emp_last_name) AS assessor_name,
+	stage.stage_name,
+	head.total_score, 
+	head.pass_score pass_score,
+	IFNULL(ROUND((head.total_score/head.full_score)*100.00, 2), 0) percent_score,
+	IF((head.total_score/head.full_score)*100.00 >= head.pass_score, 1, 0) AS is_pass
+FROM questionaire_data_header head 
+INNER JOIN questionaire que ON que.questionaire_id = head.questionaire_id
+INNER JOIN employee_snapshot emp ON emp.emp_snapshot_id = head.emp_snapshot_id
+INNER JOIN position ps ON emp.position_id = ps.position_id
+INNER JOIN employee_snapshot asor ON asor.emp_snapshot_id = head.assessor_id
+INNER JOIN stage ON stage.stage_id = head.data_stage_id
+WHERE head.data_header_id =  $P{param_data_header_id} ]]>
+	</queryString>
+	<field name="questionaire_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+	</field>
+	<field name="questionaire_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="distributor_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="distributor_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="position_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="employee_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="employee_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="employee_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="employee_name"/>
+	</field>
+	<field name="assessor_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="assessor_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="stage_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="stage_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="stage"/>
+	</field>
+	<field name="total_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="total_score"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="pass_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pass_score"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="percent_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="percent_score"/>
+	</field>
+	<field name="is_pass" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="is_pass"/>
+	</field>
+	<detail>
+		<band height="121">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<textField>
+				<reportElement x="0" y="31" width="300" height="30" forecolor="#353535" uuid="5688376d-7516-4825-be05-02b285e77e8e"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["วันที่ :  "+DATEFORMAT($F{questionaire_date}, "dd/MM/yyyy")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="61" width="300" height="30" forecolor="#353535" uuid="f10f77a0-e01f-47f0-9a7f-e658d31afc76"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ชื่อพนักงานขาย :  "+$F{employee_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="31" width="350" height="30" forecolor="#353535" uuid="7bd473bb-dace-4ae9-a8d9-0b4b2611f232"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ชื่อผู้แทนจำหน่าย :  "+$F{distributor_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="61" width="350" height="30" forecolor="#353535" uuid="c28790dd-2437-4a97-a8bd-5c157c8c009b"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ชื่อผู้ทำการประเมิน :  "+$F{assessor_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="91" width="300" height="30" forecolor="#353535" uuid="e438b29c-5125-478a-8139-2171194d6d6d"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["รหัสพนักงานขาย :  "+$F{position_code}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="91" width="300" height="30" forecolor="#353535" uuid="f25644a9-7422-4202-aa83-45d5fa5cb857"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["สถานะ :  "+$F{stage_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="650" y="31" width="100" height="30" forecolor="#000099" backcolor="#FFFFFF" uuid="02b6b272-f76d-4a4e-8e5e-cd744bde1547"/>
+				<box leftPadding="5">
+					<pen lineWidth="1.0" lineColor="#000099"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["ผลรวมทั้งสิ้น"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="650" y="61" width="100" height="40" forecolor="#FFFFFF" backcolor="#000099" uuid="45c35bd6-d2db-43d3-a8cb-5b7457670d60"/>
+				<box leftPadding="5">
+					<pen lineWidth="1.0" lineColor="#330099"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement mode="Transparent" x="600" y="91" width="50" height="10" forecolor="#FFFFFF" uuid="148e69c3-56d8-4e06-9b74-28c6c8db72a2"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineColor="#FFFFFF"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="600" y="101" width="198" height="20" forecolor="#353535" uuid="3528b044-62c5-491f-adee-a10f6c1b00ff"/>
+				<box leftPadding="5">
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement mode="Opaque" x="0" y="0" width="804" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="948e7e2a-9e16-49e2-8384-0c59cb51c26b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="22" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{questionaire_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

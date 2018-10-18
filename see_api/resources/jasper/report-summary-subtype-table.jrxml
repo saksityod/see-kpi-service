@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summery-subtype-table" language="groovy" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryWithPageHeaderAndFooter="true" uuid="c5bfa3d7-18db-491a-b0b6-e427744d7aa5">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<style name="Table_CH" mode="Opaque" backcolor="#CCCCCC">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="table" uuid="77f27c98-03f0-460b-8187-bc09fa19f32a">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="275"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="714"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="473"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="513"/>
+		<parameter name="param_data_header_id" class="java.lang.Long"/>
+		<parameter name="param_section_id" class="java.lang.Integer"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT * 
+FROM(
+	SELECT qtail.section_id, qsec.section_name, 
+		qtail.question_id, q.question_name,
+		qtail.answer_id, ans.answer_name, ans.is_not_applicable, 
+		qtail.score, qtail.desc_answer
+	FROM questionaire_data_detail qtail
+	INNER JOIN questionaire_section qsec ON qsec.section_id = qtail.section_id
+	INNER JOIN question q ON q.question_id = qtail.question_id
+	INNER JOIN answer ans ON ans.answer_id = qtail.answer_id
+	WHERE qtail.data_header_id = $P{param_data_header_id} 
+	AND qtail.section_id = $P{param_section_id} 
+	UNION ALL 
+	SELECT q.section_id, qsec.section_name, 
+		q.question_id, q.question_name,
+		 NULL answer_id, NULL answer_name, NULL is_not_applicable, 
+		NULL score, NULL desc_answer
+	FROM question q
+	INNER JOIN questionaire_section qsec ON qsec.section_id = q.section_id
+	WHERE q.question_id IN(
+		SELECT DISTINCT (
+				SELECT sq.parent_question_id 
+				FROM question sq 
+				WHERE sq.question_id = sqtail.question_id
+			) parent_question_id
+		FROM questionaire_data_detail sqtail
+		WHERE data_header_id = $P{param_data_header_id} 
+		AND section_id = $P{param_section_id} 
+	)
+)mq
+ORDER BY mq.question_id]]>
+		</queryString>
+		<field name="section_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="section_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="section_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="section_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+		</field>
+		<field name="question_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="question_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="question_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="question_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="answer_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="answer_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="answer_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="answer_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="answer"/>
+		</field>
+		<field name="is_not_applicable" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="is_not_applicable"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="answer"/>
+		</field>
+		<field name="score" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="score"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="desc_answer" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="desc_answer"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+	</subDataset>
+	<parameter name="param_data_header_id" class="java.lang.Long"/>
+	<parameter name="param_section_id" class="java.lang.Integer"/>
+	<queryString language="SQL">
+		<![CDATA[select 1]]>
+	</queryString>
+	<field name="1" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="1"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="40">
+			<componentElement>
+				<reportElement x="0" y="0" width="804" height="40" forecolor="#454545" uuid="3f65b609-d5ea-4543-9aa8-57a17c964c94">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="table" uuid="65980309-e23b-4a64-8bdb-b2451ef6c90e">
+						<datasetParameter name="param_data_header_id">
+							<datasetParameterExpression><![CDATA[$P{param_data_header_id}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="param_section_id">
+							<datasetParameterExpression><![CDATA[$P{param_section_id}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="316" uuid="7230358e-049f-4032-9167-261c45501343">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:columnHeader style="Table_CH" height="20">
+							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="316" height="20" forecolor="#454545" uuid="b3cce7ba-86fc-4af8-bdc7-eaaa33fd3d1d"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>
+							</textField>
+						</jr:columnHeader>
+						<jr:detailCell height="20">
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<textField isStretchWithOverflow="true">
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="316" height="20" forecolor="#454545" uuid="710a89ab-694e-4f53-b284-72eafbeebe2b"/>
+								<box leftPadding="3">
+									<pen lineWidth="0.5" lineColor="#555555"/>
+								</box>
+								<textElement markup="none">
+									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{question_name}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="64" uuid="fb018b4b-31cd-40f9-8165-4fd5e7ea3623">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:columnHeader style="Table_CH" height="20">
+							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="64" height="20" forecolor="#454545" uuid="3bc9a542-6936-4624-9770-40f984ef1046"/>
+								<box>
+									<pen lineWidth="0.5" lineColor="#555555"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								</textElement>
+								<text><![CDATA[คะแนน]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell height="20">
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<textField isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="64" height="20" forecolor="#454545" uuid="1ff198ea-2aac-4aa1-971a-c0af1a68ce52"/>
+								<box leftPadding="3">
+									<pen lineWidth="0.5" lineColor="#555555"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+								</textElement>
+								<textFieldExpression><![CDATA[IF($F{is_not_applicable} == 1, "N/A", $F{score})]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="424" uuid="0bbb1a52-e176-4a0d-ac2e-052cc5d4c02f">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+						<jr:columnHeader style="Table_CH" height="20">
+							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="424" height="20" forecolor="#454545" uuid="df52b2a4-1216-4ea7-ac5f-8509a0dc38e3"/>
+								<box>
+									<pen lineWidth="0.5" lineColor="#555555"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								</textElement>
+								<text><![CDATA[comment]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell height="20">
+							<box>
+								<pen lineWidth="0.5" lineColor="#454545"/>
+							</box>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="424" height="20" forecolor="#454545" uuid="30c9cd49-06ba-460e-ad53-4acc84494b27"/>
+								<box leftPadding="3">
+									<pen lineWidth="0.5" lineColor="#555555"/>
+								</box>
+								<textElement>
+									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{desc_answer}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>
