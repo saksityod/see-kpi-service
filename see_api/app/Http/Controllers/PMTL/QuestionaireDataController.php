@@ -1584,7 +1584,10 @@ class QuestionaireDataController extends Controller
 		set_time_limit(1000);
 		ini_set('memory_limit', '5012M');
 		$fileName = "WWWR Transaction Report ".date('Ymd His');
-
+		
+		$all_emp = $this->all_emp();
+		$in_emp = $this->get_tree_emp(Auth::id());
+		
 		$request->start_date = $this->format_date($request->start_date);
 		$request->end_date = $this->format_date($request->end_date);
 
@@ -1593,54 +1596,107 @@ class QuestionaireDataController extends Controller
 		} catch (Exception $e) {
 			return response()->json(['status' => 404, 'data' => 'QuestionaireType not found.']);
 		}
-
+		if($request->assessor_id=='undefined') {
+			$request->assessor_id = "";
+		}
+		
 		$assessor_id = empty($request->assessor_id) ? "" : "AND qdh.assessor_id = '{$request->assessor_id}' ";
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}' ";
-		$items = DB::select("
-			SELECT qnt.questionaire_type,
-					qn.questionaire_name,
-					qdh.questionaire_date,
-					asess.emp_code assessor_code,
-					CONCAT(asess.emp_first_name, ' ', asess.emp_last_name) assessor_name,
-					asm.emp_code asm_code,
-					CONCAT(asm.emp_first_name, ' ', asm.emp_last_name) asm_name,
-					es.emp_code tse_code,
-					CONCAT(es.emp_first_name, ' ', es.emp_last_name) tse_name,
-					jf.job_function_name,
-					es.distributor_code,
-					es.distributor_name,
-					es.region,
-					qds.status,
-					qs.section_name,
-					q.question_name,
-					(SELECT MAX(score) FROM answer WHERE question_id = q.question_id) full_score,
-					ans.answer_name,
-					qdd.score,
-					qdd.desc_answer,
-					c.customer_code, 
-					c.customer_name, 
-					c.customer_type, 
-					c.industry_class
-				FROM questionaire_data_header qdh
-				INNER JOIN questionaire_data_stage qds ON qds.data_header_id = qdh.data_header_id
-				LEFT JOIN stage st ON st.stage_id = qdh.data_stage_id AND st.stage_id = qds.data_stage_id
-				INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-				INNER JOIN questionaire_type qnt ON qnt.questionaire_type_id = qn.questionaire_type_id
-				INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
-				LEFT JOIN customer c ON c.customer_id = qdd.customer_id
-				INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-				INNER JOIN question q ON q.question_id = qdd.question_id
-				INNER JOIN answer ans ON ans.answer_id = qdd.answer_id
-				INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-				INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-				LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
-				LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
-				WHERE q.parent_question_id IS NOT NULL
-				AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
-				".$emp_snapshot_id."
-				".$assessor_id."
-				GROUP BY qdd.answer_id
-		");
+		
+		if ($all_emp[0]->count_no > 0) {
+			$items = DB::select("
+				SELECT qnt.questionaire_type,
+						qn.questionaire_name,
+						qdh.questionaire_date,
+						asess.emp_code assessor_code,
+						CONCAT(asess.emp_first_name, ' ', asess.emp_last_name) assessor_name,
+						asm.emp_code asm_code,
+						CONCAT(asm.emp_first_name, ' ', asm.emp_last_name) asm_name,
+						es.emp_code tse_code,
+						CONCAT(es.emp_first_name, ' ', es.emp_last_name) tse_name,
+						jf.job_function_name,
+						es.distributor_code,
+						es.distributor_name,
+						es.region,
+						qds.status,
+						qs.section_name,
+						q.question_name,
+						(SELECT MAX(score) FROM answer WHERE question_id = q.question_id) full_score,
+						ans.answer_name,
+						qdd.score,
+						qdd.desc_answer,
+						c.customer_code, 
+						c.customer_name, 
+						c.customer_type, 
+						c.industry_class
+					FROM questionaire_data_header qdh
+					INNER JOIN questionaire_data_stage qds ON qds.data_header_id = qdh.data_header_id
+					LEFT JOIN stage st ON st.stage_id = qdh.data_stage_id AND st.stage_id = qds.data_stage_id
+					INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+					INNER JOIN questionaire_type qnt ON qnt.questionaire_type_id = qn.questionaire_type_id
+					INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+					LEFT JOIN customer c ON c.customer_id = qdd.customer_id
+					INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+					INNER JOIN question q ON q.question_id = qdd.question_id
+					INNER JOIN answer ans ON ans.answer_id = qdd.answer_id
+					INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+					INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+					LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
+					LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
+					WHERE q.parent_question_id IS NOT NULL
+					AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+					".$emp_snapshot_id."
+					".$assessor_id."
+					GROUP BY qdd.answer_id
+			");
+		} else {
+			$items = DB::select("
+				SELECT qnt.questionaire_type,
+						qn.questionaire_name,
+						qdh.questionaire_date,
+						asess.emp_code assessor_code,
+						CONCAT(asess.emp_first_name, ' ', asess.emp_last_name) assessor_name,
+						asm.emp_code asm_code,
+						CONCAT(asm.emp_first_name, ' ', asm.emp_last_name) asm_name,
+						es.emp_code tse_code,
+						CONCAT(es.emp_first_name, ' ', es.emp_last_name) tse_name,
+						jf.job_function_name,
+						es.distributor_code,
+						es.distributor_name,
+						es.region,
+						qds.status,
+						qs.section_name,
+						q.question_name,
+						(SELECT MAX(score) FROM answer WHERE question_id = q.question_id) full_score,
+						ans.answer_name,
+						qdd.score,
+						qdd.desc_answer,
+						c.customer_code, 
+						c.customer_name, 
+						c.customer_type, 
+						c.industry_class
+					FROM questionaire_data_header qdh
+					INNER JOIN questionaire_data_stage qds ON qds.data_header_id = qdh.data_header_id
+					LEFT JOIN stage st ON st.stage_id = qdh.data_stage_id AND st.stage_id = qds.data_stage_id
+					INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+					INNER JOIN questionaire_type qnt ON qnt.questionaire_type_id = qn.questionaire_type_id
+					INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+					LEFT JOIN customer c ON c.customer_id = qdd.customer_id
+					INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+					INNER JOIN question q ON q.question_id = qdd.question_id
+					INNER JOIN answer ans ON ans.answer_id = qdd.answer_id
+					INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+					INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+					LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
+					LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
+					WHERE q.parent_question_id IS NOT NULL
+					AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+					".$emp_snapshot_id."
+					".$assessor_id."
+					AND es.emp_code IN ({$in_emp})
+					GROUP BY qdd.answer_id
+			");
+		}
 
 	    $resultArray = json_decode(json_encode($items), true);
 	    Excel::create($fileName, function($excel) use ($resultArray) {
