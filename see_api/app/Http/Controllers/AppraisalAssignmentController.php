@@ -1279,7 +1279,7 @@ class AppraisalAssignmentController extends Controller
 	    				empty($appraisalStatus[1]) ?: ($query_unassign .= " and ast.from_action = ? " AND $qinput[] = $appraisalStatus[1]);
 	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 	    			}
-				// end type = 2
+					// end type = 2
 
 	    		} else {
 	    			if($request->status=='Unassigned') {
@@ -1819,7 +1819,8 @@ class AppraisalAssignmentController extends Controller
 			'appraisal_type_id' => 'required',
 			'appraisal_year' => 'required',
 			'frequency_id' => 'required',
-			'action_to' => 'required'
+			'action_to' => 'required',
+			'appraisal_form_id' => 'required'
 		]);
 
 		if ($validator->fails()) {
@@ -2091,6 +2092,7 @@ class AppraisalAssignmentController extends Controller
 						}
 						$emp_result = new EmpResult;
 						$emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
+						$emp_result->appraisal_form_id = $request->head_params['appraisal_form_id'];
 						$emp_result->period_id = $period_id;
 						$emp_result->emp_id = $emp_id;
 						$emp_result->level_id = $level_id;
@@ -2167,6 +2169,7 @@ class AppraisalAssignmentController extends Controller
 							if ($i['form_id'] == 1) {
 								$aitem = new AppraisalItemResult;
 								$aitem->emp_result_id = $emp_result->emp_result_id;
+								$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 								$aitem->kpi_type_id = $i['kpi_type_id'];
 								$aitem->period_id = $period_id;
 								$aitem->emp_id = $emp_id;
@@ -2197,6 +2200,7 @@ class AppraisalAssignmentController extends Controller
 
 								$aitem = new AppraisalItemResult;
 								$aitem->emp_result_id = $emp_result->emp_result_id;
+								$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 								$aitem->period_id = $period_id;
 								$aitem->emp_id = $emp_id;
 								$aitem->chief_emp_id = $chief_emp_id;
@@ -2219,6 +2223,7 @@ class AppraisalAssignmentController extends Controller
 
 								$aitem = new AppraisalItemResult;
 								$aitem->emp_result_id = $emp_result->emp_result_id;
+								$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 								$aitem->period_id = $period_id;
 								$aitem->emp_id = $emp_id;
 								$aitem->chief_emp_id = $chief_emp_id;
@@ -2242,6 +2247,7 @@ class AppraisalAssignmentController extends Controller
 							}elseif ($i['form_id'] == 4) {
 								$aitem = new AppraisalItemResult;
 								$aitem->emp_result_id = $emp_result->emp_result_id;
+								$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 								$aitem->period_id = $period_id;
 								$aitem->emp_id = $emp_id;
 								$aitem->chief_emp_id = $chief_emp_id;
@@ -2359,6 +2365,7 @@ class AppraisalAssignmentController extends Controller
 					// $emp_result->save();
 
 					$emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
+					$emp_result->appraisal_form_id = $request->head_params['appraisal_form_id'];
 					$emp_result->period_id = $period_id;
 					$emp_result->emp_id = $emp_id;
 					$emp_result->level_id = $level_id;
@@ -2441,6 +2448,7 @@ class AppraisalAssignmentController extends Controller
 
 							$aitem = new AppraisalItemResult;
 							$aitem->emp_result_id = $emp_result->emp_result_id;
+							$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 							$aitem->kpi_type_id = $i['kpi_type_id'];
 							$aitem->period_id = $period_id;
 							$aitem->emp_id = $emp_id;
@@ -2471,6 +2479,7 @@ class AppraisalAssignmentController extends Controller
 
 							$aitem = new AppraisalItemResult;
 							$aitem->emp_result_id = $emp_result->emp_result_id;
+							$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 							$aitem->period_id = $period_id;
 							$aitem->emp_id = $emp_id;
 							$aitem->chief_emp_id = $chief_emp_id;
@@ -2493,6 +2502,7 @@ class AppraisalAssignmentController extends Controller
 
 							$aitem = new AppraisalItemResult;
 							$aitem->emp_result_id = $emp_result->emp_result_id;
+							$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 							$aitem->period_id = $period_id;
 							$aitem->emp_id = $emp_id;
 							$aitem->chief_emp_id = $chief_emp_id;
@@ -2516,6 +2526,7 @@ class AppraisalAssignmentController extends Controller
 						} elseif ($i['form_id'] == 4) {
 							$aitem = new AppraisalItemResult;
 							$aitem->emp_result_id = $emp_result->emp_result_id;
+							$aitem->appraisal_form_id = $request->head_params['appraisal_form_id'];
 							$aitem->period_id = $period_id;
 							$aitem->emp_id = $emp_id;
 							$aitem->chief_emp_id = $chief_emp_id;
@@ -2547,6 +2558,7 @@ class AppraisalAssignmentController extends Controller
 		return response()->json(['status' => 200, 'data' => $semp_code, 'already_assigned' => $already_assigned]);
 	}
 
+
 	public function show(Request $request, $emp_result_id)
 	{
 		try {
@@ -2555,25 +2567,22 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 		$head = DB::select("
-			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, b.chief_emp_code, e.emp_name chief_emp_name, c.period_id, c.appraisal_period_desc, d.appraisal_type_name, a.stage_id, f.status, f.edit_flag, a.position_id, a.org_id
+			SELECT b.emp_id, b.emp_code, b.emp_name, b.working_start_date, 
+				h.position_name, g.org_name, g.org_code, pg.org_name parent_org_name, 
+				b.chief_emp_code, e.emp_name chief_emp_name, c.period_id, c.appraisal_period_desc, 
+				d.appraisal_type_name, a.stage_id, f.status, f.edit_flag, a.position_id, a.org_id,
+				a.appraisal_form_id, fm.appraisal_form_name
 			FROM emp_result a
-			left outer join employee b
-			on a.emp_id = b.emp_id
-			left outer join appraisal_period c
-			on c.period_id = a.period_id
-			left outer join appraisal_type d
-			on a.appraisal_type_id = d.appraisal_type_id
-			left outer join employee e
-			on b.chief_emp_code = e.emp_code
-			left outer join appraisal_stage f
-			on a.stage_id = f.stage_id
-			left outer join org g
-			on a.org_id = g.org_id
-			left outer join org pg
-			on g.parent_org_code = pg.org_code
-			left outer join position h
-			on a.position_id = h.position_id
-			where a.emp_result_id = ?
+			LEFT OUTER JOIN employee b ON a.emp_id = b.emp_id
+			LEFT OUTER JOIN appraisal_period c ON c.period_id = a.period_id
+			LEFT OUTER JOIN appraisal_type d ON a.appraisal_type_id = d.appraisal_type_id
+			LEFT OUTER JOIN employee e ON b.chief_emp_code = e.emp_code
+			LEFT OUTER JOIN appraisal_stage f ON a.stage_id = f.stage_id
+			LEFT OUTER JOIN org g ON a.org_id = g.org_id
+			LEFT OUTER JOIN org pg ON g.parent_org_code = pg.org_code
+			LEFT OUTER JOIN position h ON a.position_id = h.position_id
+			LEFT OUTER JOIN appraisal_form fm ON fm.appraisal_form_id = a.appraisal_form_id
+			WHERE a.emp_result_id = ?
 			", array($emp_result_id));
 
 		$items = DB::select("
@@ -2836,6 +2845,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->kpi_type_id = $i['kpi_type_id'];
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
+						$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
@@ -2926,6 +2936,7 @@ class AppraisalAssignmentController extends Controller
 					}
 
 					$aitem->emp_result_id = $emp_result->emp_result_id;
+					$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
 					$aitem->item_id = $i['item_id'];
@@ -2956,6 +2967,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->chief_emp_id = $chief_emp_id;
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->created_by = Auth::id();
+						$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
@@ -3013,6 +3025,7 @@ class AppraisalAssignmentController extends Controller
 						}
 					}
 					$aitem->emp_result_id = $emp_result->emp_result_id;
+					$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
 					$aitem->item_id = $i['item_id'];
@@ -3039,6 +3052,7 @@ class AppraisalAssignmentController extends Controller
 						$aitem->structure_weight_percent = $i['total_weight'];
 						$aitem->no_raise_value = $i['no_raise_value'];
 						$aitem->created_by = Auth::id();
+						$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 
 						if($config->item_result_log == 1){
 							$aitemlog = new AppraisalItemResultLog;
@@ -3101,6 +3115,7 @@ class AppraisalAssignmentController extends Controller
 						}
 					}
 					$aitem->emp_result_id = $emp_result->emp_result_id;
+					$aitem->appraisal_form_id = $emp_result->appraisal_form_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
 					$aitem->item_id = $i['item_id'];
