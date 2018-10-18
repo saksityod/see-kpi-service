@@ -383,7 +383,7 @@ class QuestionaireDataController extends Controller
         return $in_emp_snap;
     }
 
-    function calculate_score($data_header_id, $in_section) {
+    function calculate_score($data_header_id) {
     	$cal_score = DB::select("
     		SELECT COUNT(DISTINCT customer_id) count_customer, 
 		    		SUM(qdd.score) score, 
@@ -396,13 +396,11 @@ class QuestionaireDataController extends Controller
 			    		WHERE qs.is_cust_search = 1
 			    		AND qdd.is_not_applicable = 1
 			    		AND qdd.data_header_id = '{$data_header_id}'
-			    		AND qdd.section_id IN ({$in_section})
 		    		) sum_applicable
     		FROM questionaire_data_detail qdd
     		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
     		WHERE qs.is_cust_search = 1
     		AND qdd.data_header_id = '{$data_header_id}'
-    		AND qdd.section_id IN ({$in_section})
     	");
 
     	if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
@@ -1122,7 +1120,7 @@ class QuestionaireDataController extends Controller
 		DB::beginTransaction();
 		$errors = [];
 		$errors_validator = [];
-		$section_unique = [];
+		// $section_unique = [];
 		$validator = Validator::make([
 			'questionaire_id' => $request->questionaire_id,
 			'questionaire_date' => $request->questionaire_date,
@@ -1228,14 +1226,14 @@ class QuestionaireDataController extends Controller
 					$dt->updated_by = Auth::id();
 					try {
 						$dt->save();
-						$section_unique[] = $d['section_id'];
+						// $section_unique[] = $d['section_id'];
 					} catch (Exception $e) {
 						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 255)];
 					}
 				}
 
-				$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
-				$cal_score = $this->calculate_score($h->data_header_id, $in_section);
+				// $in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
+				$cal_score = $this->calculate_score($h->data_header_id);
 				if(!empty($cal_score['full_score']) && !empty($cal_score['total_score'])) {
 					QuestionaireDataHeader::where('data_header_id', $h->data_header_id)->update([
 						'full_score' => $cal_score['full_score'],
@@ -1277,7 +1275,7 @@ class QuestionaireDataController extends Controller
 		DB::beginTransaction();
 		$errors = [];
 		$errors_validator = [];
-		$section_unique = [];
+		// $section_unique = [];
 		$question_unique = [];
 		$validator = Validator::make([
 			'emp_snapshot_id' => $request->emp_snapshot_id,
@@ -1393,7 +1391,7 @@ class QuestionaireDataController extends Controller
 					}
 					try {
 						$dt->save();
-						$section_unique[] = $d['section_id'];
+						// $section_unique[] = $d['section_id'];
 					} catch (Exception $e) {
 						$errors[] = ['QuestionaireDataDetail' => substr($e, 0, 400)];
 					}
@@ -1427,8 +1425,8 @@ class QuestionaireDataController extends Controller
 				}
 
 				//calculate total_score and full_score
-				$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
-				$cal_score = $this->calculate_score($h->data_header_id, $in_section);
+				//$in_section = empty(implode(',', $section_unique)) ? "''" : implode(',', array_unique($section_unique));
+				$cal_score = $this->calculate_score($h->data_header_id);
 				if(!empty($cal_score['full_score']) && !empty($cal_score['total_score'])) {
 					QuestionaireDataHeader::where('data_header_id', $h->data_header_id)->update([
 						'full_score' => $cal_score['full_score'],

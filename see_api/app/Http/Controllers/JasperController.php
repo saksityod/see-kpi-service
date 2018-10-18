@@ -187,7 +187,7 @@ class JasperController extends Controller
             if(empty($params['param_employee'])) {
                 $all_emp = $this->qdc_service->all_emp();
                 if ($all_emp[0]->count_no > 0) {
-                    $params['param_employee'] = "''";
+                    $params['param_employee'] = 999999999;
                 } else {
                     $in_emp = $this->qdc_service->get_tree_emp(Auth::id());
                     $in_emp_snap = $this->qdc_service->get_tree_emp_snap_id($in_emp);
