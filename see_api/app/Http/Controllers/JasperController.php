@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Http\Controllers\PMTL\QuestionaireDataController;
 
 use Auth;
 use File;
@@ -15,10 +16,12 @@ use App\Model\DatabaseTypeModel;
 //use JasperPHP; // put here
 class JasperController extends Controller
 {
-    public function __construct()
+    protected $qdc_service;
+    public function __construct(QuestionaireDataController $qdc_service)
     {
         $this->middleware('cors');
         $this->middleware('jwt.auth');
+        $this->qdc_service = $qdc_service;
     }
     public function generate(Request $request)
     {
@@ -180,6 +183,19 @@ class JasperController extends Controller
         if(!empty($data_param)){
             $params = json_decode($data_param, true);
             $params['param_user'] = Auth::id();
+
+            if(empty($params['param_employee'])) {
+                $all_emp = $this->qdc_service->all_emp();
+                if ($all_emp[0]->count_no > 0) {
+                    $params['param_employee'] = "''";
+                } else {
+                    $in_emp = $this->qdc_service->get_tree_emp(Auth::id());
+                    $in_emp_snap = $this->qdc_service->get_tree_emp_snap_id($in_emp);
+                    $params['param_employee'] = $in_emp_snap;
+                }
+            }
+
+            // return $params['param_employee'];
         //return response()->json($params);
             Log::info('data_json');
             Log::info($params);
@@ -188,14 +204,14 @@ class JasperController extends Controller
             Log::info(' from POST');
             Log::info($params);
         }
-		
-		// set subreport path //
-		if(!empty($request->subreport_bundle)){
-			if($request->subreport_bundle == "1"){
-				$params['subreport_path'] =  base_path("resources/jasper");
-			}
-		}
-		
+        
+        // set subreport path //
+        if(!empty($request->subreport_bundle)){
+            if($request->subreport_bundle == "1"){
+                $params['subreport_path'] =  base_path("resources/jasper");
+            }
+        }
+        
         /*
         $params1 = json_decode($request->getContent(), true);
         Log::info($params1);
@@ -252,7 +268,7 @@ class JasperController extends Controller
         );
 
         $name = $template_name.'.'.$template_format;
-		//return $name; 
+        //return $name; 
         //return response()->download($pathToFile)->deleteFileAfterSend(true);
         //return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
          //$response->header('X-Frame-Options', 'SAMEORIGIN',false);

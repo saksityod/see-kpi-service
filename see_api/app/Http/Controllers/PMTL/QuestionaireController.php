@@ -197,12 +197,10 @@ class QuestionaireController extends Controller
 						if(!empty($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'])) {
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'] as $an) {
 								$validator_s_answer = Validator::make([
-									'row_name' => $an['row_name'],
 									'answer_name' => $an['answer_name'],
 									'is_not_applicable' => $an['is_not_applicable'],
 									'score' => $an['score']
 								], [
-									'row_name' => 'required|max:255',
 									'answer_name' => 'required|max:255',
 									'is_not_applicable' => 'required|integer',
 									'score' => 'required|between:0,99.99'
@@ -229,12 +227,10 @@ class QuestionaireController extends Controller
 								try {
 									foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'][$q_k]['answer'] as $an) {
 										$validator_answer = Validator::make([
-											'row_name' => $an['row_name'],
 											'answer_name' => $an['answer_name'],
 											'is_not_applicable' => $an['is_not_applicable'],
 											'score' => $an['score']
 										], [
-											'row_name' => 'required|max:255',
 											'answer_name' => 'required|max:255',
 											'is_not_applicable' => 'required|integer',
 											'score' => 'required|between:0,99.99'
@@ -415,12 +411,10 @@ class QuestionaireController extends Controller
 						if(!empty($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'])) {
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['answer'] as $an) {
 								$validator_s_answer = Validator::make([
-									'row_name' => $an['row_name'],
 									'answer_name' => $an['answer_name'],
 									'is_not_applicable' => $an['is_not_applicable'],
 									'score' => $an['score']
 								], [
-									'row_name' => 'required|max:255',
 									'answer_name' => 'required|max:255',
 									'is_not_applicable' => 'required|integer',
 									'score' => 'required|between:0,99.99'
@@ -447,12 +441,10 @@ class QuestionaireController extends Controller
 								try {
 									foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'][$q_k]['answer'] as $an) {
 										$validator_answer = Validator::make([
-											'row_name' => $an['row_name'],
 											'answer_name' => $an['answer_name'],
 											'is_not_applicable' => $an['is_not_applicable'],
 											'score' => $an['score']
 										], [
-											'row_name' => 'required|max:255',
 											'answer_name' => 'required|max:255',
 											'is_not_applicable' => 'required|integer',
 											'score' => 'required|between:0,99.99'
