@@ -27,6 +27,49 @@ class QuestionaireController extends Controller
 	   $this->middleware('jwt.auth');
 	}
 
+	function is_empty_answer($answer) {
+		if(empty($answer) && $answer != 0) {
+			return " ";
+		} else {
+			return $answer;
+		}
+	}
+
+	function get_answer_by_question($question_id) {
+		if(is_array($question_id)) {
+			$question = DB::table("questionaire_data_detail")->whereIn('question_id', $question_id)->get();
+			if(empty($question)) {
+				$items = DB::table("answer")->whereIn("question_id", $question_id)->get();
+				$item_array = [];
+				foreach ($items as $key => $value) {
+					$item_array[] = $value->answer_id;
+				}
+				return $item_array;
+			}
+		} else {
+			$question = QuestionaireDataDetail::where('question_id', $question_id)->first();
+			if(empty($question)) {
+				$items = Answer::select("answer_id")->where("question_id", $question_id)->get();
+				$item_array = [];
+				foreach ($items as $key => $value) {
+					$item_array[] = $value->answer_id;
+				}
+				return $item_array;
+			}
+		}
+
+		exit(json_encode(['status' => 400, 'data' => 'Cannot delete because this Answer is in use.']));
+	}
+
+	function get_question_by_parent($question_id) {
+		$items = Question::select("question_id")->where("parent_question_id", $question_id)->get();
+		$item_array = [];
+		foreach ($items as $key => $value) {
+			$item_array[] = $value->question_id;
+		}
+		return $item_array;
+	}
+
 	public function list_type() {
 		$items = DB::select("
 			SELECT questionaire_type_id, questionaire_type
@@ -297,8 +340,8 @@ class QuestionaireController extends Controller
 								$an = new Answer;
 								$an->question_id = $q->question_id;
 								$an->seq_no = $ansv_k;
-								$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-								$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+								$an->row_name = $this->is_empty_answer($ansv['row_name']);
+								$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 								$an->is_not_applicable = $ansv['is_not_applicable'];
 								$an->score = $ansv['score'];
 								$an->created_by = Auth::id();
@@ -324,8 +367,8 @@ class QuestionaireController extends Controller
 										$an = new Answer;
 										$an->question_id = $ques->question_id;
 										$an->seq_no = $ansv_k;
-										$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-										$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+										$an->row_name = $this->is_empty_answer($ansv['row_name']);
+										$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 										$an->is_not_applicable = $ansv['is_not_applicable'];
 										$an->score = $ansv['score'];
 										$an->created_by = Auth::id();
@@ -529,8 +572,8 @@ class QuestionaireController extends Controller
 									$an = new Answer;
 									$an->question_id = $q->question_id;
 									$an->seq_no = $ansv_k;
-									$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-									$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+									$an->row_name = $this->is_empty_answer($ansv['row_name']);
+									$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 									$an->is_not_applicable = $ansv['is_not_applicable'];
 									$an->score = $ansv['score'];
 									$an->created_by = Auth::id();
@@ -539,8 +582,8 @@ class QuestionaireController extends Controller
 									$an = Answer::find($ansv['answer_id']);
 									$an->question_id = $q->question_id;
 									$an->seq_no = $ansv_k;
-									$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-									$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+									$an->row_name = $this->is_empty_answer($ansv['row_name']);
+									$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 									$an->is_not_applicable = $ansv['is_not_applicable'];
 									$an->score = $ansv['score'];
 									$an->updated_by = Auth::id();
@@ -577,8 +620,8 @@ class QuestionaireController extends Controller
 											$an = new Answer;
 											$an->question_id = $ques->question_id;
 											$an->seq_no = $ansv_k;
-											$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-											$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+											$an->row_name = $this->is_empty_answer($ansv['row_name']);
+											$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 											$an->is_not_applicable = $ansv['is_not_applicable'];
 											$an->score = $ansv['score'];
 											$an->created_by = Auth::id();
@@ -587,8 +630,8 @@ class QuestionaireController extends Controller
 											$an = Answer::find($ansv['answer_id']);
 											$an->question_id = $ques->question_id;
 											$an->seq_no = $ansv_k;
-											$an->row_name = empty($ansv['row_name']) ? "" : $ansv['row_name'];
-											$an->answer_name = empty($ansv['answer_name']) ? " " : $ansv['answer_name'];
+											$an->row_name = $this->is_empty_answer($ansv['row_name']);
+											$an->answer_name = $this->is_empty_answer($ansv['answer_name']);
 											$an->is_not_applicable = $ansv['is_not_applicable'];
 											$an->score = $ansv['score'];
 											$an->updated_by = Auth::id();
@@ -615,48 +658,34 @@ class QuestionaireController extends Controller
 		}
 
 		try {
-			$questionaire_section = DB::select("
-				SELECT section_id 
-				FROM questionaire_section 
-				WHERE questionaire_id = '{$questionaire_id}'
-				");
-
-			foreach ($questionaire_section as $key => $value) {
-				$question = DB::select("
-					SELECT question_id
-					FROM question 
-					WHERE section_id = '{$value->section_id}'
-					AND parent_question_id IS NOT NULL
-					");
-
-				foreach ($question as $key2 => $value2) {
-					$answer = DB::select("
-						SELECT answer_id 
-						FROM answer
-						WHERE question_id = '{$value2->question_id}'
-						");
-
-					foreach ($answer as $key3 => $value3) {
-						$this->destroy_answer($value3->answer_id, $value2->question_id);
-					}
-					$this->destroy_question($value2->question_id);
-				}
-
-				$question = DB::select("
-					SELECT question_id
-					FROM question 
-					WHERE section_id = '{$value->section_id}'
-					AND parent_question_id IS NULL
-					");
-
-				foreach ($question as $key2 => $value2) {
-					$question_head = Question::where('parent_question_id', $value2->question_id)->first();
-					if(empty($question_head)) {
-						$this->destroy_question($value2->question_id);
+			$questionaire_section = QuestionaireSection::select("section_id")
+			->where("questionaire_id", $questionaire_id)->get();
+			foreach ($questionaire_section as $qs) {
+				$question = Question::select("question_id","parent_question_id")
+				->where("section_id", $qs->section_id)->get();
+				foreach ($question as $value) {
+					if(empty($value->parent_question_id)) { // ถ้ามี sub section จะทำการหาคำถามและคำตอบแล้วลบ
+						$answer_array_id = $this->get_answer_by_question($value->question_id);
+						if(empty($answer_array_id)) { //ถ้ามีหัวข้อคำถาม
+							$sub_question_array_id = $this->get_question_by_parent($value->question_id);
+							$answer_array_id = $this->get_answer_by_question($sub_question_array_id);
+							DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+							DB::table("question")->whereIn("question_id", $sub_question_array_id)->delete();//ลบคำถาม
+							DB::table("question")->where("question_id", $value->question_id)->delete();//ลบหัวข้อคำถาม
+						} else {
+							DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+							DB::table("question")->where("question_id", $value->question_id)->delete();//ลบคำถาม
+						}
+					} else { // ถ้ามี question จะทำการหาคำตอบแล้วลบ
+						$answer_array_id = $this->get_answer_by_question($value->question_id);
+						DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+						DB::table("question")->where("question_id", $value->question_id)->delete();//ลบคำถาม
 					}
 				}
-				$this->destroy_section($value->section_id);
+
+				DB::table("questionaire_section")->where("section_id", $qs->section_id)->delete();//ลบ section
 			}
+
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
@@ -679,44 +708,30 @@ class QuestionaireController extends Controller
 		}
 
 		try {
-			$question = DB::select("
-				SELECT question_id 
-				FROM question 
-				WHERE section_id = '{$section_id}'
-				AND parent_question_id IS NOT NULL
-				");
-
-			foreach ($question as $key2 => $value2) {
-				$answer = DB::select("
-					SELECT answer_id 
-					FROM answer
-					WHERE question_id = '{$value2->question_id}'
-					");
-
-				foreach ($answer as $key3 => $value3) {
-					$this->destroy_answer($value3->answer_id, $value2->question_id);
-				}
-				$this->destroy_question($value2->question_id);
-			}
-
-			$question = DB::select("
-				SELECT question_id
-				FROM question 
-				WHERE section_id = '{$section_id}'
-				AND parent_question_id IS NULL
-				");
-
-			foreach ($question as $key2 => $value2) {
-				$question_head = Question::where('parent_question_id', $value2->question_id)->first();
-				if(empty($question_head)) {
-					$this->destroy_question($value2->question_id);
+			$question = Question::select("question_id","parent_question_id")->where("section_id", $section_id)->get();
+			foreach ($question as $value) {
+				if(empty($value->parent_question_id)) { // ถ้ามี sub section จะทำการหาคำถามและคำตอบแล้วลบ
+					$answer_array_id = $this->get_answer_by_question($value->question_id);
+					if(empty($answer_array_id)) { //ถ้ามีหัวข้อคำถาม
+						$sub_question_array_id = $this->get_question_by_parent($value->question_id);
+						$answer_array_id = $this->get_answer_by_question($sub_question_array_id);
+						DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+						DB::table("question")->whereIn("question_id", $sub_question_array_id)->delete();//ลบคำถาม
+						DB::table("question")->where("question_id", $value->question_id)->delete();//ลบหัวข้อคำถาม
+					} else {
+						DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+						DB::table("question")->where("question_id", $value->question_id)->delete();//ลบคำถาม
+					}
+				} else { // ถ้ามี question จะทำการหาคำตอบแล้วลบ
+					$answer_array_id = $this->get_answer_by_question($value->question_id);
+					DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();//ลบคำตอบ
+					DB::table("question")->where("question_id", $value->question_id)->delete();//ลบคำถาม
 				}
 			}
-
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
-				return response()->json(['status' => 400, 'data' => 'Cannot delete because this QuestionaireSection is in use.']);
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Section or Question is in use.']);
 			} else {
 				return response()->json($e->errorInfo);
 			}
@@ -735,27 +750,17 @@ class QuestionaireController extends Controller
 		}
 
 		try {
-			$answer = DB::select("
-				SELECT answer_id 
-				FROM answer
-				WHERE question_id = '{$question_id}'
-				");
-
-			foreach ($answer as $key3 => $value3) {
-				$this->destroy_answer($value3->answer_id, $question_id);
+			if(empty($item->parent_question_id)) { // ถ้าเป็น sub section จะทำการหาคำถามและคำตอบแล้วลบ
+				$sub_question_array_id = $this->get_question_by_parent($question_id);
+				$answer_array_id = $this->get_answer_by_question($sub_question_array_id);
+				DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
+				DB::table("question")->whereIn("question_id", $sub_question_array_id)->delete();
+			} else { // ถ้าเป็น question จะทำการหาคำตอบแล้วลบ
+				$answer_array_id = $this->get_answer_by_question($question_id);
+				DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
 			}
 
-			if(empty($item->parent_question_id)) {
-				$question_head = Question::where('parent_question_id', $item->question_id)->first();
-				if(empty($question_head)) {
-					$item->delete();
-				} else {
-					return response()->json(['status' => 400, 'data' => 'Cannot delete because this Question in Subsection is in use.']);
-				}
-			} else {
-				$item->delete();
-			}
-
+			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Question is in use.']);
@@ -768,7 +773,7 @@ class QuestionaireController extends Controller
 
 	}
 
-	public function destroy_answer($answer_id, $question_id)
+	public function destroy_answer($answer_id)
 	{
 		try {
 			$item = Answer::findOrFail($answer_id);
@@ -777,14 +782,9 @@ class QuestionaireController extends Controller
 		}
 
 		try {
-			Question::findOrFail($question_id);
-		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Question not found.']);
-		}
-
-		try {
-			$ques = QuestionaireDataDetail::where('question_id', $question_id)->first();
-			if(empty($ques)) {
+			$ques = Question::where('question_id', $item->question_id)->first();
+			$ques_data = QuestionaireDataDetail::where('question_id', $ques->question_id)->first();
+			if(empty($ques_data)) {
 				$item->delete();
 			} else {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Answer is in use.']);
