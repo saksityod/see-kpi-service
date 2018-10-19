@@ -897,22 +897,22 @@ class QuestionaireDataController extends Controller
 
 		$req_date = $this->format_date($request->date);
 
-		$check_assign = DB::select("
-			SELECT qdh.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
-			FROM questionaire_data_header qdh
-			INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
-			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
-			WHERE qdh.questionaire_date = '{$req_date}'
-			AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
-			AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
-		");
+		// $check_assign = DB::select("
+		// 	SELECT qdh.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
+		// 	FROM questionaire_data_header qdh
+		// 	INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+		// 	INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
+		// 	WHERE qdh.questionaire_date = '{$req_date}'
+		// 	AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
+		// 	AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
+		// ");
 
-		if(!empty($check_assign)) {
-			return response()->json([
-				'status' => 404, 
-				'data' => $request->date.' '.$check_assign[0]->emp_name.' was already evaluated '.$quesionaire_type->questionaire_type
-			]);
-		}
+		// if(!empty($check_assign)) {
+		// 	return response()->json([
+		// 		'status' => 404, 
+		// 		'data' => $request->date.' '.$check_assign[0]->emp_name.' was already evaluated '.$quesionaire_type->questionaire_type
+		// 	]);
+		// }
 
 		$head = DB::select("
 			SELECT qn.questionaire_id, qn.questionaire_name
@@ -1724,7 +1724,7 @@ class QuestionaireDataController extends Controller
 
             $in_emp = $this->get_tree_emp(Auth::id());
             $in_emp_snap = $this->get_tree_emp_snap_id($in_emp);
-            $in_assessor = $this->find_assessor_id($in_emp_snap, $request->start_date, $request->end_date);
+            // $in_assessor = $this->find_assessor_id($in_emp_snap, $request->start_date, $request->end_date);
 
             $items = DB::select("
                 SELECT qnt.questionaire_type,
@@ -1771,7 +1771,7 @@ class QuestionaireDataController extends Controller
                     ".$emp_snapshot_id."
                     ".$assessor_id."
                     AND qdh.emp_snapshot_id IN ({$in_emp_snap})
-                    AND qdh.assessor_id IN ({$in_assessor})
+                    #AND qdh.assessor_id IN ({$in_assessor})
                     GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
             ");
         }
