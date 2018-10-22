@@ -489,7 +489,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('questionaire_data/evaluated_retailer_list_edit', 'PMTL\QuestionaireDataController@evaluated_retailer_list_edit');
 	Route::get('questionaire_data/list_questionaire', 'PMTL\QuestionaireDataController@list_questionaire_type');
 	Route::get('questionaire_data', 'PMTL\QuestionaireDataController@index');
-	Route::get('questionaire_data/assign_template', 'PMTL\QuestionaireDataController@assign_template');
+	Route::get('questionaire_data/assign_template/{data_header_id}', 'PMTL\QuestionaireDataController@assign_template');
 	Route::get('questionaire_data/generate_template', 'PMTL\QuestionaireDataController@generate_template');
 	Route::get('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@show');
 	Route::post('questionaire_data', 'PMTL\QuestionaireDataController@store');
