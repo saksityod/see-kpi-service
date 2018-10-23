@@ -532,7 +532,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 		LEFT JOIN position p ON es.position_id = p.position_id
     WHERE qdh.data_stage_id IN (3,4)
     	AND ay.answer_type_id != 7
-		AND (es.emp_snapshot_id =  $P{param_employee}  OR '' =  $P{param_employee} OR  ISNULL( $P{param_employee}) = 1 )
+		AND (es.emp_snapshot_id IN($P!{param_employee}) OR '999999999' =  $P{param_employee})
 		AND qdh.questionaire_date 
 			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
