@@ -148,7 +148,8 @@ class AppraisalGroupController extends Controller
 				SELECT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 					e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
 					po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
-					concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
+					concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
+					af.appraisal_form_name
 				FROM emp_result a
 				LEFT OUTER JOIN employee b ON a.emp_id = b.emp_id
 				LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id
@@ -158,6 +159,7 @@ class AppraisalGroupController extends Controller
 				LEFT OUTER JOIN position p ON a.position_id = p.position_id
 				LEFT OUTER JOIN org o ON a.org_id = o.org_id
 				LEFT OUTER JOIN org po ON o.parent_org_code = po.org_code
+				INNER JOIN appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 				WHERE d.is_hr = 0
 			";
 
@@ -169,6 +171,7 @@ class AppraisalGroupController extends Controller
 			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 			empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 			empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+			empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 
 			$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
@@ -178,7 +181,8 @@ class AppraisalGroupController extends Controller
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, 
 						o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
-						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
+						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
+						af.appraisal_form_name
 					from emp_result a
 					left outer join employee b on a.emp_id = b.emp_id
 					left outer join appraisal_level d on a.level_id = d.level_id
@@ -188,6 +192,7 @@ class AppraisalGroupController extends Controller
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
 					left outer join org po on o.parent_org_code = po.org_code
+					INNER JOIN appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 				";
 
@@ -199,6 +204,7 @@ class AppraisalGroupController extends Controller
 				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
@@ -208,7 +214,8 @@ class AppraisalGroupController extends Controller
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
 						po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
-						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
+						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
+						af.appraisal_form_name
 					from emp_result a
 					left outer join employee b on a.emp_id = b.emp_id
 					left outer join appraisal_level d on a.level_id = d.level_id
@@ -218,6 +225,7 @@ class AppraisalGroupController extends Controller
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
 					left outer join org po on o.parent_org_code = po.org_code
+					INNER JOIN appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 				";
 
@@ -229,6 +237,7 @@ class AppraisalGroupController extends Controller
 				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
@@ -290,7 +299,7 @@ class AppraisalGroupController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 		$head = DB::select("
-			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id
+			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id, af.appraisal_form_name
 			FROM emp_result a
 			left outer join employee b
 			on a.emp_id = b.emp_id
@@ -312,14 +321,17 @@ class AppraisalGroupController extends Controller
 			on o.parent_org_code = po.org_code
 			left outer join appraisal_level al
 			on a.level_id = al.level_id
+			inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 			where a.emp_result_id = ?
 		", array($request->emp_result_id));
 
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
-				select DISTINCT b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
-				if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount
-					from appraisal_item_result a
+				select DISTINCT b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
+					if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount,
+					((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
+					((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+				from appraisal_item_result a
 				left outer join appraisal_item b
 				on a.item_id = b.item_id
 				left outer join appraisal_structure c
@@ -347,35 +359,30 @@ class AppraisalGroupController extends Controller
 				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
 			$items = DB::select("
-				select DISTINCT b.item_name,b.formula_desc,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
-				if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount
-					from appraisal_item_result a
-				left outer join appraisal_item b
-				on a.item_id = b.item_id
-				INNER JOIN appraisal_item ai
-				on ai.item_id = a.item_id
-				left outer join appraisal_structure c
-				on b.structure_id = c.structure_id
-				left outer join form_type d
-				on c.form_id = d.form_id
-				left outer join perspective e
-				on b.perspective_id = e.perspective_id
-				left outer join structure_result f
-				on a.emp_result_id = f.emp_result_id
-				and c.structure_id = f.structure_id
-				left outer join appraisal_criteria g
-				on c.structure_id = g.structure_id
-				and a.level_id = g.appraisal_level_id
-				left outer join appraisal_level al
-				on a.level_id = al.level_id
-				left outer join emp_result h
-				on a.emp_result_id = h.emp_result_id
-				left join uom on  b.uom_id= uom.uom_id
-				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id 
-				and ags.assessor_group_id = ?
-				where a.emp_result_id = ?
-				order by c.seq_no asc, b.item_id
-				", array($request->assessor_group_id, $request->emp_result_id));
+				SELECT DISTINCT b.item_name, b.formula_desc, uom.uom_name, b.structure_id, 
+					c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, 
+					a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, 
+					g.weight_percent total_weight_percent, al.no_weight,
+					IF(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, 
+					a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, 
+					(select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount,
+					((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
+					((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+				FROM appraisal_item_result a
+				LEFT OUTER JOIN appraisal_item b ON a.item_id = b.item_id
+				INNER JOIN appraisal_item ai ON ai.item_id = a.item_id
+				LEFT OUTER JOIN appraisal_structure c ON b.structure_id = c.structure_id
+				LEFT OUTER JOIN form_type d ON c.form_id = d.form_id
+				LEFT OUTER JOIN perspective e ON b.perspective_id = e.perspective_id
+				LEFT OUTER JOIN structure_result f ON a.emp_result_id = f.emp_result_id AND c.structure_id = f.structure_id
+				LEFT OUTER JOIN appraisal_criteria g ON c.structure_id = g.structure_id AND a.level_id = g.appraisal_level_id
+				LEFT OUTER JOIN appraisal_level al ON a.level_id = al.level_id
+				LEFT OUTER JOIN emp_result h ON a.emp_result_id = h.emp_result_id
+				LEFT OUTER JOIN uom ON b.uom_id= uom.uom_id
+				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id AND ags.assessor_group_id = ?
+				WHERE a.emp_result_id = ?
+				ORDER BY c.seq_no asc, b.item_id
+			", array($request->assessor_group_id, $request->emp_result_id));
 		}
 
 		$groups = array();
