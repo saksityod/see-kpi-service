@@ -1,0 +1,2284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-assignment-logging-org" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="6f77b5ba-4c28-4c60-b1dc-cc5402c78336">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="350"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="640"/>
+	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_CH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 2_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 2_CH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 2_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 3_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 3_CH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 3_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 4_TH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 4_CH" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table 4_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="table" uuid="66a54afb-52e9-49b1-973c-8e18b8360500">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+		<parameter name="param_org" class="java.lang.String"/>
+		<parameter name="param_user" class="java.lang.String"/>
+		<parameter name="param_level_org" class="java.lang.String"/>
+		<parameter name="param_period" class="java.lang.String"/>
+		<parameter name="param_form" class="java.lang.String"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT 
+air.item_name
+, COALESCE(air.weight_percent,0) as weight_percent
+, COALESCE(air.score0,0) as score0
+, COALESCE(air.score1,0) as score1
+, COALESCE(air.score2,0) as score2
+, COALESCE(air.score3,0) as score3
+, COALESCE(air.score4,0) as score4
+, COALESCE(air.score5,0) as score5
+, (case when air.modify_type = "I" then 2
+	when air.modify_type = "U" then 1 
+	when air.modify_type = "D" then 0 
+	else null end) as modify_type 
+, air.modify_date
+, air.modify_by
+, sc.threshold
+
+FROM appraisal_item_result_log air
+INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
+INNER JOIN appraisal_period app ON air.period_id = app.period_id
+INNER JOIN org ON air.org_id = org.org_id	
+INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
+CROSS JOIN system_config sc
+
+WHERE  (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
+AND (air.org_id =  $P{param_org}  or '' =    $P{param_org}  or isnull(  $P{param_org}  ) = 1 or air.org_id='All')
+AND (air.appraisal_form_id =   $P{param_form}   or '' =   $P{param_form}   or isnull(   $P{param_form}  ) = 1 or air.appraisal_form_id = 'All')
+AND app.period_id =    $P{param_period} 
+AND aps.structure_id = 1
+AND air.appraisal_type_id = 1
+AND air.modify_type is not null
+ORDER BY air.modify_date ASC]]>
+		</queryString>
+		<field name="item_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="item_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
+		</field>
+		<field name="weight_percent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="weight_percent"/>
+		</field>
+		<field name="score0" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score0"/>
+		</field>
+		<field name="score1" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score1"/>
+		</field>
+		<field name="score2" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score2"/>
+		</field>
+		<field name="score3" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score3"/>
+		</field>
+		<field name="score4" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score4"/>
+		</field>
+		<field name="score5" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score5"/>
+		</field>
+		<field name="modify_type" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="modify_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
+		</field>
+		<field name="modify_date" class="java.sql.Timestamp">
+			<property name="com.jaspersoft.studio.field.label" value="modify_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
+		</field>
+		<field name="modify_by" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="modify_by"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
+		</field>
+		<field name="threshold" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="threshold"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="system_config"/>
+		</field>
+		<group name="item_name">
+			<groupExpression><![CDATA[$F{item_name}]]></groupExpression>
+		</group>
+		<group name="modify_type">
+			<groupExpression><![CDATA[$F{modify_type}]]></groupExpression>
+		</group>
+		<group name="modify_by">
+			<groupExpression><![CDATA[$F{modify_by}]]></groupExpression>
+		</group>
+	</subDataset>
+	<subDataset name="threshold" uuid="8ed5f8d1-7cfd-49af-8a8d-c745ee6db419">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso"/>
+		<parameter name="param_org" class="java.lang.String"/>
+		<parameter name="param_user" class="java.lang.String"/>
+		<parameter name="param_period" class="java.lang.String"/>
+		<parameter name="param_level_org" class="java.lang.String"/>
+		<parameter name="param_form" class="java.lang.String"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT aps.structure_name
+, app.period_id
+, app.appraisal_period_desc
+, air.item_name
+, COALESCE(air.target_value,0) as target_value
+, COALESCE(air.weight_percent,0) as weight_percent
+, COALESCE(air.score0,0) as score0
+, COALESCE(air.score1,0) as score1
+, COALESCE(air.score2,0) as score2
+, COALESCE(air.score3,0) as score3
+, COALESCE(air.score4,0) as score4
+, COALESCE(air.score5,0) as score5
+, COALESCE(air.actual_value,0) as actual_value
+, (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
+, COALESCE(air.weigh_score,0) as weigh_score_item
+, alv.appraisal_level_name
+, org.org_name
+, app.appraisal_year
+, appraisal_period_desc
+, air.org_id
+, air.level_id
+, sc.threshold
+FROM appraisal_item_result air
+INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
+INNER JOIN appraisal_period app ON air.period_id = app.period_id
+INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
+LEFT JOIN structure_result str ON  str.period_id = air.period_id
+	 AND str.structure_id = api.structure_id
+INNER JOIN appraisal_level alv ON  air.level_id = alv.level_id
+INNER JOIN org ON air.org_id = org.org_id	 
+INNER JOIN  emp_result emr ON emr.emp_result_id = air.emp_result_id
+CROSS JOIN system_config sc
+WHERE    (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
+AND (air.org_id =  $P{param_org}   or '' =  $P{param_org}   or isnull(  $P{param_org}  ) = 1 or air.org_id= 'All')
+AND (air.appraisal_form_id =   $P{param_form}   or '' =   $P{param_form}   or isnull(   $P{param_form}  ) = 1 or air.appraisal_form_id = 'All')
+AND app.period_id =   $P{param_period} 
+AND aps.structure_id = 1
+AND emr.appraisal_type_id = 1
+GROUP BY aps.structure_name
+, app.period_id
+, air.org_id
+, app.appraisal_period_desc
+, air.item_name
+, COALESCE(air.target_value,0) 
+, COALESCE(air.weight_percent,0) 
+, COALESCE(air.score0,0) 
+, COALESCE(air.score1,0) 
+, COALESCE(air.score2,0) 
+, COALESCE(air.score3,0) 
+, COALESCE(air.score4,0) 
+, COALESCE(air.score5,0) 
+, COALESCE(air.actual_value,0) 
+, COALESCE(air.score,0) 
+, COALESCE(air.weigh_score,0)
+, alv.appraisal_level_name
+, org.org_name
+, app.appraisal_year
+, appraisal_period_desc
+ORDER BY air.org_id ASC]]>
+		</queryString>
+		<field name="structure_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
+		</field>
+		<field name="period_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="period_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+		</field>
+		<field name="appraisal_period_desc" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+		</field>
+		<field name="item_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="item_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+		</field>
+		<field name="target_value" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="target_value"/>
+		</field>
+		<field name="weight_percent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="weight_percent"/>
+		</field>
+		<field name="score0" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score0"/>
+		</field>
+		<field name="score1" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score1"/>
+		</field>
+		<field name="score2" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score2"/>
+		</field>
+		<field name="score3" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score3"/>
+		</field>
+		<field name="score4" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score4"/>
+		</field>
+		<field name="score5" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score5"/>
+		</field>
+		<field name="actual_value" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
+		</field>
+		<field name="score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score"/>
+		</field>
+		<field name="weigh_score_item" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="weigh_score_item"/>
+		</field>
+		<field name="appraisal_level_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="appraisal_level_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+		</field>
+		<field name="org_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+		</field>
+		<field name="appraisal_year" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+		</field>
+		<field name="COLUMN_19" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+		</field>
+		<field name="org_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="org_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+		</field>
+		<field name="level_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="level_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+		</field>
+		<field name="threshold" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="threshold"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="system_config"/>
+		</field>
+	</subDataset>
+	<parameter name="param_org" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="param_period" class="java.lang.String"/>
+	<parameter name="param_level_org" class="java.lang.String"/>
+	<parameter name="param_form" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT aps.structure_name
+, app.period_id
+, app.appraisal_period_desc
+, air.item_name
+, COALESCE(air.target_value,0) as target_value
+, COALESCE(air.weight_percent,0) as weight_percent
+, COALESCE(air.score0,0) as score0
+, COALESCE(air.score1,0) as score1
+, COALESCE(air.score2,0) as score2
+, COALESCE(air.score3,0) as score3
+, COALESCE(air.score4,0) as score4
+, COALESCE(air.score5,0) as score5
+, COALESCE(air.actual_value,0) as actual_value
+, (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
+, COALESCE(air.weigh_score,0) as weigh_score_item
+, alv.appraisal_level_name
+, org.org_name
+, app.appraisal_year
+, appraisal_period_desc
+, air.org_id
+, air.level_id
+, sc.threshold
+FROM appraisal_item_result air
+INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
+INNER JOIN appraisal_period app ON air.period_id = app.period_id
+INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
+LEFT JOIN structure_result str ON  str.period_id = air.period_id
+	 AND str.structure_id = api.structure_id
+INNER JOIN appraisal_level alv ON  air.level_id = alv.level_id
+INNER JOIN org ON air.org_id = org.org_id	 
+INNER JOIN  emp_result emr ON emr.emp_result_id = air.emp_result_id
+CROSS JOIN system_config sc
+WHERE    (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
+AND (air.org_id =  $P{param_org}   or '' =  $P{param_org}   or isnull(  $P{param_org}  ) = 1 or air.org_id= 'All')
+AND (air.appraisal_form_id =   $P{param_form}   or '' =   $P{param_form}   or isnull(   $P{param_form}  ) = 1 or air.appraisal_form_id = 'All')
+AND app.period_id =   $P{param_period} 
+AND aps.structure_id = 1
+AND emr.appraisal_type_id = 1
+GROUP BY aps.structure_name
+, app.period_id
+, air.org_id
+, app.appraisal_period_desc
+, air.item_name
+, COALESCE(air.target_value,0) 
+, COALESCE(air.weight_percent,0) 
+, COALESCE(air.score0,0) 
+, COALESCE(air.score1,0) 
+, COALESCE(air.score2,0) 
+, COALESCE(air.score3,0) 
+, COALESCE(air.score4,0) 
+, COALESCE(air.score5,0) 
+, COALESCE(air.actual_value,0) 
+, COALESCE(air.score,0) 
+, COALESCE(air.weigh_score,0)
+, alv.appraisal_level_name
+, org.org_name
+, app.appraisal_year
+, appraisal_period_desc
+ORDER BY air.org_id ASC]]>
+	</queryString>
+	<field name="structure_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
+	</field>
+	<field name="period_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="period_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="appraisal_period_desc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="item_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="item_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="target_value" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="target_value"/>
+	</field>
+	<field name="weight_percent" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="weight_percent"/>
+	</field>
+	<field name="score0" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score0"/>
+	</field>
+	<field name="score1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score1"/>
+	</field>
+	<field name="score2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score2"/>
+	</field>
+	<field name="score3" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score3"/>
+	</field>
+	<field name="score4" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score4"/>
+	</field>
+	<field name="score5" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score5"/>
+	</field>
+	<field name="actual_value" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
+	</field>
+	<field name="score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score"/>
+	</field>
+	<field name="weigh_score_item" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="weigh_score_item"/>
+	</field>
+	<field name="appraisal_level_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_level_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="appraisal_year" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="COLUMN_19" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="org_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="level_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="threshold" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="threshold"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="system_config"/>
+	</field>
+	<group name="table" isReprintHeaderOnEachPage="true">
+		<groupFooter>
+			<band height="80">
+				<printWhenExpression><![CDATA[$F{threshold}==0 ? true : false]]></printWhenExpression>
+				<componentElement>
+					<reportElement x="0" y="0" width="802" height="80" isRemoveLineWhenBlank="true" uuid="6761b5b4-e2e5-477b-853b-0585b357a64c">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="table" uuid="561a108c-8f0b-4e7d-9855-36f16e89c88f">
+							<datasetParameter name="param_level_org">
+								<datasetParameterExpression><![CDATA[$P{param_level_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org">
+								<datasetParameterExpression><![CDATA[$P{param_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_user">
+								<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="29" uuid="d8753b1f-1d79-4859-8100-a32ec365c717">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="0" width="29" height="60" uuid="4673b3c3-1768-4803-b499-254788fdeaa2"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ลำดับ]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<textField>
+									<reportElement x="0" y="0" width="29" height="20" uuid="2fa4ccdc-591f-45c9-882b-6383221b0d53"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="101" uuid="3caddbd5-8568-4be2-897e-6ed8c6e0674c">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="101" height="60" uuid="8cc7f79e-869f-4d2b-8084-c458ba649948"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ประเภท]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="101" height="20" uuid="335af85f-94f2-4361-8678-12d42ad9ee4b"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_type}==2? "เพิ่ม":($F{modify_type}==1 ?"แก้ไข": "ลบ")]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="100" uuid="fefccb95-d81a-4fc1-8d84-5620ce5e862b">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="100" height="60" uuid="dc18f112-fbc0-4532-9b72-c8b1ed8cd2f5"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[เวลาที่แก้ไข]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="100" height="20" uuid="a6b0d03c-8ded-4487-95de-fccabb9b2763"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_date}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="92" uuid="2d441089-880e-43ad-bd3c-cdd4036e012c">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="92" height="60" uuid="4a3adf3b-5466-4791-b229-fad240c1122d"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[แก้ไขโดย]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="92" height="20" uuid="94208477-7181-456a-9ca4-603cb2cddc62"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_by}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="288" uuid="944002d4-5072-47a2-b854-2afa1c358761">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="288" height="60" uuid="7146fcab-397d-4162-852b-fbe786ddc7b5"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="288" height="20" uuid="5c3711c2-7efa-44cf-a4e2-ce610061f99f"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="80" uuid="08374362-5dbb-4525-bb4f-d780612027be">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="80" height="60" uuid="c29c8c83-43d2-4562-a39d-de2b30b0b77b"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[%น้ำหนัก 
+คะแนน]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="80" height="20" uuid="7bec1a0e-a9b0-4b26-9bca-a999afac0759"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="11"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Group1" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="200">
+		<groupExpression><![CDATA[$F{org_name}]]></groupExpression>
+		<groupHeader>
+			<band height="80">
+				<staticText>
+					<reportElement x="0" y="25" width="802" height="55" uuid="d6325932-1094-4e11-89c0-0646a24f5b45"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="65" y="29" width="248" height="24" uuid="ad5cd3c2-0e44-436f-88b3-41ba553bd924"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16"/>
+						<paragraph lineSpacing="1_1_2" leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{appraisal_level_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="7" y="29" width="58" height="24" uuid="c3721b57-5dba-4cb7-89b2-7f35c5c00e9f"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph firstLineIndent="0" spacingBefore="0"/>
+					</textElement>
+					<text><![CDATA[ระดับ :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="313" y="53" width="76" height="24" uuid="594b6c51-b237-424c-abf1-57a3d1f5786f"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<text><![CDATA[รอบประเมิน :]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="65" y="53" width="248" height="24" uuid="bf4966a6-f786-4de5-b377-8748540c7259"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16"/>
+						<paragraph lineSpacing="1_1_2" leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="802" height="25" forecolor="#FFFFFF" backcolor="#666666" uuid="8daa53be-716e-4d25-9545-df264e57ec1e"/>
+					<box>
+						<pen lineColor="#666666"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ ข้อมูลหน่วยงาน]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="313" y="29" width="76" height="24" uuid="b564c271-9d59-4e20-bde1-7ddd38e8c68a"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph firstLineIndent="0" leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<text><![CDATA[ปีประเมิน :]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="389" y="29" width="221" height="24" uuid="d625ea74-d183-4bc6-bc93-74d196cbdb2a"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16"/>
+						<paragraph lineSpacing="1_1_2" leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{appraisal_year}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="389" y="53" width="221" height="24" uuid="1c756766-3ead-4c26-989a-2492b99e2ba9"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16"/>
+						<paragraph lineSpacing="1_1_2" leftIndent="0" spacingBefore="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{appraisal_period_desc}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="7" y="53" width="58" height="24" uuid="c032c79a-a3c5-455b-ae3e-6130251cf5cc"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[หน่วยงาน :]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Group2" isStartNewPage="true" minHeightToStartNewPage="200">
+		<groupExpression><![CDATA[$F{structure_name}]]></groupExpression>
+		<groupHeader>
+			<band height="36">
+				<textField>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="11" width="803" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e4f3bb4e-b168-4e55-9960-fb9398f5916c"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ส่วนที่ 1 : "+$F{structure_name} +"  (ข้อมูลล่าสุด)"]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="80">
+				<printWhenExpression><![CDATA[$F{threshold}==1 ? true : false]]></printWhenExpression>
+				<staticText>
+					<reportElement x="0" y="0" width="29" height="61" uuid="1f65f740-c952-4320-a4f2-c8b00995260b"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[ลำดับ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="377" y="20" width="52" height="41" uuid="4fc86f19-8175-4c63-883b-6afb71dc7bf4"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[1]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="429" y="20" width="52" height="41" uuid="9867599f-2a3b-4573-a098-c4d4cf819f2e"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[2]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="481" y="20" width="52" height="41" uuid="568e994d-e245-4799-bee6-45c0733da4b3"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[3]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="533" y="20" width="55" height="41" uuid="347a8ddc-4fd1-4688-8256-9cc6f0d2f5ff"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[4]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="744" y="20" width="58" height="41" uuid="8c84c104-b077-4c9c-a53e-3a30316ee00f"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph leftIndent="2" spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[คะแนนที่ได้ 
+(1)x(2)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="588" y="20" width="55" height="41" uuid="22a9fb81-2031-484e-b7f7-35239e253656"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[5]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="278" y="0" width="49" height="61" uuid="fd2a202b-8827-45ef-b39d-565c0e282655"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph leftIndent="2" spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[%น้ำหนัก 
+คะแนน
+(1)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="696" y="20" width="48" height="41" uuid="8cae879f-8de1-44a2-8868-f7635afb3187"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[ผลคะแนน
+(2)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="643" y="20" width="53" height="41" uuid="a46b86fc-8e72-493d-8adb-3135247fd9b1"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[ผลงาน]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="29" y="0" width="193" height="61" uuid="be565b6b-b85b-4273-bc2d-bd35aa220a54"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="222" y="0" width="56" height="61" uuid="49963572-9640-41bb-923c-8edda104691b"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[เป้าหมาย]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="327" y="0" width="316" height="20" uuid="d8d42e62-5396-4b85-af10-7eb9d83278fe"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="0"/>
+					</textElement>
+					<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="643" y="0" width="159" height="20" uuid="d2ef9618-24ad-4528-a7ea-b84e4fc8106f"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="0"/>
+					</textElement>
+					<text><![CDATA[ผลการประเมิน]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="327" y="20" width="50" height="41" uuid="0ac3eb22-07bf-4db9-a97e-c5378c5eae99"/>
+					<box>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph spacingBefore="5"/>
+					</textElement>
+					<text><![CDATA[0]]></text>
+				</staticText>
+				<componentElement>
+					<reportElement x="0" y="0" width="802" height="80" uuid="6a517a3d-36e0-44c5-9598-01be52872bb4">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 4_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 4_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table 4_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="threshold" uuid="63893454-9781-46df-b19c-b1ee9a80fc08">
+							<datasetParameter name="param_level_org">
+								<datasetParameterExpression><![CDATA[$P{param_level_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org">
+								<datasetParameterExpression><![CDATA[$P{param_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_user">
+								<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="29" uuid="1959da89-1a45-4d60-98ba-6d67cece5cbd">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="29" height="61" uuid="032ca4c7-b81c-47ee-a2b6-97521a3578a5"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ลำดับ]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<textField>
+									<reportElement x="0" y="0" width="29" height="20" uuid="01a6739e-ab4e-4e8e-804f-102847d34c57"/>
+									<box>
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Center">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="181" uuid="302a129d-9435-45a9-bee9-d5de180c5386">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="181" height="61" uuid="cefc9e75-e33b-4417-817a-e627dd89764c"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="181" height="20" uuid="cded9f2c-6394-4584-9e39-f7ed36967c67"/>
+									<box leftPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="70" uuid="b907159d-45ee-44f6-ae84-f265e7db5553">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="70" height="61" uuid="195f3a1d-240e-4bb5-917e-fba47f0a9f0f"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[เป้าหมาย]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="70" height="20" uuid="0f8f4119-8d06-45ea-8f1d-e3cfa190753b"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="49" uuid="b220efc2-93ce-4851-8ba0-e140b61f1083">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="49" height="61" uuid="a3d88a31-a6af-463f-9b59-9364300678d6"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph leftIndent="2" spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[%น้ำหนัก 
+คะแนน
+(1)]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="49" height="20" uuid="98d3d1f9-19c9-44aa-8239-4c224a8ac514"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="313" uuid="2daa2609-ccd0-4e4e-8ce4-7e15fcecb0d4">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="20" width="53" height="41" uuid="727328f5-b9f0-4337-86e9-d2246bc7d9bf"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[0]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="105" y="20" width="52" height="41" uuid="9c1aad66-65b3-4ec5-b608-b73804c7d991"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[2]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="157" y="20" width="52" height="41" uuid="cafdb844-05f7-4711-b235-6591d3eafa8b"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[3]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="261" y="20" width="52" height="41" uuid="ed4b6e36-5cdd-4430-a175-48b7f4369209"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[5]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="0" width="313" height="20" uuid="61a85c85-0160-4ffc-a93f-11413edc8610"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="0"/>
+									</textElement>
+									<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="53" y="20" width="52" height="41" uuid="0b554319-5c8a-42b1-9167-c981d86e20bc"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[1]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="209" y="20" width="52" height="41" uuid="fb9081cf-4e45-4854-bd5a-c422756114f4"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[4]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="53" height="20" uuid="22b90671-54f0-4be0-9206-9be9282b935a"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="53" y="0" width="52" height="20" uuid="e96fd7f2-649e-4a26-8552-708faa3a0d19"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="105" y="0" width="52" height="20" uuid="a09f2b05-dd76-4761-9fce-6741d1763194"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="157" y="0" width="52" height="20" uuid="27ee4f8b-7914-414e-a06d-c59f4f25007b"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="209" y="0" width="52" height="20" uuid="edd25e24-9c1f-4cf0-8231-cf6c7ff2eb1a"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="261" y="0" width="52" height="20" uuid="aa093054-8457-428f-b5c6-d0cd24508d42"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="160" uuid="795fcca7-a3a8-43b1-ad9e-7aefa0da61d0">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="0" width="160" height="20" uuid="028d4e7e-609a-4a67-9f37-602e315988bf"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="0"/>
+									</textElement>
+									<text><![CDATA[ผลการประเมิน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="54" y="20" width="53" height="41" uuid="d5a70bdf-dfc8-4cb7-87c3-21b60769e4bf"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ผลคะแนน
+(2)]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="107" y="20" width="53" height="41" uuid="91352bc3-9b00-441b-b8aa-be653bfd6f5a"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph leftIndent="2" spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[คะแนนที่ได้ 
+(1)x(2)]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="20" width="54" height="41" uuid="4716556f-94f1-4fc8-ab86-78192548edaa"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ผลงาน]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="54" height="20" uuid="07efe60c-042d-49f7-b762-a19d3cbc0d7a"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="54" y="0" width="53" height="20" uuid="86eecbbf-5480-4d26-b7f4-fa5036de0efc"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="107" y="0" width="53" height="20" uuid="ca614f87-9445-446c-bc0c-e93c06fb7263"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weigh_score_item}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="80">
+				<printWhenExpression><![CDATA[$F{threshold}==1 ? true : false]]></printWhenExpression>
+				<componentElement>
+					<reportElement x="0" y="0" width="802" height="80" isRemoveLineWhenBlank="true" uuid="e8adc97e-709e-483f-8d38-78555a733ad7">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="table" uuid="dd8d2810-18e9-4657-902f-015ba8e6e071">
+							<datasetParameter name="param_level_org">
+								<datasetParameterExpression><![CDATA[$P{param_level_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org">
+								<datasetParameterExpression><![CDATA[$P{param_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_user">
+								<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="29" uuid="12bbed5f-3dea-4cd7-b8ce-654d67ce7222">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="0" width="29" height="60" uuid="3d39f157-38bb-4a58-a0d4-b7c3ede4f1d4"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ลำดับ]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<textField>
+									<reportElement x="0" y="0" width="29" height="20" uuid="bd01d6e4-096c-4b39-ad8f-35142fb242e3"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="40" uuid="f8171b7c-915f-4dae-9855-304cd06ea6a5">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="40" height="60" uuid="7d68a5d2-b105-44c0-8074-b194e746a6cc"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ประเภท]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="40" height="20" uuid="da169109-0172-45a7-ad8f-322fea90eb36"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_type}==2? "เพิ่ม":($F{modify_type}==1 ?"แก้ไข": "ลบ")]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="100" uuid="aea35a12-d72d-4058-8531-ff1ef596ed26">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="100" height="60" uuid="5b4209fe-b8a1-46bf-ba13-7ce96b116749"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[เวลาที่แก้ไข]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="100" height="20" uuid="0eee98ea-1c0d-433b-9a2f-e5edf93a6144"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_date}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="92" uuid="298fec85-ef9b-4e7b-8b6a-22a7f75955e2">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="92" height="60" uuid="45c2ab06-0a8d-45ad-9b09-7d022187e1fa"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[แก้ไขโดย]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="92" height="20" uuid="4b97c961-3e88-4f4c-9e92-69ccf0ff5ec1"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{modify_by}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="139" uuid="6f2242d5-0d78-4d79-8786-69d828ad6695">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="139" height="60" uuid="bcc528e7-ea4b-4cc2-bd35-f03d8779fe2a"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="139" height="20" uuid="1a17f717-d050-4ede-8489-9c1f2cb88014"/>
+									<box leftPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement markup="styled">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="60" uuid="2f40266c-d2df-457e-83a1-4580a620eca9">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<staticText>
+									<reportElement x="0" y="0" width="60" height="60" uuid="925061ea-b5f3-48be-939d-f02bebd9ec6f"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[%น้ำหนัก 
+คะแนน]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="60" height="20" uuid="696e9ebd-bd86-470b-a251-529560b8d2bc"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="11"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="342" uuid="a3246209-ef18-4d1c-a36b-7057938fbf1f">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="0" width="342" height="30" uuid="0f876db8-a403-4060-9098-1539f51ea7d9"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="30" width="57" height="30" uuid="461158fa-1e45-435e-a429-3b0a9a9a7c91"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[0]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="57" y="30" width="57" height="30" uuid="c48c2781-9708-42fd-b097-036210d49f73"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[1]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="114" y="30" width="57" height="30" uuid="e056cd8b-e862-4480-9e89-5bfa0ac9a602"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[2]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="171" y="30" width="57" height="30" uuid="d4e39490-eb75-40b0-bf91-4126eb3c2fbe"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[3]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="228" y="30" width="57" height="30" uuid="c3421db3-0617-4823-b1b6-c25be16ce303"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[4]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="285" y="30" width="57" height="30" uuid="f7fe106f-5df9-4b96-b181-12c654ba4cd4"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<text><![CDATA[5]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 2_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField>
+									<reportElement x="0" y="0" width="57" height="20" uuid="3359934e-72fc-4989-864c-4e110b6270fb"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="57" y="0" width="57" height="20" uuid="98c6f791-bf39-44b0-b65c-379f8bae1be6"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="114" y="0" width="57" height="20" uuid="194408ec-c625-44c8-bd83-e9fcb8fd0353"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="171" y="0" width="57" height="20" uuid="1c0194ed-77e1-4a3e-9072-e20f05664480"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="228" y="0" width="57" height="20" uuid="95b25bb9-6fce-4196-9368-28864bfb0ed8"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="285" y="0" width="57" height="20" uuid="8f8cb7b7-466f-4ac6-959a-228dc7ea79ff"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Group3">
+		<groupHeader>
+			<band height="80">
+				<printWhenExpression><![CDATA[$F{threshold}==0 ? true : false]]></printWhenExpression>
+				<componentElement>
+					<reportElement x="0" y="0" width="802" height="80" uuid="09ba3dad-41dc-4c29-91a1-424220d2c93a">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 4_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 4_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table 4_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="threshold" uuid="595cf141-32ef-43fb-aae1-62457d85e8dc">
+							<datasetParameter name="param_level_org">
+								<datasetParameterExpression><![CDATA[$P{param_level_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org">
+								<datasetParameterExpression><![CDATA[$P{param_org}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_user">
+								<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="29" uuid="1e68d86e-855d-4e3f-b26d-1eb33195730e">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="29" height="61" uuid="b9e0f322-2eab-4f25-ac42-ab0b19d4dcf6"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ลำดับ]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<textField>
+									<reportElement x="0" y="0" width="29" height="20" uuid="84f3ba6d-a30e-45aa-b835-11337d99a504"/>
+									<box>
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Center">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{COLUMN_COUNT}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="290" uuid="e8a8f379-98e1-4e29-a090-9bdb8134c051">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="290" height="61" uuid="04c85325-3d71-46ef-aeea-12f75c2cc71a"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField>
+									<reportElement x="0" y="0" width="290" height="20" uuid="b7baaeaf-3898-4b4d-abf9-e24caa4234b4"/>
+									<box leftPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="120" uuid="fb7560f6-1384-43e2-9518-6651cbc86db4">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="120" height="61" uuid="d1104ba0-9e34-4c96-b22f-dbe8287d1b80"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[เป้าหมาย]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="120" height="20" uuid="36d79421-e6cb-4b32-bd5e-03ef52069868"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="100" uuid="cf1e4f7f-ac37-498c-b622-5c09f548d195">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<staticText>
+									<reportElement x="0" y="0" width="100" height="61" uuid="78799963-1702-4297-b3cd-f1ac17d01856"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph leftIndent="2" spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[%น้ำหนัก 
+คะแนน
+(1)]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="100" height="20" uuid="18590ac8-699a-49aa-9ecc-df8c3013a44b"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="263" uuid="e544ccf8-0757-4271-8f9b-6f83ca120b4d">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<staticText>
+									<reportElement x="0" y="0" width="263" height="20" uuid="fdcb6661-9c29-404f-8995-b82537dfa4a2"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="0"/>
+									</textElement>
+									<text><![CDATA[ผลการประเมิน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="89" y="20" width="87" height="41" uuid="d31f2abb-64ed-4148-8592-772b1fdab444"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ผลคะแนน
+(2)]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="176" y="20" width="87" height="41" uuid="05904857-4716-427d-91e9-bec21098f1f6"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph leftIndent="2" spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[คะแนนที่ได้ 
+(1)x(2)]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="20" width="89" height="41" uuid="8b3e9bb8-7716-41aa-a122-9be697a96bfc"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[ผลงาน]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 4_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00">
+									<reportElement x="0" y="0" width="89" height="20" uuid="d7b3c8b2-1af4-44a2-8c65-a6fde1e2b72d"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="89" y="0" width="87" height="20" uuid="f5861b55-f9e6-4266-85a9-323c97f40da0"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
+								</textField>
+								<textField pattern="#,##0.00">
+									<reportElement x="176" y="0" width="87" height="20" uuid="48890c40-5645-4da3-be80-372e8029c5be"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{weigh_score_item}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="50">
+				<textField>
+					<reportElement key="" mode="Opaque" x="0" y="25" width="803" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="6640b670-6abd-4bcc-91c4-0ab4d0a9e851"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+						<paragraph lineSpacing="AtLeast" leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ประวัติการแก้ไขข้อมูล"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="802" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="b95413dd-82ff-4680-9c2f-0d326e9a6c7d"/>
+				<box>
+					<pen lineColor="#3B5998"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="22" isBold="true"/>
+				</textElement>
+				<text><![CDATA[รายงานแสดงประวัติการแก้ไขข้อมูลการประเมิน]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<pageFooter>
+		<band height="30">
+			<textField>
+				<reportElement x="0" y="0" width="800" height="30" uuid="3c555980-f2a7-4677-b371-e8b65d0a333e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
