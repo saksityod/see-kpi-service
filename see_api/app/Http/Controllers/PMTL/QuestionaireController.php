@@ -208,15 +208,15 @@ class QuestionaireController extends Controller
 					'is_show_report' => $qs['is_show_report'],
 					'report_url' => $qs['report_url'],
 					'is_cust_search' => $qs['is_cust_search'],
-					'is_before_work' => $qs['is_before_work'],
-					'is_workin_shop' => $qs['is_workin_shop']
+					// 'is_before_work' => $qs['is_before_work'],
+					// 'is_workin_shop' => $qs['is_workin_shop']
 				], [
 					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer',
-					'is_before_work' => 'required|integer',
-					'is_workin_shop' => 'required|integer'
+					// 'is_before_work' => 'required|integer',
+					// 'is_workin_shop' => 'required|integer'
 				]);
 
 				if($validator_questionaire_section->fails()) {
@@ -317,8 +317,8 @@ class QuestionaireController extends Controller
 				$qs->is_show_report = $qsv['is_show_report'];
 				$qs->report_url = $qsv['report_url'];
 				$qs->is_cust_search = $qsv['is_cust_search'];
-				$qs->is_before_work = $qsv['is_before_work'];
-				$qs->is_workin_shop = $qsv['is_workin_shop'];
+				// $qs->is_before_work = $qsv['is_before_work'];
+				// $qs->is_workin_shop = $qsv['is_workin_shop'];
 				$qs->created_by = Auth::id();
 				$qs->updated_by = Auth::id();
 				$qs->save();
@@ -418,15 +418,15 @@ class QuestionaireController extends Controller
 					'is_show_report' => $qs['is_show_report'],
 					'report_url' => $qs['report_url'],
 					'is_cust_search' => $qs['is_cust_search'],
-					'is_before_work' => $qs['is_before_work'],
-					'is_workin_shop' => $qs['is_workin_shop']
+					// 'is_before_work' => $qs['is_before_work'],
+					// 'is_workin_shop' => $qs['is_workin_shop']
 				], [
 					'section_name' => 'required|max:255',
 					'is_show_report' => 'required|integer',
 					'report_url' => 'max:255',
 					'is_cust_search' => 'required|integer',
-					'is_before_work' => 'required|integer',
-					'is_workin_shop' => 'required|integer'
+					// 'is_before_work' => 'required|integer',
+					// 'is_workin_shop' => 'required|integer'
 				]);
 
 				if($validator_questionaire_section->fails()) {
@@ -527,8 +527,8 @@ class QuestionaireController extends Controller
 					$qs->is_show_report = $qsv['is_show_report'];
 					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
-					$qs->is_before_work = $qsv['is_before_work'];
-					$qs->is_workin_shop = $qsv['is_workin_shop'];
+					// $qs->is_before_work = $qsv['is_before_work'];
+					// $qs->is_workin_shop = $qsv['is_workin_shop'];
 					$qs->created_by = Auth::id();
 					$qs->updated_by = Auth::id();
 				} else {
@@ -538,8 +538,8 @@ class QuestionaireController extends Controller
 					$qs->is_show_report = $qsv['is_show_report'];
 					$qs->report_url = $qsv['report_url'];
 					$qs->is_cust_search = $qsv['is_cust_search'];
-					$qs->is_before_work = $qsv['is_before_work'];
-					$qs->is_workin_shop = $qsv['is_workin_shop'];
+					// $qs->is_before_work = $qsv['is_before_work'];
+					// $qs->is_workin_shop = $qsv['is_workin_shop'];
 					$qs->updated_by = Auth::id();
 				}
 				$qs->save();

@@ -136,7 +136,7 @@ class QuestionaireDataController extends Controller
                 ];
 
                 // $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
-                $to = ['thawatchai@goingjesse.com', 'chokanan@goingjesse.com'];
+                $to = ['thawatchai@goingjesse.com'/*, 'chokanan@goingjesse.com'*/];
 
                 Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
                 {
@@ -389,6 +389,25 @@ class QuestionaireDataController extends Controller
     }
 
     function calculate_score($data_header_id) {
+        // $cal_score = DB::select("
+        //  SELECT COUNT(DISTINCT customer_id) count_customer, 
+           //       SUM(qdd.score) score, 
+           //       SUM(qdd.full_score) full_score, 
+           //       COUNT(DISTINCT qdd.question_id) count_question,
+           //       (
+           //           SELECT SUM(qdd.full_score)
+              //        FROM questionaire_data_detail qdd
+              //        INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+              //        WHERE qs.is_cust_search = 1
+              //        AND qdd.is_not_applicable = 1
+              //        AND qdd.data_header_id = '{$data_header_id}'
+           //       ) sum_applicable
+        //  FROM questionaire_data_detail qdd
+        //  INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+        //  WHERE qs.is_cust_search = 1
+        //  AND qdd.data_header_id = '{$data_header_id}'
+     //    ");
+        
         $cal_score = DB::select("
             SELECT COUNT(DISTINCT customer_id) count_customer, 
                     SUM(qdd.score) score, 
@@ -398,14 +417,20 @@ class QuestionaireDataController extends Controller
                         SELECT SUM(qdd.full_score)
                         FROM questionaire_data_detail qdd
                         INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                        INNER JOIN question q ON q.question_id = qdd.question_id
+                        INNER JOIN question qq ON qq.question_id = q.parent_question_id 
                         WHERE qs.is_cust_search = 1
                         AND qdd.is_not_applicable = 1
                         AND qdd.data_header_id = '{$data_header_id}'
+                        AND qq.pass_score > 0
                     ) sum_applicable
             FROM questionaire_data_detail qdd
             INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+            INNER JOIN question q ON q.question_id = qdd.question_id
+            INNER JOIN question qq ON qq.question_id = q.parent_question_id 
             WHERE qs.is_cust_search = 1
             AND qdd.data_header_id = '{$data_header_id}'
+            AND qq.pass_score > 0
         ");
 
         if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
@@ -674,6 +699,7 @@ class QuestionaireDataController extends Controller
                 SELECT customer_id
                 FROM questionaire_data_detail
                 WHERE data_header_id = '{$request->data_header_id}'
+                AND customer_id IS NOT NULL
             )
             ".$position_code."
             LIMIT 10
@@ -1088,7 +1114,7 @@ class QuestionaireDataController extends Controller
         }
 
         $stage = DB::select("
-            SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.remark, DATE_FORMAT(qds.created_dttm, '%d/%m/%Y %H:%i:%s') created_dttm, qds.created_by, s.stage_name from_action, st.stage_name to_action
+            SELECT CONCAT(es.emp_first_name, ' ',es.emp_last_name) emp_name, CONCAT(chief.emp_first_name, ' ',chief.emp_last_name) chief_emp_name, qds.remark, DATE_FORMAT(qds.created_dttm, '%d/%m/%Y %H:%i:%s') created_dttm, qds.created_by, s.stage_name from_action, st.stage_name to_action, ifnull(qds.customer_name, '') customer_name
             FROM questionaire_data_stage qds
             INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qds.to_emp_snapshot_id
             LEFT JOIN employee_snapshot chief ON chief.emp_snapshot_id = qds.from_emp_snapshot_id
@@ -1203,6 +1229,7 @@ class QuestionaireDataController extends Controller
             $s->from_stage_id = $request->stage['from_stage_id'];
             $s->to_emp_snapshot_id = $request->emp_snapshot_id;
             $s->to_stage_id = $request->stage['to_stage_id'];
+            $s->customer_name = $request->stage['customer_name'];
             $s->status = Stage::find($request->stage['to_stage_id'])->stage_name;
             $s->remark = $request->stage['remark'];
             $s->created_by = Auth::id();
@@ -1354,6 +1381,7 @@ class QuestionaireDataController extends Controller
             $s->from_stage_id = $request->stage['from_stage_id'];
             $s->to_emp_snapshot_id = $request->emp_snapshot_id;
             $s->to_stage_id = $request->stage['to_stage_id'];
+            $s->customer_name = $request->stage['customer_name'];
             $s->status = Stage::find($request->stage['to_stage_id'])->stage_name;
             $s->remark = $request->stage['remark'];
             $s->created_by = Auth::id();
