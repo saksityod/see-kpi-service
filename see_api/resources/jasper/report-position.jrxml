@@ -374,10 +374,10 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="425"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="561"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
@@ -418,6 +418,7 @@ FROM (
 			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
 			FROM question sq 
 			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+			WHERE sqp.pass_score > 0
 		) q ON qdd.question_id = q.question_id 
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
 		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id
@@ -453,6 +454,7 @@ CROSS JOIN (
 			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
 			FROM question sq
 			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+			WHERE sqp.pass_score > 0
 		) q ON qdd.question_id = q.question_id 
 		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
