@@ -208,11 +208,12 @@ class QuestionaireDataController extends Controller
     public function role_authorize_add() {
         $data = [];
         $level = $this->get_emp_snapshot();
+        $default_stage_id = AppraisalLevel::find($level->level_id)->default_stage_id;
 
         $data = DB::table("level_stage_authorize")
                 ->select("add_flag")
                 ->where("level_id", $level->level_id)
-                ->where("stage_id", 1)
+                ->where("stage_id", $default_stage_id)
                 ->first();
 
         if(empty($data)) {
