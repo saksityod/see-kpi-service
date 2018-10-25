@@ -58,14 +58,10 @@ class QuestionaireDataController extends Controller
 
     function concat_emp_first_last_code($emp) {
         // $name = explode(' ', str_replace(['(',')'], '', $emp));
-        // if($emp==0) {
-        //     return 0;
-        // }
-
         $name = explode(' ', $emp);
-        if($name[0]) {
+        if(!empty($name[0])) {
             return $name[0]; //emp_first_name
-        } else if($name[1]) {
+        } else if(!empty($name[1])) {
             return $name[1]; //emp_last_name
         }
     }

@@ -29,23 +29,23 @@ class VsmEmployeeController extends Controller
 	   $this->qdc_service = $qdc_service;
 	}
 
-	public function auto_start_date(Request $request) {
-		$items = DB::select("
-			SELECT DISTINCT DATE_FORMAT(es.start_date,'%d/%m/%Y') start_date
-			FROM employee_snapshot es
-			INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-			WHERE es.start_date LIKE '%{$request->start_date}%'
-			AND jf.job_function_name = 'VSM'
-			LIMIT 10
-		");
-		return response()->json($items);
-	}
+	// public function auto_start_date(Request $request) {
+	// 	$items = DB::select("
+	// 		SELECT DISTINCT DATE_FORMAT(es.start_date,'%d/%m/%Y') start_date
+	// 		FROM employee_snapshot es
+	// 		INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
+	// 		WHERE es.start_date LIKE '%{$request->start_date}%'
+	// 		AND jf.job_function_name = 'VSM'
+	// 		LIMIT 10
+	// 	");
+	// 	return response()->json($items);
+	// }
 
 	public function auto_emp(Request $request) {
-		$request->start_date = $this->qdc_service->format_date($request->start_date);
+		// $request->start_date = $this->qdc_service->format_date($request->start_date);
 		$emp_name = $this->qdc_service->concat_emp_first_last_code($request->emp_name);
 		
-		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
+		// $start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
 
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name,' ',es.emp_last_name) emp_name
@@ -56,9 +56,13 @@ class VsmEmployeeController extends Controller
 				es.emp_first_name LIKE '%{$emp_name}%'
 				OR es.emp_last_name LIKE '%{$emp_name}%'
 				OR p.position_code LIKE '%{$emp_name}%'
-			)
+			) AND es.start_date IN (
+				SELECT MAX(start_date) start_date
+		        FROM employee_snapshot
+		        WHERE is_active = 1
+		        AND emp_code = es.emp_code
+		    )
 			AND jf.job_function_name = 'VSM'
-			".$start_date."
 			LIMIT 10
 		");
 		return response()->json($items);
@@ -66,8 +70,8 @@ class VsmEmployeeController extends Controller
 
 	public function index(Request $request)
 	{
-		$request->start_date = $this->qdc_service->format_date($request->start_date);
-		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
+		// $request->start_date = $this->qdc_service->format_date($request->start_date);
+		// $start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
 		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND es.emp_snapshot_id = '{$request->emp_snapshot_id}'";
 
 		$items = DB::select("
@@ -79,7 +83,12 @@ class VsmEmployeeController extends Controller
 			INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
 			WHERE 1=1
 			AND jf.job_function_name = 'VSM'
-			".$start_date."
+			AND es.start_date IN (
+				SELECT MAX(start_date) start_date
+		        FROM employee_snapshot
+		        WHERE is_active = 1
+		        AND emp_code = es.emp_code
+		    )
 			".$emp_snapshot_id."
 		");
 
