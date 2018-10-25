@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asm_by_tse_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Key" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl-pauu"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl4"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
@@ -136,6 +136,7 @@ INNER JOIN question q ON qdd.question_id = q.question_id
 INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 INNER JOIN question pq ON q.parent_question_id = pq.question_id
 WHERE q.answer_type_id != 7
+AND pq.pass_score > 0
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND qdh.assessor_id =   $P{param_assessor}  
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -186,7 +187,7 @@ ORDER BY result.questionaire_type_id ASC, result.parent_question_id ASC]]>
 , result.num_from 
 , result.num_cus 
 , result.know 
-, ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2) AS percent 
+, ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2) as percent
 FROM questionaire_data_header qdh 
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
@@ -228,6 +229,7 @@ LEFT JOIN (
   INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
   LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
   WHERE q.answer_type_id != 7 
+  AND pq.pass_score > 0
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id =  $P{param_employee}   OR '' =  $P{param_employee}   OR  ISNULL(  $P{param_employee}  ) = 1 )
@@ -247,6 +249,7 @@ AND (qnt.questionaire_type_id = $P{param_questionaire_type}  OR '' =  $P{param_q
 AND result.assessor_id = qdh.assessor_id 
 AND result.parent_question_id = q.parent_question_id 
 WHERE q.answer_type_id != 7
+ AND pq.pass_score > 0
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -331,6 +334,7 @@ ORDER BY qnt.questionaire_type_id ASC, q.parent_question_id ASC, qdh.assessor_id
 , result.num_from AS sum_num_from
 , result.num_cus AS sum_num_cus
 , result.know AS sum_know
+, emp.job_function_id 
 FROM questionaire_data_header qdh
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
@@ -371,6 +375,7 @@ LEFT JOIN (
 	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 	WHERE q.answer_type_id != 7
+	AND pq.pass_score > 0
 	AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 	AND qdh.assessor_id =   $P{param_assessor} 
 	AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -426,6 +431,7 @@ LEFT JOIN (
 		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 		WHERE q.answer_type_id != 7
+		 AND pq.pass_score > 0
 		AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 		AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 		AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -451,6 +457,7 @@ AND result.parent_question_id = q.parent_question_id
 AND result.assessor_id = qdh.assessor_id
 AND result.emp_snapshot_id = qdh.emp_snapshot_id
 WHERE q.answer_type_id != 7
+ AND pq.pass_score > 0
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -466,7 +473,7 @@ GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
 , q.parent_question_id
 , pq.question_name
-ORDER BY qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire_date ASC, q.parent_question_id ASC]]>
+ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire_date ASC, q.parent_question_id ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
@@ -533,6 +540,10 @@ ORDER BY qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire
 		</field>
 		<field name="sum_know" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="sum_know"/>
+		</field>
+		<field name="job_function_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="job_function_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
 		</field>
 		<group name="emp_snapshot_id">
 			<groupExpression><![CDATA[$F{emp_snapshot_id}]]></groupExpression>
@@ -1096,6 +1107,27 @@ ORDER BY qdh.assessor_id ASC]]>
 							</datasetRun>
 						</dataset>
 					</crosstabDataset>
+					<rowGroup name="job_function" width="0" totalPosition="End">
+						<bucket class="java.lang.Integer">
+							<bucketExpression><![CDATA[$F{job_function_id}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH">
+								<textField>
+									<reportElement x="0" y="0" width="0" height="40" uuid="d9ce3248-46a0-4a9a-bea1-dddb80387ba8"/>
+									<textFieldExpression><![CDATA[$V{job_function}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CG">
+								<staticText>
+									<reportElement x="0" y="0" width="295" height="0" uuid="03ff4294-dc54-4905-a5ec-7e283aa71d78"/>
+									<text><![CDATA[Total job_function]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
 					<rowGroup name="position_employee" width="197" totalPosition="End">
 						<bucket class="java.lang.String">
 							<bucketExpression><![CDATA[$F{position_employee}]]></bucketExpression>
@@ -1135,7 +1167,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						</bucket>
 						<crosstabRowHeader>
 							<cellContents mode="Opaque" style="Crosstab 2_CH">
-								<textField>
+								<textField pattern="d/M/Y">
 									<reportElement x="0" y="0" width="98" height="20" uuid="e05bbe65-5500-4590-998b-c7ebc4c08803"/>
 									<box leftPadding="2"/>
 									<textElement>
@@ -1146,7 +1178,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							</cellContents>
 						</crosstabRowHeader>
 						<crosstabTotalRowHeader>
-							<cellContents mode="Opaque" style="Crosstab 2_CT">
+							<cellContents mode="Opaque" style="Crosstab 2_CG">
 								<textField>
 									<reportElement x="0" y="0" width="98" height="20" uuid="d72de857-9703-465e-a84d-05f39ef4e62f"/>
 									<box leftPadding="3"/>
@@ -1229,6 +1261,9 @@ ORDER BY qdh.assessor_id ASC]]>
 					</measure>
 					<measure name="sum_know" class="java.math.BigDecimal">
 						<measureExpression><![CDATA[$F{sum_know}]]></measureExpression>
+					</measure>
+					<measure name="job_function_id" class="java.lang.Integer">
+						<measureExpression><![CDATA[$F{job_function_id}]]></measureExpression>
 					</measure>
 					<crosstabCell width="40" height="20">
 						<cellContents mode="Opaque" style="Crosstab 2_CD">
@@ -1363,7 +1398,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						</cellContents>
 					</crosstabCell>
 					<crosstabCell width="40" height="20" rowTotalGroup="questionaire_date">
-						<cellContents mode="Opaque" style="Crosstab 2_CT">
+						<cellContents mode="Opaque" style="Crosstab 2_CG">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 								<reportElement x="0" y="0" width="40" height="20" uuid="c992b117-f438-472f-ba0f-7ff468ee9481"/>
@@ -1398,7 +1433,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						</cellContents>
 					</crosstabCell>
 					<crosstabCell width="105" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
-						<cellContents mode="Opaque" style="Crosstab 2_CT">
+						<cellContents mode="Opaque" style="Crosstab 2_CG">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 								<reportElement x="0" y="0" width="35" height="20" uuid="53ca2037-1a92-4a57-88c6-7be2959211e5"/>
@@ -1431,6 +1466,15 @@ ORDER BY qdh.assessor_id ASC]]>
 								<textFieldExpression><![CDATA[$V{sum_know}]]></textFieldExpression>
 							</textField>
 						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="40" height="0" rowTotalGroup="job_function">
+						<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="job_function" columnTotalGroup="questionaire_type_id">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+					<crosstabCell width="105" height="0" rowTotalGroup="job_function" columnTotalGroup="parent_question_id">
+						<cellContents mode="Opaque" style="Crosstab 2_CG"/>
 					</crosstabCell>
 				</crosstab>
 			</band>
