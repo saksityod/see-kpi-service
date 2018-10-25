@@ -63,6 +63,7 @@ class ImportEmployeeSnapshotController extends Controller
 
 	public function auto_emp(Request $request) {
 		$request->start_date = $this->qdc_service->format_date($request->start_date);
+		$emp_name = $this->qdc_service->concat_emp_first_last_code($request->emp_name);
 
 		$level_id = empty($request->level_id) ? "" : "AND es.level_id = '{$request->level_id}'";
 		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
@@ -72,9 +73,11 @@ class ImportEmployeeSnapshotController extends Controller
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name,' ',es.emp_last_name) emp_name
 			FROM employee_snapshot es
+			INNER JOIN position p ON p.position_id = es.position_id
 			WHERE (
-				es.emp_first_name LIKE '%{$request->emp_name}%'
-				OR es.emp_last_name LIKE '%{$request->emp_name}%'
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
 			)
 			".$level_id."
 			".$position_id."

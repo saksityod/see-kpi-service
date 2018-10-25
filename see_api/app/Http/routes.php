@@ -509,6 +509,12 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('questionaire_report/list_assessor_report', 'PMTL\QuestionaireDataController@list_assessor_report');
 	Route::get('questionaire_report/export_transaction', 'PMTL\QuestionaireDataController@export_transaction');
 
+	Route::get('vsm_employee/auto_start_date', 'PMTL\VsmEmployeeController@auto_start_date');
+	Route::get('vsm_employee/auto_emp', 'PMTL\VsmEmployeeController@auto_emp');
+	Route::get('vsm_employee', 'PMTL\VsmEmployeeController@index');
+	Route::get('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@show');
+	Route::patch('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@update');
+
 
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
