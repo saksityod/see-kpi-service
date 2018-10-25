@@ -1678,6 +1678,7 @@ class QuestionaireDataController extends Controller
                 INNER JOIN position p ON p.position_id = es.position_id
                 INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
                 WHERE qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+                AND qdh.data_stage_id IN (3,4)
                 ".$emp_snapshot."
                 ".$questionaire_type_id."
                 GROUP BY es.emp_snapshot_id
@@ -1696,6 +1697,7 @@ class QuestionaireDataController extends Controller
                 INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
                 WHERE qdh.emp_snapshot_id IN ({$in_emp_snap})
                 AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
+                AND qdh.data_stage_id IN (3,4)
                 ".$emp_snapshot."
                 ".$questionaire_type_id."
                 GROUP BY es.emp_snapshot_id
