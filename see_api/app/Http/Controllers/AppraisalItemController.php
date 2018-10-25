@@ -321,8 +321,7 @@ class AppraisalItemController extends Controller
 					f.app_url,
 					f.form_id,
 					s.is_no_raise_value
-				FROM
-					appraisal_item i
+				FROM appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
 				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
@@ -407,13 +406,15 @@ class AppraisalItemController extends Controller
 		// // Return the paginator with only 10 items but with the count of all items and set the it on the correct page
 		// $result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);			
 		
+		$structure_template_where_str = empty($request->structure_id) ? "": "AND a.structure_id = {$request->structure_id}";
 		$structure_template = DB::select("
-			select a.structure_id, a.structure_name, b.*, a.is_value_get_zero
-			, a.is_no_raise_value
-			from appraisal_structure a
-			left outer join form_type b
-			on a.form_id = b.form_id		
-			where is_active = 1
+			SELECT a.structure_id, a.structure_name, a.is_value_get_zero, 
+				a.is_no_raise_value, a.seq_no, b.*
+			FROM appraisal_structure a
+			LEFT OUTER JOIN form_type b ON a.form_id = b.form_id
+			WHERE is_active = 1
+			".$structure_template_where_str."
+			ORDER BY a.seq_no
 		");
 		
 		$groups = array();
@@ -552,10 +553,12 @@ class AppraisalItemController extends Controller
 					'form_id' => $s->form_id,
 					'form_url' => $s->app_url,
 					'is_value_get_zero' => $s->is_value_get_zero,
-					'is_no_raise_value' => $s->is_no_raise_value
+					'is_no_raise_value' => $s->is_no_raise_value,
+					'seq_no' => $s->seq_no
 				);
-			}
-		}		
+			} 
+		}
+		$groups = collect($groups)->sortBy('seq_no')->toArray();
 		
 		foreach ($itemsForCurrentPage as $item) {
 			$key = $item->structure_name;
