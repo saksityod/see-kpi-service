@@ -137,6 +137,7 @@ INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 INNER JOIN question pq ON q.parent_question_id = pq.question_id
 WHERE q.answer_type_id != 7
 AND pq.pass_score > 0
+	AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND qdh.assessor_id =   $P{param_assessor}  
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -230,6 +231,7 @@ LEFT JOIN (
   LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
   WHERE q.answer_type_id != 7 
   AND pq.pass_score > 0
+  	AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id =  $P{param_employee}   OR '' =  $P{param_employee}   OR  ISNULL(  $P{param_employee}  ) = 1 )
@@ -250,6 +252,7 @@ AND result.assessor_id = qdh.assessor_id
 AND result.parent_question_id = q.parent_question_id 
 WHERE q.answer_type_id != 7
  AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -376,6 +379,7 @@ LEFT JOIN (
 	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 	WHERE q.answer_type_id != 7
 	AND pq.pass_score > 0
+	AND qdh.data_stage_id >=3
 	AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 	AND qdh.assessor_id =   $P{param_assessor} 
 	AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -432,6 +436,7 @@ LEFT JOIN (
 		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 		WHERE q.answer_type_id != 7
 		 AND pq.pass_score > 0
+		 AND qdh.data_stage_id >=3
 		AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 		AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 		AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -458,6 +463,7 @@ AND result.assessor_id = qdh.assessor_id
 AND result.emp_snapshot_id = qdh.emp_snapshot_id
 WHERE q.answer_type_id != 7
  AND pq.pass_score > 0
+ AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
