@@ -687,23 +687,42 @@ class QuestionaireDataController extends Controller
         $position_code = empty($request->position_code) ? "" : "AND cp.position_code = '{$request->position_code}'";
         $cus_name = $this->concat_emp_first_last_code($request->customer_name);
 
+        // $items = DB::select("
+        //     SELECT c.customer_id, c.customer_code, c.customer_name, c.customer_type
+        //     FROM customer c
+        //     LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
+        //     WHERE (
+        //         c.customer_name LIKE '%{$cus_name}%'
+        //         OR c.customer_code LIKE '%{$cus_name}%'
+        //     )
+        //     AND c.customer_id NOT IN (
+        //         SELECT customer_id
+        //         FROM questionaire_data_detail
+        //         WHERE data_header_id = '{$request->data_header_id}'
+        //         AND customer_id IS NOT NULL
+        //     )
+        //     ".$position_code."
+        //     LIMIT 10
+        // ");
         $items = DB::select("
             SELECT c.customer_id, c.customer_code, c.customer_name, c.customer_type
             FROM customer c
             LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
-            WHERE (
-                c.customer_name LIKE '%{$cus_name}%'
-                OR c.customer_code LIKE '%{$cus_name}%'
-            )
-            AND c.customer_id NOT IN (
-                SELECT customer_id
+            LEFT JOIN (
+                SELECT DISTINCT customer_id
                 FROM questionaire_data_detail
                 WHERE data_header_id = '{$request->data_header_id}'
                 AND customer_id IS NOT NULL
+            ) cc ON cc.customer_id = c.customer_id
+            WHERE cc.customer_id IS NULL
+            AND c.is_active = 1
+            AND (
+                c.customer_name LIKE '%{$cus_name}%'
+                OR c.customer_code LIKE '%{$cus_name}%'
             )
             ".$position_code."
             LIMIT 10
-            ");
+        ");
         return response()->json($items);
     }
 
