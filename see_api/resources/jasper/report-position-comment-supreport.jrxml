@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-comment-supreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="0a000e9b-852c-410a-aaf2-eefa246cdce9">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -40,7 +40,7 @@
 		</box>
 	</style>
 	<subDataset name="query-table" uuid="96e22cc9-3e4c-465c-be02-6a8ef178c7f7">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_secton" class="java.lang.String"/>
 		<parameter name="param_employee" class="java.lang.String"/>
@@ -52,13 +52,15 @@
 			<![CDATA[SELECT es.region
 , p.position_code as position_code_snapshot
 , p_ass.position_code as position_code_assessor
-, qdh.questionaire_date
-, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y") as questionaire_date_show
+-- , qdh.questionaire_date
+-- , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y %T") as questionaire_date_show
+, DATE_FORMAT(qdh.created_dttm, "%d %b %Y %T")   as questionaire_date
 , ay.is_show_comment
 , q.question_name
 , qdd.desc_answer
 , qs.section_id
 , qs.section_name
+, qdh.data_header_id
 , "1" as group1
 FROM questionaire_data_header as qdh
 INNER JOIN questionaire_data_detail as qdd  ON qdh.data_header_id = qdd.data_header_id
@@ -77,9 +79,8 @@ AND es.emp_snapshot_id = $P{param_employee}
 AND qdh.questionaire_date
 		between STR_TO_DATE ($P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 AND qn.questionaire_type_id =  $P{param_questionaire_type} 
-AND qdh.assessor_id =  $P{param_assessor}                  
-AND qdh.data_stage_id IN(3,4)
-GROUP BY es.region, p.position_code ,p_ass.position_code ,qdh.questionaire_date, ay.is_show_comment, q.question_name, qdd.desc_answer
+AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) AND qdh.data_stage_id IN(3,4)
+GROUP BY es.region, p.position_code ,p_ass.position_code ,qdh.created_dttm, ay.is_show_comment, q.question_name, qdd.desc_answer,qdh.data_header_id
 ORDER BY qdh.questionaire_date ASC , p.position_code ASC ,es.region ASC, qs.section_id ASC, q.question_id ASC]]>
 		</queryString>
 		<field name="region" class="java.lang.String">
@@ -94,12 +95,9 @@ ORDER BY qdh.questionaire_date ASC , p.position_code ASC ,es.region ASC, qs.sect
 			<property name="com.jaspersoft.studio.field.label" value="position_code_assessor"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
 		</field>
-		<field name="questionaire_date" class="java.sql.Date">
+		<field name="questionaire_date" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
-		</field>
-		<field name="questionaire_date_show" class="java.lang.String">
-			<property name="com.jaspersoft.studio.field.label" value="questionaire_date_show"/>
 		</field>
 		<field name="is_show_comment" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="is_show_comment"/>
@@ -120,6 +118,10 @@ ORDER BY qdh.questionaire_date ASC , p.position_code ASC ,es.region ASC, qs.sect
 		<field name="section_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="section_name"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+		</field>
+		<field name="data_header_id" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="data_header_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
 		</field>
 		<field name="group1" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="group1"/>
@@ -167,7 +169,7 @@ AND es.emp_snapshot_id =  $P{param_employee}
 AND qdh.questionaire_date
 	between STR_TO_DATE ($P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 AND qn.questionaire_type_id =  $P{param_questionaire_type} 
-AND  qdh.assessor_id =  $P{param_assessor} 
+AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 AND qdh.data_stage_id IN(3, 4)
 GROUP BY qs.section_id
 ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.section_id ASC , q.question_id ASC]]>
@@ -256,9 +258,9 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 				</reportElement>
 				<crosstabDataset>
 					<dataset>
-						<datasetRun subDataset="query-table" uuid="389a59ed-e96c-4442-8ef6-46b11388deb5">
+						<datasetRun subDataset="query-table" uuid="5414badf-303f-4814-8e22-b05118b8a4a1">
 							<datasetParameter name="param_assessor">
-								<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+								<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_date_start">
 								<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
@@ -280,7 +282,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 					</dataset>
 				</crosstabDataset>
 				<crosstabHeaderCell>
-					<cellContents>
+					<cellContents mode="Opaque" style="Crosstab_CD">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 						<staticText>
 							<reportElement mode="Opaque" x="0" y="0" width="80" height="30" backcolor="#F5F5F5" uuid="1f982b5c-d73a-431b-88df-439d0fbb66fb"/>
@@ -316,7 +318,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 							<text><![CDATA[ผู้ประเมิณ]]></text>
 						</staticText>
 						<staticText>
-							<reportElement mode="Opaque" x="250" y="0" width="80" height="30" backcolor="#F5F5F5" uuid="a10fde1a-b501-4b18-aeba-45589fd9f16d"/>
+							<reportElement mode="Opaque" x="250" y="0" width="150" height="30" backcolor="#F5F5F5" uuid="a10fde1a-b501-4b18-aeba-45589fd9f16d"/>
 							<box>
 								<pen lineWidth="0.5"/>
 							</box>
@@ -333,7 +335,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						<bucketExpression><![CDATA[$F{region}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
-						<cellContents mode="Transparent" style="Crosstab_CH">
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CH">
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#FFFFFF" uuid="a7550e7d-0394-4a3a-be46-e1997a05137c"/>
 								<textElement verticalAlignment="Top">
@@ -345,7 +347,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						</cellContents>
 					</crosstabRowHeader>
 					<crosstabTotalRowHeader>
-						<cellContents mode="Opaque" style="Crosstab_CT"/>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CT"/>
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="position_code_snapshot" width="90" totalPosition="End">
@@ -353,7 +355,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						<bucketExpression><![CDATA[$F{position_code_snapshot}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
-						<cellContents mode="Transparent" style="Crosstab_CH">
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CH">
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="90" height="20" backcolor="#FFFFFF" uuid="18503ef1-9dbb-4839-a104-b077330e6773"/>
 								<textElement verticalAlignment="Top">
@@ -365,7 +367,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						</cellContents>
 					</crosstabRowHeader>
 					<crosstabTotalRowHeader>
-						<cellContents mode="Opaque" style="Crosstab_CG"/>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CG"/>
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="position_code_assessor" width="80" totalPosition="End">
@@ -373,7 +375,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						<bucketExpression><![CDATA[$F{position_code_assessor}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
-						<cellContents mode="Transparent" style="Crosstab_CH">
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CH">
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#FFFFFF" uuid="cd8a6a1c-f8dc-47d2-ba87-a07b18cb5264"/>
 								<textElement verticalAlignment="Top">
@@ -385,17 +387,17 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						</cellContents>
 					</crosstabRowHeader>
 					<crosstabTotalRowHeader>
-						<cellContents mode="Opaque" style="Crosstab_CG"/>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CG"/>
 					</crosstabTotalRowHeader>
 				</rowGroup>
-				<rowGroup name="questionaire_date" width="80" totalPosition="End">
+				<rowGroup name="questionaire_date" width="150" totalPosition="End">
 					<bucket class="java.lang.String">
 						<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
-						<cellContents mode="Transparent" style="Crosstab_CH">
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CH">
 							<textField>
-								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#FFFFFF" uuid="1a320428-be4c-4775-b9b6-5da8e0dbbfb7"/>
+								<reportElement mode="Opaque" x="0" y="0" width="150" height="20" backcolor="#FFFFFF" uuid="1a320428-be4c-4775-b9b6-5da8e0dbbfb7"/>
 								<textElement verticalAlignment="Top">
 									<font fontName="TH SarabunPSK" size="16"/>
 									<paragraph leftIndent="5"/>
@@ -405,7 +407,18 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						</cellContents>
 					</crosstabRowHeader>
 					<crosstabTotalRowHeader>
-						<cellContents mode="Opaque" style="Crosstab_CG"/>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CG"/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<rowGroup name="data_header_id" width="0" totalPosition="End">
+					<bucket class="java.lang.Long">
+						<bucketExpression><![CDATA[$F{data_header_id}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CH"/>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents backcolor="#FFFFFF" mode="Transparent" style="Crosstab_CG"/>
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<columnGroup name="question_name" height="30" totalPosition="End">
@@ -438,10 +451,10 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 					<measureExpression><![CDATA[$F{desc_answer}]]></measureExpression>
 				</measure>
 				<measure name="questionaire_date_show" class="java.lang.String">
-					<measureExpression><![CDATA[$F{questionaire_date_show}]]></measureExpression>
+					<measureExpression><![CDATA[$F{questionaire_date}]]></measureExpression>
 				</measure>
 				<crosstabCell width="240" height="20">
-					<cellContents mode="Transparent" style="Crosstab_CD">
+					<cellContents mode="Opaque" style="Crosstab_CD">
 						<textField isStretchWithOverflow="true">
 							<reportElement mode="Opaque" x="0" y="0" width="240" height="20" backcolor="#FFFFFF" uuid="676e148e-0520-4635-a36f-83a76d12fb45"/>
 							<textElement verticalAlignment="Top">
@@ -477,6 +490,12 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 					<cellContents mode="Opaque" style="Crosstab_CG"/>
 				</crosstabCell>
 				<crosstabCell width="0" height="0" rowTotalGroup="questionaire_date" columnTotalGroup="question_name">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="240" height="0" rowTotalGroup="data_header_id">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="data_header_id" columnTotalGroup="question_name">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
 			</crosstab>

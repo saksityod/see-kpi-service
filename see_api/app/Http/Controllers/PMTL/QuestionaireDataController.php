@@ -1112,6 +1112,7 @@ class QuestionaireDataController extends Controller
                 WHERE q.section_id = {$v_qdd->section_id}
                 AND q.parent_question_id IS NULL
                 AND at.is_active = 1
+                ORDER BY q.seq_no ASC
                 ");
 
             if($v_qdd->is_cust_search==0) {
@@ -1130,6 +1131,7 @@ class QuestionaireDataController extends Controller
                         INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                         WHERE q.parent_question_id = {$anv->question_id}
                         AND at.is_active = 1
+                        ORDER BY q.seq_no ASC
                         ");
 
                     foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {
@@ -1152,6 +1154,7 @@ class QuestionaireDataController extends Controller
                         INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                         WHERE q.parent_question_id = {$anv->question_id}
                         AND at.is_active = 1
+                        ORDER BY q.seq_no ASC
                         ");
 
                     foreach ($sub_items[$key]->sub_section[$key2]->question as $key3 => $ssq) {

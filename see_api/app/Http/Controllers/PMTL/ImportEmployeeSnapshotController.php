@@ -259,35 +259,65 @@ class ImportEmployeeSnapshotController extends Controller
 						$emp->updated_by = Auth::id();
 						try {
 							$emp->save();
-							$emp_snap = new EmployeeSnapshot;
-							$emp_snap->start_date = $i->start_date;
-							$emp_snap->emp_id = $i->employeeid;
-							$emp_snap->emp_code = $i->useraccountcode;
-							$emp_snap->emp_first_name = $i->employeefirstname;
-							$emp_snap->emp_last_name = $i->employeelastname;
-							$emp_snap->org_id = $org_id;
-							$emp_snap->position_id = $position_id;
-							$emp_snap->level_id = $level_id;
-							$emp_snap->job_function_id = $job_function_id;
-							$emp_snap->chief_emp_code = $i->line_manager;
-							$emp_snap->email = $i->employeeemail;
-							$emp_snap->distributor_code = $i->dist_cd;
-							$emp_snap->distributor_name = $i->busnoperationsitedescription;
-							$emp_snap->region = $i->region;
-							$emp_snap->is_active = $i->is_active;
-							$emp_snap->created_by = Auth::id();
-							$emp_snap->updated_by = Auth::id();
-							try {
-								$emp_snap->save();
-								// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
-								$newEmp[] = [
-									"emp_code" => $i->useraccountcode, 
-									"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
-									"email" => $i->employeeemail,
-									"role_id" => $role->roleId
-								];
-							} catch (Exception $e) {
-								$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
+							$emp_snap = EmployeeSnapshot::where('start_date', $i->start_date)
+							->where('emp_code', $i->useraccountcode)
+							->where('position_id', $position_id)->first();
+							if(empty($emp_snap)) {
+								$emp_snap = new EmployeeSnapshot;
+								$emp_snap->start_date = $i->start_date;
+								$emp_snap->emp_id = $i->employeeid;
+								$emp_snap->emp_code = $i->useraccountcode;
+								$emp_snap->emp_first_name = $i->employeefirstname;
+								$emp_snap->emp_last_name = $i->employeelastname;
+								$emp_snap->org_id = $org_id;
+								$emp_snap->position_id = $position_id;
+								$emp_snap->level_id = $level_id;
+								$emp_snap->job_function_id = $job_function_id;
+								$emp_snap->chief_emp_code = $i->line_manager;
+								$emp_snap->email = $i->employeeemail;
+								$emp_snap->distributor_code = $i->dist_cd;
+								$emp_snap->distributor_name = $i->busnoperationsitedescription;
+								$emp_snap->region = $i->region;
+								$emp_snap->is_active = $i->is_active;
+								$emp_snap->created_by = Auth::id();
+								$emp_snap->updated_by = Auth::id();
+								try {
+									$emp_snap->save();
+									// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+									$newEmp[] = [
+										"emp_code" => $i->useraccountcode, 
+										"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+										"email" => $i->employeeemail,
+										"role_id" => $role->roleId
+									];
+								} catch (Exception $e) {
+									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
+								}
+							} else {
+								$emp_snap->start_date = $i->start_date;
+								$emp_snap->emp_id = $i->employeeid;
+								$emp_snap->emp_code = $i->useraccountcode;
+								$emp_snap->emp_first_name = $i->employeefirstname;
+								$emp_snap->emp_last_name = $i->employeelastname;
+								$emp_snap->org_id = $org_id;
+								$emp_snap->position_id = $position_id;
+								$emp_snap->level_id = $level_id;
+								$emp_snap->job_function_id = $job_function_id;
+								$emp_snap->chief_emp_code = $i->line_manager;
+								$emp_snap->email = $i->employeeemail;
+								$emp_snap->distributor_code = $i->dist_cd;
+								$emp_snap->distributor_name = $i->busnoperationsitedescription;
+								$emp_snap->region = $i->region;
+								$emp_snap->is_active = $i->is_active;
+								$emp_snap->updated_by = Auth::id();
+								try {
+									$emp_snap->save();
+									// $emp_update_date[] = $emp_snap->start_date;
+									// $emp_update_code[] = $emp_snap->emp_code;
+									// $emp_update_position[] = $emp_snap->position_id;
+								} catch (Exception $e) {
+									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
+								}
 							}
 
 						} catch (Exception $e) {
@@ -349,7 +379,6 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->distributor_name = $i->busnoperationsitedescription;
 								$emp_snap->region = $i->region;
 								$emp_snap->is_active = $i->is_active;
-								$emp_snap->created_by = Auth::id();
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();

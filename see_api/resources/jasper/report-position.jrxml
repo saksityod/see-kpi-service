@@ -253,7 +253,7 @@ FROM (
 	-- AND qs.is_cust_search = 1 
 	AND ay.answer_type_id != 7
 	AND qdh.data_stage_id IN (3,4)
-	AND qdh.assessor_id =  $P{param_assessor} 
+	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 	GROUP BY es.region, po.position_code ,po_ass.position_code ,qdh.questionaire_date, qdh.data_header_id
 ) result
 GROUP BY result.region, result.position_code_snapshot, result.position_code_assessor, result.questionaire_date
@@ -292,7 +292,7 @@ ORDER BY result.questionaire_date ASC ,result.position_code_snapshot ASC ,result
 		</field>
 	</subDataset>
 	<subDataset name="query-section" uuid="24b0dad3-0d49-4dda-a9b1-ccb876cf6ae8">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
@@ -334,14 +334,14 @@ LEFT JOIN position p ON es.position_id = p.position_id  -- position_snapshot_id
 INNER JOIN employee_snapshot es_ass ON es_ass.emp_snapshot_id = qdh.assessor_id  -- snapshot_id
 LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
 WHERE qdh.emp_snapshot_id = $P{param_employee} 
-AND qdh.assessor_id =  $P{param_assessor} 
+AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 AND qs.section_id =   $P{param_section} 
 AND qdh.data_stage_id IN (3,4)
 AND ay.answer_type_id != 7
 AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
 AND qdh.questionaire_date 
 		between STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(   $P{param_date_end} ,"%d/%m/%Y")
-GROUP BY qdh.emp_snapshot_id, qs.section_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y")
+GROUP BY qdh.emp_snapshot_id, qs.section_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y"),qdh.assessor_id
 ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.section_id ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
@@ -385,7 +385,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
@@ -441,11 +441,13 @@ FROM (
 		AND qdh.questionaire_date
 			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id = $P{param_questionaire_type}  -- parameter
-		AND  qdh.assessor_id = $P{param_assessor}
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
 		AND ay.answer_type_id != 7
 		AND qdh.data_stage_id in(3,4)
-		GROUP BY qdh.questionaire_date
-		, es.emp_snapshot_id 
+		GROUP BY es.region
+		, es.emp_snapshot_id
+		, qdh.assessor_id
+		, qdh.questionaire_date	 
 		, qn.questionaire_type_id
 ) re 
 CROSS JOIN (
@@ -474,7 +476,7 @@ CROSS JOIN (
 		AND qdh.questionaire_date
 			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
-		AND  qdh.assessor_id =  $P{param_assessor}
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
 		AND qdh.data_stage_id IN (3,4)
 		AND ay.answer_type_id != 7
 ) total
@@ -549,7 +551,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 		AND qdh.questionaire_date 
 			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
-		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		GROUP BY es.emp_snapshot_id, qdd.section_id
 		ORDER BY qdh.questionaire_date ASC, p.position_code ASC, es.emp_snapshot_id ASC, qdd.section_id ASC]]>
 	</queryString>
@@ -724,9 +726,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</reportElement>
 					<crosstabDataset>
 						<dataset>
-							<datasetRun subDataset="query-header-detail" uuid="f488c5d3-eaac-46fd-a236-102b7841c8a7">
+							<datasetRun subDataset="query-header-detail" uuid="02bd36dd-5caa-4867-b7b8-eb45c9c7301a">
 								<datasetParameter name="param_assessor">
-									<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="param_employee">
 									<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
@@ -1094,9 +1096,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</reportElement>
 					<crosstabDataset>
 						<dataset>
-							<datasetRun subDataset="query-total" uuid="febf39c4-df6a-4f21-8941-184e3ecf72ca">
+							<datasetRun subDataset="query-total" uuid="bae194af-675d-4591-a0f4-31aca34d2a0c">
 								<datasetParameter name="param_assessor">
-									<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="param_employee">
 									<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
@@ -1236,7 +1238,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 				<subreport>
 					<reportElement x="-20" y="40" width="820" height="190" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
 					<subreportParameter name="param_assessor">
-						<subreportParameterExpression><![CDATA[$F{assessor_id}]]></subreportParameterExpression>
+						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="param_date_start">
 						<subreportParameterExpression><![CDATA[$P{param_date_start}]]></subreportParameterExpression>
@@ -1264,7 +1266,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 				<subreport>
 					<reportElement x="-20" y="20" width="820" height="40" isRemoveLineWhenBlank="true" uuid="de366172-5718-4da8-ad0a-547c88dc86dc"/>
 					<subreportParameter name="param_assessor">
-						<subreportParameterExpression><![CDATA[$F{assessor_id}]]></subreportParameterExpression>
+						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 					</subreportParameter>
 					<subreportParameter name="param_date_start">
 						<subreportParameterExpression><![CDATA[$P{param_date_start}]]></subreportParameterExpression>
@@ -1302,9 +1304,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</box>
 					<crosstabDataset>
 						<dataset>
-							<datasetRun subDataset="query-section" uuid="22ec662c-5572-4562-8855-2afa67b2a4c6">
+							<datasetRun subDataset="query-section" uuid="a90fe24e-e2f0-4c0a-a7cf-eb223a0b44e6">
 								<datasetParameter name="param_assessor">
-									<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="param_date_start">
 									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>

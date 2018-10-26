@@ -13,7 +13,7 @@ class EmployeeSnapshot extends Model
      */
 	 
 	const CREATED_AT = 'created_dttm';
-	const UPDATED_AT = null;	 
+	const UPDATED_AT = 'updated_dttm';
     protected $table = 'employee_snapshot';
 	protected $primaryKey = 'emp_snapshot_id';
 	public $incrementing = true;

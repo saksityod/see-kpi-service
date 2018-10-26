@@ -63,7 +63,7 @@ and qtail.section_id = $P{param_section_id}]]>
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="90">
+		<band height="61">
 			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="0" width="804" height="20" forecolor="#454545" uuid="a045dd68-dc52-4b9d-93c3-a90bc6e10a4f"/>
 				<box>
@@ -80,7 +80,7 @@ and qtail.section_id = $P{param_section_id}]]>
 				<textFieldExpression><![CDATA[$F{question_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="0" y="20" width="804" height="70" forecolor="#454545" uuid="9383d8ab-9fe8-4cc7-a8c2-b5ef8e5e8622"/>
+				<reportElement x="0" y="20" width="804" height="40" forecolor="#454545" uuid="9383d8ab-9fe8-4cc7-a8c2-b5ef8e5e8622"/>
 				<box>
 					<pen lineWidth="0.5" lineColor="#000000"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-section-subreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" isIgnorePagination="true" uuid="85dc9a31-2f9f-4c3e-b36e-340e30351bb2">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -76,7 +76,7 @@
 		</box>
 	</style>
 	<subDataset name="query-parent" uuid="7087a54f-3fe7-489b-a009-836f3c3549d9">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_assessor" class="java.lang.String"/>
 		<parameter name="param_section" class="java.lang.String"/>
@@ -131,6 +131,8 @@ LEFT JOIN (
 		q.parent_question_id, q.parent_question_name 
 		, qdh.questionaire_date
 		, es.emp_snapshot_id
+		, es.region
+		, qdh.assessor_id
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(distinct qdd.customer_id) as count_cus
@@ -157,7 +159,7 @@ LEFT JOIN (
 		AND qs.section_id =   $P{param_section} 
 		AND ay.answer_type_id != 7
 		AND q.parent_question_id =  $P{param_parent_question_id} 
-		AND qdh.assessor_id =  $P{param_assessor} 
+		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		AND qdh.data_stage_id IN (3,4)
 		GROUP BY qn.questionaire_type_id, qnt.questionaire_type
 		, qn.questionaire_id, qn.questionaire_name
@@ -165,8 +167,13 @@ LEFT JOIN (
 		q.parent_question_id, q.parent_question_name 
 		, qdh.questionaire_date 
 		, es.emp_snapshot_id
+		, es.region
+		, qdh.assessor_id
 ) parent ON parent.parent_question_id = q.parent_question_id
 AND parent.questionaire_date = qdh.questionaire_date
+AND parent.region = es.region
+AND parent.emp_snapshot_id = qdh.emp_snapshot_id
+AND parent.assessor_id = qdh.assessor_id
 LEFT JOIN (
 	SELECT q.parent_question_id, q.parent_question_name 
 		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
@@ -192,12 +199,12 @@ LEFT JOIN (
 		AND qs.section_id =   $P{param_section} 
 		AND ay.answer_type_id != 7
 		AND q.parent_question_id =  $P{param_parent_question_id} 
-		AND qdh.assessor_id =   $P{param_assessor} 
+		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		AND qdh.data_stage_id IN (3,4)
 		GROUP BY q.parent_question_id, q.parent_question_name 
 ) result ON result.parent_question_id = q.parent_question_id
 WHERE qdh.emp_snapshot_id =  $P{param_employee} 
-AND qdh.assessor_id =  $P{param_assessor} 
+AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 AND qs.section_id = $P{param_section} 
 AND qdh.data_stage_id IN (3,4)
 AND ay.answer_type_id != 7
@@ -205,7 +212,7 @@ and q.parent_question_id =  $P{param_parent_question_id}
 AND qnt.questionaire_type_id =   $P{param_questionaire_type}
 AND qdh.questionaire_date 
 		between STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
-GROUP BY qdh.emp_snapshot_id, q.parent_question_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y")
+GROUP BY qdh.emp_snapshot_id, q.parent_question_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y"), es.region, qdh.assessor_id
 ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.section_id ASC]]>
 		</queryString>
 		<field name="data_header_id" class="java.lang.Long">
@@ -270,7 +277,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-question" uuid="c97587b1-baa9-45ce-aecc-205158a3f327">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
@@ -362,7 +369,7 @@ LEFT JOIN (
 		AND ay.answer_type_id != 7
 		AND qdh.data_stage_id in(3,4)
 		AND ( q.parent_question_id =   $P{param_parent_question_id} OR '' = $P{param_parent_question_id} OR ISNULL( $P{param_parent_question_id}) = 1 )
-		AND  qdh.assessor_id =  $P{param_assessor} 
+		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		GROUP BY qn.questionaire_type_id, qnt.questionaire_type
 		, qn.questionaire_id, qn.questionaire_name
 		, qdd.section_id, qs.section_name
@@ -372,6 +379,9 @@ LEFT JOIN (
 		, qdh.questionaire_date 
 ) question ON question.question_id = q.question_id
 AND question.questionaire_date = qdh.questionaire_date
+AND question.region = es.region
+AND question.emp_snapshot_id = qdh.emp_snapshot_id
+AND question.assessor_id = qdh.assessor_id
 LEFT JOIN (
 	SELECT q.question_id, q.question_name
 		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
@@ -402,12 +412,12 @@ LEFT JOIN (
 		AND ay.answer_type_id != 7
 		AND qdh.data_stage_id in(3,4)
 		AND ( q.parent_question_id =  $P{param_parent_question_id}  OR '' = $P{param_parent_question_id} OR ISNULL( $P{param_parent_question_id}) = 1 )
-		AND  qdh.assessor_id =   $P{param_assessor} 
+		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		GROUP BY q.question_id, q.question_name
 ) result ON result.question_id = q.question_id
 WHERE qdh.emp_snapshot_id =  $P{param_employee} 
 AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
-AND qdh.assessor_id =  $P{param_assessor} 
+AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 AND qs.section_id =   $P{param_section} 
 AND qdh.data_stage_id IN (3,4)
 AND ay.answer_type_id != 7
@@ -415,7 +425,7 @@ and ( q.parent_question_id =  $P{param_parent_question_id}  OR '' = $P{param_par
 and q.question_id = $P{param_question_id} 
 AND qdh.questionaire_date 
 		between STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
-GROUP BY qdh.emp_snapshot_id, q.parent_question_id , q.question_id, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y")
+GROUP BY qdh.emp_snapshot_id, q.parent_question_id , q.question_id, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y"),es.region, qdh.assessor_id
 ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.section_id ASC]]>
 		</queryString>
 		<field name="data_header_id" class="java.lang.Long">
@@ -517,7 +527,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		AND qdh.questionaire_date 
 			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
-		AND qdh.assessor_id =  $P{param_assessor} 
+		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		AND qdd.section_id = $P{param_section} 
 		AND ay.answer_type_id != 7
 		GROUP BY es.emp_snapshot_id, qdd.section_id ,q.parent_question_id,q.question_id
@@ -619,9 +629,9 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					</reportElement>
 					<crosstabDataset>
 						<dataset>
-							<datasetRun subDataset="query-parent" uuid="e6210cf0-5a82-47f2-87ad-7d2ba290578f">
+							<datasetRun subDataset="query-parent" uuid="885ba0a6-6ea0-4056-9377-01ab79c994ec">
 								<datasetParameter name="param_assessor">
-									<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="param_date_start">
 									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
@@ -786,9 +796,9 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					</reportElement>
 					<crosstabDataset>
 						<dataset>
-							<datasetRun subDataset="query-question" uuid="2f1e6dfb-8d2a-462f-bda0-4ea457403dfa">
+							<datasetRun subDataset="query-question" uuid="8af1a297-8a64-4198-835a-9e02bc687a59">
 								<datasetParameter name="param_assessor">
-									<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 								</datasetParameter>
 								<datasetParameter name="param_date_start">
 									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
