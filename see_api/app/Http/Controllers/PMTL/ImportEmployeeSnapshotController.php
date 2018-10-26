@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\PMTL;
 use App\Http\Controllers\PMTL\QuestionaireDataController;
+use App\Http\Controllers\MailController;
 
 use App\Employee;
 use App\EmployeeSnapshot;
