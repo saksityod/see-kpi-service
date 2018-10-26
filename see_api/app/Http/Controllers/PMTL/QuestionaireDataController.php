@@ -1339,7 +1339,12 @@ class QuestionaireDataController extends Controller
             $data_next_form['data'] = $this->assign_template($h->data_header_id);
         }
 
-        return response()->json(['status' => $status, 'errors' => $errors, 'next_form' => $data_next_form]);
+        return response()->json([
+            'status' => $status, 
+            'errors' => $errors, 
+            'next_form' => $data_next_form, 
+            'stage_id' => $request->stage['to_stage_id']
+        ]);
 
     }
 
@@ -1538,7 +1543,12 @@ class QuestionaireDataController extends Controller
             $data_next_form['data'] = $this->assign_template($h->data_header_id);
         }
 
-        return response()->json(['status' => $status, 'errors' => $errors, 'next_form' => $data_next_form]);
+        return response()->json([
+            'status' => $status, 
+            'errors' => $errors, 
+            'next_form' => $data_next_form, 
+            'stage_id' => $request->stage['to_stage_id']
+        ]);
     }
 
     public function destroy($data_header_id) {
@@ -1912,7 +1922,6 @@ class QuestionaireDataController extends Controller
                     ".$emp_snapshot_id."
                     ".$assessor_id."
                     AND qdh.emp_snapshot_id IN ({$in_emp_snap})
-                    #AND qdh.assessor_id IN ({$in_assessor})
                     GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
             ");
         }
