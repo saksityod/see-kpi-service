@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_4" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<parameter name="four" class="java.lang.Integer"/>
 	<parameter name="emp_id" class="java.lang.String"/>
 	<parameter name="level_id" class="java.lang.Integer"/>
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
-	<parameter name="param_form" class="java.lang.String"/>
+	<parameter name="param_form" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT aps.seq_no
 , aps.structure_id
@@ -41,7 +43,6 @@ FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
 	 AND str.period_id = air.period_id
 	 AND str.structure_id = api.structure_id
@@ -49,7 +50,7 @@ WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND air.appraisal_form_id =  $P{param_form} 
+AND air.appraisal_form_id = $P{param_form}
 AND aps.form_id = 3
 AND $P{four} != 0
 GROUP BY aps.seq_no
@@ -58,7 +59,6 @@ GROUP BY aps.seq_no
 , app.period_id
 , app.appraisal_period_desc
 , air.item_name
-, air.appraisal_form_id
 , COALESCE(air.max_value,0) 
 , COALESCE(air.actual_value,0)
 , COALESCE(air.over_value, 0)
@@ -139,7 +139,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA["ส่วนที่ "+$F{seq_no}+" : "+$F{structure_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Part "+$F{seq_no}+" : "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -151,7 +151,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="18" isBold="true"/>
 						<paragraph leftIndent="5" rightIndent="0"/>
 					</textElement>
-					<text><![CDATA[คะแนน]]></text>
+					<text><![CDATA[Score]]></text>
 				</staticText>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="560" y="0" width="150" height="25" backcolor="#DCE6F1" uuid="5c69157c-dec9-4e38-9f66-76dc528f7c48"/>
@@ -174,7 +174,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="18" isBold="true"/>
 						<paragraph rightIndent="3"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{structure_id} <5 ? "คะแนนรวมของตัวชี้วัดสถิติการมาทำงาน" : "รวมผลหักคะแนนตัวชี้วัดโทษทางด้านระเบียบวินัย"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{structure_id} <5 ?"Grand Total"+ $F{structure_name} : "Grand Total Deduct Score "+$F{structure_name}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -206,8 +206,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ค่ามากสุดก่อนโดน
-หักคะแนน]]></text>
+					<text><![CDATA[Max Value]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="30" y="24" width="290" height="40" uuid="adf63275-325e-44fd-914c-f9fd14440d3d"/>
@@ -221,7 +220,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ตัวชี้วัด]]></text>
+					<text><![CDATA[KPI]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="420" y="24" width="65" height="40" uuid="28e91e5c-c479-4fc4-91c3-6c132ebfe277"/>
@@ -235,7 +234,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ค่าจริง]]></text>
+					<text><![CDATA[Actual Value]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="720" y="24" width="82" height="40" uuid="ee64217a-1541-4bc3-9a1c-cb55ac0b9fab"/>
@@ -249,7 +248,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[คะแนนที่หัก]]></text>
+					<text><![CDATA[Deduct Score]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="640" y="24" width="80" height="40" uuid="1f499f73-9439-465e-b791-42a34060d05e"/>
@@ -263,8 +262,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[คะแนนหัก
-ต่อหน่วย]]></text>
+					<text><![CDATA[Deduct Score/Unit]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="0" y="24" width="30" height="40" uuid="91841f76-ba93-4c44-9fab-23a6ad41bbac"/>
@@ -278,7 +276,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ลำดับ]]></text>
+					<text><![CDATA[No.]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="485" y="24" width="65" height="40" uuid="b72a8d19-dfa5-4035-ab4f-979b03e85674"/>
@@ -292,7 +290,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ค่าที่เกิน]]></text>
+					<text><![CDATA[Over Value]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="550" y="24" width="90" height="40" uuid="919f7a28-ed2d-4aa6-8ecd-6568dba01111"/>
@@ -306,7 +304,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph spacingBefore="2"/>
 					</textElement>
-					<text><![CDATA[ค่าที่ไม่ได้คะแนน]]></text>
+					<text><![CDATA[Value Get Zero]]></text>
 				</staticText>
 			</band>
 		</groupHeader>
@@ -333,7 +331,7 @@ ORDER BY aps.structure_id ASC
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 						<paragraph lineSpacing="Single" rightIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{structure_id} <5 ? "คะแนนรวมด้านสถิติการมาทำงาน" : "รวมผลหักคะแนน"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{structure_id} <5 ? "Total $F{structure_name}" : "Total Deduct Score"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>

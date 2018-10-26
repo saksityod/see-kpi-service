@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-benefit-summary" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="57ed5678-ab39-436b-8433-8e738faafba5">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="salary-report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="57ed5678-ab39-436b-8433-8e738faafba5">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DHAS"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<parameter name="param_period" class="java.lang.String"/>
 	<parameter name="param_org_id" class="java.lang.String"/>
 	<parameter name="param_year" class="java.lang.String"/>
@@ -12,6 +14,7 @@
 	<parameter name="param_emp" class="java.lang.String"/>
 	<parameter name="param_position" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="param_form" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT org.org_name
 , emp.emp_code
@@ -42,6 +45,7 @@ INNER JOIN employee emp ON emr.emp_id = emp.emp_id
 INNER JOIN position po ON emp.position_id = po.position_id
 INNER JOIN org ON emp.org_id = org.org_id
 INNER JOIN appraisal_period app ON emr.period_id = app.period_id
+INNER JOIN appraisal_form apf ON emr.appraisal_form_id = apf.appraisal_form_id
 INNER JOIN appraisal_grade apg ON emr.level_id = apg.appraisal_level_id
  AND emr.grade = apg.grade
 WHERE emr.period_id = $P{param_period}  
@@ -50,6 +54,7 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp} OR ISNULL
 AND (emr.org_id IN ( $P!{param_org_id} )  )
 AND (emr.emp_id =   $P{param_emp}   OR '' =   $P{param_emp}   OR ISNULL( $P{param_emp} ) = 1)
 AND (emr.position_id =  $P{param_position}    OR '' =   $P{param_position}   OR ISNULL(  $P{param_position}  ) = 1)
+AND (emr.appraisal_form_id = $P{param_form}  OR '' = $P{param_form} OR ISNULL($P{param_form}) = 1)
 AND ((emp.chief_emp_code =  $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
 	inner join appraisal_level l2 on e2.level_id = l2.level_id
 	where l2.is_all_employee = 1

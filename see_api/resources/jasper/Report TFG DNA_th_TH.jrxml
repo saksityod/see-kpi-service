@@ -10,7 +10,7 @@
 	<parameter name="level_id" class="java.lang.Integer"/>
 	<parameter name="org_id" class="java.lang.Integer"/>
 	<parameter name="position_id" class="java.lang.Integer"/>
-	<parameter name="param_form" class="java.lang.String"/>
+	<parameter name="param_form" class="java.lang.Integer"/>
 	<queryString>
 		<![CDATA[SELECT aps.seq_no
 , aps.structure_id
@@ -42,7 +42,6 @@
 		inner join appraisal_structure apst on re.structure_id = apst.structure_id
 		where apst.form_id = 2
 		and re.emp_id = air.emp_id
-		and re.structure_id = aps.structure_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
@@ -52,13 +51,11 @@
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
-		and st.structure_id = aps.structure_id
 		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
 	AND str.period_id = air.period_id
@@ -67,7 +64,7 @@ WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND air.appraisal_form_id = $P{param_form}
+AND air.appraisal_form_id = $P{param_form} 
 AND aps.form_id = 2
 AND $P{three} != 0
 AND 1 >= (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
@@ -76,7 +73,6 @@ GROUP BY aps.seq_no
 , aps.structure_name
 , app.appraisal_period_desc
 , air.item_name
-,  air.appraisal_form_id
 , COALESCE(air.target_value,0) 
 , COALESCE(air.weight_percent,0) 
 , COALESCE(air.first_score,0) 
@@ -113,7 +109,6 @@ SELECT aps.seq_no
 		inner join appraisal_structure apst on re.structure_id = apst.structure_id
 		where apst.form_id = 2
 		and re.emp_id = air.emp_id
-		and re.structure_id = aps.structure_id
 		group by re.structure_id, re.emp_id)/
 		(select count(distinct ap.period_id)
 		from appraisal_item_result ap
@@ -123,14 +118,12 @@ SELECT aps.seq_no
 		and ap.org_id = air.org_id
 		and ap.level_id = air.level_id
 		and ap.position_id = air.position_id
-		and st.structure_id = aps.structure_id
 		and st.form_id = 2 )
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
 	AND str.period_id = air.period_id
 	AND str.structure_id = api.structure_id 
@@ -138,7 +131,6 @@ WHERE air.emp_id = $P{emp_id}
 AND air.level_id = $P{level_id}
 AND air.org_id = $P{org_id}
 AND air.position_id = $P{position_id}
-AND air.appraisal_form_id = $P{param_form}
 AND aps.form_id = 2
 AND $P{three} != 0 
 AND 1 = (SELECT has_second_line FROM employee emp WHERE emp.emp_id = $P{emp_id})
@@ -147,7 +139,6 @@ GROUP BY aps.seq_no
 , aps.structure_name
 , app.appraisal_period_desc
 , air.item_name
-, air.appraisal_form_id
 , COALESCE(air.target_value,0) 
 , COALESCE(air.weight_percent,0) 
 , COALESCE(air.first_score,0) 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report-Assignment" pageWidth="2384" pageHeight="1684" orientation="Landscape" columnWidth="2344" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="608bc336-d1aa-491d-9351-8c4300cff718">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -12,6 +12,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#BDD7EE">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -132,7 +134,6 @@ inner join org org on org.org_id = air.org_id
 INNER JOIN appraisal_item i ON air.item_id = i.item_id
 INNER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 INNER JOIN form_type f ON s.form_id = f.form_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 INNER JOIN structure_result sr ON sr.period_id = air.period_id
  AND sr.emp_id = air.emp_id
  AND sr.structure_id = s.structure_id
@@ -353,11 +354,11 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<text><![CDATA[Organization]]></text>
 						</staticText>
 						<staticText>
-							<reportElement x="351" y="31" width="298" height="38" forecolor="#FFFFFF" uuid="26f0d7cf-9442-422e-bcfa-c58ac294109a"/>
-							<textElement textAlignment="Center">
+							<reportElement x="0" y="0" width="1060" height="90" forecolor="#FFFFFF" uuid="26f0d7cf-9442-422e-bcfa-c58ac294109a"/>
+							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="26" isBold="true"/>
 							</textElement>
-							<text><![CDATA[รายงานสรุปผลการประเมิน]]></text>
+							<text><![CDATA[Appraisal Summary Report]]></text>
 						</staticText>
 					</cellContents>
 				</crosstabHeaderCell>

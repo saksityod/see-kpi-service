@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-assignment-logging-ind" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="b3ad1e38-2bfc-4466-8be8-ab487d54a15c">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DHAS"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<style name="Table 1_TD" mode="Opaque" backcolor="#FFFFFF">
@@ -43,7 +43,9 @@
 	</style>
 	<subDataset name="table" uuid="bfa06d28-1578-4af5-bcba-e4bc50638aff">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DHAS"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="190"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="799"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_position" class="java.lang.String"/>
@@ -85,8 +87,7 @@ AND (air.org_id =  $P{param_org}  or '' =  $P{param_org}    or isnull(   $P{para
 AND (air.position_id =  $P{param_position}  or '' =  $P{param_position}     or isnull(   $P{param_position}   ) = 1)
 AND (org.level_id =  $P{param_level_org}    or '' =  $P{param_level_org}    or isnull(  $P{param_level_org}   ) = 1)
 AND (air.appraisal_form_id =  $P{param_form}   or '' =   $P{param_form}    or isnull(   $P{param_form}  ) = 1)
-AND app.period_id =   $P{param_period}   
-AND aps.structure_id = 1
+AND app.period_id =   $P{param_period} 
 AND air.appraisal_type_id = 2
 AND air.modify_type is not null
 ORDER BY air.modify_date]]>
@@ -135,6 +136,8 @@ ORDER BY air.modify_date]]>
 	<subDataset name="threshold" uuid="a7882b92-1e27-435d-b692-51fbfe4b43e3">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_user" class="java.lang.String"/>
 		<parameter name="param_level_org" class="java.lang.String"/>
@@ -194,8 +197,7 @@ AND (air.org_id =  $P{param_org}  or '' =  $P{param_org}    or isnull(   $P{para
 AND (air.position_id =  $P{param_position}  or '' =  $P{param_position}     or isnull(   $P{param_position}   ) = 1)
 AND (org.level_id =  $P{param_level_org}    or '' =  $P{param_level_org}    or isnull(  $P{param_level_org}   ) = 1)
 AND (air.appraisal_form_id =  $P{param_form}   or '' =   $P{param_form}    or isnull(   $P{param_form}  ) = 1)
-AND app.period_id =   $P{param_period}   
-AND aps.structure_id = 1
+AND app.period_id =   $P{param_period}  
 AND emr.appraisal_type_id = 2
 AND ((emp.chief_emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
  inner join appraisal_level l2 on e2.level_id = l2.level_id
@@ -337,36 +339,32 @@ ORDER BY emp.emp_id ASC]]>
 	<parameter name="param_level" class="java.lang.String"/>
 	<parameter name="param_form" class="java.lang.String"/>
 	<queryString language="SQL">
-		<![CDATA[SELECT aps.structure_name
-, app.period_id
-, app.appraisal_period_desc
-, air.item_name
-, COALESCE(air.target_value,0) as target_value
-, COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.score0,0) as score0
-, COALESCE(air.score1,0) as score1
-, COALESCE(air.score2,0) as score2
-, COALESCE(air.score3,0) as score3
-, COALESCE(air.score4,0) as score4
-, COALESCE(air.score5,0) as score5
-, COALESCE(air.actual_value,0) as actual_value
-, (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
-, COALESCE(air.weigh_score,0) as weigh_score_item
-, alv.appraisal_level_name
-, org.org_name
-, app.appraisal_year
-, appraisal_period_desc
-, emp.emp_code
-, emp.emp_name
-, pos.position_name
-, emp.chief_emp_code
-, emp.emp_id
-, air.level_id
-, org.org_id
-, pos.position_id
-, (select e1.emp_name from employee e1 WHERE e1.emp_code = emp.chief_emp_code) as commander
-, sc.threshold
-
+		<![CDATA[SELECT aps.structure_name, app.period_id, app.appraisal_period_desc, air.item_name, 
+	COALESCE(air.target_value,0) AS target_value, 
+	COALESCE(air.weight_percent,0) AS weight_percent, 
+	COALESCE(air.score0,0) AS score0, 
+	COALESCE(air.score1,0) AS score1, 
+	COALESCE(air.score2,0) AS score2, 
+	COALESCE(air.score3,0) AS score3, 
+	COALESCE(air.score4,0) AS score4, 
+	COALESCE(air.score5,0) AS score5, 
+	COALESCE(air.actual_value,0) AS actual_value, 
+	(
+		CASE 
+			WHEN sc.threshold = 1 
+			THEN COALESCE(air.score,0) 
+			ELSE COALESCE(air.percent_achievement,0) 
+		END
+	) AS score, 
+	COALESCE(air.weigh_score,0) AS weigh_score_item, 
+	alv.appraisal_level_name, org.org_name, app.appraisal_year, 
+	appraisal_period_desc, emp.emp_code, emp.emp_name, pos.position_name, 
+	emp.chief_emp_code, emp.emp_id, air.level_id, org.org_id, pos.position_id, 
+	(
+		SELECT e1.emp_name
+		FROM employee e1 
+		WHERE e1.emp_code = emp.chief_emp_code
+	) AS commander, sc.threshold
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
@@ -381,40 +379,63 @@ INNER JOIN position pos ON pos.position_id = air.position_id
 INNER JOIN  emp_result emr ON emr.emp_result_id = air.emp_result_id
 INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 CROSS JOIN system_config sc 
-WHERE  (air.level_id =   $P{param_level}  or '' =   $P{param_level}   or isnull(  $P{param_level}   ) = 1)
-AND (air.emp_id =  $P{param_emp}   or '' =  $P{param_emp}    or isnull( $P{param_emp}  ) = 1)
-AND (air.org_id =  $P{param_org}  or '' =  $P{param_org}    or isnull(   $P{param_org}  ) = 1)
-AND (air.position_id =  $P{param_position}  or '' =  $P{param_position}     or isnull(   $P{param_position}   ) = 1)
-AND (org.level_id =  $P{param_level_org}    or '' =  $P{param_level_org}    or isnull(  $P{param_level_org}   ) = 1)
-AND app.period_id =   $P{param_period}   
-AND (air.appraisal_form_id =  $P{param_form}  or '' =   $P{param_form}   or isnull(   $P{param_form}  ) = 1)
-AND aps.structure_id = 1
+WHERE (
+	air.level_id = $P{param_level} 
+	OR '' = $P{param_level} 
+	OR isnull($P{param_level}) = 1
+)
+AND (
+	air.emp_id = $P{param_emp}
+	OR '' = $P{param_emp}
+	OR isnull($P{param_emp}) = 1
+)
+AND (
+	air.org_id = $P{param_org}  
+	OR '' = $P{param_org}
+	OR isnull($P{param_org}) = 1
+)
+AND (
+	air.position_id = $P{param_position}
+	OR '' = $P{param_position}
+	OR isnull($P{param_position}) = 1
+)
+AND (
+	org.level_id = $P{param_level_org}
+	OR '' = $P{param_level_org}
+	OR isnull($P{param_level_org}) = 1
+) 
+AND (
+	air.appraisal_form_id = $P{param_form}
+	OR '' = $P{param_form}
+	OR isnull($P{param_form}) = 1
+)
+AND app.period_id = $P{param_period}
 AND emr.appraisal_type_id = 2
-AND ((emp.chief_emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
- inner join appraisal_level l2 on e2.level_id = l2.level_id
- where l2.is_all_employee = 1
- and e2.emp_code = $P{param_user} ))
-OR (emp.emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
- inner join appraisal_level l2 on e2.level_id = l2.level_id
- where l2.is_all_employee = 1
- and e2.emp_code = $P{param_user} ) ))
-GROUP BY aps.structure_name
-, app.period_id
-, app.appraisal_period_desc
-, air.item_name
-, air.appraisal_form_id
-, COALESCE(air.target_value,0) 
-, COALESCE(air.weight_percent,0) 
-, COALESCE(air.score0,0) 
-, COALESCE(air.score1,0) 
-, COALESCE(air.score2,0) 
-, COALESCE(air.score3,0) 
-, COALESCE(air.score4,0)
-, COALESCE(air.score5,0)
-, COALESCE(air.actual_value,0) 
-, COALESCE(air.score,0)
-, COALESCE(air.weigh_score,0)
-, COALESCE(str.weigh_score,0)
+AND	(
+			(
+				emp.chief_emp_code = $P{param_user}
+				OR $P{param_user} = (
+					SELECT e2.emp_code FROM employee e2
+					INNER JOIN appraisal_level l2 ON e2.level_id = l2.level_id
+					WHERE l2.is_all_employee = 1
+					AND e2.emp_code = $P{param_user}
+				)
+			)
+			OR (
+				emp.emp_code = $P{param_user}
+				OR $P{param_user} = (
+					SELECT e2.emp_code FROM employee e2
+					INNER JOIN appraisal_level l2 ON e2.level_id = l2.level_id
+					WHERE l2.is_all_employee = 1
+					AND e2.emp_code = $P{param_user}
+				) 
+			)
+)
+GROUP BY aps.structure_name, app.period_id, app.appraisal_period_desc, air.item_name, 
+	air.appraisal_form_id, COALESCE(air.target_value,0), COALESCE(air.weight_percent,0), 
+	COALESCE(air.score0,0), COALESCE(air.score1,0), COALESCE(air.score2,0), COALESCE(air.score3,0), 
+	COALESCE(air.score4,0), COALESCE(air.score5,0), COALESCE(air.actual_value,0), COALESCE(air.score,0), 
+	COALESCE(air.weigh_score,0), COALESCE(str.weigh_score,0)
 ORDER BY emp.emp_id ASC]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">

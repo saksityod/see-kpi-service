@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DHAS"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<parameter name="emp_id" class="java.lang.String"/>
@@ -13,7 +13,6 @@
 	<parameter name="level_org_id" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="subreport_path" class="java.lang.String"/>
-	<parameter name="appraisal_year" class="java.lang.String"/>
 	<parameter name="param_form" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT lev.level_id
@@ -36,19 +35,17 @@
 , stuc.three
 , stuc.four
 , stuc.num_stucture
-, emp.appraisal_form_id 
+,emp.appraisal_form_id
 FROM emp_result emp
 INNER JOIN appraisal_level lev ON emp.level_id = lev.level_id
 INNER JOIN employee emp1 ON emp.emp_id = emp1.emp_id
 INNER JOIN org ON emp1.org_id = org.org_id
 INNER JOIN position po ON po.position_id = emp1.position_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = emp.appraisal_form_id
 INNER JOIN (select max(total.one) as one
 , max(total.three) as three
 , max(total.four) as four
 , total.emp_id
 , total.num_stucture
-, total.appraisal_year
 from (
 	select (CASE WHEN aps.form_id = 1 THEN 1 ELSE 0 END) AS one
 	, (CASE WHEN aps.form_id = 2 THEN 2 ELSE 0 END) AS three
@@ -60,20 +57,17 @@ from (
 			INNER JOIN appraisal_structure aps1 ON aps1.structure_id = api1.structure_id
 			where air1.emp_id = air.emp_id
 			group by emp_id) as num_stucture
-	,app.appraisal_year
 	FROM appraisal_item_result air
-	INNER JOIN appraisal_period app ON app.period_id = air.period_id
 	INNER JOIN appraisal_item api ON api.item_id = air.item_id
 	INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 	)total 
 	group by total.emp_id) stuc ON emp1.emp_id = stuc.emp_id 
 WHERE (emp.emp_id =  $P{emp_id} OR '' = $P{emp_id} OR  ISNULL($P{emp_id}) = 1 )
 AND (emp.position_id = $P{position_id}  OR '' = $P{position_id} OR  ISNULL($P{position_id}) = 1  )
-AND (emp.appraisal_form_id =  $P{param_form}   OR '' =  $P{param_form}   OR  ISNULL(  $P{param_form}  ) = 1 )
-AND stuc.appraisal_year = $P{appraisal_year}
-AND (emp1.org_id IN( $P{org_id} ))
+AND (emp1.org_id IN($P!{org_id} ))
 AND (emp.appraisal_type_id = $P{appraisal_type_id}  OR '' = $P{appraisal_type_id} OR  ISNULL($P{appraisal_type_id}) = 1 )
 AND (emp.level_id = $P{level_id}  OR '' = $P{level_id}  OR  ISNULL($P{level_id}) = 1 )
+AND (emp.appraisal_form_id = $P{param_form} OR "" = $P{param_form} OR ISNULL($P{param_form}) = 1)
 AND ((emp1.chief_emp_code = $P{param_user}  OR $P{param_user}  = (select e2.emp_code from employee e2
 	inner join appraisal_level l2 on e2.level_id = l2.level_id
 	where l2.is_all_employee = 1
@@ -91,7 +85,6 @@ GROUP BY lev.appraisal_level_name
 , emp.grade
 , emp1.emp_id
 , emp.appraisal_type_id
-,  emp.appraisal_form_id
 ORDER BY lev.level_id DESC
 , org.org_id ASC
 , emp1.emp_id ASC]]>
@@ -179,7 +172,7 @@ ORDER BY lev.level_id DESC
 					<text><![CDATA[]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="68" y="67" width="211" height="40" uuid="bb2f82c8-7d2a-43bc-a11a-d942dc81ad52"/>
+					<reportElement x="74" y="67" width="211" height="40" uuid="bb2f82c8-7d2a-43bc-a11a-d942dc81ad52"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -187,7 +180,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{org}]]></textFieldExpression>
@@ -197,10 +190,10 @@ ORDER BY lev.level_id DESC
 					<textElement verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 					</textElement>
-					<text><![CDATA[ ข้อมูลพนักงาน]]></text>
+					<text><![CDATA[Employee Info]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="10" y="27" width="58" height="40" uuid="3b370f29-5a84-4196-83d1-f82f685350f2"/>
+					<reportElement x="10" y="27" width="64" height="40" uuid="3b370f29-5a84-4196-83d1-f82f685350f2"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,13 +201,13 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph firstLineIndent="0" spacingBefore="3"/>
 					</textElement>
-					<text><![CDATA[ระดับ : ]]></text>
+					<text><![CDATA[Level : ]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="10" y="67" width="58" height="40" uuid="6112cccb-26a8-49e6-837c-453a07d9ff60"/>
+					<reportElement x="10" y="67" width="64" height="40" uuid="6112cccb-26a8-49e6-837c-453a07d9ff60"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -222,9 +215,9 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 					</textElement>
-					<text><![CDATA[หน่วยงาน :]]></text>
+					<text><![CDATA[Organization :]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
 					<reportElement x="366" y="107" width="220" height="40" uuid="275d260d-746a-40c6-b8fb-c27bb66a1471"/>
@@ -235,7 +228,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
@@ -259,10 +252,10 @@ ORDER BY lev.level_id DESC
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 					</textElement>
-					<text><![CDATA[เกรด]]></text>
+					<text><![CDATA[Grade]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="10" y="107" width="58" height="40" uuid="e0595418-1113-4cbe-b797-b2a1826cac08"/>
+					<reportElement x="10" y="107" width="64" height="40" uuid="e0595418-1113-4cbe-b797-b2a1826cac08"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,12 +263,12 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 					</textElement>
-					<text><![CDATA[ชื่อ-สกุล :]]></text>
+					<text><![CDATA[Emp Name :]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="68" y="27" width="211" height="40" uuid="8be4dbf6-8cdf-4cd2-bd75-cbc58899dfc8"/>
+					<reportElement x="74" y="27" width="211" height="40" uuid="8be4dbf6-8cdf-4cd2-bd75-cbc58899dfc8"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -283,7 +276,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3" spacingBefore="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{level}]]></textFieldExpression>
@@ -308,7 +301,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{commander}]]></textFieldExpression>
@@ -322,10 +315,10 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
-					<text><![CDATA[รหัสพนักงาน :]]></text>
+					<text><![CDATA[Emp Code :]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="285" y="67" width="81" height="40" uuid="77e317d0-ee1e-4705-8b9c-e29353944a4a"/>
@@ -336,10 +329,10 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
-					<text><![CDATA[ผู้บังคับบัญชา :]]></text>
+					<text><![CDATA[Chief Name :]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="285" y="27" width="81" height="40" uuid="1463cec5-8e03-438c-95f0-daf42af55802"/>
@@ -350,13 +343,13 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 						<paragraph firstLineIndent="0" leftIndent="3" spacingBefore="3"/>
 					</textElement>
-					<text><![CDATA[ตำแหน่ง :]]></text>
+					<text><![CDATA[Position :]]></text>
 				</staticText>
 				<textField isBlankWhenNull="true">
-					<reportElement x="68" y="107" width="211" height="40" uuid="c7ef354e-6da3-4797-adae-c772515bc0b7"/>
+					<reportElement x="74" y="107" width="211" height="40" uuid="c7ef354e-6da3-4797-adae-c772515bc0b7"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -364,7 +357,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
@@ -378,7 +371,7 @@ ORDER BY lev.level_id DESC
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="16"/>
+						<font fontName="TH SarabunPSK" size="14"/>
 						<paragraph leftIndent="3" spacingBefore="3"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{position}]]></textFieldExpression>
@@ -394,7 +387,7 @@ ORDER BY lev.level_id DESC
 					<textElement textAlignment="Center" verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["คะแนนรวมทั้ง "+$F{num_stucture}+" ด้าน"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Total Score "+$F{num_stucture}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -409,7 +402,7 @@ ORDER BY lev.level_id DESC
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="22" isBold="true"/>
 				</textElement>
-				<text><![CDATA[แบบประเมินผลการปฏิบัติงานรายบุคคล]]></text>
+				<text><![CDATA[Individual Performance Appraisal  Report]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
@@ -436,7 +429,7 @@ ORDER BY lev.level_id DESC
 					<subreportParameterExpression><![CDATA[$F{appraisal_form_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/Report KPI.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/Report KPI_en_US.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="26">
@@ -461,7 +454,7 @@ ORDER BY lev.level_id DESC
 					<subreportParameterExpression><![CDATA[$F{appraisal_form_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/Report TFG DNA.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/Report TFG DNA_en_US.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="20">
@@ -486,7 +479,7 @@ ORDER BY lev.level_id DESC
 					<subreportParameterExpression><![CDATA[$F{appraisal_form_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/Report Form Deduct Score.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/Report Form Deduct Score_en_US.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

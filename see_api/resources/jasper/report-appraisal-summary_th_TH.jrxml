@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report-Assignment" pageWidth="2384" pageHeight="1684" orientation="Landscape" columnWidth="2344" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="608bc336-d1aa-491d-9351-8c4300cff718">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -12,6 +12,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#BDD7EE">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -72,14 +74,14 @@
 , org.org_name
 , i.item_name
 , s.structure_name
-, (CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN 'Target Value' ELSE 'Max Value' END)AS name_one
+, (CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN 'ค่าเป้าหมาย' ELSE 'ค่ามากสุดก่อน\nโดนหักคะแนน' END)AS name_one
 , COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.target_value ELSE air.max_value END),0) AS one
-, (CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN 'Actual Value' ELSE 'First Score' END) AS name_two
+, (CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN 'ผลงาน' ELSE 'คะแนนประเมิน\nของหัวหน้าตรง' END) AS name_two
 , (CASE WHEN (f.form_id = 1 OR f.form_id = 3) THEN air.actual_value ELSE air.first_score END) AS two
 , (CASE 
-  WHEN f.form_id = 1 THEN 'Score'
-  WHEN f.form_id = 2 THEN 'Second Score'
-  ELSE 'Over Value'
+  WHEN f.form_id = 1 THEN 'คะแนน'
+  WHEN f.form_id = 2 THEN 'คะแนนประเมินของหัวหน้าที่สอง'
+  ELSE 'ค่าที่เกิน'
  END) AS name_three
 , COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.score
@@ -87,9 +89,9 @@
   ELSE air.over_value 
  END),0) AS three
 , (CASE 
-  WHEN f.form_id = 1 THEN '%Weight '
-  WHEN f.form_id = 2 THEN ' Score'
-  ELSE 'Deduct Score/Unit'
+  WHEN f.form_id = 1 THEN '%น้ำหนัก\nของคะแนน '
+  WHEN f.form_id = 2 THEN ' คะแนน'
+  ELSE 'หักคะแนน / หน่วย'
  END) AS name_four
 ,  COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.weight_percent
@@ -97,9 +99,9 @@
   ELSE air.deduct_score_unit
  END),0) AS four 
 , (CASE 
-  WHEN f.form_id = 1 THEN 'Weight Score'
-  WHEN f.form_id = 2 THEN ' %Weight'
-  ELSE '%Weight '
+  WHEN f.form_id = 1 THEN 'คะแนนถ่วงน้ำหนัก'
+  WHEN f.form_id = 2 THEN ' %น้ำหนัก\nของคะแนน'
+  ELSE '%น้ำหนัก\nของคะแนน'
  END) AS name_five
 ,  COALESCE((CASE 
   WHEN f.form_id = 1 THEN air.weigh_score
@@ -108,18 +110,13 @@
  END),0) AS five
 , (CASE 
   WHEN f.form_id = 1 THEN ' '
-  WHEN f.form_id = 2 THEN 'Weight Score'
-  ELSE 'Weight Score'
+  WHEN f.form_id = 2 THEN 'คะแนน\nถ่วงน้ำหนัก'
+  ELSE 'คะแนนถ่วง\nน้ำหนัก'
  END) AS name_six
 , COALESCE((CASE 
   WHEN f.form_id = 1 THEN ' '
   WHEN f.form_id = 2 THEN air.weigh_score
   ELSE air.weigh_score
- END),0) AS six
-, COALESCE((CASE 
-  WHEN f.form_id = 1 THEN ' '
-  WHEN f.form_id = 2 THEN air.weigh_score
-  ELSE air.over_value
  END),0) AS six
 , COALESCE ( sr.weigh_score,0) AS weigh_score
 , COALESCE(er.result_score,0) AS result_score
@@ -132,7 +129,6 @@ inner join org org on org.org_id = air.org_id
 INNER JOIN appraisal_item i ON air.item_id = i.item_id
 INNER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 INNER JOIN form_type f ON s.form_id = f.form_id
-INNER JOIN appraisal_form apf ON apf.appraisal_form_id = air.appraisal_form_id
 INNER JOIN structure_result sr ON sr.period_id = air.period_id
  AND sr.emp_id = air.emp_id
  AND sr.structure_id = s.structure_id
@@ -149,7 +145,7 @@ and (org.level_id =  $P{param_level_org}  OR "" =  $P{param_level_org}  OR ISNUL
 and (air.level_id =  $P{param_level_emp} OR "" =  $P{param_level_emp}  OR ISNULL(   $P{param_level_emp}  ) = 1) 
 and (air.position_id =  $P{param_position} OR "" =  $P{param_position} OR ISNULL(   $P{param_position} ) = 1)  
 and (air.emp_id = $P{param_emp} OR "" =  $P{param_emp} OR ISNULL(   $P{param_emp}  ) = 1)
-AND (air.appraisal_form_id =  $P{param_form}  OR "" =  $P{param_form}  OR ISNULL(   $P{param_form}   ) = 1)
+AND (air.appraisal_form_id = $P{param_form} OR "" = $P{param_form} OR ISNULL($P{param_form}) = 1)
 AND ((emp.chief_emp_code =   $P{param_user} OR $P{param_user} =  (select e2.emp_code from employee e2
 	inner join appraisal_level l2 on e2.level_id = l2.level_id
 	where l2.is_all_employee = 1
@@ -230,9 +226,6 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 	<field name="six" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="six"/>
 	</field>
-	<field name="COLUMN_22" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="six"/>
-	</field>
 	<field name="weigh_score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="weigh_score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="structure_result"/>
@@ -272,7 +265,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Employee Code]]></text>
+							<text><![CDATA[รหัสพนักงาน]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="100" y="90" width="130" height="80" backcolor="#FFFFFF" uuid="d0de99fc-21cd-4d23-b51a-01ee201b1392"/>
@@ -285,7 +278,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Employee Name]]></text>
+							<text><![CDATA[ชื่อ-นามสกุล]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="230" y="90" width="70" height="80" backcolor="#FFFFFF" uuid="6ad7e31d-8d6f-4bdf-b66b-8dea5c86757f"/>
@@ -298,7 +291,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Level]]></text>
+							<text><![CDATA[ระดับ]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="300" y="90" width="250" height="80" backcolor="#FFFFFF" uuid="44113428-116d-4779-b1d3-4c03adb65909"/>
@@ -311,7 +304,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Position]]></text>
+							<text><![CDATA[ตำแหน่ง]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="550" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="13193af2-15ea-4938-a6d6-e0e8e900928c"/>
@@ -324,7 +317,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[First Line]]></text>
+							<text><![CDATA[หัวหน้าตรง]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="670" y="90" width="120" height="80" backcolor="#FFFFFF" uuid="224e5589-a5fc-40d4-987f-be3ada61c5fe"/>
@@ -337,7 +330,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Secone Line]]></text>
+							<text><![CDATA[หัวหน้าที่สอง]]></text>
 						</staticText>
 						<staticText>
 							<reportElement mode="Opaque" x="790" y="90" width="270" height="80" backcolor="#FFFFFF" uuid="ea70947b-9d73-40de-b369-0260ff33e1af"/>
@@ -350,7 +343,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
 								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 							</textElement>
-							<text><![CDATA[Organization]]></text>
+							<text><![CDATA[หน่วยงาน]]></text>
 						</staticText>
 						<staticText>
 							<reportElement x="351" y="31" width="298" height="38" forecolor="#FFFFFF" uuid="26f0d7cf-9442-422e-bcfa-c58ac294109a"/>
@@ -502,7 +495,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
 									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 								</textElement>
-								<text><![CDATA[Grand Total]]></text>
+								<text><![CDATA[คะแนนรวมทั้งหมด]]></text>
 							</staticText>
 						</cellContents>
 					</crosstabTotalColumnHeader>
@@ -621,7 +614,7 @@ ORDER BY emp_code ASC , air.org_id ASC]]>
 								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
 									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 								</textElement>
-								<textFieldExpression><![CDATA["Total"+"  "+$V{structure_name}]]></textFieldExpression>
+								<textFieldExpression><![CDATA["คะแนนรวม"+"  "+$V{structure_name}]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabTotalColumnHeader>
