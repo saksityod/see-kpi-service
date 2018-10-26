@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -202,7 +202,7 @@ GROUP BY e.emp_snapshot_id]]>
 		</field>
 	</subDataset>
 	<subDataset name="query-header-detail" uuid="9583ef3e-9d22-42fe-8f70-c332d99f0f4a">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-could"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="635"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="355"/>
@@ -212,41 +212,52 @@ GROUP BY e.emp_snapshot_id]]>
 		<parameter name="param_questionaire_type" class="java.lang.String"/>
 		<parameter name="param_assessor" class="java.lang.String"/>
 		<queryString>
-			<![CDATA[SELECT es.region
-, po.position_code as position_code_snapshot 
-, po_ass.position_code as position_code_assessor
-, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y") as questionaire_date_show 
-, qdh.questionaire_date as questionaire_date
-, COUNT(DISTINCT qdd.customer_id) as num_customer 
-, COUNT(DISTINCT qdd.customer_id) as num_customer_sum 
-, CASE WHEN qdh.data_stage_id = '4' THEN "YES" ELSE "NO" END as status_stage
+			<![CDATA[SELECT result.region
+, result.position_code_snapshot
+, result.position_code_assessor
+, result.questionaire_date_show
+, result.questionaire_date
+, SUM(result.num_form) as num_form
+, SUM(result.num_customer) as num_customer
+, SUM(result.num_stage) as num_stage
 , 1 as group1
-FROM questionaire_data_header qdh 
-INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
-INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
-INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-INNER JOIN ( 
-	SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
-	sqp.question_name parent_question_name, sqp.pass_score , sqp.answer_type_id
-	FROM question sq 
-	LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
-) q ON qdd.question_id = q.question_id 
-INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
-INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id 
-LEFT JOIN position po ON es.position_id = po.position_id -- position_snapshot_id 
-INNER JOIN  employee_snapshot es_ass ON qdh.assessor_id = es_ass.emp_snapshot_id -- assessor_id
-LEFT JOIN position po_ass ON es_ass.position_id = po_ass.position_id -- position_assessor_id
-WHERE (es.emp_snapshot_id = $P{param_employee} ) -- parameter
-AND qdh.questionaire_date
-between STR_TO_DATE( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
-AND qn.questionaire_type_id = $P{param_questionaire_type}
--- AND qs.is_cust_search = 1 
-AND ay.answer_type_id != 7
-AND qdh.data_stage_id IN (3,4)
-AND qdh.assessor_id =  $P{param_assessor} 
-GROUP BY es.region, po.position_code ,po_ass.position_code ,qdh.questionaire_date
-ORDER BY qdh.questionaire_date ASC ,po.position_code ASC ,es.region ASC]]>
+FROM (
+	SELECT es.region
+	, po.position_code as position_code_snapshot 
+	, po_ass.position_code as position_code_assessor
+	, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y") as questionaire_date_show 
+	, qdh.questionaire_date as questionaire_date
+	, COUNT(DISTINCT qdh.questionaire_id) as num_form
+	, COUNT(DISTINCT qdd.customer_id) as num_customer 
+	, CASE WHEN qdh.data_stage_id = '4' THEN 1 ELSE 0 END as num_stage
+	FROM questionaire_data_header qdh 
+	INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+	INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+	INNER JOIN ( 
+		SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+		sqp.question_name parent_question_name, sqp.pass_score , sqp.answer_type_id
+		FROM question sq 
+		LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+	) q ON qdd.question_id = q.question_id 
+	INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+	INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id 
+	LEFT JOIN position po ON es.position_id = po.position_id -- position_snapshot_id 
+	INNER JOIN  employee_snapshot es_ass ON qdh.assessor_id = es_ass.emp_snapshot_id -- assessor_id
+	LEFT JOIN position po_ass ON es_ass.position_id = po_ass.position_id -- position_assessor_id
+	WHERE (es.emp_snapshot_id =  $P{param_employee}  ) -- parameter
+	AND qdh.questionaire_date
+	between STR_TO_DATE(  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}  ,"%d/%m/%Y")
+	AND qn.questionaire_type_id =  $P{param_questionaire_type} 
+	-- AND qs.is_cust_search = 1 
+	AND ay.answer_type_id != 7
+	AND qdh.data_stage_id IN (3,4)
+	AND qdh.assessor_id =  $P{param_assessor} 
+	GROUP BY es.region, po.position_code ,po_ass.position_code ,qdh.questionaire_date, qdh.data_header_id
+) result
+GROUP BY result.region, result.position_code_snapshot, result.position_code_assessor, result.questionaire_date
+ORDER BY result.questionaire_date ASC ,result.position_code_snapshot ASC ,result.region ASC]]>
 		</queryString>
 		<field name="region" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="region"/>
@@ -267,14 +278,14 @@ ORDER BY qdh.questionaire_date ASC ,po.position_code ASC ,es.region ASC]]>
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
 		</field>
-		<field name="num_customer" class="java.lang.Long">
+		<field name="num_form" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_form"/>
+		</field>
+		<field name="num_customer" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="num_customer"/>
 		</field>
-		<field name="num_customer_sum" class="java.lang.Long">
-			<property name="com.jaspersoft.studio.field.label" value="num_customer_sum"/>
-		</field>
-		<field name="status_stage" class="java.lang.String">
-			<property name="com.jaspersoft.studio.field.label" value="status_stage"/>
+		<field name="num_stage" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_stage"/>
 		</field>
 		<field name="group1" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="group1"/>
@@ -702,9 +713,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</jr:table>
 				</componentElement>
 			</band>
-			<band height="120">
+			<band height="180">
 				<crosstab ignoreWidth="true">
-					<reportElement x="0" y="0" width="800" height="120" uuid="b2787902-3b95-4dfb-9219-6f9428d7d936">
+					<reportElement x="0" y="0" width="800" height="180" uuid="b2787902-3b95-4dfb-9219-6f9428d7d936">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -740,7 +751,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 						<crosstabRowHeader>
 							<cellContents mode="Opaque" style="Crosstab_CH">
 								<staticText>
-									<reportElement x="0" y="0" width="400" height="20" uuid="246cf674-0c8b-45bd-8c1c-2aab4aab5bcc"/>
+									<reportElement x="0" y="0" width="400" height="30" uuid="246cf674-0c8b-45bd-8c1c-2aab4aab5bcc"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -751,7 +762,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<text><![CDATA[Region]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="20" width="400" height="20" uuid="f9c2a444-e1b6-4a13-a70d-b88458575e60"/>
+									<reportElement x="0" y="30" width="400" height="25" uuid="f9c2a444-e1b6-4a13-a70d-b88458575e60"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -762,7 +773,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<text><![CDATA[Code]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="40" width="400" height="20" uuid="028d1987-fc0b-46d7-8e44-22bcfce855d2"/>
+									<reportElement x="0" y="55" width="400" height="25" uuid="028d1987-fc0b-46d7-8e44-22bcfce855d2"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -773,7 +784,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<text><![CDATA[ผู้ประเมิน]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="60" width="400" height="20" uuid="c142a1ca-13e1-492a-a0a2-ff3ef2741c88"/>
+									<reportElement x="0" y="80" width="400" height="25" uuid="c142a1ca-13e1-492a-a0a2-ff3ef2741c88"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -784,7 +795,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<text><![CDATA[วันที่ประเมิน]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="80" width="400" height="20" uuid="e4e50ff7-258d-4824-b1f2-7130de16e48b"/>
+									<reportElement x="0" y="105" width="400" height="25" uuid="e4e50ff7-258d-4824-b1f2-7130de16e48b"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -792,10 +803,21 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<font fontName="TH SarabunPSK" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
-									<text><![CDATA[สถานะการรับทราบผล (Yes/No) ]]></text>
+									<text><![CDATA[จำนวนฟอร์ม]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="100" width="400" height="20" uuid="fcc5fa6b-b192-492d-8121-769203d150a6"/>
+									<reportElement x="0" y="130" width="400" height="25" uuid="fcc5fa6b-b192-492d-8121-769203d150a6"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[รับทราบแล้ว]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="155" width="400" height="25" uuid="85f3321c-ebb1-4a21-8e0b-4c0d5dc64804"/>
 									<box>
 										<pen lineWidth="0.2"/>
 									</box>
@@ -864,22 +886,31 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					<measure name="position_code_assessor_MEASURE" class="java.lang.String">
 						<measureExpression><![CDATA[$F{position_code_assessor}]]></measureExpression>
 					</measure>
-					<measure name="status_stage_MEASURE" class="java.lang.String">
-						<measureExpression><![CDATA[$F{status_stage}]]></measureExpression>
-					</measure>
-					<measure name="num_customer_MEASURE" class="java.lang.Long">
-						<measureExpression><![CDATA[$F{num_customer}]]></measureExpression>
-					</measure>
-					<measure name="num_customer_sum" class="java.lang.Long" calculation="Sum">
-						<measureExpression><![CDATA[$F{num_customer_sum}]]></measureExpression>
-					</measure>
 					<measure name="questionaire_date_show" class="java.lang.String">
 						<measureExpression><![CDATA[$F{questionaire_date_show}]]></measureExpression>
 					</measure>
-					<crosstabCell width="80" height="120">
+					<measure name="num_stage" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_stage}]]></measureExpression>
+					</measure>
+					<measure name="num_form" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_form}]]></measureExpression>
+					</measure>
+					<measure name="num_stage_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_stage}]]></measureExpression>
+					</measure>
+					<measure name="num_form_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_form}]]></measureExpression>
+					</measure>
+					<measure name="num_customer_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_customer}]]></measureExpression>
+					</measure>
+					<measure name="num_customer" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_customer}]]></measureExpression>
+					</measure>
+					<crosstabCell width="80" height="180">
 						<cellContents mode="Opaque" style="Crosstab_CD">
 							<textField>
-								<reportElement x="0" y="0" width="80" height="20" uuid="750d520d-c485-4ee2-883f-34343c75e81a"/>
+								<reportElement x="0" y="0" width="80" height="30" uuid="750d520d-c485-4ee2-883f-34343c75e81a"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -889,7 +920,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA[$V{region_MEASURE}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="20" width="80" height="20" uuid="e77c755d-627f-4729-90ea-aa482fbfa894"/>
+								<reportElement x="0" y="30" width="80" height="25" uuid="e77c755d-627f-4729-90ea-aa482fbfa894"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -899,7 +930,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA[$V{position_code_snapshot_MEASURE}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="40" width="80" height="20" uuid="b3c8314b-db86-4e75-8813-042441935e2f"/>
+								<reportElement x="0" y="55" width="80" height="25" uuid="b3c8314b-db86-4e75-8813-042441935e2f"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -909,7 +940,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA[$V{position_code_assessor_MEASURE}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="60" width="80" height="20" uuid="cb5a618b-3737-4570-9ebf-412eda2470cc"/>
+								<reportElement x="0" y="80" width="80" height="25" uuid="cb5a618b-3737-4570-9ebf-412eda2470cc"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -919,31 +950,41 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA[$V{questionaire_date_show}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="80" width="80" height="20" uuid="2158b31d-55f3-4919-a0ff-613e086c080c"/>
+								<reportElement x="0" y="105" width="80" height="25" uuid="2158b31d-55f3-4919-a0ff-613e086c080c"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
 									<font fontName="TH SarabunPSK" size="16"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{status_stage_MEASURE}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{num_form}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="100" width="80" height="20" uuid="3ff34d9b-35f7-49c9-b68a-fc99689dd466"/>
+								<reportElement x="0" y="130" width="80" height="25" uuid="3ff34d9b-35f7-49c9-b68a-fc99689dd466"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
 									<font fontName="TH SarabunPSK" size="16"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{num_customer_MEASURE}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{num_stage}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="155" width="80" height="25" uuid="d8d60445-172e-4054-bf31-dce1f7342f1b"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_customer}]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabCell>
-					<crosstabCell width="80" height="120" columnTotalGroup="region">
+					<crosstabCell width="80" height="180" columnTotalGroup="region">
 						<cellContents mode="Opaque" style="Crosstab_CT">
 							<textField>
-								<reportElement x="0" y="0" width="80" height="20" forecolor="#FFFFFF" uuid="ef309c8a-6047-4207-bebe-fdd356bf6182"/>
+								<reportElement x="0" y="0" width="80" height="30" forecolor="#FFFFFF" uuid="ef309c8a-6047-4207-bebe-fdd356bf6182"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -953,7 +994,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="20" width="80" height="20" forecolor="#FFFFFF" uuid="eaa84522-0ce8-4ba3-9f21-b7ec5f854f66"/>
+								<reportElement x="0" y="30" width="80" height="25" forecolor="#FFFFFF" uuid="eaa84522-0ce8-4ba3-9f21-b7ec5f854f66"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -963,7 +1004,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="40" width="80" height="20" forecolor="#FFFFFF" uuid="7c7e4bf2-bcf7-458d-ab83-d5afda48123e"/>
+								<reportElement x="0" y="55" width="80" height="25" forecolor="#FFFFFF" uuid="7c7e4bf2-bcf7-458d-ab83-d5afda48123e"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -973,7 +1014,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="60" width="80" height="20" forecolor="#FFFFFF" uuid="f819edd1-017a-45f7-a2d5-cd15442f9209"/>
+								<reportElement x="0" y="80" width="80" height="25" forecolor="#FFFFFF" uuid="f819edd1-017a-45f7-a2d5-cd15442f9209"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -983,17 +1024,27 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="80" width="80" height="20" forecolor="#FFFFFF" uuid="4bd019c9-78b5-47f0-be71-200c62cfcfce"/>
+								<reportElement x="0" y="105" width="80" height="25" forecolor="#FFFFFF" uuid="4bd019c9-78b5-47f0-be71-200c62cfcfce"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
 									<font fontName="TH SarabunPSK" size="16"/>
 								</textElement>
-								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{num_form_sum}]]></textFieldExpression>
 							</textField>
 							<textField>
-								<reportElement x="0" y="100" width="80" height="20" forecolor="#FFFFFF" uuid="d9745bc1-7923-4191-b140-ccfc6e5d60b5"/>
+								<reportElement x="0" y="130" width="80" height="25" forecolor="#FFFFFF" uuid="d9745bc1-7923-4191-b140-ccfc6e5d60b5"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_stage_sum}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="155" width="80" height="25" forecolor="#FFFFFF" uuid="eaa4ff60-ebb1-45c1-a8c8-acca0e4a8207"/>
 								<box>
 									<pen lineWidth="0.2"/>
 								</box>
@@ -1004,13 +1055,13 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 							</textField>
 						</cellContents>
 					</crosstabCell>
-					<crosstabCell width="0" height="120" columnTotalGroup="position_code_snapshot">
+					<crosstabCell width="0" height="180" columnTotalGroup="position_code_snapshot">
 						<cellContents mode="Opaque" style="Crosstab_CG"/>
 					</crosstabCell>
-					<crosstabCell width="0" height="120" columnTotalGroup="position_code_assessor">
+					<crosstabCell width="0" height="180" columnTotalGroup="position_code_assessor">
 						<cellContents mode="Opaque" style="Crosstab_CG"/>
 					</crosstabCell>
-					<crosstabCell width="0" height="120" columnTotalGroup="questionaire_date">
+					<crosstabCell width="0" height="180" columnTotalGroup="questionaire_date">
 						<cellContents mode="Opaque" style="Crosstab_CG"/>
 					</crosstabCell>
 					<crosstabCell width="80" height="0" rowTotalGroup="group1">
