@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summery-subtype-table" language="groovy" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryWithPageHeaderAndFooter="true" uuid="c5bfa3d7-18db-491a-b0b6-e427744d7aa5">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl-bk"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -34,22 +34,24 @@
 			<![CDATA[SELECT * 
 FROM(
 	SELECT qtail.section_id, qsec.section_name, 
-		qtail.question_id, q.question_name,
+		qtail.question_id, q.question_name,q.seq_no,sqp.seq_no as ss,
 		qtail.answer_id, ans.answer_name, ans.is_not_applicable, 
 		qtail.score, qtail.desc_answer
 	FROM questionaire_data_detail qtail
 	INNER JOIN questionaire_section qsec ON qsec.section_id = qtail.section_id
 	INNER JOIN question q ON q.question_id = qtail.question_id
+	LEFT OUTER JOIN question sqp ON sqp.question_id = q.parent_question_id
 	INNER JOIN answer ans ON ans.answer_id = qtail.answer_id
-	WHERE qtail.data_header_id = $P{param_data_header_id} 
-	AND qtail.section_id = $P{param_section_id} 
+	WHERE qtail.data_header_id =  $P{param_data_header_id} 
+	AND qtail.section_id =  $P{param_section_id} 
 	UNION ALL 
 	SELECT q.section_id, qsec.section_name, 
-		q.question_id, q.question_name,
+		q.question_id, q.question_name,q.seq_no ,q.seq_no as ss,
 		 NULL answer_id, NULL answer_name, NULL is_not_applicable, 
 		NULL score, NULL desc_answer
 	FROM question q
 	INNER JOIN questionaire_section qsec ON qsec.section_id = q.section_id
+ LEFT OUTER JOIN question sqp ON sqp.question_id = q.parent_question_id
 	WHERE q.question_id IN(
 		SELECT DISTINCT (
 				SELECT sq.parent_question_id 
@@ -57,11 +59,14 @@ FROM(
 				WHERE sq.question_id = sqtail.question_id
 			) parent_question_id
 		FROM questionaire_data_detail sqtail
-		WHERE data_header_id = $P{param_data_header_id} 
-		AND section_id = $P{param_section_id} 
+		WHERE data_header_id =  $P{param_data_header_id} 
+		AND section_id =  $P{param_section_id} 
 	)
 )mq
-ORDER BY mq.question_id]]>
+ORDER BY 
+ mq.ss ASC
+, mq.question_id ASC, mq.seq_no ASC
+-- ,mq.question_id]]>
 		</queryString>
 		<field name="section_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="section_id"/>
@@ -79,6 +84,12 @@ ORDER BY mq.question_id]]>
 			<property name="com.jaspersoft.studio.field.label" value="question_name"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
 		</field>
+		<field name="seq_no" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="seq_no"/>
+		</field>
+		<field name="ss" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="ss"/>
+		</field>
 		<field name="answer_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="answer_id"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
@@ -91,7 +102,7 @@ ORDER BY mq.question_id]]>
 			<property name="com.jaspersoft.studio.field.label" value="is_not_applicable"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="answer"/>
 		</field>
-		<field name="score" class="java.lang.Integer">
+		<field name="score" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
 		</field>
