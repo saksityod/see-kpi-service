@@ -66,10 +66,10 @@ class QuestionaireDataController extends Controller
         }
     }
 
-    function check_permission($stage_id, $data_header_id) {
+    function check_permission($stage_id, $data_header_id, $assessor) {
         $is_all = $this->all_emp();
         if($is_all[0]->count_no == 0) {
-            $assessor = $this->get_emp_snapshot();
+            // $assessor = $this->get_emp_snapshot();
             $emp_code = Auth::id();
             $data = DB::select("
                 SELECT rsa.view_comment_flag
@@ -1177,7 +1177,7 @@ class QuestionaireDataController extends Controller
         $level = $this->get_emp_snapshot();
         $current_stage = DB::table("stage")->select("stage_id")->where("stage_id", $data_header->data_stage_id)->first();
 
-        $this->check_permission($data_header->data_stage_id, $data_header->data_header_id);
+        $this->check_permission($data_header->data_stage_id, $data_header->data_header_id, $level);
         
         $actions = $this->check_action($current_stage->stage_id, $level);
 
