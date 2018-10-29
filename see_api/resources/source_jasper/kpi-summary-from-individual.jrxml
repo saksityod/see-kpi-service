@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_kpis" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="94831257-7074-486f-9577-a86a40622bf7">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso-27082018"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -399,8 +399,6 @@ INNER JOIN (SELECT org.org_id
 , AIR.position_id
 , AIR.org_id
 , sc.threshold
-
-
 FROM appraisal_item_result AIR
 INNER JOIN appraisal_item AI ON AIR.item_id = AI.item_id
 INNER JOIN perspective Pe ON AI.perspective_id = Pe.perspective_id
@@ -431,8 +429,8 @@ INNER JOIN (SELECT org.org_id
 	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
-		AND (ER.org_id =  $P{param_org}  OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) 
-		AND (ER.emp_id =  $P{param_emp}  OR  ISNULL($P{param_emp}) = 1 OR ""=$P{param_emp})
+		AND (ER.org_id IN($P!{param_org})) 
+		AND (ER.emp_id IN($P!{param_emp}))
 		AND (ER.position_id =  $P{param_position}  OR ISNULL($P{param_position}) = 1 OR ""=$P{param_position})
 		AND ((ER.level_id =  $P{param_level}  OR ISNULL($P{param_level}) = 1 OR ""=$P{param_level}))
 		AND ((Emp.chief_emp_code =  $P{param_user} OR  $P{param_user} = (select e2.emp_code from employee e2
@@ -538,7 +536,7 @@ INNER JOIN (SELECT org.org_id
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
-	<field name="score" class="java.lang.Integer">
+	<field name="score" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
@@ -692,10 +690,10 @@ ACHIEVE]]></text>
 	</group>
 	<group name="Group2">
 		<groupFooter>
-			<band height="57">
+			<band height="117">
 				<printWhenExpression><![CDATA[$F{threshold}==0 ? true : false]]></printWhenExpression>
 				<componentElement>
-					<reportElement x="1" y="7" width="800" height="50" uuid="7ccaf7b5-5f77-4019-8e6c-ddca2d674b11">
+					<reportElement x="1" y="7" width="800" height="110" uuid="7ccaf7b5-5f77-4019-8e6c-ddca2d674b11">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -726,11 +724,12 @@ ACHIEVE]]></text>
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
-						<jr:column width="120" uuid="a7f1c27d-b9cb-4470-8850-abc8a902e10e">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="70" uuid="a7f1c27d-b9cb-4470-8850-abc8a902e10e">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="120" height="30" backcolor="#EBEBEB" uuid="294e406b-c45f-434b-b71b-c99b4eff4da4"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="294e406b-c45f-434b-b71b-c99b4eff4da4"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -740,10 +739,10 @@ ACHIEVE]]></text>
 									<text><![CDATA[PERSPECTIVE]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="120" height="20" uuid="c0933480-f31f-4228-b7d1-69c081a1dc38"/>
+									<reportElement x="0" y="0" width="70" height="80" uuid="c0933480-f31f-4228-b7d1-69c081a1dc38"/>
 									<box leftPadding="3"/>
 									<textElement>
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -752,11 +751,12 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="240" uuid="276ebeb0-443f-4a63-8bf6-f455e5ed1f09">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="150" uuid="276ebeb0-443f-4a63-8bf6-f455e5ed1f09">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="240" height="30" backcolor="#EBEBEB" uuid="d711d60f-929b-4602-96a9-5a4960efcfa7"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="150" height="30" backcolor="#EBEBEB" uuid="d711d60f-929b-4602-96a9-5a4960efcfa7"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -766,9 +766,9 @@ ACHIEVE]]></text>
 									<text><![CDATA[KPI NAME]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="240" height="20" uuid="e040467e-40a0-48fa-8334-14c7c16eab90"/>
+									<reportElement x="0" y="0" width="150" height="80" uuid="e040467e-40a0-48fa-8334-14c7c16eab90"/>
 									<box leftPadding="3"/>
 									<textElement>
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -777,11 +777,12 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="80" uuid="71e0d1f9-3670-456c-a708-f1690c6f490f">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="70" uuid="71e0d1f9-3670-456c-a708-f1690c6f490f">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="80" height="30" backcolor="#EBEBEB" uuid="3f6f2133-a8ac-4096-89ac-5bead6df4006"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="3f6f2133-a8ac-4096-89ac-5bead6df4006"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -791,9 +792,9 @@ ACHIEVE]]></text>
 									<text><![CDATA[TARGET]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="80" height="20" uuid="47bc30fb-f979-48b2-8537-720eae2400a7"/>
+									<reportElement x="0" y="0" width="70" height="80" uuid="47bc30fb-f979-48b2-8537-720eae2400a7"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -802,11 +803,12 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="70" uuid="38043d17-6768-416e-9319-5cca0c9a0765">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="60" uuid="38043d17-6768-416e-9319-5cca0c9a0765">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="81f30596-6c11-465f-b549-69a25dcb04e9"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="60" height="30" backcolor="#EBEBEB" uuid="81f30596-6c11-465f-b549-69a25dcb04e9"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -816,9 +818,9 @@ ACHIEVE]]></text>
 									<text><![CDATA[UOM]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="70" height="20" uuid="64322bca-91a5-4973-91be-52ee06689fa4"/>
+									<reportElement x="0" y="0" width="60" height="80" uuid="64322bca-91a5-4973-91be-52ee06689fa4"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Left">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -827,11 +829,12 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="75" uuid="3f4e3fa2-a0a5-4828-95d7-29adf4993526">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="70" uuid="3f4e3fa2-a0a5-4828-95d7-29adf4993526">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="75" height="30" backcolor="#EBEBEB" uuid="205eab9b-242c-401f-b132-c85274f4f7aa"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="205eab9b-242c-401f-b132-c85274f4f7aa"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -841,9 +844,9 @@ ACHIEVE]]></text>
 									<text><![CDATA[ACTUAL]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="75" height="20" uuid="25930cd0-2742-4229-93a8-5070a92b06c8"/>
+									<reportElement x="0" y="0" width="70" height="80" uuid="25930cd0-2742-4229-93a8-5070a92b06c8"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -852,10 +855,11 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="75" uuid="e8b9dedf-28a3-44c6-81c1-ee1e18529863">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="55" uuid="e8b9dedf-28a3-44c6-81c1-ee1e18529863">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="75" height="30" backcolor="#EBEBEB" uuid="85226618-1e05-4b03-bb8b-880f557b4415"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="55" height="30" backcolor="#EBEBEB" uuid="85226618-1e05-4b03-bb8b-880f557b4415"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -866,9 +870,9 @@ ACHIEVE]]></text>
 ACHIEVE]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="75" height="20" uuid="54983280-750a-412b-b918-2edad779e16e"/>
+									<reportElement x="0" y="0" width="55" height="80" uuid="54983280-750a-412b-b918-2edad779e16e"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -877,10 +881,11 @@ ACHIEVE]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="70" uuid="012598f4-1838-48de-9f64-eac495e2d5a3">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="60" uuid="012598f4-1838-48de-9f64-eac495e2d5a3">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="50a6d0db-b4e6-4dfc-a1f1-8e14fd69261b"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="60" height="30" backcolor="#EBEBEB" uuid="50a6d0db-b4e6-4dfc-a1f1-8e14fd69261b"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
@@ -891,9 +896,9 @@ ACHIEVE]]></text>
 WEIGHT]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="70" height="20" uuid="c979754b-8195-48ca-8ac6-063df23c27e2"/>
+									<reportElement x="0" y="0" width="60" height="80" uuid="c979754b-8195-48ca-8ac6-063df23c27e2"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -902,28 +907,118 @@ WEIGHT]]></text>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="70" uuid="ecd4c3ce-2b40-4267-9643-524e6ae4ec3c">
-							<jr:columnHeader style="Table 1_CH" height="30">
+						<jr:column width="60" uuid="ecd4c3ce-2b40-4267-9643-524e6ae4ec3c">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
 								<staticText>
-									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="70" height="30" backcolor="#EBEBEB" uuid="3a883e3d-9222-4518-a4da-f1507cc66d25"/>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="60" height="30" backcolor="#EBEBEB" uuid="3a883e3d-9222-4518-a4da-f1507cc66d25"/>
 									<box>
 										<pen lineWidth="1.0" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
 										<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
 									</textElement>
-									<text><![CDATA[WEIGHT SCORE]]></text>
+									<text><![CDATA[WEIGHT
+SCORE]]></text>
 								</staticText>
 							</jr:columnHeader>
-							<jr:detailCell style="Table 1_TD" height="20">
+							<jr:detailCell style="Table 1_TD" height="80">
 								<textField isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="70" height="20" uuid="2813d6ce-e1f9-4779-a494-c69dbf14d0a0"/>
+									<reportElement x="0" y="0" width="60" height="80" uuid="2813d6ce-e1f9-4779-a494-c69dbf14d0a0"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{weigh_score}]]></textFieldExpression>
 								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="205" uuid="56287456-20a6-422a-b4e6-d64781da0b06">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
+							<jr:columnHeader style="Table 1_CH" height="30" rowSpan="1">
+								<staticText>
+									<reportElement positionType="Float" mode="Opaque" x="0" y="0" width="205" height="30" backcolor="#EBEBEB" uuid="ae4f8620-02bc-4ac1-97e3-478e9197278a"/>
+									<box>
+										<pen lineWidth="1.0" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="12" isBold="true" isItalic="false"/>
+									</textElement>
+									<text><![CDATA[PERFORMANCE TREND]]></text>
+								</staticText>
+							</jr:columnHeader>
+							<jr:detailCell style="Table 1_TD" height="80">
+								<barChart>
+									<chart isShowLegend="false">
+										<reportElement x="0" y="0" width="205" height="80" uuid="89825951-440f-4c42-9037-68a1d0a5282f"/>
+										<box>
+											<pen lineWidth="0.5" lineColor="#000000"/>
+										</box>
+										<chartTitle>
+											<font fontName="TH SarabunPSK" size="8"/>
+										</chartTitle>
+										<chartSubtitle>
+											<font fontName="TH SarabunPSK" size="8"/>
+										</chartSubtitle>
+										<chartLegend position="Top">
+											<font fontName="TH SarabunPSK" size="8"/>
+										</chartLegend>
+									</chart>
+									<categoryDataset>
+										<dataset>
+											<datasetRun subDataset="chart" uuid="1f93e373-b510-4140-a9f6-282d809bf3c7">
+												<datasetParameter name="period">
+													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
+												</datasetParameter>
+												<datasetParameter name="org">
+													<datasetParameterExpression><![CDATA[$F{org_id}]]></datasetParameterExpression>
+												</datasetParameter>
+												<datasetParameter name="item">
+													<datasetParameterExpression><![CDATA[$F{item_id}]]></datasetParameterExpression>
+												</datasetParameter>
+												<datasetParameter name="emp">
+													<datasetParameterExpression><![CDATA[$F{emp_id}]]></datasetParameterExpression>
+												</datasetParameter>
+												<datasetParameter name="emp_result">
+													<datasetParameterExpression><![CDATA[$F{emp_result_id}]]></datasetParameterExpression>
+												</datasetParameter>
+											</datasetRun>
+										</dataset>
+										<categorySeries>
+											<seriesExpression><![CDATA[$F{type_name}]]></seriesExpression>
+											<categoryExpression><![CDATA[$F{appraisal_month_no}]]></categoryExpression>
+											<valueExpression><![CDATA[$F{actual_target_value}]]></valueExpression>
+										</categorySeries>
+									</categoryDataset>
+									<barPlot isShowLabels="true">
+										<plot backgroundAlpha="1.0" foregroundAlpha="1.0">
+											<seriesColor seriesOrder="0" color="#3B5998"/>
+										</plot>
+										<itemLabel>
+											<font fontName="TH SarabunPSK" size="6"/>
+										</itemLabel>
+										<categoryAxisFormat>
+											<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
+												<labelFont>
+													<font fontName="TH SarabunPSK" size="6" isBold="false"/>
+												</labelFont>
+												<tickLabelFont>
+													<font fontName="TH SarabunPSK" size="6" isBold="false"/>
+												</tickLabelFont>
+											</axisFormat>
+										</categoryAxisFormat>
+										<valueAxisFormat>
+											<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
+												<labelFont>
+													<font fontName="TH SarabunPSK" size="6" isBold="false"/>
+												</labelFont>
+												<tickLabelFont>
+													<font fontName="TH SarabunPSK" size="6" isBold="false"/>
+												</tickLabelFont>
+											</axisFormat>
+										</valueAxisFormat>
+									</barPlot>
+								</barChart>
 							</jr:detailCell>
 						</jr:column>
 					</jr:table>
