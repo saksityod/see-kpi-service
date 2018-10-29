@@ -652,6 +652,8 @@ INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 LEFT JOIN position po ON emp.position_id = po.position_id 
 WHERE q.answer_type_id != 7 
+AND pq.pass_score > 0
+	AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
 AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
@@ -683,6 +685,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
 						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab_CT"/>
 						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab_CD"/>
+						<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					</reportElement>
 					<crosstabDataset>
 						<dataset>
@@ -1523,7 +1526,7 @@ ORDER BY qdh.assessor_id ASC]]>
 	<columnHeader>
 		<band height="30">
 			<staticText>
-				<reportElement key="" mode="Transparent" x="0" y="0" width="800" height="30" backcolor="rgba(196, 61, 59, 0.0)" uuid="29339155-3814-4ca8-a885-4d0ace43c37a"/>
+				<reportElement key="" mode="Transparent" x="0" y="0" width="800" height="30" isRemoveLineWhenBlank="true" backcolor="rgba(196, 61, 59, 0.0)" uuid="29339155-3814-4ca8-a885-4d0ace43c37a"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="24" isBold="true"/>
 					<paragraph leftIndent="5"/>
