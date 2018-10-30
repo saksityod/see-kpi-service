@@ -664,7 +664,7 @@ class QuestionaireDataController extends Controller
                 es.emp_first_name LIKE '%{$emp_name}%'
                 OR es.emp_last_name LIKE '%{$emp_name}%'
                 OR p.position_code LIKE '%{$emp_name}%'
-				OR es.emp_code LIKE '%{$emp_name}%'
+                OR es.emp_code LIKE '%{$emp_name}%'
             )
             AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
             ".$between_date."
@@ -699,7 +699,7 @@ class QuestionaireDataController extends Controller
                 es.emp_first_name LIKE '%{$emp_name}%'
                 OR es.emp_last_name LIKE '%{$emp_name}%'
                 OR p.position_code LIKE '%{$emp_name}%'
-				OR es.emp_code LIKE '%{$emp_name}%'
+                OR es.emp_code LIKE '%{$emp_name}%'
             ) AND jf.is_evaluated = 1
             LIMIT 10
         ");
@@ -769,21 +769,19 @@ class QuestionaireDataController extends Controller
     public function evaluated_retailer_list(Request $request) {
         $request->date = $this->format_date($request->date);
         $items = DB::select("
-            SELECT qdh.data_header_id, qdd.customer_id, c.customer_name, SUM(qdd.score) score, qdd.section_id 
+            SELECT qdh.data_header_id, 
+                qdd.customer_id, 
+                c.customer_name, 
+                qdd.section_id, 
+                SUM(if(qdd.is_not_applicable=0, qdd.score, 0)) score
             FROM questionaire_data_detail qdd
             LEFT JOIN customer c ON c.customer_id = qdd.customer_id
             LEFT JOIN customer_position cp ON cp.customer_id = c.customer_id
-            LEFT JOIN questionaire_data_header qdh ON qdh.data_header_id = qdd.data_header_id 
+            LEFT JOIN questionaire_data_header qdh ON qdh.data_header_id = qdd.data_header_id
             WHERE qdd.section_id = '{$request->section_id}'
             AND cp.position_code = '{$request->position_code}'
             AND qdh.data_header_id = '{$request->data_header_id}'
-            AND qdh.questionaire_date = (
-                SELECT MAX(qdhh.questionaire_date) questionaire_date
-                FROM questionaire_data_header qdhh
-                WHERE qdhh.data_header_id = qdh.data_header_id
-                AND qdhh.questionaire_date BETWEEN '' AND '{$request->date}'
-            )
-			#AND qdd.is_not_applicable = 0
+            AND qdh.questionaire_date BETWEEN '' AND '{$request->date}'
             GROUP BY qdd.customer_id
             ORDER BY c.customer_name
         ");
@@ -1633,7 +1631,7 @@ class QuestionaireDataController extends Controller
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
                     OR p.position_code LIKE '%{$emp_name}%'
-					OR es.emp_code LIKE '%{$emp_name}%'
+                    OR es.emp_code LIKE '%{$emp_name}%'
                 ) AND jf.is_evaluated = 1
                 ORDER BY es.emp_first_name, es.emp_last_name
                 LIMIT 15
