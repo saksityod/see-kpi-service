@@ -69,7 +69,7 @@ class QuestionaireDataController extends Controller
     function check_permission($stage_id, $data_header_id, $assessor) {
         $is_all = $this->all_emp();
         if($is_all[0]->count_no == 0) {
-            // $assessor = $this->get_emp_snapshot();
+            //$assessor = $this->get_emp_snapshot();
             $emp_code = Auth::id();
             $data = DB::select("
                 SELECT rsa.view_comment_flag
@@ -390,25 +390,6 @@ class QuestionaireDataController extends Controller
     }
 
     function calculate_score($data_header_id) {
-        // $cal_score = DB::select("
-        //  SELECT COUNT(DISTINCT customer_id) count_customer, 
-           //       SUM(qdd.score) score, 
-           //       SUM(qdd.full_score) full_score, 
-           //       COUNT(DISTINCT qdd.question_id) count_question,
-           //       (
-           //           SELECT SUM(qdd.full_score)
-              //        FROM questionaire_data_detail qdd
-              //        INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-              //        WHERE qs.is_cust_search = 1
-              //        AND qdd.is_not_applicable = 1
-              //        AND qdd.data_header_id = '{$data_header_id}'
-           //       ) sum_applicable
-        //  FROM questionaire_data_detail qdd
-        //  INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-        //  WHERE qs.is_cust_search = 1
-        //  AND qdd.data_header_id = '{$data_header_id}'
-     //    ");
-        
         $cal_score = DB::select("
             SELECT SUM(count_customer) count_customer,
                 SUM(score) score,
@@ -418,7 +399,16 @@ class QuestionaireDataController extends Controller
             FROM (
                 SELECT  COUNT(DISTINCT customer_id) count_customer, 
                         SUM(qdd.score) score, 
-                        SUM(qdd.full_score) full_score, 
+                         (
+                                SELECT SUM(qdd.full_score)
+                                FROM questionaire_data_detail qdd
+                                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                                INNER JOIN question q ON q.question_id = qdd.question_id
+                                INNER JOIN question qq ON qq.question_id = q.parent_question_id 
+                                WHERE qs.is_cust_search = 1
+                                AND qdd.data_header_id = '{$data_header_id}'
+                                AND qq.pass_score > 0
+                        ) full_score,
                         COUNT(DISTINCT qdd.question_id) count_question,
                         (
                             SELECT SUM(qdd.full_score)
@@ -436,12 +426,21 @@ class QuestionaireDataController extends Controller
                 INNER JOIN question q ON q.question_id = qdd.question_id
                 INNER JOIN question qq ON qq.question_id = q.parent_question_id
                 WHERE qs.is_cust_search = 1
+                AND qdd.is_not_applicable = 0
                 AND qdd.data_header_id = '{$data_header_id}'
                 AND qq.pass_score > 0
             UNION All
                 SELECT  COUNT(DISTINCT customer_id) count_customer, 
                         SUM(qdd.score) score, 
-                        SUM(qdd.full_score) full_score, 
+                        (
+                                SELECT SUM(qdd.full_score)
+                                FROM questionaire_data_detail qdd
+                                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                                INNER JOIN question q ON q.question_id = qdd.question_id
+                                WHERE qs.is_cust_search = 1
+                                AND qdd.data_header_id = '{$data_header_id}'
+                                AND q.pass_score > 0
+                        ) full_score,
                         COUNT(DISTINCT qdd.question_id) count_question,
                         (
                                 SELECT SUM(qdd.full_score)
@@ -457,6 +456,7 @@ class QuestionaireDataController extends Controller
                 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
                 INNER JOIN question q ON q.question_id = qdd.question_id
                 WHERE qs.is_cust_search = 1
+                AND qdd.is_not_applicable = 0
                 AND qdd.data_header_id = '{$data_header_id}'
                 AND q.pass_score > 0
             )d1
@@ -466,8 +466,8 @@ class QuestionaireDataController extends Controller
             && !empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score)) {
 
             $total = $cal_score[0]->full_score - $cal_score[0]->sum_applicable;
-            $total_score = $total / $cal_score[0]->count_customer;
-            $full_score = $cal_score[0]->score / $cal_score[0]->count_customer;
+            $full_score = $total / $cal_score[0]->count_customer;
+            $total_score = $cal_score[0]->score / $cal_score[0]->count_customer;
 
             $items = QuestionaireDataHeader::select("full_score", "total_score")
                     ->where("data_header_id", $data_header_id)->first();
@@ -664,6 +664,7 @@ class QuestionaireDataController extends Controller
                 es.emp_first_name LIKE '%{$emp_name}%'
                 OR es.emp_last_name LIKE '%{$emp_name}%'
                 OR p.position_code LIKE '%{$emp_name}%'
+				OR es.emp_code LIKE '%{$emp_name}%'
             )
             AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
             ".$between_date."
@@ -698,6 +699,7 @@ class QuestionaireDataController extends Controller
                 es.emp_first_name LIKE '%{$emp_name}%'
                 OR es.emp_last_name LIKE '%{$emp_name}%'
                 OR p.position_code LIKE '%{$emp_name}%'
+				OR es.emp_code LIKE '%{$emp_name}%'
             ) AND jf.is_evaluated = 1
             LIMIT 10
         ");
@@ -781,6 +783,7 @@ class QuestionaireDataController extends Controller
                 WHERE qdhh.data_header_id = qdh.data_header_id
                 AND qdhh.questionaire_date BETWEEN '' AND '{$request->date}'
             )
+			#AND qdd.is_not_applicable = 0
             GROUP BY qdd.customer_id
             ORDER BY c.customer_name
         ");
@@ -971,7 +974,7 @@ class QuestionaireDataController extends Controller
         try {
             EmployeeSnapshot::findOrFail($request->emp_snapshot_id);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => 404, 'data' => 'Please Search Employee.']);
+            return response()->json(['status' => 404, 'data' => 'กรุณากรอกชื่อพนักงาน']);
         }
 
         $req_date = $this->format_date($request->date);
@@ -990,7 +993,7 @@ class QuestionaireDataController extends Controller
         if(!empty($check_assign)) {
             return response()->json([
                 'status' => 404, 
-                'data' => $request->date.' '.$check_assign[0]->emp_name.' was already evaluated '.$quesionaire_type->questionaire_type
+                'data' => $request->date.' '.$check_assign[0]->emp_name.' ยังมีแบบฟอร์ม '.$quesionaire_type->questionaire_type.' ค้างอยู่'
             ]);
         }
 
@@ -1630,6 +1633,7 @@ class QuestionaireDataController extends Controller
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
                     OR p.position_code LIKE '%{$emp_name}%'
+					OR es.emp_code LIKE '%{$emp_name}%'
                 ) AND jf.is_evaluated = 1
                 ORDER BY es.emp_first_name, es.emp_last_name
                 LIMIT 15
