@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summery-subtype-table" language="groovy" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryWithPageHeaderAndFooter="true" uuid="c5bfa3d7-18db-491a-b0b6-e427744d7aa5">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl-bk"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -36,20 +36,21 @@ FROM(
 	SELECT qtail.section_id, qsec.section_name, 
 		qtail.question_id, q.question_name,q.seq_no,sqp.seq_no as ss,
 		qtail.answer_id, ans.answer_name, ans.is_not_applicable, 
-		qtail.score, qtail.desc_answer
+		qtail.score, qtail.desc_answer,
+    (CASE WHEN q.parent_question_id IS NULL THEN "#E3E3E3" ELSE "#FFFFFF" END) as color_null
 	FROM questionaire_data_detail qtail
 	INNER JOIN questionaire_section qsec ON qsec.section_id = qtail.section_id
 	INNER JOIN question q ON q.question_id = qtail.question_id
 	LEFT OUTER JOIN question sqp ON sqp.question_id = q.parent_question_id
 	INNER JOIN answer ans ON ans.answer_id = qtail.answer_id
 	WHERE qtail.data_header_id =  $P{param_data_header_id} 
-	AND qtail.section_id =  $P{param_section_id} 
+	AND qtail.section_id =   $P{param_section_id} 
 	UNION ALL 
 	SELECT q.section_id, qsec.section_name, 
 		q.question_id, q.question_name,q.seq_no ,q.seq_no as ss,
 		 NULL answer_id, NULL answer_name, NULL is_not_applicable, 
-		NULL score, NULL desc_answer
-	FROM question q
+		NULL score, NULL desc_answer, (CASE WHEN sqp.parent_question_id IS NULL THEN "#E3E3E3" ELSE "#FFFFFF" END) as color_null
+FROM question q
 	INNER JOIN questionaire_section qsec ON qsec.section_id = q.section_id
  LEFT OUTER JOIN question sqp ON sqp.question_id = q.parent_question_id
 	WHERE q.question_id IN(
@@ -60,7 +61,7 @@ FROM(
 			) parent_question_id
 		FROM questionaire_data_detail sqtail
 		WHERE data_header_id =  $P{param_data_header_id} 
-		AND section_id =  $P{param_section_id} 
+		AND section_id =   $P{param_section_id} 
 	)
 )mq
 ORDER BY 
@@ -109,6 +110,9 @@ ORDER BY
 		<field name="desc_answer" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="desc_answer"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="color_null" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="color_null"/>
 		</field>
 	</subDataset>
 	<parameter name="param_data_header_id" class="java.lang.Long"/>
@@ -161,7 +165,9 @@ ORDER BY
 								<pen lineWidth="0.5" lineColor="#454545"/>
 							</box>
 							<textField isStretchWithOverflow="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="316" height="20" forecolor="#454545" uuid="710a89ab-694e-4f53-b284-72eafbeebe2b"/>
+								<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="316" height="20" backcolor="#FFFFFF" uuid="710a89ab-694e-4f53-b284-72eafbeebe2b">
+									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_null}]]></propertyExpression>
+								</reportElement>
 								<box leftPadding="3">
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
@@ -195,7 +201,9 @@ ORDER BY
 								<pen lineWidth="0.5" lineColor="#454545"/>
 							</box>
 							<textField isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="64" height="20" forecolor="#454545" uuid="1ff198ea-2aac-4aa1-971a-c0af1a68ce52"/>
+								<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="64" height="20" forecolor="#454545" uuid="1ff198ea-2aac-4aa1-971a-c0af1a68ce52">
+									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_null}]]></propertyExpression>
+								</reportElement>
 								<box leftPadding="3">
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
@@ -229,7 +237,9 @@ ORDER BY
 								<pen lineWidth="0.5" lineColor="#454545"/>
 							</box>
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="424" height="20" forecolor="#454545" uuid="30c9cd49-06ba-460e-ad53-4acc84494b27"/>
+								<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="424" height="20" forecolor="#454545" uuid="30c9cd49-06ba-460e-ad53-4acc84494b27">
+									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_null}]]></propertyExpression>
+								</reportElement>
 								<box leftPadding="3">
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>

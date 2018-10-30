@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary-head" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty" uuid="f45b8231-2931-49fb-82f8-8d5d5f9eedf6">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl-bk"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -12,6 +12,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="463"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="523"/>
 	<parameter name="param_data_header_id" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
@@ -25,7 +27,8 @@
 	stage.stage_name,
 	head.total_score, 
 	head.pass_score pass_score,
-	IFNULL(ROUND((head.total_score/head.full_score)*100.00, 2), 0) percent_score,
+	-- IFNULL(ROUND((head.full_score/head.total_score)*100.00, 2), 0) percent_score,
+	IFNULL(ROUND((head.total_score*100)/head.full_score, 2), 0) percent_score,
 	IF((head.total_score/head.full_score)*100.00 >= head.pass_score, 1, 0) AS is_pass
 FROM questionaire_data_header head 
 INNER JOIN questionaire que ON que.questionaire_id = head.questionaire_id
@@ -33,7 +36,7 @@ INNER JOIN employee_snapshot emp ON emp.emp_snapshot_id = head.emp_snapshot_id
 INNER JOIN position ps ON emp.position_id = ps.position_id
 INNER JOIN employee_snapshot asor ON asor.emp_snapshot_id = head.assessor_id
 INNER JOIN stage ON stage.stage_id = head.data_stage_id
-WHERE head.data_header_id =  $P{param_data_header_id} ]]>
+WHERE head.data_header_id =  $P{param_data_header_id}]]>
 	</queryString>
 	<field name="questionaire_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="questionaire_name"/>

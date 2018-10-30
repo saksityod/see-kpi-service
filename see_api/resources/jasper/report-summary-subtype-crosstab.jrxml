@@ -89,6 +89,8 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="322"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="667"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="228"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="758"/>
 		<parameter name="param_data_header_id" class="java.lang.Long"/>
 		<parameter name="param_section" class="java.lang.Integer"/>
 		<queryString language="SQL">
@@ -114,6 +116,8 @@
 FROM questionaire_data_header qdh 
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+INNER JOIN question que ON que.question_id = qdd.question_id
+INNER JOIN answer_type ant ON ant.answer_type_id = que.answer_type_id
 INNER JOIN (
  SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
   sqp.question_name parent_question_name, sqp.pass_score, sq.seq_no
@@ -151,7 +155,8 @@ LEFT JOIN (
 	 , ques.num_question
 	, qdh.data_header_id
 ) re ON re.parent_question_id = q.parent_question_id AND re.customer_id = c.customer_id
-WHERE  qdh.data_header_id = $P{param_data_header_id} 
+WHERE  que.answer_type_id != 7
+AND qdh.data_header_id = $P{param_data_header_id} 
 AND qdd.section_id =  $P{param_section} 
 ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c.customer_id]]>
 		</queryString>
@@ -296,9 +301,9 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="180">
+		<band height="220">
 			<crosstab ignoreWidth="true">
-				<reportElement x="0" y="0" width="800" height="180" forecolor="#454545" uuid="630006c1-05f4-4436-8f4c-b090e8a7706e">
+				<reportElement x="0" y="0" width="800" height="220" forecolor="#454545" uuid="630006c1-05f4-4436-8f4c-b090e8a7706e">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab 1_CT"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 1_CH"/>
@@ -371,7 +376,10 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 							<staticText>
 								<reportElement key="" stretchType="RelativeToTallestObject" x="0" y="0" width="316" height="20" forecolor="#FFFFFF" uuid="1087ee99-4881-4aa5-9ae5-246f8d7c36bb"/>
-								<textElement textAlignment="Left" verticalAlignment="Middle"/>
+								<box leftPadding="3"/>
+								<textElement textAlignment="Left" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14"/>
+								</textElement>
 								<text><![CDATA[สรุปคะแนน]]></text>
 							</staticText>
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -458,7 +466,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 						</cellContents>
 					</crosstabTotalRowHeader>
 				</rowGroup>
-				<columnGroup name="customer_name" height="160" totalPosition="End">
+				<columnGroup name="customer_name" height="160" totalPosition="Start">
 					<bucket class="java.lang.String">
 						<bucketExpression><![CDATA[$F{customer_name}]]></bucketExpression>
 					</bucket>
@@ -466,6 +474,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 						<cellContents mode="Opaque" style="Crosstab 1_CH">
 							<textField isStretchWithOverflow="true">
 								<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="45" height="160" uuid="a017e70b-b9dd-4cd1-98bb-0d7e52cf7425"/>
+								<box bottomPadding="3"/>
 								<textElement verticalAlignment="Middle" rotation="Left">
 									<font fontName="TH SarabunPSK" size="16"/>
 									<paragraph lineSpacing="AtLeast"/>
@@ -555,18 +564,75 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 				<crosstabCell width="180" height="20" columnTotalGroup="customer_name">
 					<cellContents mode="Opaque" style="Crosstab 1_CT"/>
 				</crosstabCell>
-				<crosstabCell width="45" height="0" rowTotalGroup="parent_question_name">
-					<cellContents mode="Opaque" style="Crosstab 1_CG"/>
-				</crosstabCell>
-				<crosstabCell width="180" height="0" rowTotalGroup="parent_question_name" columnTotalGroup="customer_name">
-					<cellContents mode="Opaque" style="Crosstab 1_CT">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-					</cellContents>
-				</crosstabCell>
 				<crosstabCell width="45" height="0" rowTotalGroup="question_name">
 					<cellContents mode="Opaque" style="Crosstab 1_CG"/>
 				</crosstabCell>
 				<crosstabCell width="180" height="0" rowTotalGroup="question_name" columnTotalGroup="customer_name">
+					<cellContents mode="Opaque" style="Crosstab 1_CT">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="45" height="20" rowTotalGroup="seq_no">
+					<cellContents mode="Opaque" style="Crosstab 1_CG">
+						<textField isBlankWhenNull="true">
+							<reportElement x="0" y="0" width="45" height="20" uuid="edb6b575-c4a5-4bc7-b842-7c833e71006b"/>
+							<textElement textAlignment="Center">
+								<font fontName="TH SarabunPSK" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{sumscore}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="180" height="20" rowTotalGroup="seq_no" columnTotalGroup="customer_name">
+					<cellContents mode="Opaque" style="Crosstab 1_CT">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="81aa4f1c-b140-4f13-806f-c54ecd18989b"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#000000"/>
+							</box>
+							<textElement textAlignment="Center">
+								<font fontName="TH SarabunPSK" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{totalfull_score}.doubleValue()]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="45" y="0" width="45" height="20" forecolor="#FFFFFF" uuid="0c4ad51f-e93e-44e6-9bb7-5cc583b510bc"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#000000"/>
+							</box>
+							<textElement textAlignment="Center">
+								<font fontName="TH SarabunPSK" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{sumscore}.doubleValue()]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="90" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="c3682757-200b-4074-822e-a03c29443f8d"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#000000"/>
+							</box>
+							<textElement textAlignment="Center">
+								<font fontName="TH SarabunPSK" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100)
+)+"%"]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="135" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="4d4edc3a-7f12-4aa7-adc6-1ec8041e2c88"/>
+							<box>
+								<pen lineWidth="0.5" lineColor="#000000"/>
+							</box>
+							<textElement textAlignment="Center">
+								<font fontName="TH SarabunPSK" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : ($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100.00) >= $V{pass_score}.doubleValue() ? "ผ่าน" : "ไม่ผ่าน"]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="45" height="0" rowTotalGroup="parent_question_name">
+					<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+				</crosstabCell>
+				<crosstabCell width="180" height="0" rowTotalGroup="parent_question_name" columnTotalGroup="customer_name">
 					<cellContents mode="Opaque" style="Crosstab 1_CT">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 					</cellContents>
@@ -622,63 +688,6 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center" verticalAlignment="Middle">
-								<font fontName="TH SarabunPSK" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : ($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100.00) >= $V{pass_score}.doubleValue() ? "ผ่าน" : "ไม่ผ่าน"]]></textFieldExpression>
-						</textField>
-					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="45" height="20" rowTotalGroup="seq_no">
-					<cellContents mode="Opaque" style="Crosstab 1_CG">
-						<textField isBlankWhenNull="true">
-							<reportElement x="0" y="0" width="45" height="20" uuid="edb6b575-c4a5-4bc7-b842-7c833e71006b"/>
-							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{sumscore}]]></textFieldExpression>
-						</textField>
-					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="180" height="20" rowTotalGroup="seq_no" columnTotalGroup="customer_name">
-					<cellContents mode="Opaque" style="Crosstab 1_CT">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="81aa4f1c-b140-4f13-806f-c54ecd18989b"/>
-							<box>
-								<pen lineWidth="0.5" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{totalfull_score}.doubleValue()]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="45" y="0" width="45" height="20" forecolor="#FFFFFF" uuid="0c4ad51f-e93e-44e6-9bb7-5cc583b510bc"/>
-							<box>
-								<pen lineWidth="0.5" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{sumscore}.doubleValue()]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="90" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="c3682757-200b-4074-822e-a03c29443f8d"/>
-							<box>
-								<pen lineWidth="0.5" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100)
-)+"%"]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement stretchType="RelativeToBandHeight" x="135" y="0" width="45" height="20" isPrintWhenDetailOverflows="true" forecolor="#FFFFFF" uuid="4d4edc3a-7f12-4aa7-adc6-1ec8041e2c88"/>
-							<box>
-								<pen lineWidth="0.5" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center">
 								<font fontName="TH SarabunPSK" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : ($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100.00) >= $V{pass_score}.doubleValue() ? "ผ่าน" : "ไม่ผ่าน"]]></textFieldExpression>

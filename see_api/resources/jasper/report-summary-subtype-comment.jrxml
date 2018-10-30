@@ -23,7 +23,8 @@ INNER JOIN questionaire_section qsec ON qsec.section_id = qtail.section_id
 INNER JOIN answer_type as qnt on qnt.answer_type_id = que.answer_type_id 
 INNER JOIN answer as an ON qtail.answer_id = an.answer_id
 WHERE qtail.data_header_id = $P{param_data_header_id} 
-and qtail.section_id = $P{param_section_id}]]>
+and qtail.section_id = $P{param_section_id}
+and que.answer_type_id  = 7]]>
 	</queryString>
 	<field name="section_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="section_id"/>
