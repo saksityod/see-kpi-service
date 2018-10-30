@@ -22,7 +22,6 @@ class AppraisalStructureController extends Controller
 
 	public function __construct()
 	{
-
 	   $this->middleware('jwt.auth');
 	}
 	
@@ -40,7 +39,16 @@ class AppraisalStructureController extends Controller
 
 	public function level_list(Request $request)
 	{
-		$items = AppraisalLevel::select('level_id', 'appraisal_level_name')->get();
+		//$items = AppraisalLevel::select('level_id', 'appraisal_level_name')->get();
+		$items = DB::select("
+			SELECT level_id, appraisal_level_name
+			FROM appraisal_level al 
+			WHERE is_active = 1
+			AND (
+				(is_org = 1 AND is_individual = 0)
+				or (is_individual = 1 AND is_org = 0)
+			)
+		");
 		return response()->json($items);
 	}
 	
