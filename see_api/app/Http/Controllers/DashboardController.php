@@ -789,12 +789,14 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 			";
 
 			$qfooter = " group by a.emp_result_id, b.emp_name , b.emp_name order by color_code ";
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
@@ -836,12 +838,14 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 			";
 
 			$qfooter = " group by a.emp_result_id, b.emp_name , b.emp_name order by color_code ";
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
@@ -877,12 +881,14 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 			";
 
 			$qfooter = " group by a.emp_result_id, b.emp_name , b.emp_name order by color_code ";
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->org_id) ?: ($query .= " and c.org_id = ? " AND $qinput[] = $request->org_id);
@@ -964,7 +970,7 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
-
+				and a.appraisal_form_id = ?
 
 			";
 
@@ -973,6 +979,7 @@ class DashboardController extends Controller
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			//empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1053,7 +1060,7 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
-
+				and a.appraisal_form_id = ?
 
 			";
 
@@ -1061,6 +1068,7 @@ class DashboardController extends Controller
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			//empty($request->emp_id) ?: ($query .= " and a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1097,12 +1105,14 @@ class DashboardController extends Controller
 				where a.appraisal_type_id = ?
 				and a.period_id = ?
 				and g.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 			";
 
 			$qfooter = " group by a.emp_result_id, c.org_abbr, c.org_name order by color_code ";
 
 			$qinput[] = $request->appraisal_type_id;
 			$qinput[] = $request->period_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
 
@@ -1147,8 +1157,9 @@ class DashboardController extends Controller
 				where emp_result_id = ?
 				and b.perspective_id is not null
 				and e.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 				group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
-			",array($e->emp_result_id));
+			",array($e->emp_result_id, $request->appraisal_form_id));
 
 			}else if($config->result_type==1 and $config->threshold==1){// (TFG)
 
@@ -1170,8 +1181,9 @@ class DashboardController extends Controller
 				where emp_result_id = ?
 				and b.perspective_id is not null
 				and e.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 				group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
-			",array($e->emp_result_id));
+			",array($e->emp_result_id, $request->appraisal_form_id));
 
 			}else{ // (GHB)
 
@@ -1191,8 +1203,9 @@ class DashboardController extends Controller
 				where emp_result_id = ?
 				and b.perspective_id is not null
 				and e.form_name = 'Quantity'
+				and a.appraisal_form_id = ?
 				group by b.perspective_id, c.perspective_name, c.color_code, a.structure_weight_percent
-			",array($e->emp_result_id));
+			",array($e->emp_result_id, $request->appraisal_form_id));
 
 			}
 
@@ -1291,12 +1304,14 @@ class DashboardController extends Controller
 			on c.emp_id = e.emp_id
 			where c.appraisal_type_id = ?
 			and c.period_id = ?
+			and a.appraisal_form_id = ?
 			and b.perspective_id is not null
 			and f.form_name = 'Quantity'
 		";
 
 		$qinput[] = $request->appraisal_type_id;
 		$qinput[] = $request->period_id;
+		$qinput[] = $request->appraisal_form_id;
 
 		empty($request->perspective_id) ?: ($query .= " and b.perspective_id = ? " AND $qinput[] = $request->perspective_id);
 
@@ -1878,6 +1893,7 @@ class DashboardController extends Controller
 					and c.period_id = ?
 					and a.level_id = ?
 					and a.org_id = ?
+					and b.appraisal_form_id = ?
 					" . $position_query . "
 					group by a.org_id, a.emp_id, g.emp_name ,org_name, e.item_name, a.item_result_id, f.perspective_name, u.uom_name, c.result_threshold_group_id, e.is_show_variance
 					union all
@@ -1903,9 +1919,10 @@ class DashboardController extends Controller
 					and c.appraisal_type_id = ?
 					and g.chief_emp_code = ?
 					and c.period_id = ?
+					and b.appraisal_form_id = ?
 					group by a.org_id, a.emp_id, g.emp_name ,org_name, e.item_name, a.item_result_id, f.perspective_name, u.uom_name, c.result_threshold_group_id, e.is_show_variance
 					order by org_id asc			
-				", array($request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id, $request->level_id, $request->org_id,$request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id));
+				", array($request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id, $request->level_id, $request->org_id, $request->appraisal_form_id, $request->item_id,$request->appraisal_type_id, $emp->emp_code, $request->period_id, $request->appraisal_form_id));
 			} else {
 				$org_list = DB::select("
 					SELECT a.org_id, a.emp_id, d.org_name, e.item_name, a.item_result_id, f.perspective_name, u.uom_name, c.result_threshold_group_id, b.threshold_group_id, e.is_show_variance, max(b.etl_dttm) etl_dttm
@@ -1927,9 +1944,10 @@ class DashboardController extends Controller
 					and c.appraisal_type_id = ?
 					and (d.org_code = ? or d.parent_org_code = ?)
 					and c.period_id = ?
+					and b.appraisal_form_id = ?
 					group by a.org_id, a.emp_id, d.org_name, e.item_name, a.item_result_id, f.perspective_name, u.uom_name, c.result_threshold_group_id, e.is_show_variance
 					order by a.org_id asc
-				", array($request->item_id,$request->appraisal_type_id,$org->org_code, $org->org_code, $request->period_id));
+				", array($request->item_id,$request->appraisal_type_id,$org->org_code, $org->org_code, $request->period_id, $request->appraisal_form_id));
 			}
 
 			foreach ($org_list as $o) {
@@ -1961,12 +1979,14 @@ class DashboardController extends Controller
 						and b.emp_id = ?
 						and c.period_id = ?
 						and a.org_id = ?
+						and b.appraisal_form_id = ?
 					";
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
 					$qinput[] = $request->period_id;
 					$qinput[] = $o->org_id;
+					$qinput[] = $request->appraisal_form_id;
 					// $qinput[] = $request->level_id;
 					// $qinput[] = $request->org_id;
 					// empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);					
@@ -1993,11 +2013,13 @@ class DashboardController extends Controller
 						and c.appraisal_type_id = ?
 						and a.org_id = ?
 						and c.period_id = ?
+						and b.appraisal_form_id = ?
 					";
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->org_id;
 					$qinput[] = $request->period_id;
+					$qinput[] = $request->appraisal_form_id;
 
 				}
 
@@ -2296,6 +2318,7 @@ class DashboardController extends Controller
 					and i.emp_code = ?
 					and a.level_id = ?
 					and a.org_id = ?
+					and d.appraisal_form_id = ?
 					" . $position_query . "
 					group by e.org_id, d.emp_id, i.emp_name, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name
 					union all
@@ -2328,8 +2351,9 @@ class DashboardController extends Controller
 					and b.appraisal_year = ?
 					and f.appraisal_type_id = ?
 					and i.chief_emp_code = ?
+					and d.appraisal_form_id = ?
 					group by e.org_id, d.emp_id, i.emp_name, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name					
-				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $request->level_id, $request->org_id,$period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code));
+				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $request->level_id, $request->org_id, $request->appraisal_form_id, $period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $emp->emp_code, $request->appraisal_form_id));
 
 			} else {
 
@@ -2362,8 +2386,9 @@ class DashboardController extends Controller
 					and b.appraisal_year = ?
 					and f.appraisal_type_id = ?
 					and (e.org_code = ? or e.parent_org_code = ?)
+					and d.appraisal_form_id = ?
 					group by e.org_id, d.emp_id, e.org_name, f.result_threshold_group_id, g.item_name, h.perspective_name,u.uom_name
-				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $org->org_code, $org->org_code));
+				",array($period->period_no, $request->item_id, $request->year_id, $request->appraisal_type_id, $org->org_code, $org->org_code, $request->appraisal_form_id));
 			}
 
 			foreach ($org_list as $o) {
@@ -2390,6 +2415,7 @@ class DashboardController extends Controller
 						and e.appraisal_type_id = ?
 						and a.emp_id = ?
 						and a.org_id = ?
+						and d.appraisal_form_id = ?
 					";
 					$qinput[] = $period->period_no;
 					$qinput[] = $request->item_id;
@@ -2397,6 +2423,7 @@ class DashboardController extends Controller
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->emp_id;
 					$qinput[] = $o->org_id;
+					$qinput[] = $request->appraisal_form_id;
 					// $qinput[] = $request->level_id;
 					// $qinput[] = $request->org_id;
 					
@@ -2413,7 +2440,8 @@ class DashboardController extends Controller
 					and b.appraisal_type_id = ?
 					and a.period_id = ?
 					and a.item_id = ?
-				", array($o->emp_id, $request->appraisal_type_id, $request->period_id, $request->item_id));
+					and a.appraisal_form_id = ?
+				", array($o->emp_id, $request->appraisal_type_id, $request->period_id, $request->item_id, $request->appraisal_form_id));
 
 				} else {
 
@@ -2436,12 +2464,14 @@ class DashboardController extends Controller
 						and b.appraisal_year = ?
 						and e.appraisal_type_id = ?
 						and a.org_id = ?
+						and d.appraisal_form_id = ?
 					";
 					$qinput[] = $period->period_no;
 					$qinput[] = $request->item_id;
 					$qinput[] = $request->year_id;
 					$qinput[] = $request->appraisal_type_id;
 					$qinput[] = $o->org_id;
+					$qinput[] = $request->appraisal_form_id;
 
 					$dual_chart = DB::select("
 						select a.target_value, a.actual_value, a.forecast_value, a.percent_achievement
@@ -2452,7 +2482,8 @@ class DashboardController extends Controller
 						and b.appraisal_type_id = ?
 						and a.period_id = ?
 						and a.item_id = ?
-					", array($o->org_id, $request->appraisal_type_id, $request->period_id, $request->item_id));
+						and a.appraisal_form_id = ?
+					", array($o->org_id, $request->appraisal_type_id, $request->period_id, $request->item_id, $request->appraisal_form_id));
 				}
 
 
@@ -2678,6 +2709,7 @@ class DashboardController extends Controller
 					on b.org_id = c.org_id
 					where b.appraisal_type_id = 1
 					and b.period_id = ?
+					and b.appraisal_form_id = ?
 					and exists (
 						select 1
 						from org x
@@ -2687,7 +2719,7 @@ class DashboardController extends Controller
 						and x.org_code = c.parent_org_code
 					)
 					group by province_code
-				", array($request->period_id));
+				", array($request->period_id, $request->appraisal_form_id));
 
 				foreach ($vector as $i) {
 					$color = DB::select("
@@ -2752,6 +2784,7 @@ class DashboardController extends Controller
 					where b.appraisal_type_id = 1
 					and a.period_id = ?
 					and a.item_id = ?
+					and a.appraisal_form_id = ?
 					and exists (
 						select 1
 						from org x
@@ -2761,7 +2794,7 @@ class DashboardController extends Controller
 						and x.org_code = c.parent_org_code
 					)
 					group by province_code
-				", array($request->period_id, $request->item_id));
+				", array($request->period_id, $request->item_id, $request->appraisal_form_id));
 
 				foreach ($vector as $i) {
 					$color = DB::select("
@@ -2830,6 +2863,7 @@ class DashboardController extends Controller
 					) e on c.parent_org_code = e.org_code
 					where appraisal_type_id = 1
 					and b.period_id = ?
+					and b.appraisal_form_id = ?
 				";
 			} else {
 				$org_query = "
@@ -2850,11 +2884,13 @@ class DashboardController extends Controller
 					) e on c.parent_org_code = e.org_code
 					where appraisal_type_id = 1
 					and a.period_id = ?
+					and a.appraisal_form_id = ?
 				";
 			}
 
 			$org_input[] = $request->region_code;
 			$org_input[] = $request->period_id;
+			$org_input[] = $request->appraisal_form_id;
 
 			empty($request->item_id) ?: ($org_query .= " and a.item_id = ? " AND $org_input[] = $request->item_id);
 			empty($request->district_code) ?: ($org_query .= " and c.parent_org_code = ? " AND $org_input[] = $request->district_code);
@@ -2880,10 +2916,12 @@ class DashboardController extends Controller
 					LEFT OUTER JOIN org ON org.org_id = air.org_id
 					WHERE air.period_id = ?
 					AND air.org_id = ?
+					AND air.appraisal_form_id = ?
 				";
 
 				$qinput[] = $request->period_id;
 				$qinput[] = $o->org_id;
+				$qinput[] = $request->appraisal_form_id;
 
 				$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, org.org_code ";
 
@@ -3011,6 +3049,7 @@ class DashboardController extends Controller
 				where b.appraisal_type_id = 1
 				and c.province_code = ?
 				and b.period_id = ?
+				and b.appraisal_form_id = ?
 				and exists (
 					select 1
 					from org x
@@ -3019,7 +3058,7 @@ class DashboardController extends Controller
 					where y.district_flag = 1
 					and x.org_code = c.parent_org_code
 				)
-			", array($request->province_code, $request->period_id));
+			", array($request->province_code, $request->period_id, $request->appraisal_form_id));
 		} else {
 			$org_list = DB::select("
 				select distinct a.org_id, c.org_name, c.org_code, b.result_threshold_group_id, a.percent_achievement pct
@@ -3034,6 +3073,7 @@ class DashboardController extends Controller
 				and c.province_code = ?
 				and a.period_id = ?
 				and a.item_id = ?
+				and a.appraisal_form_id = ?
 				and exists (
 					select 1
 					from org x
@@ -3042,7 +3082,7 @@ class DashboardController extends Controller
 					where y.district_flag = 1
 					and x.org_code = c.parent_org_code
 				)
-			", array($request->province_code, $request->period_id, $request->item_id));
+			", array($request->province_code, $request->period_id, $request->item_id, $request->appraisal_form_id));
 
 		}
 		foreach ($org_list as $o) {
@@ -3064,10 +3104,12 @@ class DashboardController extends Controller
 				LEFT OUTER JOIN org ON org.org_id = air.org_id
 				WHERE air.period_id = ?
 				AND o.org_id = ?
+				AND air.appraisal_form_id = ?
 			";
 
 			$qinput[] = $request->period_id;
 			$qinput[] = $o->org_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, org.org_code ";
 
@@ -3197,12 +3239,14 @@ class DashboardController extends Controller
 							AND air.org_id = ?
 							AND er.emp_id=?
 							and er.appraisal_type_id = ?
+							and air.appraisal_form_id = ?
 						";
 
 						$qinput[] = $request->period_id;
 						$qinput[] = $request->org_id;
 						$qinput[] = $request->emp_id;
 						$qinput[] = $request->appraisal_type_id;
+						$qinput[] = $request->appraisal_form_id;
 
 						$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, er.emp_id ";
 						empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);
@@ -3230,11 +3274,13 @@ class DashboardController extends Controller
 				WHERE air.period_id = ?
 				AND o.org_id = ?
 				and er.appraisal_type_id = ?
+				and air.appraisal_form_id = ?
 			";
 
 			$qinput[] = $request->period_id;
 			$qinput[] = $request->org_id;
 			$qinput[] = $request->appraisal_type_id;
+			$qinput[] = $request->appraisal_form_id;
 
 			$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, org.org_code ";
 			empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);

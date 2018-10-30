@@ -66,18 +66,18 @@ class DashboardPerformanceComparisonController extends Controller
 				where emp.org_id = ?
 				and emp.level_id = ?
 				and emp.appraisal_type_id = ?
-				and ap.appraisal_year = ?";
+				and ap.appraisal_year = ?
+				and emp.appraisal_form_id = ?";
 
 		if($request->appraisal_type_id == 2){
 			$check = DB::select($query_check."
 			and sr.emp_id = ?
 			and emp.position_id = ?"
-			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year
-			, $request->emp_id, $request->position_id));
+			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year, $request->appraisal_form_id, $request->emp_id, $request->position_id));
 		}
 		if($request->appraisal_type_id == 1){
 			$check = DB::select($query_check
-			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year));
+			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year, $request->appraisal_form_id));
 		}
 
 		if($check[0]->num == 0){
@@ -116,6 +116,7 @@ class DashboardPerformanceComparisonController extends Controller
 				and emp.org_id = ? -- org_id
 				and lev.position_id = ? -- position_id
 				and lev.appraisal_type_id = ? -- appraisal_type_id
+				and emp.appraisal_form_id = '".$request->appraisal_form_id."'
 				group by em.emp_id";
 
 			$value = DB::select("
@@ -150,12 +151,13 @@ class DashboardPerformanceComparisonController extends Controller
 					and emp.org_id = ? -- org_id
 					and lev.position_id = ? -- position_id
 					and lev.appraisal_type_id = ? -- appraisal_type_id
+					and emp.appraisal_form_id = ?
 					group by em.emp_id
 				)result
 				ORDER BY result.result_score DESC"
 			,array($request->emp_id, $request->emp_id, $request->appraisal_year, $request->level_id, $request->org_id
 			, $request->position_id, $request->appraisal_type_id, $request->appraisal_year, $request->level_id
-			, $request->org_id, $request->position_id, $request->appraisal_type_id));
+			, $request->org_id, $request->position_id, $request->appraisal_type_id, $request->appraisal_form_id));
 		}
 
 		if(($request->appraisal_type_id) == 1){
@@ -178,6 +180,7 @@ class DashboardPerformanceComparisonController extends Controller
 			and ap.appraisal_year = (".$year_old.") -- appraisal_year
 			and emp.level_id = ? -- level_id
 			and emp.appraisal_type_id = ? -- appraisal_type_id
+			and emp.appraisal_form_id = '".$request->appraisal_form_id."'
 			group by org.org_id";
 
 			$value = DB::select("
@@ -209,11 +212,12 @@ class DashboardPerformanceComparisonController extends Controller
 					and ap.appraisal_year = ? -- appraisal_year
 					and emp.level_id = ? -- level_id
 					and emp.appraisal_type_id = ? -- appraisal_type_id
+					and emp.appraisal_form_id = ?
 					group by org.org_id
 				)result
 				ORDER BY result.result_score DESC"
 			,array($request->org_id, $request->org_id, $request->appraisal_year, $request->level_id
-			, $request->appraisal_type_id, $request->appraisal_year, $request->level_id, $request->appraisal_type_id));
+			, $request->appraisal_type_id, $request->appraisal_year, $request->level_id, $request->appraisal_type_id, $request->appraisal_form_id));
 		}
 
 		return response()->json($value);
@@ -236,18 +240,19 @@ class DashboardPerformanceComparisonController extends Controller
 				where emp.org_id = ?
 				and emp.level_id = ?
 				and emp.appraisal_type_id = ?
-				and ap.appraisal_year = ?";
+				and ap.appraisal_year = ?
+				and emp.appraisal_form_id = ?";
 
 		if($request->appraisal_type_id == 2){
 			$check = DB::select($query_check."
 			and sr.emp_id = ?
 			and emp.position_id = ?"
 			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year
-			, $request->emp_id, $request->position_id));
+			, $request->appraisal_form_id, $request->emp_id, $request->position_id));
 		}
 		if($request->appraisal_type_id == 1){
 			$check = DB::select($query_check
-			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year));
+			,array( $request->org_id, $request->level_id, $request->appraisal_type_id, $request->appraisal_year, $request->appraisal_form_id));
 		}
 
 		if($check[0]->num == 0){
@@ -290,9 +295,10 @@ class DashboardPerformanceComparisonController extends Controller
 					and emp.org_id = ? -- org_id
 					and emp.position_id = ? -- position_id
 					and emp.emp_id = ? -- emp_id
+					and emp.appraisal_form_id = ?
 					group by em.emp_id"
 					, array($year->appraisal_year, $request->appraisal_type_id, $request->level_id
-				, $request->org_id, $request->position_id, $request->emp_id));
+				, $request->org_id, $request->position_id, $request->emp_id, $request->appraisal_form_id));
 
 				//query average value
 				$sql_max_min_avg = "
@@ -313,6 +319,7 @@ class DashboardPerformanceComparisonController extends Controller
 					and emp.level_id = ? -- level_id
 					and emp.org_id = ? -- org_id
 					and lev.position_id = ? -- position_id
+					and emp.appraisal_form_id = ?
 				";
 
 				//max value
@@ -322,7 +329,7 @@ class DashboardPerformanceComparisonController extends Controller
 					LIMIT 1
 				";
 				$sql_max = DB::select($sql_max, array($request->emp_id, $year->appraisal_year, $request->appraisal_type_id
-				, $request->level_id, $request->org_id, $request->position_id));
+				, $request->level_id, $request->org_id, $request->position_id, $request->appraisal_form_id));
 
 				//min value
 				$sql_min = $sql_max_min_avg."
@@ -331,11 +338,11 @@ class DashboardPerformanceComparisonController extends Controller
 					LIMIT 1
 				";
 				$sql_min = DB::select($sql_min, array($request->emp_id, $year->appraisal_year, $request->appraisal_type_id
-				, $request->level_id, $request->org_id, $request->position_id));
+				, $request->level_id, $request->org_id, $request->position_id, $request->appraisal_form_id));
 
 				//average value
 				$sql_avg = DB::select($sql_max_min_avg, array($request->emp_id, $year->appraisal_year, $request->appraisal_type_id
-				, $request->level_id, $request->org_id, $request->position_id));
+				, $request->level_id, $request->org_id, $request->position_id, $request->appraisal_form_id));
 
 				//change result query to array
 				$sql_value = collect($sql_value)->toArray();
@@ -386,8 +393,9 @@ class DashboardPerformanceComparisonController extends Controller
 					and emp.appraisal_type_id = ? -- appraisal_type_id
 					and emp.level_id = ? -- level_id
 					and emp.org_id = ? -- org_id
+					and emp.appraisal_form_id = ?
 					group by org.org_id"
-					, array($year->appraisal_year, $request->appraisal_type_id, $request->level_id, $request->org_id));
+					, array($year->appraisal_year, $request->appraisal_type_id, $request->level_id, $request->org_id, $request->appraisal_form_id));
 
 					//query average value
 					$sql_max_min_avg = "
@@ -405,6 +413,7 @@ class DashboardPerformanceComparisonController extends Controller
 						and ap.appraisal_year = ? -- appraisal_year
 						and emp.appraisal_type_id = ? -- appraisal_type_id
 						and emp.level_id = ? -- level_id
+						and emp.appraisal_form_id = ?
 					";
 
 					//max value
@@ -414,7 +423,7 @@ class DashboardPerformanceComparisonController extends Controller
 						LIMIT 1";
 
 					$sql_max = DB::select($sql_max, array($request->org_id, $year->appraisal_year
-					, $request->appraisal_type_id, $request->level_id));
+					, $request->appraisal_type_id, $request->level_id, $request->appraisal_form_id));
 
 					//min value
 					$sql_min = $sql_max_min_avg."
@@ -427,7 +436,7 @@ class DashboardPerformanceComparisonController extends Controller
 
 					//average value
 					$sql_avg = DB::select($sql_max_min_avg, array($request->org_id, $year->appraisal_year
-					, $request->appraisal_type_id, $request->level_id));
+					, $request->appraisal_type_id, $request->level_id, $request->appraisal_form_id));
 
 					//change result query to array
 					$sql_value = collect($sql_value)->toArray();
