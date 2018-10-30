@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-comment-supreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="0a000e9b-852c-410a-aaf2-eefa246cdce9">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-comment-supreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" isIgnorePagination="true" uuid="0a000e9b-852c-410a-aaf2-eefa246cdce9">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -40,7 +40,7 @@
 		</box>
 	</style>
 	<subDataset name="query-table" uuid="96e22cc9-3e4c-465c-be02-6a8ef178c7f7">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_secton" class="java.lang.String"/>
 		<parameter name="param_employee" class="java.lang.String"/>
@@ -76,6 +76,7 @@ WHERE ay.is_show_comment = 1
 AND ay.answer_type_id = 7
 AND qs.section_id =  $P{param_secton} 
 AND es.emp_snapshot_id = $P{param_employee} 
+AND qs.is_cust_search != 1
 AND qdh.questionaire_date
 		between STR_TO_DATE ($P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
 AND qn.questionaire_type_id =  $P{param_questionaire_type} 
@@ -165,6 +166,7 @@ INNER JOIN (
 ) qq ON qdd.question_id = qq.question_id 
 WHERE ay.is_show_comment = 1
 AND ay.answer_type_id = 7
+AND qs.is_cust_search != 1
 AND es.emp_snapshot_id =  $P{param_employee}
 AND qdh.questionaire_date
 	between STR_TO_DATE ($P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
@@ -248,7 +250,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 	</background>
 	<detail>
 		<band height="94" splitType="Stretch">
-			<crosstab>
+			<crosstab ignoreWidth="true">
 				<reportElement x="0" y="0" width="800" height="50" uuid="4e9934a8-c341-4369-922c-8331a7090763">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>

@@ -1,0 +1,1464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<style name="Crosstab 1_CH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 1_CG" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 1_CT" mode="Opaque" backcolor="#005FB3">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 1_CD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 2_CH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 2_CG" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 2_CT" mode="Opaque" backcolor="#005FB3">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 2_CD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CG" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CT" mode="Opaque" backcolor="#005FB3">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="query-header" uuid="6fbb73b3-0e30-4395-b15a-ea027842147e">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT h.data_header_id
+, l.appraisal_level_name
+, t.questionaire_type
+, concat(e.emp_first_name,' ',e.emp_last_name) as emp_name
+, p.position_code
+, chief.chief_emp_name
+, chief.chief_position
+, DATE_FORMAT(STR_TO_DATE($P{param_date_start} , "%d/%m/%Y"),"%d %b %Y")  as date_start
+, DATE_FORMAT(STR_TO_DATE($P{param_date_end} , "%d/%m/%Y"),"%d %b %Y")   as date_end
+FROM questionaire_data_header h
+INNER JOIN employee_snapshot e ON h.emp_snapshot_id = e.emp_snapshot_id
+INNER JOIN position p ON e.position_id = p.position_id
+INNER JOIN appraisal_level l ON e.level_id = l.level_id
+INNER JOIN questionaire n ON h.questionaire_id = n.questionaire_id
+INNER JOIN questionaire_type t ON n.questionaire_type_id = t.questionaire_type_id
+LEFT JOIN ( 
+ SELECT concat(em.emp_first_name,' ',em.emp_last_name) as chief_emp_name
+ , em.emp_code
+ , po.position_code as chief_position
+ FROM employee_snapshot em
+ INNER JOIN position po ON em.position_id = po.position_id
+) chief ON chief.emp_code = e.chief_emp_code
+WHERE t.questionaire_type_id =   $P{param_questionaire_type} 
+AND (e.emp_snapshot_id = $P{param_employee} )
+AND h.questionaire_date
+	between STR_TO_DATE( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
+AND h.assessor_id =  $P{param_assessor}   
+AND h.data_stage_id IN(3,4)
+GROUP BY e.emp_snapshot_id]]>
+		</queryString>
+		<field name="data_header_id" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="data_header_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="appraisal_level_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="appraisal_level_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+		</field>
+		<field name="questionaire_type" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+		</field>
+		<field name="emp_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
+		</field>
+		<field name="position_code" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="chief_emp_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="chief_emp_name"/>
+		</field>
+		<field name="chief_position" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="chief_position"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="date_start" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="date_start"/>
+		</field>
+		<field name="date_end" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="date_end"/>
+		</field>
+	</subDataset>
+	<subDataset name="query-header-detail" uuid="9583ef3e-9d22-42fe-8f70-c332d99f0f4a">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="635"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="355"/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT result.region
+, result.position_code_snapshot
+, result.position_code_assessor
+, result.questionaire_date_show
+, result.questionaire_date
+, SUM(result.num_form) as num_form
+, SUM(result.num_customer) as num_customer
+, SUM(result.num_stage) as num_stage
+, 1 as group1
+FROM (
+	SELECT es.region
+	, po.position_code as position_code_snapshot 
+	, po_ass.position_code as position_code_assessor
+	, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y") as questionaire_date_show 
+	, qdh.questionaire_date as questionaire_date
+	, COUNT(DISTINCT qdh.questionaire_id) as num_form
+	, COUNT(DISTINCT qdd.customer_id) as num_customer 
+	, CASE WHEN qdh.data_stage_id = '4' THEN 1 ELSE 0 END as num_stage
+	FROM questionaire_data_header qdh 
+	INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+	INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+	INNER JOIN ( 
+		SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+		sqp.question_name parent_question_name, sqp.pass_score , sqp.answer_type_id
+		FROM question sq 
+		LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+	) q ON qdd.question_id = q.question_id 
+	INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+	INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id 
+	LEFT JOIN position po ON es.position_id = po.position_id -- position_snapshot_id 
+	INNER JOIN  employee_snapshot es_ass ON qdh.assessor_id = es_ass.emp_snapshot_id -- assessor_id
+	LEFT JOIN position po_ass ON es_ass.position_id = po_ass.position_id -- position_assessor_id
+	WHERE (es.emp_snapshot_id =  $P{param_employee}  ) -- parameter
+	AND qdh.questionaire_date
+	between STR_TO_DATE(  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}  ,"%d/%m/%Y")
+	AND qn.questionaire_type_id =  $P{param_questionaire_type} 
+	-- AND qs.is_cust_search = 1 
+	AND ay.answer_type_id != 7
+	AND qdh.data_stage_id IN (3,4)
+	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
+	GROUP BY es.region, po.position_code ,po_ass.position_code ,qdh.questionaire_date, qdh.data_header_id
+) result
+GROUP BY result.region, result.position_code_snapshot, result.position_code_assessor, result.questionaire_date
+ORDER BY result.questionaire_date ASC ,result.position_code_snapshot ASC ,result.region ASC]]>
+		</queryString>
+		<field name="region" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="region"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="position_code_snapshot" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_snapshot"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="position_code_assessor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_assessor"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="questionaire_date_show" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date_show"/>
+		</field>
+		<field name="questionaire_date" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="num_form" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_form"/>
+		</field>
+		<field name="num_customer" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_customer"/>
+		</field>
+		<field name="num_stage" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_stage"/>
+		</field>
+		<field name="group1" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="group1"/>
+		</field>
+	</subDataset>
+	<subDataset name="query-section" uuid="24b0dad3-0d49-4dda-a9b1-ccb876cf6ae8">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_section" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT
+qn.questionaire_type_id
+, qdh.assessor_id
+, qdh.questionaire_id
+, qs.section_id
+, qs.section_name
+, es.region
+, p.position_code as position_code_snapshot
+, p_ass.position_code as position_code_assessor
+, qdh.questionaire_date
+, DATE_FORMAT(qdh.questionaire_date, "%d %b %Y") as questionaire_date_show 
+FROM
+questionaire_data_header AS qdh
+INNER JOIN questionaire_section qs ON qdh.questionaire_id = qs.questionaire_id
+LEFT JOIN ( 
+			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+			sqp.question_name parent_question_name, sqp.pass_score ,sq.answer_type_id
+			, sq.section_id
+			FROM question sq 
+			LEFT JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+) q ON q.section_id = qs.section_id
+-- LEFT JOIN question ON question.section_id = qs.section_id
+LEFT JOIN questionaire_data_detail ON questionaire_data_detail.question_id = q.question_id 
+	AND questionaire_data_detail.data_header_id = qdh.data_header_id 
+	AND questionaire_data_detail.section_id = qs.section_id
+LEFT JOIN answer_type ay ON q.answer_type_id = ay.answer_type_id 
+INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id
+LEFT JOIN position p ON es.position_id = p.position_id  -- position_snapshot_id
+INNER JOIN employee_snapshot es_ass ON es_ass.emp_snapshot_id = qdh.assessor_id  -- snapshot_id
+LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
+WHERE qdh.emp_snapshot_id = $P{param_employee} 
+AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
+AND qs.section_id =   $P{param_section} 
+AND qdh.data_stage_id IN (3,4)
+AND ay.answer_type_id != 7
+AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
+AND qdh.questionaire_date 
+		between STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(   $P{param_date_end} ,"%d/%m/%Y")
+GROUP BY qdh.emp_snapshot_id, qs.section_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y"),qdh.assessor_id
+ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.section_id ASC]]>
+		</queryString>
+		<field name="questionaire_type_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+		</field>
+		<field name="assessor_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="assessor_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="questionaire_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="section_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="section_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+		</field>
+		<field name="section_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="section_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+		</field>
+		<field name="region" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="region"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="position_code_snapshot" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_snapshot"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="position_code_assessor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_assessor"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="questionaire_date" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="questionaire_date_show" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date_show"/>
+		</field>
+	</subDataset>
+	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT re.emp_snapshot_id
+, re.questionaire_date
+, re.questionaire_type_id
+, re.perant_percent as total_each_date_parent
+, total.perant_percent as total_date_parent
+, re.region
+, re.position_code_snapshot
+, re.position_code_assessor
+FROM (
+		SELECT qdh.questionaire_date
+		, es.emp_snapshot_id 
+		, qn.questionaire_type_id
+		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
+		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
+		, count(distinct qdd.customer_id) as count_cus
+		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
+			,2),0) as perant_percent
+		, qdh.assessor_id
+		, qs.is_cust_search 
+		, ay.answer_type_id
+		, es.region
+		, p.position_code as position_code_snapshot
+		, p_ass.position_code as position_code_assessor
+		FROM questionaire_data_header qdh 
+		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+		INNER JOIN ( 
+			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
+			FROM question sq 
+			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+			WHERE sqp.pass_score > 0
+		) q ON qdd.question_id = q.question_id 
+		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id  -- snapshot_id
+		LEFT JOIN position p ON es.position_id = p.position_id  -- position_snapshot_id
+		INNER JOIN employee_snapshot es_ass ON es_ass.emp_snapshot_id = qdh.assessor_id  -- snapshot_id
+		LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
+		-- INNER JOIN customer c ON qdd.customer_id = c.customer_id 
+		WHERE es.emp_snapshot_id = $P{param_employee}
+		AND qdh.questionaire_date
+			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
+		AND qnt.questionaire_type_id = $P{param_questionaire_type}  -- parameter
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
+		AND ay.answer_type_id != 7
+		AND qdh.data_stage_id in(3,4)
+		GROUP BY es.region
+		, es.emp_snapshot_id
+		, qdh.assessor_id
+		, qdh.questionaire_date	 
+		, qn.questionaire_type_id
+) re 
+CROSS JOIN (
+		SELECT SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
+		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
+		, count(distinct qdd.customer_id) as count_cus
+		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
+			,2),0) as perant_percent
+		FROM questionaire_data_header qdh 
+		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+		INNER JOIN ( 
+			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
+			FROM question sq
+			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+			WHERE sqp.pass_score > 0
+		) q ON qdd.question_id = q.question_id 
+		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
+		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+		-- INNER JOIN customer c ON qdd.customer_id = c.customer_id
+		WHERE	es.emp_snapshot_id = $P{param_employee}
+		AND qdh.questionaire_date
+			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
+		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
+		AND qdh.data_stage_id IN (3,4)
+		AND ay.answer_type_id != 7
+) total
+ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]]>
+		</queryString>
+		<field name="emp_snapshot_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="questionaire_date" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="questionaire_type_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+		</field>
+		<field name="total_each_date_parent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="total_each_date_parent"/>
+		</field>
+		<field name="total_date_parent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="total_date_parent"/>
+		</field>
+		<field name="region" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="region"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="position_code_snapshot" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_snapshot"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="position_code_assessor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_code_assessor"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+	</subDataset>
+	<parameter name="param_employee" class="java.lang.String"/>
+	<parameter name="param_date_start" class="java.lang.String"/>
+	<parameter name="param_date_end" class="java.lang.String"/>
+	<parameter name="param_questionaire_type" class="java.lang.String"/>
+	<parameter name="param_assessor" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="subreport_path" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT qn.questionaire_type_id, qdh.assessor_id,qnt.questionaire_type
+		, qn.questionaire_id, qn.questionaire_name
+		, qdd.section_id, qs.section_name, 
+		q.parent_question_id, q.parent_question_name, 
+		q.question_id, q.question_name, 
+		es.region, es.emp_snapshot_id, es.emp_code, es.chief_emp_code
+		, p.position_code
+		, qdh.questionaire_date 
+		, qdh.data_stage_id
+		FROM questionaire_data_header qdh 
+		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+		INNER JOIN ( 
+			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+			sqp.question_name parent_question_name, sqp.pass_score ,sq.answer_type_id
+			FROM question sq 
+			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+		) q ON qdd.question_id = q.question_id 
+		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
+		-- LEFT JOIN customer c ON qdd.customer_id = c.customer_id
+		LEFT JOIN position p ON es.position_id = p.position_id
+    WHERE qdh.data_stage_id IN (3,4)
+    	AND ay.answer_type_id != 7
+		AND (es.emp_snapshot_id =  $P{param_employee})
+		AND qdh.questionaire_date 
+			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
+		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
+		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
+		GROUP BY es.emp_snapshot_id, qdd.section_id
+		ORDER BY qdh.questionaire_date ASC, p.position_code ASC, es.emp_snapshot_id ASC, qdd.section_id ASC]]>
+	</queryString>
+	<field name="questionaire_type_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+	</field>
+	<field name="assessor_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="assessor_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="questionaire_type" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_type"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+	</field>
+	<field name="questionaire_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+	</field>
+	<field name="questionaire_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+	</field>
+	<field name="section_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="section_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+	</field>
+	<field name="section_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="section_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+	</field>
+	<field name="parent_question_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="parent_question_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+	</field>
+	<field name="parent_question_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parent_question_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+	</field>
+	<field name="question_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="question_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+	</field>
+	<field name="question_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="question_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+	</field>
+	<field name="region" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="region"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="emp_snapshot_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="emp_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="chief_emp_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="chief_emp_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="position_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="questionaire_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="data_stage_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="data_stage_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<group name="group-emp-snapshot-id" keepTogether="true">
+		<groupExpression><![CDATA[$F{emp_snapshot_id}]]></groupExpression>
+		<groupHeader>
+			<band height="122">
+				<printWhenExpression><![CDATA[null !=null ? true : false]]></printWhenExpression>
+				<componentElement>
+					<reportElement mode="Transparent" x="0" y="0" width="560" height="110" uuid="dc5b7dc1-7df3-46b2-8903-2b5837f19f50">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="query-header" uuid="a7443b0a-d034-4d2b-8ba4-05b0e4c46085">
+							<datasetParameter name="param_assessor">
+								<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_questionaire_type">
+								<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_date_start">
+								<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_date_end">
+								<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_employee">
+								<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="800" uuid="8b3c8d8a-2479-4d6d-849b-207f045562c0">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:detailCell height="110">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textField isStretchWithOverflow="true">
+									<reportElement mode="Transparent" x="0" y="0" width="800" height="29" forecolor="#000000" backcolor="#F0F0F0" uuid="c3cce173-7872-463d-8b6a-cad033660c82"/>
+									<box>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<paragraph leftIndent="10" rightIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA["ตำแหน่ง:  "+ (( $F{appraisal_level_name}== null ) ? "-" : $F{appraisal_level_name})+"          ประเภท:  "+  (( $F{questionaire_type} == null ) ? "-" : $F{questionaire_type} )]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true">
+									<reportElement mode="Transparent" x="0" y="29" width="800" height="27" forecolor="#000000" backcolor="#F0F0F0" uuid="6f6e7b50-18ea-45b0-9118-f62a6a5e60b2"/>
+									<box>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<paragraph leftIndent="10" rightIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA["ระยะเวลา: "+$F{date_start}+" - "+$F{date_end}]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true">
+									<reportElement x="0" y="56" width="800" height="27" uuid="4e6b3144-27bd-4f2c-a5fa-7a253139b787"/>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA["ชื่อ: "+ (( $F{emp_name} == null ) ? "-" : $F{emp_name} )+"     รหัสตำแหน่ง:  "+  (( $F{position_code} == null ) ? "-" : $F{position_code} )]]></textFieldExpression>
+								</textField>
+								<textField isStretchWithOverflow="true">
+									<reportElement x="0" y="83" width="800" height="27" uuid="d71972db-765b-49fb-9bed-ebfcf0fb157b"/>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA["หัวหน้าปัจจุบัน:  "+(( $F{chief_emp_name} == null ) ? "-" : $F{chief_emp_name})+"          รหัสตำแหน่ง:  "+(( $F{chief_position} == null ) ? "-" : $F{chief_position} )]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+			</band>
+			<band height="180">
+				<crosstab ignoreWidth="true">
+					<reportElement x="0" y="0" width="800" height="180" uuid="b2787902-3b95-4dfb-9219-6f9428d7d936">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
+						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
+						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab_CT"/>
+						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab_CD"/>
+					</reportElement>
+					<crosstabDataset>
+						<dataset>
+							<datasetRun subDataset="query-header-detail" uuid="02bd36dd-5caa-4867-b7b8-eb45c9c7301a">
+								<datasetParameter name="param_assessor">
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_employee">
+									<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_questionaire_type">
+									<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_start">
+									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_end">
+									<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
+								</datasetParameter>
+								<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+							</datasetRun>
+						</dataset>
+					</crosstabDataset>
+					<rowGroup name="group1" width="400" totalPosition="End">
+						<bucket class="java.lang.Long">
+							<bucketExpression><![CDATA[$F{group1}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<staticText>
+									<reportElement x="0" y="0" width="400" height="30" uuid="246cf674-0c8b-45bd-8c1c-2aab4aab5bcc"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[Region]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="30" width="400" height="25" uuid="f9c2a444-e1b6-4a13-a70d-b88458575e60"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[Code]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="55" width="400" height="25" uuid="028d1987-fc0b-46d7-8e44-22bcfce855d2"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[ผู้ประเมิน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="80" width="400" height="25" uuid="c142a1ca-13e1-492a-a0a2-ff3ef2741c88"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[วันที่ประเมิน]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="105" width="400" height="25" uuid="e4e50ff7-258d-4824-b1f2-7130de16e48b"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[จำนวนฟอร์ม]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="130" width="400" height="25" uuid="fcc5fa6b-b192-492d-8121-769203d150a6"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[รับทราบแล้ว]]></text>
+								</staticText>
+								<staticText>
+									<reportElement x="0" y="155" width="400" height="25" uuid="85f3321c-ebb1-4a21-8e0b-4c0d5dc64804"/>
+									<box>
+										<pen lineWidth="0.2"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<text><![CDATA[จำนวนร้านค้าที่ประเมิน]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CT"/>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="region" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{region}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CT"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_snapshot" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_snapshot}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_assessor" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_assessor}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="questionaire_date" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="region_MEASURE" class="java.lang.String">
+						<measureExpression><![CDATA[$F{region}]]></measureExpression>
+					</measure>
+					<measure name="position_code_snapshot_MEASURE" class="java.lang.String">
+						<measureExpression><![CDATA[$F{position_code_snapshot}]]></measureExpression>
+					</measure>
+					<measure name="position_code_assessor_MEASURE" class="java.lang.String">
+						<measureExpression><![CDATA[$F{position_code_assessor}]]></measureExpression>
+					</measure>
+					<measure name="questionaire_date_show" class="java.lang.String">
+						<measureExpression><![CDATA[$F{questionaire_date_show}]]></measureExpression>
+					</measure>
+					<measure name="num_stage" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_stage}]]></measureExpression>
+					</measure>
+					<measure name="num_form" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_form}]]></measureExpression>
+					</measure>
+					<measure name="num_stage_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_stage}]]></measureExpression>
+					</measure>
+					<measure name="num_form_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_form}]]></measureExpression>
+					</measure>
+					<measure name="num_customer_sum" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{num_customer}]]></measureExpression>
+					</measure>
+					<measure name="num_customer" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{num_customer}]]></measureExpression>
+					</measure>
+					<crosstabCell width="80" height="180">
+						<cellContents mode="Opaque" style="Crosstab_CD">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="30" uuid="750d520d-c485-4ee2-883f-34343c75e81a"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{region_MEASURE}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="30" width="80" height="25" uuid="e77c755d-627f-4729-90ea-aa482fbfa894"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{position_code_snapshot_MEASURE}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="55" width="80" height="25" uuid="b3c8314b-db86-4e75-8813-042441935e2f"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{position_code_assessor_MEASURE}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="80" width="80" height="25" uuid="cb5a618b-3737-4570-9ebf-412eda2470cc"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{questionaire_date_show}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="105" width="80" height="25" uuid="2158b31d-55f3-4919-a0ff-613e086c080c"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_form}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="130" width="80" height="25" uuid="3ff34d9b-35f7-49c9-b68a-fc99689dd466"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_stage}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="155" width="80" height="25" uuid="d8d60445-172e-4054-bf31-dce1f7342f1b"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_customer}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="180" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="30" forecolor="#FFFFFF" uuid="ef309c8a-6047-4207-bebe-fdd356bf6182"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="30" width="80" height="25" forecolor="#FFFFFF" uuid="eaa84522-0ce8-4ba3-9f21-b7ec5f854f66"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="55" width="80" height="25" forecolor="#FFFFFF" uuid="7c7e4bf2-bcf7-458d-ab83-d5afda48123e"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="80" width="80" height="25" forecolor="#FFFFFF" uuid="f819edd1-017a-45f7-a2d5-cd15442f9209"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="105" width="80" height="25" forecolor="#FFFFFF" uuid="4bd019c9-78b5-47f0-be71-200c62cfcfce"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_form_sum}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="130" width="80" height="25" forecolor="#FFFFFF" uuid="d9745bc1-7923-4191-b140-ccfc6e5d60b5"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_stage_sum}]]></textFieldExpression>
+							</textField>
+							<textField>
+								<reportElement x="0" y="155" width="80" height="25" forecolor="#FFFFFF" uuid="eaa4ff60-ebb1-45c1-a8c8-acca0e4a8207"/>
+								<box>
+									<pen lineWidth="0.2"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{num_customer_sum}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="180" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="180" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="180" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab_CG"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="group1">
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="group1" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="group1" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="group1" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="group1" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabCell>
+				</crosstab>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="230">
+				<crosstab ignoreWidth="true">
+					<reportElement x="0" y="0" width="800" height="30" uuid="1fc9bc8d-a34d-4dae-8cec-7dc5c51f8789">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 2_CH"/>
+						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab 2_CG"/>
+						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab 2_CT"/>
+						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab 2_CD"/>
+					</reportElement>
+					<crosstabDataset>
+						<dataset>
+							<datasetRun subDataset="query-total" uuid="bae194af-675d-4591-a0f4-31aca34d2a0c">
+								<datasetParameter name="param_assessor">
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_employee">
+									<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_start">
+									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_end">
+									<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_questionaire_type">
+									<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+								</datasetParameter>
+								<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+							</datasetRun>
+						</dataset>
+					</crosstabDataset>
+					<rowGroup name="questionaire_type_id" width="400" totalPosition="End">
+						<bucket class="java.lang.Integer">
+							<bucketExpression><![CDATA[$F{questionaire_type_id}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH">
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="400" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="53c9e8f8-f402-461c-80d1-85b86326366c"/>
+									<textElement verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA["รวมคะแนนทั้งหมด"]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="questionaire_date" height="0" totalPosition="End">
+						<bucket class="java.sql.Date">
+							<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="region" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{region}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_snapshot" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_snapshot}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_assessor" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_assessor}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="total_each_date_parent_MEASURE" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{total_each_date_parent}]]></measureExpression>
+					</measure>
+					<measure name="total_date_parent" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{total_date_parent}]]></measureExpression>
+					</measure>
+					<crosstabCell width="80" height="30">
+						<cellContents mode="Opaque" style="Crosstab 2_CD">
+							<textField>
+								<reportElement mode="Opaque" x="0" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="abf9028d-701b-4e57-ba6b-39ee3f27d3b9"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<paragraph rightIndent="5"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{total_each_date_parent_MEASURE}+"%"]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="30" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab 2_CT">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="30" forecolor="#FFFFFF" uuid="6eba1f5c-7e73-4ee6-80e9-6e9100337ca0"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<paragraph rightIndent="5"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{total_date_parent}+"%"]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="30" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="30" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="30" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab 2_CG"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="questionaire_type_id">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="questionaire_type_id" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="questionaire_type_id" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="questionaire_type_id" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="questionaire_type_id" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab 2_CT"/>
+					</crosstabCell>
+				</crosstab>
+				<subreport>
+					<reportElement x="-20" y="40" width="820" height="190" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
+					<subreportParameter name="param_assessor">
+						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_date_start">
+						<subreportParameterExpression><![CDATA[$P{param_date_start}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_date_end">
+						<subreportParameterExpression><![CDATA[$P{param_date_end}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_employee">
+						<subreportParameterExpression><![CDATA[$F{emp_snapshot_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_questionaire_type">
+						<subreportParameterExpression><![CDATA[$P{param_questionaire_type}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression><![CDATA[$P{subreport_path}+"/report-position-comment-supreport.jasper"]]></subreportExpression>
+				</subreport>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="section-id-group">
+		<groupExpression><![CDATA[$F{section_id}]]></groupExpression>
+		<groupHeader>
+			<band height="60">
+				<printWhenExpression><![CDATA[$F{section_id}!=null ? true : false]]></printWhenExpression>
+				<subreport>
+					<reportElement x="-20" y="20" width="820" height="40" isRemoveLineWhenBlank="true" uuid="de366172-5718-4da8-ad0a-547c88dc86dc"/>
+					<subreportParameter name="param_assessor">
+						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_date_start">
+						<subreportParameterExpression><![CDATA[$P{param_date_start}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_date_end">
+						<subreportParameterExpression><![CDATA[$P{param_date_end}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_employee">
+						<subreportParameterExpression><![CDATA[$F{emp_snapshot_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_questionaire_type">
+						<subreportParameterExpression><![CDATA[$P{param_questionaire_type}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="param_section">
+						<subreportParameterExpression><![CDATA[$F{section_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression><![CDATA[$P{subreport_path}+"/report-position-section-subreport.jasper"]]></subreportExpression>
+				</subreport>
+				<crosstab ignoreWidth="true">
+					<reportElement x="0" y="0" width="800" height="20" isRemoveLineWhenBlank="true" uuid="881dbe57-046e-4bd0-9623-090a89522424">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 1_CH"/>
+						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab 1_CG"/>
+						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab 1_CT"/>
+						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab 1_CD"/>
+						<printWhenExpression><![CDATA[$F{section_id}!=null ? true : false]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineWidth="0.5"/>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<crosstabDataset>
+						<dataset>
+							<datasetRun subDataset="query-section" uuid="a90fe24e-e2f0-4c0a-a7cf-eb223a0b44e6">
+								<datasetParameter name="param_assessor">
+									<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_start">
+									<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_date_end">
+									<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_employee">
+									<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_questionaire_type">
+									<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_section">
+									<datasetParameterExpression><![CDATA[$F{section_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+							</datasetRun>
+						</dataset>
+					</crosstabDataset>
+					<rowGroup name="section_id" width="400" totalPosition="End">
+						<bucket class="java.lang.Integer">
+							<bucketExpression><![CDATA[$F{section_id}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CH">
+								<textField isStretchWithOverflow="true">
+									<reportElement mode="Opaque" x="0" y="0" width="400" height="20" forecolor="#FFFFFF" backcolor="#005FB3" uuid="039490ba-b89d-42a4-a3ab-be661b5f1402"/>
+									<box>
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="16"/>
+										<paragraph leftIndent="10"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{section_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="region" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{region}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_snapshot" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_snapshot}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="position_code_assessor" height="0" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_code_assessor}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="questionaire_date" height="0" totalPosition="End">
+						<bucket class="java.sql.Date">
+							<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CH"/>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="questionaire_date_MEASURE" class="java.sql.Date">
+						<measureExpression><![CDATA[$F{questionaire_date}]]></measureExpression>
+					</measure>
+					<measure name="section_name" class="java.lang.String">
+						<measureExpression><![CDATA[$F{section_name}]]></measureExpression>
+					</measure>
+					<measure name="questionaire_date_show" class="java.lang.String">
+						<measureExpression><![CDATA[$F{questionaire_date_show}]]></measureExpression>
+					</measure>
+					<crosstabCell width="80" height="20">
+						<cellContents mode="Opaque" style="Crosstab 1_CD">
+							<textField>
+								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" forecolor="#FFFFFF" backcolor="#005FB3" uuid="0539c17c-ce4f-4153-8f58-c1235d9ddd9e"/>
+								<box>
+									<pen lineWidth="0.5"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["คะแนน% ที่ได้"]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="20" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab 1_CT">
+							<box>
+								<pen lineWidth="0.3"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="80" height="20" forecolor="#FFFFFF" uuid="35190e1c-e4e1-486a-8207-ed271cba19cd"/>
+								<box>
+									<pen lineWidth="0.5" lineColor="#000000"/>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center">
+									<font fontName="TH SarabunPSK" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA["คะแนน% ที่ได้"]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab 1_CG"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="section_id">
+						<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="section_id" columnTotalGroup="region">
+						<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="section_id" columnTotalGroup="position_code_snapshot">
+						<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="section_id" columnTotalGroup="position_code_assessor">
+						<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="section_id" columnTotalGroup="questionaire_date">
+						<cellContents mode="Opaque" style="Crosstab 1_CT"/>
+					</crosstabCell>
+				</crosstab>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+</jasperReport>
