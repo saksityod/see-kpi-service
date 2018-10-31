@@ -408,6 +408,7 @@ class QuestionaireDataController extends Controller
                                 WHERE qs.is_cust_search = 1
                                 AND qdd.data_header_id = '{$data_header_id}'
                                 AND qq.pass_score > 0
+                                AND qq.answer_type_id != 7
                         ) full_score,
                         COUNT(DISTINCT qdd.question_id) count_question,
                         (
@@ -420,6 +421,7 @@ class QuestionaireDataController extends Controller
                             AND qdd.is_not_applicable = 1
                             AND qdd.data_header_id = '{$data_header_id}'
                             AND qq.pass_score > 0
+                            AND qq.answer_type_id != 7
                         ) sum_applicable
                 FROM questionaire_data_detail qdd
                 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -429,6 +431,7 @@ class QuestionaireDataController extends Controller
                 AND qdd.is_not_applicable = 0
                 AND qdd.data_header_id = '{$data_header_id}'
                 AND qq.pass_score > 0
+                AND qq.answer_type_id != 7
             UNION All
                 SELECT  COUNT(DISTINCT customer_id) count_customer, 
                         SUM(qdd.score) score, 
@@ -440,6 +443,7 @@ class QuestionaireDataController extends Controller
                                 WHERE qs.is_cust_search = 1
                                 AND qdd.data_header_id = '{$data_header_id}'
                                 AND q.pass_score > 0
+                                AND q.answer_type_id != 7
                         ) full_score,
                         COUNT(DISTINCT qdd.question_id) count_question,
                         (
@@ -451,6 +455,7 @@ class QuestionaireDataController extends Controller
                                 AND qdd.is_not_applicable = 1
                                 AND qdd.data_header_id = '{$data_header_id}'
                                 AND q.pass_score > 0
+                                AND q.answer_type_id != 7
                         ) sum_applicable
                 FROM questionaire_data_detail qdd
                 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -459,6 +464,7 @@ class QuestionaireDataController extends Controller
                 AND qdd.is_not_applicable = 0
                 AND qdd.data_header_id = '{$data_header_id}'
                 AND q.pass_score > 0
+                AND q.answer_type_id != 7
             )d1
         ");
 
