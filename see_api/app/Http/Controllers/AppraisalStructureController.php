@@ -92,7 +92,9 @@ class AppraisalStructureController extends Controller
 			'is_unlimited_deduction' => 'boolean',
 			'is_value_get_zero' => 'boolean',
 			'is_active' => 'required|boolean',
-			'is_no_raise_value' => 'boolean'
+			'is_no_raise_value' => 'boolean',
+			'level_id' => 'integer',
+			'is_derive' => 'boolean'
 		]);
 
 		if ($validator->fails()) {
