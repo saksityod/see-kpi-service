@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="9ca9d851-6728-447d-b9e1-91ccd1b54823">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="9ca9d851-6728-447d-b9e1-91ccd1b54823">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -141,10 +141,10 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 		<property name="com.jaspersoft.studio.field.label" value="position_code"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
 	</field>
-	<group name="emp" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+	<group name="emp" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="20">
 		<groupExpression><![CDATA[$F{emp_snapshot_id}]]></groupExpression>
 		<groupHeader>
-			<band height="108">
+			<band height="119">
 				<componentElement>
 					<reportElement x="1" y="0" width="800" height="105" uuid="bd53d9fb-3806-4641-bf5d-40b107bc321f">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
@@ -235,7 +235,7 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="85">
+		<band height="106">
 			<subreport>
 				<reportElement x="-20" y="0" width="842" height="85" uuid="aef6398c-1bdc-4672-aec0-9fd17a22009d"/>
 				<subreportParameter name="param_assessor">
