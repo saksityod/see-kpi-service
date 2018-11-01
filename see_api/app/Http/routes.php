@@ -473,17 +473,17 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('competency_criteria/form_list', 'Appraisal360Degree\CompetencyCriteriaController@form_list');
 	Route::patch('competency_criteria/{appraisal_level_id}/{structure_id}', 'Appraisal360Degree\CompetencyCriteriaController@update');
 	// Appraisal 360 Degree --> Appraisal Comment //
-	Route::get('appraisal/comment/{emp_result_id}','Appraisal360degree\AppraisalCommentController@show');
-	Route::post('appraisal/comment/update/insert','Appraisal360degree\AppraisalCommentController@insert_update');
+	Route::get('appraisal/comment/{emp_result_id}','Appraisal360Degree\AppraisalCommentController@show');
+	Route::post('appraisal/comment/update/insert','Appraisal360Degree\AppraisalCommentController@insert_update');
 	// Appraisal 360 Degree --> Appraisal emp_result //
-	Route::get('appraisal/show/index','Appraisal360degree\AppraisalGroupController@index');
-	Route::get('appraisal/show/emp_result','Appraisal360degree\AppraisalGroupController@show');
-	Route::get('appraisal/show/emp_result/type_2','Appraisal360degree\AppraisalGroupController@show_type2');
-	Route::patch('appraisal/update/type_2','Appraisal360degree\AppraisalGroupController@update');
-	Route::get('appraisal360/parameter/emp_level','Appraisal360degree\AppraisalGroupController@emp_level_list');
-	Route::post('appraisal360/edit_action_to','Appraisal360degree\AppraisalGroupController@edit_action_to');
-	Route::get('appraisal360/parameter/org_level_individual', 'Appraisal360degree\AppraisalGroupController@org_level_list_individual');
-	Route::get('appraisal360/parameter/org_individual', 'Appraisal360degree\AppraisalGroupController@org_individual');
+	Route::get('appraisal/show/index','Appraisal360Degree\AppraisalGroupController@index');
+	Route::get('appraisal/show/emp_result','Appraisal360Degree\AppraisalGroupController@show');
+	Route::get('appraisal/show/emp_result/type_2','Appraisal360Degree\AppraisalGroupController@show_type2');
+	Route::patch('appraisal/update/type_2','Appraisal360Degree\AppraisalGroupController@update');
+	Route::get('appraisal360/parameter/emp_level','Appraisal360Degree\AppraisalGroupController@emp_level_list');
+	Route::post('appraisal360/edit_action_to','Appraisal360Degree\AppraisalGroupController@edit_action_to');
+	Route::get('appraisal360/parameter/org_level_individual', 'Appraisal360Degree\AppraisalGroupController@org_level_list_individual');
+	Route::get('appraisal360/parameter/org_individual', 'Appraisal360Degree\AppraisalGroupController@org_individual');
 
 	
 	

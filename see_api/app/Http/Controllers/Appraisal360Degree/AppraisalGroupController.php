@@ -255,15 +255,23 @@ class AppraisalGroupController extends Controller
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
 		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
 		
-		// Add Assessor Group //
+		// Add Assessor Group.
 		foreach($itemsForCurrentPage as $item) {
-			$assGroup = $this->getAssessorGroup($item->emp_code);
-			if($assGroup != null){
+			// Is Organization.
+			if($request->appraisal_type_id == 1){
+				$assGroup = AssessorGroup::find(4);
 				$item->group_id = $assGroup->assessor_group_id;
 				$item->group_name = $assGroup->assessor_group_name;
-			} else {
-				$item->group_id = null;
-				$item->group_name = null;
+			} else {  // Is Individual.
+				$assGroup = $this->getAssessorGroup($item->emp_code);
+				if($assGroup != null){
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				} else {
+					$assGroup = AssessorGroup::find(4);
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				}
 			}
 		}
 		
