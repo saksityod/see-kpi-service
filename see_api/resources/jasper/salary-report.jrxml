@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-benefit-summary" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="57ed5678-ab39-436b-8433-8e738faafba5">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fmo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<parameter name="param_period" class="java.lang.String"/>
@@ -36,7 +36,7 @@
 , 1 AS graph
 , (SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = $P{param_period}  ) AS period_main
 , (SELECT appraisal_level_name FROM appraisal_level WHERE level_id = $P{param_level_emp}  ) AS level_main
-, (SELECT org_name FROM org WHERE org_id = $P{param_org_id}  ) AS org_main
+, org_name.org_main
 FROM emp_result emr
 INNER JOIN employee emp ON emr.emp_id = emp.emp_id
 INNER JOIN position po ON emp.position_id = po.position_id
@@ -44,6 +44,7 @@ INNER JOIN org ON emp.org_id = org.org_id
 INNER JOIN appraisal_period app ON emr.period_id = app.period_id
 INNER JOIN appraisal_grade apg ON emr.level_id = apg.appraisal_level_id
  AND emr.grade = apg.grade
+CROSS JOIN (SELECT group_concat(org_name) as org_main from org WHERE org_id IN ($P!{param_org_id})) org_name
 WHERE emr.period_id = $P{param_period}  
 AND app.appraisal_year =  $P{param_year} 
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp} OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
@@ -328,20 +329,21 @@ ORDER BY emp.org_id ASC
 		</groupHeader>
 	</group>
 	<columnHeader>
-		<band height="72">
+		<band height="60">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Transparent" x="0" y="30" width="801" height="42" forecolor="#000000" uuid="5096005e-8a5d-4d77-8755-6392bf04d96a"/>
-				<box>
+				<reportElement stretchType="RelativeToTallestObject" mode="Transparent" x="0" y="30" width="801" height="30" forecolor="#000000" uuid="5096005e-8a5d-4d77-8755-6392bf04d96a"/>
+				<box topPadding="10" leftPadding="10" bottomPadding="10" rightPadding="10">
 					<pen lineColor="#3B5998"/>
 					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
 					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
 					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
 				</box>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="15"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14"/>
+					<paragraph leftIndent="10" rightIndent="10" spacingBefore="0" spacingAfter="0"/>
 				</textElement>
-				<textFieldExpression><![CDATA["ปี : "+$P{param_year}+"   รอบการประเมิน : "+$F{period_main}+"   ระดับ : "+($F{level_main} == null ? "ทั้งหมด" : $F{level_main}) +"\n"+"   หน่วยงาน : " +($F{org_main} == null ? "ทั้งหมด" : $F{org_main})]]></textFieldExpression>
+				<textFieldExpression><![CDATA["ปี : "+$P{param_year}+"   รอบการประเมิน : "+$F{period_main}+"   ระดับ : "+($F{level_main} == null ? "ทั้งหมด" : $F{level_main}) +"\n"+"   หน่วยงาน : " +$F{org_main} ]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement mode="Opaque" x="0" y="0" width="801" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="505fe98a-ccda-4f8e-95eb-48767be2b3ad"/>
@@ -349,7 +351,7 @@ ORDER BY emp.org_id ASC
 					<pen lineWidth="1.0" lineColor="#3B5998"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					<font fontName="TH SarabunPSK" size="19" isBold="true"/>
 				</textElement>
 				<text><![CDATA[รายงานสรุปการปรับเงินเดือน]]></text>
 			</staticText>
