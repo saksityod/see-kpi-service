@@ -103,9 +103,9 @@ class ReportController extends Controller
     	$items = DB::select("
     		select DISTINCT to_action, to_action 
     		from appraisal_stage
-    		where appraisal_type_id = 2
+    		where appraisal_type_id = ?
     		order by to_action asc
-		");
+		", array($request->appraisal_type_id));
 		return response()->json($items);
     }
 
