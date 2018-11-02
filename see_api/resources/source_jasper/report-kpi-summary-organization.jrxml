@@ -123,7 +123,7 @@ ORDER BY
 	</subDataset>
 	<subDataset name="nothreshold" uuid="71d3bbb0-a0cd-4ace-a33d-dd069b790a2a">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso-27082018"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_level_org" class="java.lang.String"/>
@@ -165,7 +165,7 @@ INNER JOIN (SELECT org.org_id
 	WHERE ER.appraisal_type_id = '1' 
 	AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 	AND (ER.level_id = $P{param_level_org} OR  ISNULL($P{param_level_org}) = 1 OR ""=$P{param_level_org} )
-	AND (ER.org_id = $P{param_org} OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) )
+	AND ER.org_id IN($P!{param_org}))
 ER ON  AIR.period_id = ER.period_id
 AND AIR.level_id = ER.level_id
 AND AIR.org_id = ER.org_id

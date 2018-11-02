@@ -163,7 +163,7 @@ ORDER BY 8]]>
 		</field>
 	</subDataset>
 	<subDataset name="nothreshold" uuid="49edd47c-6a1c-4b0f-a62f-e3fa1859052a">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso-27082018"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -223,7 +223,7 @@ INNER JOIN (SELECT org.org_id
 	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
-		AND (ER.org_id =  $P{param_org}  OR  ISNULL($P{param_org}) = 1 OR ""=$P{param_org}) 
+		AND ER.org_id IN ($P!{param_org})
 		AND (ER.emp_id =  $P{param_emp}  OR  ISNULL($P{param_emp}) = 1 OR ""=$P{param_emp})
 		AND (ER.position_id =  $P{param_position}  OR ISNULL($P{param_position}) = 1 OR ""=$P{param_position})
 		AND ((ER.level_id =  $P{param_level}  OR ISNULL($P{param_level}) = 1 OR ""=$P{param_level}))
