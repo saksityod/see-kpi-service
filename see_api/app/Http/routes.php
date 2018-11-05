@@ -510,6 +510,18 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('judgement', 'Salary\JudgementController@store');
 
 
+
+	// Bonus //
+	// Bonus --> Advance Search //
+	Route::get('bonus/advance_search/year', 'Bonus\AdvanceSearchController@YearList');
+	Route::get('bonus/advance_search/period', 'Bonus\AdvanceSearchController@PeriodList');
+	Route::get('bonus/advance_search/form', 'Bonus\AdvanceSearchController@FormList');
+	Route::get('bonus/advance_search/individual_level', 'Bonus\AdvanceSearchController@IndividualLevelList');
+	Route::get('bonus/advance_search/organization_level', 'Bonus\AdvanceSearchController@OrganizationLevelList');
+
+	Route::get('bonus/advance_search/test', 'Bonus\AdvanceSearchController@GetallUnderEmp');
+
+
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
 	}]);
