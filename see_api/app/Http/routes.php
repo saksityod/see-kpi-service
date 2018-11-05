@@ -518,6 +518,9 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('bonus/advance_search/form', 'Bonus\AdvanceSearchController@FormList');
 	Route::get('bonus/advance_search/individual_level', 'Bonus\AdvanceSearchController@IndividualLevelList');
 	Route::get('bonus/advance_search/organization_level', 'Bonus\AdvanceSearchController@OrganizationLevelList');
+	Route::get('bonus/advance_search/organization', 'Bonus\AdvanceSearchController@OrganizationList');
+	Route::get('bonus/advance_search/employee_name', 'Bonus\AdvanceSearchController@GetEmployeeName');
+	Route::get('bonus/advance_search/position_name', 'Bonus\AdvanceSearchController@GetPositionName');
 
 	Route::get('bonus/advance_search/test', 'Bonus\AdvanceSearchController@GetallUnderEmp');
 
