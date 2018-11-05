@@ -79,11 +79,11 @@
 			<pen lineWidth="0.0" lineColor="#000000"/>
 		</box>
 		<conditionalStyle>
-			<conditionExpression><![CDATA[$V{Group org_COUNT}%2 == 1]]></conditionExpression>
+			<conditionExpression><![CDATA[$V{emp_id_COUNT}%2 == 1]]></conditionExpression>
 			<style backcolor="#FFFFFF"/>
 		</conditionalStyle>
 		<conditionalStyle>
-			<conditionExpression><![CDATA[$V{Group org_COUNT}%2 == 0]]></conditionExpression>
+			<conditionExpression><![CDATA[$V{emp_id_COUNT}%2 == 0]]></conditionExpression>
 			<style backcolor="#EDEDED"/>
 		</conditionalStyle>
 	</style>
@@ -116,11 +116,11 @@
 	</style>
 	<style name="st">
 		<conditionalStyle>
-			<conditionExpression><![CDATA[$V{Group org_COUNT}%2==1]]></conditionExpression>
+			<conditionExpression><![CDATA[$V{emp_id_COUNT}%2==1]]></conditionExpression>
 			<style backcolor="#FFFFFF"/>
 		</conditionalStyle>
 		<conditionalStyle>
-			<conditionExpression><![CDATA[$V{Group org_COUNT}%2==0]]></conditionExpression>
+			<conditionExpression><![CDATA[$V{emp_id_COUNT}%2==0]]></conditionExpression>
 			<style backcolor="#E6E6E6"/>
 		</conditionalStyle>
 	</style>
@@ -407,6 +407,7 @@ ORDER BY d.appraisal_month_no]]>
 	<queryString>
 		<![CDATA[-- comment
 SELECT
+ER.*,
 CONCAT(ap.appraisal_period_desc,'/',ap.appraisal_year) as h,
 ap.appraisal_period_desc,
 ap.appraisal_year,
@@ -441,6 +442,48 @@ LEFT JOIN (SELECT count(reason_name) as re , item_result_id
 	FROM reason 
 	GROUP BY item_result_id
 	)re ON re.item_result_id = air.item_result_id
+INNER JOIN (SELECT org.org_id
+	, org.org_code
+	, org.org_name
+	, org.parent_org_code
+	, (SELECT org1.org_name FROM org org1 WHERE org1.org_code = org.parent_org_code) AS parent_org_name
+	, AP.appraisal_period_desc
+	, ER.period_id
+	, ER.result_score
+	, Emp.emp_id
+	, Emp.emp_code
+	, Emp.emp_name
+	, ER.emp_result_id
+	, Po.position_id
+	, Po.position_name
+	, AL.appraisal_level_name 
+	, ER.level_id
+	FROM emp_result ER
+	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
+	INNER JOIN employee Emp ON ER.emp_id = Emp.emp_id
+	INNER JOIN org ON Emp.org_id = org.org_id
+	INNER JOIN position Po ON Emp.position_id = Po.position_id
+	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
+	WHERE ER.appraisal_type_id = '2' 
+		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
+		AND (ER.org_id IN($P!{param_org})) 
+		AND (ER.emp_id = $P{param_emp} OR ISNULL($P{param_emp}) = 1 OR ""=$P{param_emp})
+		AND (ER.position_id =  $P{param_position}  OR ISNULL($P{param_position}) = 1 OR ""=$P{param_position})
+		AND ((ER.level_id =  $P{param_level}  OR ISNULL($P{param_level}) = 1 OR ""=$P{param_level}))
+		AND ((Emp.chief_emp_code =  $P{param_user} OR  $P{param_user} = (select e2.emp_code from employee e2
+			inner join appraisal_level l2 on e2.level_id = l2.level_id
+			where l2.is_all_employee = 1
+			and e2.emp_code = $P{param_user} ) )
+		OR  (Emp.emp_code =  $P{param_user} OR  $P{param_user} = (select e2.emp_code from employee e2
+			inner join appraisal_level l2 on e2.level_id = l2.level_id
+			where l2.is_all_employee = 1
+			and e2.emp_code = $P{param_user} )))
+	GROUP BY Emp.emp_id)
+		ER ON AIR.emp_id = ER.emp_id
+		AND AIR.period_id = ER.period_id
+		AND AIR.level_id = ER.level_id
+		AND AIR.position_id = ER.position_id
+		AND AIR.org_id = ER.org_id
 WHERE air.org_id IN($P!{param_org} )
 AND ap.period_id = $P{param_period}
 AND (air.level_id = $P{param_level} or '' =  $P{param_level} or isnull($P{param_level}) = 1)
@@ -455,26 +498,42 @@ AND ((Emp.chief_emp_code =  $P{param_user} OR  $P{param_user} = (select e2.emp_c
 			inner join appraisal_level l2 on e2.level_id = l2.level_id
 			where l2.is_all_employee = 1
 			and e2.emp_code = $P{param_user} )))
-ORDER BY air.org_id
+ORDER BY air.emp_id
 , air.item_id]]>
 	</queryString>
-	<field name="h" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="h"/>
+	<field name="org_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="org_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="parent_org_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parent_org_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="parent_org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parent_org_name"/>
 	</field>
 	<field name="appraisal_period_desc" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="appraisal_year" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
-		<fieldDescription><![CDATA[]]></fieldDescription>
+	<field name="period_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="period_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 	</field>
-	<field name="org_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
-		<fieldDescription><![CDATA[]]></fieldDescription>
+	<field name="result_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 	</field>
 	<field name="emp_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="emp_id"/>
@@ -488,7 +547,56 @@ ORDER BY air.org_id
 		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 	</field>
+	<field name="emp_result_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="emp_result_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
 	<field name="position_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="position_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="position_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="appraisal_level_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_level_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="level_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="h" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="h"/>
+	</field>
+	<field name="COLUMN_18" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="appraisal_year" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="COLUMN_20" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="COLUMN_21" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="emp_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="COLUMN_22" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="COLUMN_23" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="COLUMN_24" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="position_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 	</field>
@@ -502,15 +610,13 @@ ORDER BY air.org_id
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="level_id" class="java.lang.Integer">
+	<field name="COLUMN_27" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
-		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="org_id" class="java.lang.Integer">
+	<field name="COLUMN_28" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="org_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
-		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="color_status" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="color_status"/>
@@ -542,7 +648,7 @@ ORDER BY air.org_id
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="period_id" class="java.lang.Integer">
+	<field name="COLUMN_36" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="period_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
@@ -553,139 +659,23 @@ ORDER BY air.org_id
 	<field name="re" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="re"/>
 	</field>
-	<group name="Group org" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="100">
-		<groupExpression><![CDATA[$F{org_id}]]></groupExpression>
+	<group name="emp_id" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{emp_id}]]></groupExpression>
 		<groupHeader>
-			<band height="122">
-				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-				<textField>
-					<reportElement mode="Opaque" x="1" y="72" width="114" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="286f8b21-25a3-46dc-8a2f-02233ba198fd"/>
+			<band height="174">
+				<staticText>
+					<reportElement x="1" y="25" width="820" height="94" uuid="2b608f30-beae-404b-b0e7-3cc6038c48ee"/>
 					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<pen lineColor="#3A5896"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3A5896"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#3A5896"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#3A5896"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#3A5896"/>
 					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["KPIs"]]></textFieldExpression>
-				</textField>
+					<text><![CDATA[]]></text>
+				</staticText>
 				<textField>
-					<reportElement mode="Opaque" x="290" y="72" width="60" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="9e910053-baf6-4fe3-93d0-ac3123e4b4d2"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["ACTUAL"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="624" y="72" width="59" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="81e5a428-43a2-4053-b42a-d6e252605b84"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["ATTAINMENT"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="115" y="72" width="95" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="352de040-ddd1-4f8b-8bb1-47bcebc12afc"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["GOAL"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="752" y="72" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="206e48f1-d1d1-417c-a874-0a4ce398dff1"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["PSP"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="718" y="72" width="34" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="17ea2a95-a057-4352-8924-12947d62d2f0"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["CV"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="210" y="72" width="16" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="a6a2bcdf-5d4b-41b3-be4c-c283fbd0e2a8"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["INDICATOR"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="350" y="72" width="60" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="bf5ff4dd-4cfc-47ad-9b82-e10dc90ded53"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["ATTAINMENT"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="787" y="72" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="53066bcd-d082-4da6-9e05-3891e27b750a"/>
-					<box>
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA["SS"]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="683" y="72" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="8e014c9f-d5f0-4fad-9e15-2fc4e5d291c0"/>
+					<reportElement mode="Opaque" x="683" y="124" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="1bcaf401-5863-43f7-8a79-3fe1bae0b571"/>
 					<box>
 						<pen lineWidth="1.0"/>
 						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -699,7 +689,133 @@ ORDER BY air.org_id
 					<textFieldExpression><![CDATA["NV"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement mode="Opaque" x="226" y="72" width="64" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="2d140182-0e19-42d3-bef9-f85451529675"/>
+					<reportElement mode="Opaque" x="115" y="124" width="95" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="be88240f-0f54-4534-b895-31c9a379da07"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["GOAL"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="787" y="124" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="334fc9db-0794-45a9-9d1e-31673eb230e2"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["SS"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="752" y="124" width="35" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="9cdbe5c8-9133-4a9c-9f0a-aeef27fd0d80"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["PSP"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="1" y="124" width="114" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="47b4fa07-b412-4c97-ab97-df9b13229992"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["KPIs"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="210" y="124" width="16" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="72a6e66f-7422-4cf3-9f1b-f27156809b5b"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["INDICATOR"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="290" y="124" width="60" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="3bb5a0ff-5d00-46c1-8fc4-af750e258336"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ACTUAL"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="551" y="124" width="73" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="3921da23-b246-428e-a7f7-2190adad7a27"/>
+					<box leftPadding="3" rightPadding="3">
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{appraisal_period_desc}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="624" y="124" width="59" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="5e63fecd-3e16-44e2-9afd-55e224808456"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ATTAINMENT"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="350" y="124" width="60" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="06d8b865-ac3f-4810-b23b-189fc22736cc"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["ATTAINMENT"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="226" y="124" width="64" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="65e82ead-a126-4fbe-868d-6e7eee9a639d"/>
 					<box>
 						<pen lineWidth="1.0"/>
 						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -713,7 +829,7 @@ ORDER BY air.org_id
 					<textFieldExpression><![CDATA["MONTH"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement mode="Opaque" x="410" y="72" width="141" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="55f3e883-cf21-4d87-9b9f-6b776bedfd46"/>
+					<reportElement mode="Opaque" x="410" y="124" width="141" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="d9ee962c-b2d8-47b7-9a6c-bb16aa938fc2"/>
 					<box>
 						<pen lineWidth="1.0"/>
 						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -727,7 +843,21 @@ ORDER BY air.org_id
 					<textFieldExpression><![CDATA["TREND"]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement mode="Opaque" x="1" y="11" width="820" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="3850dad6-ab20-4fa5-b8f6-8a5a6180c14b"/>
+					<reportElement mode="Opaque" x="718" y="124" width="34" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="2752e0f2-8ad3-4b28-bd3b-35c68efcf317"/>
+					<box>
+						<pen lineWidth="1.0"/>
+						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["CV"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement mode="Opaque" x="0" y="0" width="822" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="4b25ff2a-89b3-4efa-8d76-d430f299e733"/>
 					<box>
 						<pen lineWidth="1.0" lineColor="#3B5998"/>
 						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
@@ -738,95 +868,153 @@ ORDER BY air.org_id
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["KPI Report : "+$F{org_name}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["KPI REPORT"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="410" y="90" width="140" height="20" uuid="58bff2a9-7477-45cc-b87e-7eba7e09ddc0"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[LEVEL :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="23" y="30" width="126" height="20" uuid="a291ec85-a61f-4b4e-9ba1-e88815cb0805"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[PERIOD :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="23" y="50" width="126" height="20" uuid="b6635a85-0b56-40fb-940a-b88bdab2edbc"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ORGANIZATION NAME :]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="150" y="50" width="250" height="20" uuid="0222d984-350d-42ba-b7d4-f3096d3ecb14"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="1" y="36" width="820" height="30" forecolor="#3B5998" backcolor="#FFFFFF" uuid="10ce818b-6635-4547-a64c-278d55d686a3"/>
-					<box>
-						<pen lineWidth="1.0" lineColor="#3B5998"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="17" isBold="true"/>
+					<reportElement x="150" y="90" width="250" height="20" uuid="d37b89ad-0ad3-4f54-b17a-3c8e596fd50f"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{h}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement mode="Opaque" x="551" y="72" width="73" height="50" forecolor="#000000" backcolor="#E3E3E3" uuid="5e65758d-48f1-450b-a9e3-1d9b6befbbdc"/>
-					<box leftPadding="3" rightPadding="3">
-						<pen lineWidth="1.0"/>
-						<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+				<textField isBlankWhenNull="true">
+					<reportElement x="150" y="30" width="250" height="20" uuid="b8c9d77a-1cd4-4019-b9d4-8306b27d1bf5"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{appraisal_period_desc}]]></textFieldExpression>
 				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="550" y="90" width="250" height="20" uuid="fb7b965c-cd2b-46d8-8806-c91875a44089"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{appraisal_level_name}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="550" y="30" width="250" height="20" uuid="a45dd8db-ab5b-4457-b6de-f8963ca61c50"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="550" y="70" width="250" height="20" uuid="17cc1b4c-86f5-4d2e-a442-c55cd242444c"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="23" y="70" width="126" height="20" uuid="8fc95f2f-33ca-4896-97f4-d8a9cfb8da2a"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[EMPLOYEE CODE :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="410" y="70" width="140" height="20" uuid="91155a8b-5776-4a08-bed0-be1cbb59b54d"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[EMPLOYEE NAME :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="23" y="90" width="126" height="20" uuid="4b7b9cf5-fb69-4e82-9696-7492f70e0fd6"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[POSITION :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="410" y="50" width="140" height="20" uuid="00160526-7dd4-4666-ba97-bf0c2f0dde22"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[PARENT ORGANIZATION : ]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="550" y="50" width="250" height="20" uuid="0973c0d5-80cf-4a5a-bc05-ad65d284fb19"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parent_org_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="410" y="30" width="140" height="20" uuid="fd33eab8-d2b8-4ed4-8f54-719cbdaaa037"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ORGANIZATION CODE :]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="150" y="70" width="250" height="20" uuid="9d436601-dedb-4f1a-a09b-2af5bf524fd3"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
+		<groupFooter>
+			<band height="50"/>
+		</groupFooter>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="20" splitType="Prevent">
+		<band height="60" splitType="Prevent">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="1" y="0" width="114" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="4e156d2c-b937-4c99-be8e-f8b3c822f4bc">
-					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
-					<propertyExpression name="net.sf.jasperreports.xls.formatr"><![CDATA[$F{color_status}]]></propertyExpression>
-				</reportElement>
-				<box topPadding="3" leftPadding="3">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-					<paragraph leftIndent="3"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{Group org_COUNT}+". "+$F{item_name}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="624" y="0" width="59" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="c543f0b2-958b-4877-8909-89d5cf116157">
-					<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
-					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
-				</reportElement>
-				<box topPadding="3" rightPadding="3">
-					<pen lineWidth="0.5"/>
-					<topPen lineWidth="0.5"/>
-					<leftPen lineWidth="0.5"/>
-					<bottomPen lineWidth="0.5"/>
-					<rightPen lineWidth="0.5"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{percent_achievement}+" %"]]></textFieldExpression>
-			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="228" y="0" width="192" height="20" uuid="cefa2164-6d50-4e1b-b591-b9eb81174591"/>
+				<reportElement stretchType="RelativeToBandHeight" x="210" y="0" width="200" height="60" uuid="7e0403ea-dbde-40b4-81c7-67412ec846f4"/>
 				<box>
-					<topPen lineWidth="0.25"/>
-					<leftPen lineWidth="0.25"/>
-					<bottomPen lineWidth="0.25"/>
-					<rightPen lineWidth="0.25"/>
+					<pen lineWidth="0.5"/>
 				</box>
-				<textElement>
-					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
-				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement key="table 2" mode="Opaque" x="210" y="0" width="200" height="20" forecolor="#E0E0E0" backcolor="#FFFFFF" uuid="8355fb2b-17de-4766-a68b-286995532752">
+				<reportElement key="table 2" mode="Opaque" x="210" y="0" width="200" height="60" forecolor="#E0E0E0" backcolor="#FFFFFF" uuid="81fdbe9b-f62a-4a7d-bfda-afc8c39bbd83">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="table" uuid="1e9aa356-f702-4728-a7de-c9599babebcc">
+					<datasetRun subDataset="table" uuid="ab793b9c-f851-4d09-a08b-2202ea58e84a">
 						<datasetParameter name="param_org">
 							<datasetParameterExpression><![CDATA[$F{org_id}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -847,11 +1035,14 @@ ORDER BY air.org_id
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
-					<jr:column width="16" uuid="d4921f05-5d1d-4bd9-bc15-57c70d92369b">
+					<jr:column width="16" uuid="9bb903e9-409e-4ecf-882c-657997d1ecdc">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 						<jr:detailCell height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+							</box>
 							<textField>
-								<reportElement mode="Opaque" x="0" y="0" width="16" height="20" forecolor="#F0F0F0" backcolor="#FFFFFF" uuid="ce8c6cd1-c1ec-4778-ac65-ec8520a9b043">
+								<reportElement mode="Opaque" x="0" y="0" width="16" height="20" forecolor="#F0F0F0" backcolor="#FFFFFF" uuid="0e795a43-22fc-4d22-949f-f7e37073d201">
 									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_code}]]></propertyExpression>
 								</reportElement>
 								<box topPadding="3">
@@ -867,11 +1058,14 @@ ORDER BY air.org_id
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="64" uuid="39761890-b51a-48e7-aff1-4274a336f119">
+					<jr:column width="64" uuid="7bdada75-c409-4b2e-b2b5-c84516001fd9">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 						<jr:detailCell height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+							</box>
 							<textField>
-								<reportElement mode="Opaque" x="0" y="0" width="64" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="7ab0aef4-b6b5-4171-a142-5c45ac5f7d0f">
+								<reportElement mode="Opaque" x="0" y="0" width="64" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="479710b8-ce04-4202-b0ba-df13fab64e0e">
 									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 								</reportElement>
 								<box topPadding="3" leftPadding="2">
@@ -888,11 +1082,14 @@ ORDER BY air.org_id
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="60" uuid="31cca5fb-333f-4164-ae60-352126864b47">
+					<jr:column width="60" uuid="1eb00f2e-fe4f-43cb-baf1-c6ca1f2d36f6">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 						<jr:detailCell height="20" rowSpan="1">
+							<box>
+								<pen lineWidth="0.5"/>
+							</box>
 							<textField pattern="#,##0.00#;#,##0.00#-">
-								<reportElement mode="Opaque" x="0" y="0" width="60" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="12f6c639-a870-466c-88ad-faa0e185661f">
+								<reportElement mode="Opaque" x="0" y="0" width="60" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="c6104213-82c1-4604-af41-f94906a5ec68">
 									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 								</reportElement>
 								<box topPadding="3" rightPadding="2">
@@ -908,12 +1105,15 @@ ORDER BY air.org_id
 							</textField>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="70" uuid="2eadfa9f-8f09-4210-83cc-422b03ac81c7">
+					<jr:column width="60" uuid="e27735da-a4a3-408a-ae84-bcb6b587c324">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
 						<jr:detailCell height="20" rowSpan="1">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+							<box>
+								<pen lineWidth="0.5"/>
+							</box>
 							<textField pattern="#,##0.00#;#,##0.00#-">
-								<reportElement mode="Opaque" x="0" y="0" width="70" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="36aa860c-a525-42f4-978d-df478f9011fe">
+								<reportElement mode="Opaque" x="0" y="0" width="60" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="4ebdf291-8fb7-4c48-887d-1432b79c78b5">
 									<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
 									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 								</reportElement>
@@ -933,9 +1133,44 @@ ORDER BY air.org_id
 					</jr:column>
 				</jr:table>
 			</componentElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="1" y="0" width="114" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="4e156d2c-b937-4c99-be8e-f8b3c822f4bc">
+					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
+					<propertyExpression name="net.sf.jasperreports.xls.formatr"><![CDATA[$F{color_status}]]></propertyExpression>
+				</reportElement>
+				<box topPadding="3" leftPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Top">
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{emp_id_COUNT}+". "+$F{item_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="624" y="0" width="59" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="c543f0b2-958b-4877-8909-89d5cf116157">
+					<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
+					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
+				</reportElement>
+				<box topPadding="3" rightPadding="3">
+					<pen lineWidth="0.5"/>
+					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.5"/>
+					<bottomPen lineWidth="0.5"/>
+					<rightPen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{percent_achievement}+" %"]]></textFieldExpression>
+			</textField>
 			<lineChart>
 				<chart isShowLegend="false">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="410" y="0" width="141" height="20" forecolor="#000000" uuid="fafeaebc-43d3-4c1b-a494-02b0d1ec562f">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="410" y="0" width="141" height="60" isRemoveLineWhenBlank="true" forecolor="#000000" uuid="35095616-7cf7-461d-816a-7cf988d6a9d9">
 						<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 					</reportElement>
 					<box topPadding="6">
@@ -957,7 +1192,7 @@ ORDER BY air.org_id
 				</chart>
 				<categoryDataset>
 					<dataset>
-						<datasetRun subDataset="Chart" uuid="0963f0ec-8f98-43ff-b893-a931ad42a0c8">
+						<datasetRun subDataset="Chart" uuid="7832bec0-6eff-48d9-8cee-b035a89894af">
 							<datasetParameter name="param_item">
 								<datasetParameterExpression><![CDATA[$F{item_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1017,7 +1252,7 @@ ORDER BY air.org_id
 				</linePlot>
 			</lineChart>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00#;#,##0.00#-" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="115" y="0" width="95" height="20" uuid="8484ed65-35e5-41ca-aade-d798e62cadda">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="115" y="0" width="95" height="60" uuid="8484ed65-35e5-41ca-aade-d798e62cadda">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box topPadding="3" leftPadding="0">
@@ -1034,7 +1269,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[$F{value_type_id}+" "+$F{target_value}+" "+$F{uom_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="683" y="0" width="35" height="20" forecolor="#000000" uuid="fdaa9103-edc0-4631-b699-68d749458249">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="683" y="0" width="35" height="60" forecolor="#000000" uuid="fdaa9103-edc0-4631-b699-68d749458249">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1046,7 +1281,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="718" y="0" width="34" height="20" forecolor="#000000" uuid="337b4ce9-0129-447f-a8dc-c69b4e4ee2e3">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="718" y="0" width="34" height="60" forecolor="#000000" uuid="337b4ce9-0129-447f-a8dc-c69b4e4ee2e3">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1058,7 +1293,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="752" y="0" width="35" height="20" forecolor="#000000" uuid="c5d33d46-6d50-423b-96f8-4e2c260dfeb4">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="752" y="0" width="35" height="60" forecolor="#000000" uuid="c5d33d46-6d50-423b-96f8-4e2c260dfeb4">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1070,7 +1305,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="787" y="0" width="35" height="20" forecolor="#000000" uuid="2e22631f-2d8c-4ecd-9596-fa6b954509eb">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="787" y="0" width="35" height="60" forecolor="#000000" uuid="2e22631f-2d8c-4ecd-9596-fa6b954509eb">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1082,7 +1317,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00#;#,##0.00#-" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="551" y="0" width="73" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="eaff18e7-325a-4a40-aa52-092f07774e88">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="551" y="0" width="73" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="eaff18e7-325a-4a40-aa52-092f07774e88">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 					<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
 				</reportElement>
@@ -1109,7 +1344,7 @@ ORDER BY air.org_id
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="comment" uuid="08452c92-8c2c-4705-b3ba-9f238fea0138">
+					<datasetRun subDataset="comment" uuid="b6cde1bc-e796-4233-b395-ecd43603ff96">
 						<datasetParameter name="param_level_org">
 							<datasetParameterExpression><![CDATA[$F{level_id}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -1123,7 +1358,7 @@ ORDER BY air.org_id
 							<datasetParameterExpression><![CDATA[$F{item_id}]]></datasetParameterExpression>
 						</datasetParameter>
 						<datasetParameter name="param_count">
-							<datasetParameterExpression><![CDATA[$V{Group org_COUNT}]]></datasetParameterExpression>
+							<datasetParameterExpression><![CDATA[$V{emp_id_COUNT}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>

@@ -729,10 +729,10 @@ ORDER BY air.org_id
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="20" splitType="Prevent">
+		<band height="60" splitType="Prevent">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="1" y="0" width="114" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="4e156d2c-b937-4c99-be8e-f8b3c822f4bc">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="1" y="0" width="114" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="4e156d2c-b937-4c99-be8e-f8b3c822f4bc">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 					<propertyExpression name="net.sf.jasperreports.xls.formatr"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
@@ -750,7 +750,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[$V{Group org_COUNT}+". "+$F{item_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="624" y="0" width="59" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="c543f0b2-958b-4877-8909-89d5cf116157">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="624" y="0" width="59" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="c543f0b2-958b-4877-8909-89d5cf116157">
 					<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
@@ -767,7 +767,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[$F{percent_achievement}+" %"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement mode="Opaque" x="228" y="0" width="192" height="20" uuid="cefa2164-6d50-4e1b-b591-b9eb81174591"/>
+				<reportElement mode="Opaque" x="210" y="0" width="199" height="60" uuid="cefa2164-6d50-4e1b-b591-b9eb81174591"/>
 				<box>
 					<topPen lineWidth="0.25"/>
 					<leftPen lineWidth="0.25"/>
@@ -780,7 +780,7 @@ ORDER BY air.org_id
 				<text><![CDATA[]]></text>
 			</staticText>
 			<componentElement>
-				<reportElement key="table 2" mode="Opaque" x="210" y="0" width="200" height="20" forecolor="#E0E0E0" backcolor="#FFFFFF" uuid="8355fb2b-17de-4766-a68b-286995532752">
+				<reportElement key="table 2" mode="Opaque" x="210" y="0" width="200" height="60" isRemoveLineWhenBlank="true" forecolor="#E0E0E0" backcolor="#FFFFFF" uuid="8355fb2b-17de-4766-a68b-286995532752">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
@@ -887,7 +887,7 @@ ORDER BY air.org_id
 			</componentElement>
 			<lineChart>
 				<chart isShowLegend="false">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="410" y="0" width="141" height="20" forecolor="#000000" uuid="195dea8b-ef3c-4124-b24c-60628677657c">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="410" y="0" width="141" height="60" forecolor="#000000" uuid="195dea8b-ef3c-4124-b24c-60628677657c">
 						<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 					</reportElement>
 					<box topPadding="6">
@@ -963,7 +963,7 @@ ORDER BY air.org_id
 				</linePlot>
 			</lineChart>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00#;#,##0.00#-" isBlankWhenNull="true">
-				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="115" y="0" width="95" height="20" uuid="8484ed65-35e5-41ca-aade-d798e62cadda">
+				<reportElement style="tableMosIs1" stretchType="RelativeToBandHeight" mode="Opaque" x="115" y="0" width="95" height="60" uuid="8484ed65-35e5-41ca-aade-d798e62cadda">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box topPadding="3" leftPadding="0">
@@ -980,7 +980,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[$F{value_type_id}+" "+$F{target_value}+" "+$F{uom_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="683" y="0" width="35" height="20" forecolor="#000000" uuid="fdaa9103-edc0-4631-b699-68d749458249">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="683" y="0" width="35" height="60" forecolor="#000000" uuid="fdaa9103-edc0-4631-b699-68d749458249">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -992,7 +992,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="718" y="0" width="34" height="20" forecolor="#000000" uuid="337b4ce9-0129-447f-a8dc-c69b4e4ee2e3">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="718" y="0" width="34" height="60" forecolor="#000000" uuid="337b4ce9-0129-447f-a8dc-c69b4e4ee2e3">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1004,7 +1004,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="752" y="0" width="35" height="20" forecolor="#000000" uuid="c5d33d46-6d50-423b-96f8-4e2c260dfeb4">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="752" y="0" width="35" height="60" forecolor="#000000" uuid="c5d33d46-6d50-423b-96f8-4e2c260dfeb4">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1016,7 +1016,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="787" y="0" width="35" height="20" forecolor="#000000" uuid="2e22631f-2d8c-4ecd-9596-fa6b954509eb">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="787" y="0" width="35" height="60" forecolor="#000000" uuid="2e22631f-2d8c-4ecd-9596-fa6b954509eb">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 				</reportElement>
 				<box>
@@ -1028,7 +1028,7 @@ ORDER BY air.org_id
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00#;#,##0.00#-" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="551" y="0" width="73" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="eaff18e7-325a-4a40-aa52-092f07774e88">
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="551" y="0" width="73" height="60" forecolor="#000000" backcolor="#FFFFFF" uuid="eaff18e7-325a-4a40-aa52-092f07774e88">
 					<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 					<propertyExpression name="net.sf.jasperreports.style.forecolor"><![CDATA[$F{color_percent_achievement}]]></propertyExpression>
 				</reportElement>
