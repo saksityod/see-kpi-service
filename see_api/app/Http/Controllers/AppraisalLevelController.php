@@ -194,7 +194,7 @@ class AppraisalLevelController extends Controller
 		$total_weight = 0;
 		
 		
-		if ($item->no_weight == 0) {
+		// if ($item->no_weight == 0) { edit-2018-11-05
 			foreach ($request->criteria as $c) {
 				if ($c['checkbox'] == 1) {
 					$total_weight += $c['weight_percent'];
@@ -216,7 +216,7 @@ class AppraisalLevelController extends Controller
 			if ($total_weight != 100) {
 				return response()->json(['status' => 400, 'data' => 'Total weight is not equal to 100%']);
 			}
-		}
+		// } edit-2018-11-05
 		
 		foreach ($request->criteria as $c) {
 			if ($c['checkbox'] == 1) {

@@ -273,7 +273,7 @@ class DashboardController extends Controller
 			".$PeriodId."
 			".$EmpIdStr."
 			GROUP BY air.item_id
-			ORDER BY air.item_id";
+			ORDER BY ai.kpi_id ,air.item_name";
 
 		$items = DB::select($query);
 		return response()->json($items);
@@ -490,7 +490,7 @@ class DashboardController extends Controller
 				AND (e.emp_code = ? or e.chief_emp_code = ?)
 				AND ai.item_id in({$in_emp})
 				GROUP BY p.perspective_id, air.item_id
-				ORDER BY p.perspective_name, air.item_name, air.item_result_id
+				ORDER BY p.perspective_name ,ai.kpi_id ,air.item_name, air.item_result_id
 			", array($request->appraisal_type_id, $request->year_id, $request->period_id, $emp->emp_code, $emp->emp_code));
 
 
@@ -566,7 +566,7 @@ class DashboardController extends Controller
 				AND (org.parent_org_code = ? or org.org_code = ?)
 				AND ai.item_id in({$in_item})
 				GROUP BY p.perspective_id, air.item_id
-				ORDER BY p.perspective_name, air.item_name, air.item_result_id
+				ORDER BY p.perspective_name,ai.kpi_id ,air.item_name, air.item_result_id
 			", array($request->appraisal_type_id, $request->year_id, $request->period_id, $org->org_code, $org->org_code));
 
 			$OrgListQry = DB::select("
@@ -669,7 +669,7 @@ class DashboardController extends Controller
 					AND air.period_id = ?
 					AND (e.emp_code = ? or e.chief_emp_code = ?)
 					AND air.item_id = ?
-					ORDER BY p.perspective_name, air.item_name, air.item_result_id, e.emp_code
+					ORDER BY p.perspective_name ,ai.kpi_id ,air.item_name, air.item_result_id, e.emp_code
 				", array($request->appraisal_type_id, $request->year_id, $request->period_id, $emp->emp_code, $emp->emp_code, $chartObj->item_id));
 			} else { //org
 				$dataListQry = DB::select("
@@ -693,7 +693,7 @@ class DashboardController extends Controller
 					AND (org.parent_org_code = ? or org.org_code = ?)
 					AND air.item_id = ?
 					GROUP BY p.perspective_id, air.item_id, air.org_id
-					ORDER BY p.perspective_name, air.item_name, air.item_result_id, org.org_code
+					ORDER BY p.perspective_name,ai.kpi_id, air.item_name, air.item_result_id, org.org_code
 				", array($request->appraisal_type_id, $request->year_id, $request->period_id, $org->org_code, $org->org_code, $chartObj->item_id));
 			}
 
@@ -1174,7 +1174,6 @@ class DashboardController extends Controller
 			",array($e->emp_result_id));
 
 			}else{ // (GHB)
-
 				$perspective = DB::select("
 				select b.perspective_id, c.perspective_abbr, c.perspective_name, c.color_code,
 				round(sum(a.weight_percent),2) perspective_weight,
@@ -1219,7 +1218,7 @@ class DashboardController extends Controller
 			}
 			
 			$subtotal_score = number_format((float)$subtotal_score,2,'.','');
-			$subtotal_weight_pct = number_format((float)$subtotal_weight_pct,2,'.','');
+			$subtotal_weight_pct = number_format((float)$subtotal_weight_pct,0,'.','');
 			$subtotal_result_score = number_format((float)round($subtotal_score/$subtotal_weight_pct,2),2,'.','');
 			/*$e->color_code*/
 			$cat1[] = ['label' => $e->name . ' ' . $subtotal_score /*$e->total_weigh_score*/ .'%', 'color' => "#2aaae6", 'value' => $subtotal_result_score /*$e->result_score*/, 'category' => $cat2,
@@ -3204,7 +3203,7 @@ class DashboardController extends Controller
 						$qinput[] = $request->emp_id;
 						$qinput[] = $request->appraisal_type_id;
 
-						$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, er.emp_id ";
+						$qfooter = " ORDER BY p.perspective_name ,ai.kpi_id , air.item_name, air.item_result_id, er.emp_id ";
 						empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);
 						empty($request->position_id) ?: ($query .= " AND air.position_id = ? " AND $qinput[] = $request->position_id);		
 						empty($request->level_id) ?: ($query .= " AND air.level_id = ? " AND $qinput[] = $request->level_id);									
@@ -3236,7 +3235,7 @@ class DashboardController extends Controller
 			$qinput[] = $request->org_id;
 			$qinput[] = $request->appraisal_type_id;
 
-			$qfooter = " ORDER BY p.perspective_name, air.item_name, air.item_result_id, org.org_code ";
+			$qfooter = " ORDER BY p.perspective_name,ai.kpi_id, air.item_name, air.item_result_id, org.org_code ";
 			empty($request->perspective_id) ?: ($query .= " AND p.perspective_id = ? " AND $qinput[] = $request->perspective_id);
 
 

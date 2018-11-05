@@ -18,6 +18,7 @@ use App\SystemConfiguration;
 use App\Phase;
 use App\ActionPlan;
 use App\AppraisalStructure;
+use App\AppraisalLevel;
 
 use Auth;
 use DB;
@@ -56,10 +57,17 @@ class AppraisalAssignmentController extends Controller
 
 	public function appraisal_type_list()
 	{
+		$config = SystemConfiguration::firstOrFail();
+		if($config->entity_type_resorting == 1){
+			$orderby = 'ASC';
+		}else{
+			$orderby = 'DESC';
+		}
+
 		$items = DB::select("
 			Select appraisal_type_id, appraisal_type_name
 			From appraisal_type
-			Order by appraisal_type_id DESC
+			Order by appraisal_type_name {$orderby}
 			");
 		return response()->json($items);
 	}
@@ -1008,6 +1016,9 @@ class AppraisalAssignmentController extends Controller
 
 	    public function status_list(Request $request)
 	    {
+			$cu = Employee::find(Auth::id());
+			$co = Org::find($cu->org_id);
+
 	    	$all_emp = DB::select("
 				SELECT sum(b.is_all_employee) count_no
 				from employee a
@@ -1121,7 +1132,6 @@ class AppraisalAssignmentController extends Controller
 						select 'Unassigned' to_action, 'Unassigned' status
 			    	");
 				} else {
-
 					$items = DB::select("
 			    		select distinct CONCAT(ast.to_action,'-',ast.from_action) to_action, CONCAT(ast.to_action,' (',ast.from_action,')') status
 						From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
@@ -1156,6 +1166,8 @@ class AppraisalAssignmentController extends Controller
 
 	    public function index(Request $request)
 	    {
+		$cu = Employee::find(Auth::id());
+		$co = Org::find($cu->org_id);
 	    	$all_emp = DB::select("
 	    		SELECT sum(b.is_all_employee) count_no
 	    		from employee a
@@ -1271,7 +1283,8 @@ class AppraisalAssignmentController extends Controller
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
-	    				Where o.is_active = 1
+	    				Where o.is_active = 1 
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				";
 					//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
 	    				empty($request->org_id) ?: ($query_unassign .= " and o.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1322,7 +1335,8 @@ class AppraisalAssignmentController extends Controller
 	    				$query_unassign .= "
 	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
-	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				And er.emp_result_id = ir.emp_result_id
 	    				and ir.item_id = I.item_id
 	    				and er.period_id = p.period_id
@@ -1456,7 +1470,8 @@ class AppraisalAssignmentController extends Controller
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
-	    				Where o.is_active = 1
+						Where o.is_active = 1
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				";
 					//empty($request->position_id) ?: ($query_unassign .= " and e.position_id = ? " AND $qinput[] = $request->position_id);
 	    				empty($request->org_id) ?: ($query_unassign .= " and o.org_id = ? " AND $qinput[] = $request->org_id);
@@ -1507,7 +1522,8 @@ class AppraisalAssignmentController extends Controller
 	    				$query_unassign .= "
 	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
-	    				Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
+						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 	    				And er.emp_result_id = ir.emp_result_id
 	    				and ir.item_id = I.item_id
 	    				and er.period_id = p.period_id
@@ -1610,8 +1626,8 @@ class AppraisalAssignmentController extends Controller
 		empty($request->appraisal_level_id) ?: ($query .= "and (d.level_id = ? or ar.level_id = ?) " AND $qinput[] = $request->appraisal_level_id AND $qinput[] = $request->appraisal_level_id);
 		empty($request->appraisal_level_id) ?: ($query .= " and c.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
-		$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
-
+		// $qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc "; edit-2018-11-05
+		$qfooter = " order by b.seq_no, a.kpi_id, a.item_name, ar.structure_weight_percent desc ";
 		// echo $query . $qfooter;
 		// echo"<br>";
 		// print_r($qinput);
@@ -2855,6 +2871,7 @@ class AppraisalAssignmentController extends Controller
 			if ($i['select_flag'] == 1) {
 				if ($i['form_id'] == 1) {
 					$aitem = AppraisalItemResult::find($i['item_result_id']);
+					$noweight = AppraisalLevel::find($level_id);
 					if (empty($aitem)) {
 						$aitem = new AppraisalItemResult;
 						$aitem->org_id = $org_id;
@@ -2899,7 +2916,64 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->save();
 						}
 					} else {
-						if($config->item_result_log == 1 &&
+						// edit-2018-11-05
+						if($config->item_result_log == 1) {
+							if(array_key_exists('score0', $i) 
+								|| array_key_exists('score1', $i)
+								|| array_key_exists('score2', $i)
+								|| array_key_exists('score3', $i)
+								|| array_key_exists('score4', $i)
+								|| array_key_exists('score5', $i)
+								// || array_key_exists('forecast_value', $i) edit-2018-11-05
+								|| array_key_exists('target_value', $i)
+								|| array_key_exists('weight_percent', $i)) {
+								if($aitem->score0!=$i['score0']
+									|| $aitem->score1!=$i['score1']
+									|| $aitem->score2!=$i['score2']
+									|| $aitem->score3!=$i['score3']
+									|| $aitem->score4!=$i['score4']
+									|| $aitem->score5!=$i['score5']
+									// || $aitem->forecast_value!=$i['forecast_value'] edit-2018-11-05
+									|| $aitem->target_value!=$i['target_value']
+									|| ($aitem->weight_percent!=$i['weight_percent'] && $noweight->no_weight==0)) {
+										
+									$aitemlog = new AppraisalItemResultLog;
+									$aitemlog->org_id = $aitem->org_id;
+									$aitemlog->position_id = $aitem->position_id;
+									$aitemlog->level_id = $aitem->level_id;
+									$aitemlog->chief_emp_id = $aitem->chief_emp_id;
+									$aitemlog->kpi_type_id = $aitem->kpi_type_id;
+									$aitemlog->structure_weight_percent = $aitem->structure_weight_percent;
+									$aitemlog->created_by = Auth::id();
+									$aitemlog->modify_by = Auth::id();
+									$aitemlog->modify_date = new DateTime();
+									$aitemlog->modify_type = 'U';
+									$aitemlog->emp_result_id = $emp_result->emp_result_id;
+									$aitemlog->period_id = $aitem->period_id;
+									$aitemlog->emp_id = $aitem->emp_id;
+									$aitemlog->item_id = $aitem->item_id;
+									$aitemlog->item_name = $aitem->item_name;
+									$aitemlog->target_value = $aitem->target_value;
+									$aitemlog->weight_percent = $aitem->weight_percent;
+									$aitemlog->score0 = $aitem->score0;
+									$aitemlog->score1 = $aitem->score1;
+									$aitemlog->score2 = $aitem->score2;
+									$aitemlog->score3 = $aitem->score3;
+									$aitemlog->score4 = $aitem->score4;
+									$aitemlog->score5 = $aitem->score5;
+									$aitemlog->forecast_value = $aitem->forecast_value;
+									$aitemlog->over_value = $aitem->over_value;
+									$aitemlog->weigh_score = $aitem->weigh_score;
+									$aitemlog->threshold_group_id = $aitem->threshold_group_id;
+									$aitemlog->updated_by = Auth::id();
+									$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
+									$aitemlog->save();	
+								}
+							}
+						}
+
+						/* edit-2018-11-05
+						if($config->item_result_log == 1 && 
 						((array_key_exists('score0', $i) ? $aitem->score0 != $i['score0'] : null)
 						|| (array_key_exists('score1', $i) ? $aitem->score1 != $i['score1'] : null)
 						|| (array_key_exists('score2', $i) ? $aitem->score2 != $i['score2'] : null)
@@ -2909,15 +2983,6 @@ class AppraisalAssignmentController extends Controller
 						|| $aitem->target_value != $i['target_value']
 						|| (array_key_exists('forecast_value', $i) ? $aitem->forecast_value != $i['forecast_value'] : null)
 						|| $aitem->weight_percent != $i['weight_percent'])
-						// ($aitem->score0 != (array_key_exists('score0', $i) ? $i['score0'] : null)
-						// || $aitem->score1 != (array_key_exists('score1', $i) ? $i['score1'] : null)
-						// || $aitem->score2 != (array_key_exists('score2', $i) ? $i['score2'] : null)
-						// || $aitem->score3 != (array_key_exists('score3', $i) ? $i['score3'] : null)
-						// || $aitem->score4 != (array_key_exists('score4', $i) ? $i['score4'] : null)
-						// || $aitem->score5 != (array_key_exists('score5', $i) ? $i['score5'] : null)
-						// || $aitem->target_value != $i['target_value']
-						// || $aitem->forecast_value != (array_key_exists('forecast_value', $i) ? $i['forecast_value'] : null)
-						// || $aitem->weight_percent != $i['weight_percent'])
 						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;
@@ -2950,7 +3015,8 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
 							$aitemlog->save();
-						}
+						}*/
+
 					}
 
 					$aitem->emp_result_id = $emp_result->emp_result_id;
@@ -3013,7 +3079,7 @@ class AppraisalAssignmentController extends Controller
 					}else {
 						if($config->item_result_log == 1 &&
 						( $aitem->target_value != $i['target_value']
-						|| $aitem->weight_percent != $i['weight_percent'])
+						|| ($aitem->weight_percent != $i['weight_percent']&& $noweight->no_weight==0))
 						){
 							$aitemlog = new AppraisalItemResultLog;
 							$aitemlog->org_id = $aitem->org_id;

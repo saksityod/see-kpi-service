@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Org;
 use App\AppraisalLevel;
+use App\Employee;
 
 use Auth;
 use DB;
@@ -26,7 +27,7 @@ class OrgController extends Controller
 	}
 
 	public function index(Request $request)
-	{
+	{			
 		empty($request->level_id) ? $level = "" : $level = " and a.level_id = " . $request->level_id . " ";
 		empty($request->org_code) ? $org = "" : $org = " and a.org_code = '" . $request->org_code . "' ";
 		$items = DB::select("
@@ -40,6 +41,30 @@ class OrgController extends Controller
 			on a.level_id = c.level_id
 			left outer join province d on a.province_code = d.province_code
 			where 1=1 " . $level . $org . "
+			order by a.org_code asc
+		");
+		return response()->json($items);
+	}
+	
+	public function parent_org_code(Request $request)
+	{
+		$cu = Employee::find(Auth::id());
+		$co = Org::find($cu->org_id);
+
+		empty($request->level_id) ? $level = "" : $level = " and a.level_id = " . $request->level_id . " ";
+		empty($request->org_code) ? $org = "" : $org = " and a.org_code = '" . $request->org_code . "' ";
+		$items = DB::select("
+			SELECT a.org_id, a.org_code, a.org_name, a.org_abbr, a.org_email, a.is_active, b.org_name parent_org_name, a.parent_org_code, a.level_id, c.appraisal_level_name,
+			case when a.longitude = 0 then '' else a.longitude end  longitude,
+			case when a.latitude = 0 then '' else a.latitude end  latitude,
+			a.province_code, d.province_name
+			from org a left outer join
+			org b on b.org_code = a.parent_org_code
+			left outer join appraisal_level c
+			on a.level_id = c.level_id
+			left outer join province d on a.province_code = d.province_code
+			where 1=1 " . $level . $org . "
+			and (a.org_code = '{$co->org_code}' or a.parent_org_code = '{$co->org_code}')
 			order by a.org_code asc
 		");
 		return response()->json($items);
