@@ -19,20 +19,21 @@ class AppraisalFormController extends Controller
 	{
 	   $this->middleware('jwt.auth');
 	}
-	
+
 
 	public function index(Request $request)
 	{
 		$items = AppraisalForm::orderBy('appraisal_form_id')->get();
 		return response()->json($items);
 	}
-	
+
 
 	public function store(Request $request)
 	{
-	
+
 		$validator = Validator::make($request->all(), [
 			'appraisal_form_name' => 'required|max:100|unique:appraisal_form,appraisal_form_name',
+			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
 		]);
 
@@ -45,11 +46,11 @@ class AppraisalFormController extends Controller
 			$item->update_by = Auth::id();
 			$item->save();
 		}
-	
-		return response()->json(['status' => 200, 'data' => $item]);	
+
+		return response()->json(['status' => 200, 'data' => $item]);
 	}
 
-	
+
 	public function show($form_id)
 	{
 		try {
@@ -59,7 +60,7 @@ class AppraisalFormController extends Controller
 		}
 		return response()->json($item);
 	}
-	
+
 
 	public function update(Request $request, $form_id)
 	{
@@ -68,9 +69,10 @@ class AppraisalFormController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Form not found.']);
 		}
-		
+
 		$validator = Validator::make($request->all(), [
 			'appraisal_form_name' => 'required|max:100|unique:appraisal_form,appraisal_form_name,' . $form_id . ',appraisal_form_id',
+			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
 		]);
 
@@ -81,18 +83,18 @@ class AppraisalFormController extends Controller
 			$item->update_by = Auth::id();
 			$item->save();
 		}
-	
+
 		return response()->json(['status' => 200, 'data' => $item]);
-				
+
 	}
-	
+
 	public function destroy($form_id)
 	{
 		try {
 			$item = AppraisalForm::findOrFail($form_id);
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Appraisal Form not found.']);
-		}	
+		}
 
 		try {
 			$item->delete();
@@ -103,8 +105,8 @@ class AppraisalFormController extends Controller
 				return response()->json($e->errorInfo);
 			}
 		}
-		
+
 		return response()->json(['status' => 200]);
-		
-	}	
+
+	}
 }
