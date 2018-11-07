@@ -528,6 +528,9 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('bonus/test', 'Bonus\BonusAppraisalController@index');
 
+	Route::get('bonus/adjustment', 'Bonus\BonusAdjustmentController@index');
+	Route::post('bonus/adjustment', 'Bonus\BonusAdjustmentController@store');
+
 
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);

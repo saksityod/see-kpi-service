@@ -29,16 +29,15 @@ use Config;
 use Exception;
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AppraisalAssignmentController extends Controller
 {
-
 	public function __construct()
 	{
-
 		$this->middleware('jwt.auth');
 	}
 
@@ -439,7 +438,7 @@ class AppraisalAssignmentController extends Controller
 			}
 		} else {
 			$workflow = WorkflowStage::find($request->stage_id);
-			if ($workflow->no_second_line_stage_id == 0) {
+			if ($workflow['no_second_line_stage_id'] == 0) {
 				$items = DB::select("
 					select stage_id, to_action
 					from appraisal_stage
@@ -1504,6 +1503,8 @@ class AppraisalAssignmentController extends Controller
 
 	    	$items = DB::select($query_unassign . " order by period_id,emp_code,org_code asc ", $qinput);
 
+	    	$items2 = $this->find_derive($items, $request->appraisal_type_id, $request->appraisal_form, $request->period_id);
+
 		// Get the current page from the url if it's not set default to 1
 	    	empty($request->page) ? $page = 1 : $page = $request->page;
 
@@ -1513,10 +1514,10 @@ class AppraisalAssignmentController extends Controller
 		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
 
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
-		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
+		$itemsForCurrentPage = array_slice($items2, $offSet, $perPage, false);
 
 		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
-		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
+		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items2), $perPage, $page);
 
 		$groups = array();
 		foreach ($itemsForCurrentPage as $item) {
@@ -1538,58 +1539,268 @@ class AppraisalAssignmentController extends Controller
 
 	}
 
+	function find_derive($items, $appraisal_type_id, $appraisal_form, $period_id) {
+		$findDerive = DB::select("
+			SELECT DISTINCT ast.level_id
+			FROM appraisal_structure ast
+			INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+			WHERE ast.is_derive = 1
+			AND ac.appraisal_form_id = '{$appraisal_form}'
+		");
+
+		if(empty($findDerive)) {
+			foreach ($items as $key => $item) {
+				$items[$key]->assigned = 1;
+		    	$items[$key]->assigned_msg = '';
+			}
+		}
+
+		foreach ($findDerive as $findDerives) {
+			foreach ($items as $key => $item) {
+			    if($appraisal_type_id==2) { // individual
+			    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
+			    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+			    	->where("period_id", $period_id)
+			    	->where("emp_id", $findChiefEmp['emp_id'])
+			    	->where("status", "Complete")->first();
+
+			    	if(empty($findEmpResult)) {
+				    	$items[$key]->assigned = 0;
+				    	$items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
+				    } else {
+				    	$items[$key]->assigned = 1;
+				    	$items[$key]->assigned_msg = 'Complete';
+				    	$items[$key]->chief_id_array[] = $findEmpResult->emp_id;
+				    }
+
+			    } else { // Org
+			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+			    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+			    	->where("period_id", $period_id)
+			    	->where("org_id", $findChiefEmp['org_id'])
+			    	->where("status", "Complete")->first();
+
+			    	if(empty($findEmpResult)) {
+				    	$items[$key]->assigned = 0;
+				    	$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
+				    } else {
+				    	$items[$key]->assigned = 1;
+				    	$items[$key]->assigned_msg = 'Complete';
+				    	$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+				    }
+			    }
+			}
+		}
+
+		return $items;
+	}
+
+	function find_derive_item($chief_id_array) {
+			$id = empty($chief_id_array) ? "''" : implode(',',$chief_id_array);
+
+			$query = "
+				SELECT a.item_id, 
+						a.item_name, 
+						uom.uom_name,
+						a.structure_id, 
+						b.structure_name, 
+						b.nof_target_score, 
+						f.form_id, 
+						f.form_name, 
+						f.app_url,
+						ar.weight_percent 'weight_percent_chief',
+						ar.structure_weight_percent 'weight_percent', 
+						a.max_value, 
+						a.value_get_zero, 
+						a.unit_deduct_score, 
+						a.unit_reward_score, 
+						e.no_weight, 
+						a.kpi_type_id, 
+						ar.structure_weight_percent, 
+						b.is_value_get_zero, 
+						a.no_raise_value, 
+						b.is_no_raise_value,
+						b.seq_no,
+						1 form_chief,
+						ar.actual_value,
+						ar.score0,
+						ar.score1,
+						ar.score2,
+						ar.score3,
+						ar.score4,
+						ar.score5,
+						ar.target_value
+				from appraisal_item a
+				left outer join appraisal_structure b on a.structure_id = b.structure_id
+				left outer join form_type f on b.form_id = f.form_id
+				left outer join appraisal_criteria c on b.structure_id = c.structure_id
+				left outer join appraisal_item_level d on a.item_id = d.item_id
+				left outer join appraisal_item_org o on a.item_id = o.item_id
+				left outer join appraisal_level e on d.level_id = e.level_id
+				left join uom on a.uom_id = uom.uom_id
+				inner join appraisal_item_result ar on a.item_id = ar.item_id
+				where e.is_active = 1
+				and (ar.emp_id IN ({$id}) OR ar.org_id IN ({$id}))
+				group by ar.item_result_id
+			";
+
+			$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
+
+			$findResult = DB::select($query . $qfooter);
+
+		return $findResult;
+	}
+
+	private function GetChiefEmpDeriveLevel($paramEmp, $paramDeriveLevel) {
+		$chiefEmpId = 0;
+		$chiefEmpCode = '';
+		$initChiefEmp = DB::table('employee')
+		->select('chief_emp_code')
+		->where('emp_code', $paramEmp)
+		->get();
+
+		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
+
+		while ($curChiefEmp != "0") {
+			$getChief = DB::table('employee')
+			->select('emp_id', 'level_id', 'chief_emp_code')
+			->where('emp_code', $curChiefEmp)
+			->get();
+
+			if(! empty($getChief) ){
+				if($getChief[0]->level_id == $paramDeriveLevel){ 
+					$chiefEmpId = $getChief[0]->emp_id;
+					$chiefEmpCode = $getChief[0]->chief_emp_code;
+					$curChiefEmp = "0";
+				} else {
+					if($getChief[0]->chief_emp_code != "0"){
+						$curChiefEmp = $getChief[0]->chief_emp_code;
+					} else {
+						$curChiefEmp = "0";
+					}
+				}
+			} else {
+				$curChiefEmp = "0";
+			}
+		}
+
+		return ['emp_id' => $chiefEmpId, 'chief_emp_code' => $chiefEmpCode];
+	}
+
+	private function GetParentOrgDeriveLevel($paramOrg, $paramDeriveLevel) {
+		$parentOrgId = 0;
+		$parentOrgCode = '';
+		$initParentOrg = DB::table('org')
+		->select('parent_org_code')
+		->where('org_code', $paramOrg)
+		->get();
+
+		$curParentOrg = $initParentOrg[0]->parent_org_code;
+
+		while ($curParentOrg != "0") {
+			$getChief = DB::table('org')
+			->select('org_id', 'level_id', 'parent_org_code')
+			->where('org_code', $curParentOrg)
+			->get();
+
+			if(!empty($getChief)) {
+				if($getChief[0]->level_id == $paramDeriveLevel) {
+					$parentOrgId = $getChief[0]->org_id;
+					$parentOrgCode = $getChief[0]->parent_org_code;
+					$curParentOrg = "0";
+				} else {
+					if($getChief[0]->parent_org_code != "0" || $getChief[0]->parent_org_code != "") {
+						$curParentOrg = $getChief[0]->parent_org_code;
+					} else {
+						$curParentOrg = "0";
+					}
+				}
+			} else {
+				$curParentOrg = "0";
+			}
+		}
+
+		return ['org_id' => $parentOrgId, 'parent_org_code' => $parentOrgCode];
+	}
+
 	public function assign_template(Request $request)
 	{
+
 		try {
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-	//	$org_join = (empty($request->org_id)) ? " " : "left outer join appraisal_item_org o on a.item_id = o.item_id";
-
+		$emp_result_id = empty($request->emp_result_id) ? "" : "and ar.emp_result_id = '{$request->emp_result_id}' ";
 		$qinput = array();
 		$query = "
-		select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
-		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
-		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
-		, a.no_raise_value, b.is_no_raise_value
-		from appraisal_item a
-		left outer join appraisal_structure b
-		on a.structure_id = b.structure_id
-		left outer join form_type f
-		on b.form_id = f.form_id
-		left outer join appraisal_criteria c
-		on b.structure_id = c.structure_id
-		left outer join appraisal_item_level d
-		on a.item_id = d.item_id
-		and d.level_id = ?
-		left outer join appraisal_item_org o
-		on a.item_id = o.item_id
-		and o.org_id =?
-		left outer join appraisal_level e
-		on d.level_id = e.level_id
-		left join uom on  a.uom_id= uom.uom_id
-		left outer join appraisal_item_result ar
-		on a.item_id = ar.item_id
-		and ar.emp_result_id = ?
-		where e.is_active = 1
-		and if(ar.item_id is not null,1=1,a.is_active = 1)
+			SELECT a.item_id, 
+					a.item_name, 
+					uom.uom_name,
+					a.structure_id, 
+					b.structure_name, 
+					b.nof_target_score, 
+					f.form_id, 
+					f.form_name, 
+					f.app_url,
+					if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
+					a.max_value, 
+					a.value_get_zero, 
+					a.unit_deduct_score, 
+					a.unit_reward_score, 
+					e.no_weight, 
+					a.kpi_type_id, 
+					ar.structure_weight_percent, 
+					b.is_value_get_zero, 
+					a.no_raise_value, 
+					b.is_no_raise_value, 
+					b.seq_no,
+					0 form_chief
+			from appraisal_item a
+			left outer join appraisal_structure b on a.structure_id = b.structure_id
+			left outer join form_type f on b.form_id = f.form_id
+			left outer join appraisal_criteria c on b.structure_id = c.structure_id
+			left outer join appraisal_item_level d on a.item_id = d.item_id and d.level_id = ?
+			left outer join appraisal_item_org o on a.item_id = o.item_id and o.org_id = ?
+			left outer join appraisal_level e on d.level_id = e.level_id
+			left outer join uom on a.uom_id = uom.uom_id
+			left outer join appraisal_item_result ar on a.item_id = ar.item_id
+			where e.is_active = 1
+			{$emp_result_id}
+			and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
+
 		$qinput[] = $request->appraisal_level_id;
 		$qinput[] = $request->org_id;
-		$qinput[] = $request->emp_result_id;
+
 		empty($request->org_id) ?: ($query .= " and (o.org_id = ? or ar.org_id = ?) " AND $qinput[] = $request->org_id AND $qinput[] = $request->org_id);
 		empty($request->appraisal_level_id) ?: ($query .= "and (d.level_id = ? or ar.level_id = ?) " AND $qinput[] = $request->appraisal_level_id AND $qinput[] = $request->appraisal_level_id);
 		empty($request->appraisal_level_id) ?: ($query .= " and c.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
 		$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
 
-		// echo $query . $qfooter;
-		// echo"<br>";
-		// print_r($qinput);
-
 		$items = DB::select($query . $qfooter, $qinput);
+
+		$items2 = $this->find_derive_item($request->chief_id_array);
+
+		$struc = DB::select("
+			SELECT structure_id, weight_percent
+			FROM appraisal_criteria
+			WHERE appraisal_level_id = '{$request->appraisal_level_id}'
+		");
+
+		foreach ($items2 as $value2) {
+			foreach ($struc as $k_struc => $v_struc) {
+				if($v_struc->structure_id==$value2->structure_id) {
+					$value2->weight_percent_chief = number_format(($v_struc->weight_percent*$value2->weight_percent_chief)/$value2->weight_percent,2);
+					$value2->weight_percent = $v_struc->weight_percent;
+					$value2->structure_weight_percent = $v_struc->weight_percent;
+				}
+			}
+		}
+
+		$items = collect($items2)->merge($items);
 
 		$groups = array();
 		foreach ($items as $item) {
