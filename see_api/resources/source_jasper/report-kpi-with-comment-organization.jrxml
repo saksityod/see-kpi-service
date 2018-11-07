@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-kpi-with-comment" language="groovy" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="NoPages" columnWidth="822" leftMargin="10" rightMargin="10" topMargin="10" bottomMargin="10" whenResourceMissingType="Empty" uuid="4e2fc961-a565-4ce9-9d54-6937ae31c1ff">
 	<property name="ireport.zoom" value="0.751314800901585"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="302"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="687"/>
@@ -126,7 +126,7 @@
 	</style>
 	<subDataset name="table" uuid="9e6e2b35-deee-4496-8dc2-c9bcde0bcaf8">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_item" class="java.lang.String"/>
@@ -138,7 +138,7 @@ d.month_name,
 d.target_value,
 d.cds_value,
 d.percent_achievement,
-CASE WHEN d.kpi_type_id=2 THEN"#e6e6e6" ELSE "#ffffff" END as color_status,
+CASE WHEN d.kpi_type_id=2 THEN"#ffffff" ELSE "#ffffff" END as color_status,
 (CASE WHEN d.percent_achievement >= 100 THEN '#0033cc' ELSE '#ff0000' END) as color_percent_achievement,
 concat("#",COALESCE((
 	SELECT IFNULL (
@@ -404,7 +404,7 @@ air.item_id,
 air.item_name,
 air.level_id,
 air.org_id,
-CASE WHEN air.kpi_type_id=2 THEN"#e6e6e6" ELSE "#ffffff" END as color_status,
+CASE WHEN air.kpi_type_id=2 THEN"#ffffff" ELSE "#ffffff" END as color_status,
 CASE WHEN ai.value_type_id = 1 THEN ">/=" ELSE "</=" end as value_type_id,
 (CASE WHEN air.percent_achievement >= 100 THEN '#0033cc' ELSE '#ff0000' END) as color_percent_achievement,
 air.actual_value,
