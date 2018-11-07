@@ -521,8 +521,12 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('bonus/advance_search/organization', 'Bonus\AdvanceSearchController@OrganizationList');
 	Route::get('bonus/advance_search/employee_name', 'Bonus\AdvanceSearchController@GetEmployeeName');
 	Route::get('bonus/advance_search/position_name', 'Bonus\AdvanceSearchController@GetPositionName');
+	Route::get('bonus/advance_search/status', 'Bonus\AdvanceSearchController@StatusList');
+	// Bonus --> Bonus Appraisal //
+	Route::get('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@Index');
+	Route::post('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@SavedAndCalculation');
 
-	Route::get('bonus/advance_search/test', 'Bonus\AdvanceSearchController@GetallUnderEmp');
+	Route::get('bonus/test', 'Bonus\BonusAppraisalController@index');
 
 
 	Route::get('404', ['as' => 'notfound', function () {

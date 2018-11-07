@@ -273,7 +273,17 @@ class AdvanceSearchController extends Controller
 	}
 
 
-
+    public function StatusList(Request $request)
+    {
+        $status = DB::table('appraisal_stage')
+            ->select('stage_id', 'status')
+            ->where('bonus_appraisal_flag', 1)
+            ->get();
+        
+        return response()->json($status);
+    }
+    
+    
     private function GetallUnderEmp($paramEmp)
 	{
         $paramEmp = 'dhas001';
