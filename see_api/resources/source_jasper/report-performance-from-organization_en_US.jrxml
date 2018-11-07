@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7a325e74-40c0-4b48-9155-7f0027c1454e">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<parameter name="org_id" class="java.lang.String"/>
+	<parameter name="appraisal_type_id" class="java.lang.String"/>
+	<parameter name="level_org_id" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="subreport_path" class="java.lang.String"/>
+	<parameter name="appraisal_year" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT lev.level_id
+, CASE WHEN sys.threshold = 1 THEN "report-org-performance-kpi-threshold_en_US.jasper" ELSE "report-org-performance-kpi_en_US.jasper" END as threshold
+, lev.appraisal_level_name as level
+, org.org_id
+, org.org_code
+, org.org_name 
+, (select o.org_name from org o where o.org_code = org.parent_org_code) as parent_org
+, (select g.grade 
+	from appraisal_grade g
+	where avg(emp.result_score) between g.begin_score and g.end_score
+	and g.appraisal_level_id = lev.level_id) as grade
+, emp.appraisal_type_id
+, avg(emp.result_score) as result_score
+, stuc.one
+FROM emp_result emp
+INNER JOIN appraisal_level lev ON emp.level_id = lev.level_id
+INNER JOIN org ON emp.org_id = org.org_id
+INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+INNER JOIN (select max(total.one) as one
+, total.org_id
+, total.appraisal_year
+from (
+	select (CASE WHEN api.structure_id = 1 THEN 1 ELSE 0 END) AS one
+	, air.org_id
+	, app.appraisal_year
+	FROM appraisal_item_result air
+	INNER JOIN appraisal_period app ON app.period_id = air.period_id
+	INNER JOIN appraisal_item api ON api.item_id = air.item_id
+	INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
+	INNER JOIN (select org_id, level_id from emp_result where appraisal_type_id = 1) org2 ON  org2.org_id = air.org_id
+		AND org2.level_id = air.level_id
+	)total 
+	group by total.org_id ,total.appraisal_year) stuc ON org.org_id = stuc.org_id 
+	and stuc.appraisal_year = pe.appraisal_year
+cross join system_config sys
+WHERE (org.org_id IN( $P!{org_id} ) )
+AND (emp.appraisal_type_id = $P{appraisal_type_id})
+AND (emp.level_id = $P{level_org_id}  OR '' = $P{level_org_id}  OR  ISNULL($P{level_org_id}) = 1 )
+AND  pe.appraisal_year = $P{appraisal_year}
+GROUP BY lev.level_id
+, lev.appraisal_level_name
+, org.org_id
+, org.org_code
+, org.org_name 
+, (select o.org_name from org o where o.org_code = org.parent_org_code)
+, emp.appraisal_type_id
+ORDER BY  lev.level_id ASC
+, org.org_id ASC]]>
+	</queryString>
+	<field name="level_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="threshold" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="threshold"/>
+	</field>
+	<field name="level" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="level"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="org_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="org_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="parent_org" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parent_org"/>
+	</field>
+	<field name="grade" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="grade"/>
+	</field>
+	<field name="appraisal_type_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_type_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="result_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
+	</field>
+	<field name="one" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="one"/>
+	</field>
+	<group name="Group1" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{org_id}]]></groupExpression>
+		<groupHeader>
+			<band height="126">
+				<staticText>
+					<reportElement x="0" y="25" width="801" height="93" uuid="88867887-7495-4340-b6c1-22170831951e"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="0" width="802" height="25" forecolor="#FFFFFF" backcolor="#666666" uuid="d4dc24f7-3cb4-4409-b0f0-cef7b71a1168"/>
+					<textElement verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+					</textElement>
+					<text><![CDATA[ Organization Info]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="389" y="33" width="203" height="40" uuid="45158639-c876-4369-a8bc-41fefbc4a902"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14"/>
+						<paragraph leftIndent="3" spacingBefore="3"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="594" y="61" width="70" height="50" uuid="ac9e9d0d-0bba-41d9-8d27-d6798930e81d"/>
+					<box>
+						<pen lineWidth="0.75"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="24" isBold="true"/>
+						<paragraph rightIndent="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{grade} == null)? " " : $F{grade}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="286" y="73" width="103" height="40" uuid="d9e29e46-cbb4-4cd1-8f45-be65d0cf8fcc"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<text><![CDATA[Parent Organization :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="286" y="33" width="102" height="40" uuid="3052680e-42f0-4c88-bede-f4297cde56d8"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph firstLineIndent="0" leftIndent="3" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Organization Code :]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="389" y="73" width="203" height="40" uuid="8a05a7ef-91ca-4f90-a040-67085cab17fa"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parent_org}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="75" y="73" width="211" height="40" uuid="e81d8edd-08b1-4606-8169-84344b959e4f"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14"/>
+						<paragraph leftIndent="3"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="75" y="33" width="211" height="40" uuid="b2d203f9-f993-4b61-abb8-c78aa77d9d07"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14"/>
+						<paragraph leftIndent="3" spacingBefore="3"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{level}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="594" y="33" width="70" height="28" uuid="aba8fadd-31a9-492d-bf15-9c4503da1886"/>
+					<box>
+						<pen lineWidth="0.75"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[GARDE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="664" y="33" width="128" height="28" uuid="29537e6f-f99e-4230-9047-faef3dbaac63"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Score]]></text>
+				</staticText>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="664" y="61" width="128" height="50" uuid="3eb60491-4f66-4613-99be-bcdb2475d36f"/>
+					<box>
+						<pen lineWidth="0.75"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="24" isBold="true"/>
+						<paragraph lineSpacing="Double" rightIndent="0"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{result_score}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="33" width="65" height="40" uuid="56193d4b-b3f8-4213-834f-9cf97784fa84"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<paragraph firstLineIndent="0" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Level :]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="10" y="73" width="65" height="40" uuid="3e5d44af-477c-4252-a0fc-29d35da2a75d"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Left" verticalAlignment="Top">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Organization :]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="802" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="8d1417aa-80c1-4fff-8927-04180260fc0b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="22" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Organization Performance Appraisal  Report]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="21">
+			<subreport>
+				<reportElement x="-20" y="1" width="820" height="20" isPrintInFirstWholeBand="true" uuid="23736bd8-f63a-4a2b-a801-460988832dad"/>
+				<subreportParameter name="one">
+					<subreportParameterExpression><![CDATA[$F{one}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="level_id">
+					<subreportParameterExpression><![CDATA[$F{level_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[$F{org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="appraisal_year">
+					<subreportParameterExpression><![CDATA[$P{appraisal_year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/"+$F{threshold}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="800" height="20" uuid="ba8bf550-a8c8-41c3-91d9-3e60cf0d5d69"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16"/>
+				</textElement>
+				<textFieldExpression><![CDATA["- "+$V{PAGE_NUMBER}+" -"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

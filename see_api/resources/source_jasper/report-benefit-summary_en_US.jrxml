@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-benefit-summary" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="57ed5678-ab39-436b-8433-8e738faafba5">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
+	<subDataset name="Chart" uuid="6ce56bbf-7e1d-4f2c-a51b-93f01865d3fb">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2-log"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="param_year" class="java.lang.String"/>
+		<parameter name="param_period" class="java.lang.String"/>
+		<parameter name="param_level_emp" class="java.lang.String"/>
+		<parameter name="param_org_id" class="java.lang.String"/>
+		<parameter name="param_user" class="java.lang.String"/>
+		<parameter name="param_position" class="java.lang.String"/>
+		<parameter name="param_emp" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT emr.grade 
+, COUNT(DISTINCT emr.emp_id) AS num_emp
+, ROUND((COUNT(DISTINCT emr.emp_id)*100)/(SELECT count(distinct e.emp_id)
+ FROM emp_result e
+ INNER JOIN appraisal_period p ON e.period_id = p.period_id
+ INNER JOIN employee em ON e.emp_id = em.emp_id
+ WHERE e.grade IS NOT NULL
+ AND p.appraisal_year =  $P{param_year}   -- ${appraisal_year}
+ AND e.period_id =  $P{param_period} -- ${period_id}
+ AND (e.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
+ AND (e.org_id in ( $P!{param_org_id}))  -- ${org_id} 
+ AND (em.emp_id = $P{param_emp}  OR '' = $P{param_emp} OR ISNULL( $P{param_emp} ) = 1 )
+ AND (em.position_id = $P{param_position}  OR '' = $P{param_position} OR ISNULL( $P{param_position} ) = 1 )
+ AND ((em.chief_emp_code = $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user}) )
+	OR (em.emp_code = $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user}) ))
+), 0) AS percent
+, (SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = $P{param_period}  ) AS period_desc -- ${period_id}
+, (SELECT appraisal_level_name FROM appraisal_level WHERE level_id = $P{param_level_emp}  ) AS level_name -- ${appraisal_type_id}
+, (SELECT org_name FROM org WHERE org_id = $P{param_org_id}  ) AS org_name -- ${org_id}
+FROM emp_result emr
+INNER JOIN appraisal_period app ON emr.period_id = app.period_id
+INNER JOIN employee emp ON emr.emp_id = emp.emp_id
+
+WHERE emr.grade IS NOT NULL
+AND app.appraisal_year =  $P{param_year}   -- ${appraisal_year}
+AND emr.period_id =  $P{param_period}  -- ${period_id}
+AND (emr.level_id = $P{param_level_emp}   OR '' = $P{param_level_emp}  OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
+AND (emr.org_id  in ( $P!{param_org_id}))-- ${org_id}
+AND (emp.emp_id = $P{param_emp}  OR '' = $P{param_emp} OR ISNULL( $P{param_emp} ) = 1 )
+AND (emp.position_id = $P{param_position}  OR '' = $P{param_position} OR ISNULL( $P{param_position} ) = 1 )
+AND ((emp.chief_emp_code = $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user}) )
+	OR (emp.emp_code = $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user}) ))
+GROUP BY emr.grade DESC]]>
+		</queryString>
+		<field name="grade" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="grade"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+		</field>
+		<field name="num_emp" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="num_emp"/>
+		</field>
+		<field name="percent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent"/>
+		</field>
+		<field name="period_desc" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="period_desc"/>
+		</field>
+		<field name="level_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="level_name"/>
+		</field>
+		<field name="org_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		</field>
+	</subDataset>
+	<parameter name="param_period" class="java.lang.String"/>
+	<parameter name="param_org_id" class="java.lang.String"/>
+	<parameter name="param_year" class="java.lang.String"/>
+	<parameter name="param_level_emp" class="java.lang.String"/>
+	<parameter name="param_level_org" class="java.lang.String"/>
+	<parameter name="param_emp" class="java.lang.String"/>
+	<parameter name="param_position" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT org.org_name
+, emp.emp_code
+, po.position_name
+, emr.position_id
+, emp.emp_name
+, emr.grade
+, CONCAT(apg.begin_score,' - ',apg.end_score) AS score
+, emr.result_score
+, apg.salary_raise_amount
+, app.appraisal_period_desc
+, app.appraisal_year
+, emr.org_id
+, emr.period_id
+, emr.level_id
+, emr.emp_id
+, 1 AS graph
+, (SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = $P{param_period}  ) AS period_main
+, (SELECT appraisal_level_name FROM appraisal_level WHERE level_id = $P{param_level_emp}  ) AS level_main
+, org_name.org_main
+FROM emp_result emr
+INNER JOIN employee emp ON emr.emp_id = emp.emp_id
+INNER JOIN position po ON emp.position_id = po.position_id
+INNER JOIN org ON emp.org_id = org.org_id
+INNER JOIN appraisal_period app ON emr.period_id = app.period_id
+INNER JOIN appraisal_grade apg ON emr.level_id = apg.appraisal_level_id
+ AND emr.grade = apg.grade
+CROSS JOIN (SELECT group_concat(org_name) as org_main from org WHERE org_id IN ($P!{param_org_id})) org_name
+WHERE emr.period_id = $P{param_period}  
+AND app.appraisal_year =  $P{param_year} 
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp} OR ISNULL( $P{param_level_emp} ) = 1) -- ${level_id}
+AND (emr.org_id IN ( $P!{param_org_id} )  )
+AND (emr.emp_id =   $P{param_emp}   OR '' =   $P{param_emp}   OR ISNULL( $P{param_emp} ) = 1)
+AND (emr.position_id =  $P{param_position}    OR '' =   $P{param_position}   OR ISNULL(  $P{param_position}  ) = 1)
+AND ((emp.chief_emp_code =  $P{param_user}  OR $P{param_user} = (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user} ) )
+OR (emp.emp_code =  $P{param_user}  OR $P{param_user} =  (select e2.emp_code from employee e2
+	inner join appraisal_level l2 on e2.level_id = l2.level_id
+	where l2.is_all_employee = 1
+	and e2.emp_code = $P{param_user} ) ))
+ORDER BY emp.org_id ASC
+,emr.result_score DESC
+, emp.emp_id ASC]]>
+	</queryString>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="emp_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="position_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="position_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="position_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="emp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="grade" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="grade"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="score" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="score"/>
+	</field>
+	<field name="result_score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="salary_raise_amount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="salary_raise_amount"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_grade"/>
+	</field>
+	<field name="appraisal_period_desc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="appraisal_year" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="org_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="period_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="period_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="level_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="level_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="emp_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="emp_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
+	</field>
+	<field name="graph" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="graph"/>
+	</field>
+	<field name="period_main" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="period_main"/>
+	</field>
+	<field name="level_main" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="level_main"/>
+	</field>
+	<field name="org_main" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_main"/>
+	</field>
+	<group name="Group2" minHeightToStartNewPage="200">
+		<groupExpression><![CDATA[$F{graph}]]></groupExpression>
+		<groupHeader>
+			<band height="434">
+				<pieChart>
+					<chart isShowLegend="false" evaluationTime="Report">
+						<reportElement x="410" y="20" width="390" height="390" uuid="7f810167-ef24-410b-87a7-252b48343c1c"/>
+						<box>
+							<pen lineColor="#BCBCBC"/>
+							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#BCBCBC"/>
+							<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#BCBCBC"/>
+							<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#BCBCBC"/>
+							<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#BCBCBC"/>
+						</box>
+						<chartTitle>
+							<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+							<titleExpression><![CDATA["Percentage Evaluated by Grade"]]></titleExpression>
+						</chartTitle>
+						<chartSubtitle/>
+						<chartLegend/>
+					</chart>
+					<pieDataset>
+						<dataset>
+							<datasetRun subDataset="Chart" uuid="b361e033-7741-408e-92b3-bfa8452ad832">
+								<datasetParameter name="param_org_id">
+									<datasetParameterExpression><![CDATA[$P{param_org_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_level_emp">
+									<datasetParameterExpression><![CDATA[$P{param_level_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_period">
+									<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_year">
+									<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_emp">
+									<datasetParameterExpression><![CDATA[$P{param_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_position">
+									<datasetParameterExpression><![CDATA[$P{param_position}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_user">
+									<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+								</datasetParameter>
+							</datasetRun>
+						</dataset>
+						<keyExpression><![CDATA[$F{grade}+"\n  "+$F{percent}+" %"]]></keyExpression>
+						<valueExpression><![CDATA[$F{num_emp}]]></valueExpression>
+					</pieDataset>
+					<piePlot>
+						<plot>
+							<seriesColor seriesOrder="0" color="#2067A9"/>
+							<seriesColor seriesOrder="1" color="#2D95EC"/>
+							<seriesColor seriesOrder="2" color="#6CB3F1"/>
+							<seriesColor seriesOrder="3" color="#A2BBF1"/>
+							<seriesColor seriesOrder="4" color="#ACD4F7"/>
+							<seriesColor seriesOrder="5" color="#EAF4FD"/>
+							<seriesColor seriesOrder="6" color="#BCBCBC"/>
+							<seriesColor seriesOrder="7" color="#666666"/>
+							<seriesColor seriesOrder="8" color="#133B5E"/>
+							<seriesColor seriesOrder="9" color="#2F3D4A"/>
+						</plot>
+						<itemLabel/>
+					</piePlot>
+				</pieChart>
+				<barChart>
+					<chart isShowLegend="false" evaluationTime="Report">
+						<reportElement x="0" y="20" width="390" height="390" uuid="c9f1c4e4-ecb8-4cad-96d7-081ad12f9b53">
+							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<property name="net.sf.jasperreports.chart.range.axis.tick.interval" value="1"/>
+						</reportElement>
+						<box>
+							<pen lineColor="#BFBFBF"/>
+							<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#BFBFBF"/>
+							<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#BFBFBF"/>
+							<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#BFBFBF"/>
+							<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#BFBFBF"/>
+						</box>
+						<chartTitle>
+							<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+							<titleExpression><![CDATA["Amount Employee by Grade"]]></titleExpression>
+						</chartTitle>
+						<chartSubtitle/>
+						<chartLegend/>
+					</chart>
+					<categoryDataset>
+						<dataset>
+							<datasetRun subDataset="Chart" uuid="71ff5628-09f8-46cb-9d1c-622586c3f784">
+								<datasetParameter name="param_level_emp">
+									<datasetParameterExpression><![CDATA[$P{param_level_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_org_id">
+									<datasetParameterExpression><![CDATA[$P{param_org_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_period">
+									<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_year">
+									<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_emp">
+									<datasetParameterExpression><![CDATA[$P{param_emp}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_position">
+									<datasetParameterExpression><![CDATA[$P{param_position}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_user">
+									<datasetParameterExpression><![CDATA[$P{param_user}]]></datasetParameterExpression>
+								</datasetParameter>
+							</datasetRun>
+						</dataset>
+						<categorySeries>
+							<seriesExpression><![CDATA[" "]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{grade}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{num_emp}]]></valueExpression>
+						</categorySeries>
+					</categoryDataset>
+					<barPlot isShowLabels="true">
+						<plot labelRotation="0.0">
+							<seriesColor seriesOrder="0" color="#527CDE"/>
+						</plot>
+						<itemLabel>
+							<font fontName="TH SarabunPSK " size="16"/>
+						</itemLabel>
+						<categoryAxisLabelExpression><![CDATA["Grade"]]></categoryAxisLabelExpression>
+						<categoryAxisFormat labelRotation="0.0">
+							<axisFormat labelColor="#000000" tickLabelColor="#000000" axisLineColor="#000000">
+								<labelFont>
+									<font fontName="TH SarabunPSK " size="16"/>
+								</labelFont>
+								<tickLabelFont>
+									<font fontName="TH SarabunPSK " size="16"/>
+								</tickLabelFont>
+							</axisFormat>
+						</categoryAxisFormat>
+						<valueAxisLabelExpression><![CDATA["Amount"]]></valueAxisLabelExpression>
+						<valueAxisFormat>
+							<axisFormat labelColor="#000000" tickLabelColor="#000000" tickLabelMask="#" axisLineColor="#000000">
+								<labelFont>
+									<font fontName="TH SarabunPSK " size="16"/>
+								</labelFont>
+								<tickLabelFont>
+									<font fontName="TH SarabunPSK " size="16"/>
+								</tickLabelFont>
+							</axisFormat>
+						</valueAxisFormat>
+					</barPlot>
+				</barChart>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Group1" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="100">
+		<groupExpression><![CDATA[$F{org_name}]]></groupExpression>
+		<groupHeader>
+			<band height="90">
+				<textField>
+					<reportElement x="0" y="7" width="801" height="30" uuid="b93fe1da-3adc-4d32-b791-38eae573eb36"/>
+					<textElement textAlignment="Left" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="19" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="109" y="37" width="150" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="af584f79-1396-4181-923f-f7a386c4eae8"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Name]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="687" y="37" width="114" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="47116ebc-e32a-4e0e-971c-75c198dafe66"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Salary Raise Amount
+(Baht)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="625" y="37" width="62" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="b28d8a7b-8b9c-4095-ba5b-cf3e22addbb1"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Score]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="500" y="37" width="125" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="c51a9bdb-b4e2-43cb-951c-82eb2fd3a5ff"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Score
+Begin-End]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="460" y="37" width="40" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="76f2f15b-13cb-4318-a5cf-b319ff7f14ea"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Grade]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="40" y="37" width="69" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="2803f72f-537d-45ef-8b7c-8b15951c39a5"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Employee 
+Code]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="259" y="37" width="201" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="f33170da-b50c-4ba1-b778-979574bc02c9"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[Position]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="37" width="40" height="53" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="59b5151c-6be2-4f7e-b2aa-49610eaedfc4"/>
+					<box>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<paragraph lineSpacing="Single" spacingBefore="3"/>
+					</textElement>
+					<text><![CDATA[No.]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<columnHeader>
+		<band height="90">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="0" y="25" width="801" height="64" forecolor="#000000" uuid="5096005e-8a5d-4d77-8755-6392bf04d96a"/>
+				<box>
+					<pen lineColor="#3B5998"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#3B5998"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="15"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Year : "+$P{param_year}+"   Period : "+$F{period_main}+"   Level : "+($F{level_main} == null ? "All Level" : $F{level_main}) +"\n"+"   Organization : " +$F{org_main}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="801" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="505fe98a-ccda-4f8e-95eb-48767be2b3ad"/>
+				<box>
+					<pen lineWidth="1.0" lineColor="#3B5998"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Benefit Summary Report]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="40" height="30" uuid="54b17450-e237-4036-9a4a-a44f09400f8e"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Group2_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="40" y="0" width="69" height="30" uuid="3d7cdee9-f1f6-45f8-b2b6-919229e35037"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="259" y="0" width="201" height="30" uuid="cdb7a01f-78ef-41cd-9456-41baef92f9c2"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="109" y="0" width="150" height="30" uuid="b002c312-e811-41bb-8f34-7a1be46c3a24"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="460" y="0" width="40" height="30" uuid="a1e49c51-47de-41ad-add5-8d52b14e5cad"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{grade}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="500" y="0" width="125" height="30" uuid="1f6e429f-4515-49b7-b854-889626dbfd50"/>
+				<box leftPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="625" y="0" width="62" height="30" uuid="bdd4b338-f52a-4c26-a2c3-a0430af6a071"/>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{result_score}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToTallestObject" x="687" y="0" width="114" height="30" uuid="fac59706-64dc-41e6-94e8-23a62840249a"/>
+				<box rightPadding="3">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="TH SarabunPSK" size="16"/>
+					<paragraph spacingBefore="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{salary_raise_amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="30">
+			<textField>
+				<reportElement x="0" y="0" width="801" height="30" uuid="5274395f-b1f5-42f0-8e12-a51ded90cc87"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16"/>
+				</textElement>
+				<textFieldExpression><![CDATA["- "+$V{PAGE_NUMBER}+" -"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
