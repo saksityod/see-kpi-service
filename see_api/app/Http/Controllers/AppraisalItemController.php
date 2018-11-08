@@ -1376,7 +1376,7 @@ class AppraisalItemController extends Controller
 				'kpi_id' => 'numeric',
 				'org' => $org_required
 			]);
-
+				
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			} else {
@@ -1498,8 +1498,8 @@ class AppraisalItemController extends Controller
 					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
 					'structure_id' => 'required|integer',
 					'appraisal_level' => 'required',
-					'max_value' => 'required|numeric',
-					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
+					'max_value' => 'numeric',
+					'unit_deduct_score' => 'numeric|digits_between:1,4',
 					'is_active' => 'required|boolean',
 					'org' => $org_required,
 					'no_raise_value' => 'numeric' 
@@ -1509,13 +1509,12 @@ class AppraisalItemController extends Controller
 					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
 					'structure_id' => 'required|integer',
 					'appraisal_level' => 'required',
-					'max_value' => 'required|numeric',
-					'unit_deduct_score' => 'required|numeric|digits_between:1,4',
+					'max_value' => 'numeric',
+					'unit_deduct_score' => 'numeric|digits_between:1,4',
 					'is_active' => 'required|boolean',
 					'org' => $org_required
 				]);
 			}
-		
 
 			if ($validator->fails()) {
 				return response()->json(['status' => 400, 'data' => $validator->errors()]);
@@ -1524,9 +1523,15 @@ class AppraisalItemController extends Controller
 				if ($request->value_get_zero == "" ) {
 					$item->value_get_zero = null;
 				}
-				if ($request->no_raise_value == "" )	{
+				if ($request->no_raise_value == "" ){
 					$item->no_raise_value = null;
-				}		
+				}
+				if ($request->max_value == "" ){
+					$item->max_value = null;
+				}
+				if ($request->unit_deduct_score == "" ){
+					$item->unit_deduct_score = null;
+				}
 				$item->updated_by = Auth::id();
 				$item->save();
 				
@@ -1572,7 +1577,7 @@ class AppraisalItemController extends Controller
 					'item_name' => 'required|max:255|unique:appraisal_item,item_name,'.$item_id . ',item_id',
 					'structure_id' => 'required|integer',
 					'appraisal_level' => 'required',
-					'max_value' => 'required|numeric',
+					'max_value' => 'numeric',
 					'unit_reward_score' => 'required|numeric|digits_between:1,4',
 					'is_active' => 'required|boolean'
 			]);
@@ -1582,6 +1587,9 @@ class AppraisalItemController extends Controller
 				$item->fill($request->except(['form_id','org','position','appraisal_level']));
 				if ($request->value_get_zero = "") {
 					$item->value_get_zero = null;
+				}
+				if ($request->max_value == "" ){
+					$item->max_value = null;
 				}
 				$item->updated_by = Auth::id();
 				$item->save();
