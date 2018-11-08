@@ -41,7 +41,7 @@ class AppraisalGroupController extends Controller
 		$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
 			->where('is_active', 1)
 			->where('is_individual', 1)
-			->orderBy('level_id')
+			->orderBy('seq_no','asc')
 			->get();
 		
 		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง
@@ -107,7 +107,7 @@ class AppraisalGroupController extends Controller
 				WHERE emp.org_id = org.org_id
 				AND emp.level_id = {$request->level_id}
 			)
-			ORDER BY org.level_id
+			ORDER BY vel.seq_no
 		");
 
 		return response()->json($result);

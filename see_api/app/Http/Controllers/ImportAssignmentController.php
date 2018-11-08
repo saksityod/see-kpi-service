@@ -68,6 +68,7 @@ class ImportAssignmentController extends Controller
         left outer join appraisal_level b
         on a.level_id = b.level_id
         where emp_code = '".Auth::id()."'
+        order by b.seq_no ASC
       ");
 
       if ($request->appraisal_type_id == "1") {
@@ -77,7 +78,7 @@ class ImportAssignmentController extends Controller
             From appraisal_level
             Where is_active = 1
             and is_org = 1
-            Order by level_id desc
+            order by seq_no ASC
           ");
         } else {
           $items = DB::select("
@@ -89,7 +90,8 @@ class ImportAssignmentController extends Controller
           on ee.org_id = e.org_id
           where (ee.chief_emp_code = ? or ee.emp_code = ?)
           and l.is_org = 1
-          group by l.level_id desc
+          group by l.level_id 
+          order by l.seq_no ASC
           ", array(Auth::id(), Auth::id()));
         }
       } else if($request->appraisal_type_id == "2") {
@@ -99,7 +101,7 @@ class ImportAssignmentController extends Controller
             From appraisal_level
             Where is_active = 1
             and is_individual = 1
-            Order by level_id desc
+            order by seq_no ASC
           ");
         } else {
           $items = DB::select("
@@ -109,7 +111,8 @@ class ImportAssignmentController extends Controller
           on l.level_id = ee.level_id
           where (ee.chief_emp_code = ? or ee.emp_code = ?)
           and l.is_individual = 1
-          group by l.level_id desc
+          group by l.level_id 
+          order by seq_no ASC
           ", array(Auth::id(), Auth::id()));
         }
       } else {

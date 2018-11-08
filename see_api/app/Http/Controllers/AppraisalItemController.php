@@ -77,7 +77,8 @@ class AppraisalItemController extends Controller
     		from employee a
     		left outer join appraisal_level b
     		on a.level_id = b.level_id
-    		where emp_code = ?
+			where emp_code = ?
+			order by b.seq_no ASC
     		", array(Auth::id()));
 
     	if ($all_emp[0]->count_no > 0) {
@@ -86,7 +87,7 @@ class AppraisalItemController extends Controller
     			From appraisal_level
     			Where is_active = 1
     			and is_individual = 1
-    			Order by level_id desc
+				order by seq_no ASC
     			");
     	} else {
     		$items = DB::select("
@@ -97,7 +98,8 @@ class AppraisalItemController extends Controller
     			where (e.chief_emp_code = ? or e.emp_code = ?)
     			and is_individual = 1
     			and l.is_active = 1
-    			group by l.level_id
+				group by l.level_id
+				order by l.seq_no ASC
     			", array(Auth::id(), Auth::id()));
     	}
 
@@ -112,7 +114,8 @@ class AppraisalItemController extends Controller
 	    	from employee a
 	    	left outer join appraisal_level b
 	    	on a.level_id = b.level_id
-	    	where emp_code = ?
+			where emp_code = ?
+			order by b.seq_no ASC
 	    ", array(Auth::id()));
 
 	    $level_id = empty($request->level_id) ? "" : "and e.level_id = {$request->level_id}";
@@ -123,7 +126,7 @@ class AppraisalItemController extends Controller
 				from appraisal_level al
 				where al.is_active = 1
 				and al.is_org = 1
-				order by al.level_id
+				order by al.seq_no ASC
     			");
     	} else if($all_emp[0]->count_no > 0 && !empty($request->level_id)){
     		$items = DB::select("
@@ -134,7 +137,7 @@ class AppraisalItemController extends Controller
 				where org.is_active = 1
 				and al.is_org = 1
 				".$level_id."
-				order by org.level_id
+				order by al.seq_no ASC
     			");
     	} else {
     		$items = DB::select("
@@ -146,7 +149,7 @@ class AppraisalItemController extends Controller
 				and al.is_org = 1
 				".$level_id."
 				and (e.chief_emp_code = ? or e.emp_code = ?)
-				order by org.level_id
+				order by al.seq_no ASC
     			", array(Auth::id(), Auth::id()));
     	}
 		return response()->json($items);

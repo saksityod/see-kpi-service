@@ -117,6 +117,7 @@ class AppraisalDataController extends Controller
 			left outer join appraisal_level b
 			on a.level_id = b.level_id
 			where emp_code = ?
+			Order by b.seq_no ASC
 			", array(auth::id()));
 
 		if ($all_emp[0]->count_no > 0) {
@@ -125,7 +126,7 @@ class AppraisalDataController extends Controller
 				From appraisal_level
 				Where is_active = 1
 				and is_individual = 1 
-				Order by level_id asc
+				Order by seq_no ASC
 				");
 		} else {
 
@@ -228,7 +229,8 @@ class AppraisalDataController extends Controller
 				and l.is_individual = 1
 				and l.is_active = 1
 				and e.is_active = 1
-				group by l.level_id asc
+				group by l.level_id 
+				Order by l.seq_no ASC
 				");
 		}
 
@@ -243,6 +245,7 @@ class AppraisalDataController extends Controller
 			left outer join appraisal_level b
 			on a.level_id = b.level_id
 			where emp_code = ?
+			Order by b.seq_no ASC
 			", array($request->emp_code));
 
 		if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
@@ -250,7 +253,7 @@ class AppraisalDataController extends Controller
 				select level_id, appraisal_level_name
 				From appraisal_level
 				Where is_active = 1
-				Order by level_id
+				Order by seq_no ASC
 				");
 		} else if($all_emp[0]->count_no > 0 && !empty($request->level_id)){
 			$items = DB::select("
@@ -266,6 +269,7 @@ class AppraisalDataController extends Controller
 				and o.is_active = 1
 				and e.is_active = 1
 				group by l.level_id
+				Order by l.seq_no ASC
 				", array($request->level_id));
 		} else {
 
@@ -373,6 +377,7 @@ class AppraisalDataController extends Controller
 				and o.is_active = 1
 				and e.is_active = 1
 				group by l.level_id
+				Order by l.seq_no ASC
 				", array($request->level_id));
 		}
 

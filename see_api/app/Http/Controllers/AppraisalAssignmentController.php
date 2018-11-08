@@ -742,7 +742,8 @@ class AppraisalAssignmentController extends Controller
 	    		from employee a
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
-	    		where emp_code = ?
+				where emp_code = ?
+				Order by b.seq_no ASC
 	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0) {
@@ -751,7 +752,7 @@ class AppraisalAssignmentController extends Controller
 	    			From appraisal_level
 	    			Where is_active = 1
 	    			and is_org = 1
-	    			Order by level_id
+	    			Order by seq_no ASC
 	    			");
 	    	} else {
 
@@ -767,7 +768,8 @@ class AppraisalAssignmentController extends Controller
 	    			AND al.is_active = 1
 	    			AND emp.is_active = 1
 	    			AND org.is_active = 1
-	    			LIMIT 1");
+					LIMIT 1
+					Order by al.seq_no ASC ");
 	    		if (!empty($userlevelDb)) {
 	    			foreach ($userlevelDb as $value) {
 	    				$userlevelId = $value->level_id;
@@ -783,7 +785,8 @@ class AppraisalAssignmentController extends Controller
 	    			$result = DB::select("
 	    				SELECT level_id, appraisal_level_name
 	    				FROM appraisal_level
-	    				WHERE is_active = 1");
+						WHERE is_active = 1
+						Order by seq_no ASC ");
 	    		} else {
 	    			$result = DB::select("
 	    				SELECT level_id, appraisal_level_name
@@ -801,7 +804,8 @@ class AppraisalAssignmentController extends Controller
 	    				SELECT @id := {$userlevelId}
 	    				) cur_id
 	    				STRAIGHT_JOIN appraisal_level
-	    				WHERE @id IS NOT NULL
+						WHERE @id IS NOT NULL
+						Order by seq_no ASC
 	    			)");
 	    		}
 	    	}
@@ -816,7 +820,8 @@ class AppraisalAssignmentController extends Controller
 	    		from employee a
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
-	    		where emp_code = ?
+				where emp_code = ?
+				Order by b.seq_no ASC
 	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0) {
@@ -825,7 +830,7 @@ class AppraisalAssignmentController extends Controller
 	    			From appraisal_level
 	    			Where is_active = 1
 	    			and is_individual = 1
-	    			Order by level_id desc
+	    			Order by seq_no ASC
 	    			");
 	    	} else {
 	    		$items = DB::select("
@@ -836,7 +841,8 @@ class AppraisalAssignmentController extends Controller
 	    			where (e.chief_emp_code = ? or e.emp_code = ?)
 	    			and is_individual = 1
 	    			and l.is_active = 1
-	    			group by l.level_id desc
+					group by l.level_id 
+					Order by seq_no ASC
 	    			", array(Auth::id(), Auth::id()));
 	    	}
 
@@ -850,7 +856,8 @@ class AppraisalAssignmentController extends Controller
 	    		from employee a
 	    		left outer join appraisal_level b
 	    		on a.level_id = b.level_id
-	    		where emp_code = ?
+				where emp_code = ?
+				Order by b.seq_no ASC
 	    		", array(Auth::id()));
 
 	    	if ($all_emp[0]->count_no > 0 && empty($request->level_id) ) {
@@ -858,7 +865,7 @@ class AppraisalAssignmentController extends Controller
 	    			Select level_id, appraisal_level_name
 	    			From appraisal_level
 	    			Where is_active = 1
-	    			Order by level_id
+	    			Order by seq_no ASC
 	    			");
 	    	} else if($all_emp[0]->count_no > 0 && !empty($request->level_id)){
 	    		$items = DB::select("
@@ -873,7 +880,8 @@ class AppraisalAssignmentController extends Controller
 	    			and l.is_active = 1
 	    			and o.is_active = 1
 	    			and e.is_active = 1
-	    			group by l.level_id
+					group by l.level_id
+					Order by l.seq_no ASC
 	    			", array($request->level_id));
 	    	} else {
 	    		$items = DB::select("
@@ -889,7 +897,8 @@ class AppraisalAssignmentController extends Controller
 	    			and l.is_active = 1
 	    			and o.is_active = 1
 	    			and e.is_active = 1
-	    			group by l.level_id
+					group by l.level_id
+					Order by l.seq_no ASC
 	    			", array($request->level_id));
 	    	}
 

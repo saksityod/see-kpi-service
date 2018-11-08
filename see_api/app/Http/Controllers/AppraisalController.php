@@ -1948,7 +1948,8 @@ class AppraisalController extends Controller
         SELECT level_id, appraisal_level_name
         FROM appraisal_level
         WHERE is_active = 1
-		and is_org = 1");
+		and is_org = 1
+		order by seq_no ASC");
     } else {
       $result = DB::select("
       SELECT level_id, appraisal_level_name
@@ -1967,7 +1968,8 @@ class AppraisalController extends Controller
       		SELECT @id := {$empLevInfo["level_id"]}
       	) cur_id
       	STRAIGHT_JOIN appraisal_level
-      	WHERE @id IS NOT NULL
+		  WHERE @id IS NOT NULL
+		  order by seq_no ASC
       )");
     }
 
@@ -1993,7 +1995,7 @@ class AppraisalController extends Controller
 				FROM appraisal_level
 				WHERE is_active = 1
 				AND is_individual = 1
-				ORDER BY level_id DESC
+				ORDER BY seq_no ASC
 			");
 		} else {
 			$result = DB::select("
@@ -2018,7 +2020,7 @@ class AppraisalController extends Controller
 					)
 				)
 				GROUP BY lev.level_id
-				ORDER BY lev.level_id DESC
+				ORDER BY lev.seq_no ASC
 			");
 		}
 
@@ -2160,7 +2162,7 @@ class AppraisalController extends Controller
 					".$levelStr."
 					".$periodStr."
 					AND lev.is_org = 1
-					ORDER BY org.level_id ASC");
+					order by lev.seq_no ASC");
 	    } else {
 	      $result = DB::select("
 		      SELECT distinct org.level_id, lev.appraisal_level_name
@@ -2188,7 +2190,7 @@ class AppraisalController extends Controller
 					".$levelStr."
 					".$periodStr."
 					AND lev.is_org = 1
-					ORDER BY org.level_id ASC");
+					order by lev.seq_no ASC");
 	    }
 
 		return response()->json($result);

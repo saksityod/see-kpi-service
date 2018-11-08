@@ -120,6 +120,7 @@ class ReportController extends Controller
 			on e.emp_code = ul.emp_code
 			where al.is_active = 1
 			group by al.level_id
+			order by al.seq_no ASC
 		");
 		return response()->json($items);
     }
@@ -138,6 +139,7 @@ class ReportController extends Controller
 			inner join usage_log ul
 			on e.emp_code = ul.emp_code
 			".$level_id."
+			order by al.seq_no ASC
 			");
 		return response()->json($items);
     }
