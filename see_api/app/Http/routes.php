@@ -528,7 +528,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Bonus --> Bonus Adjustment //
 	Route::get('bonus/adjustment', 'Bonus\BonusAdjustmentController@index');
 	Route::post('bonus/adjustment', 'Bonus\BonusAdjustmentController@store');
-	Route::get('bonus/adjustment/to_action/{$stage_id}', 'Bonus\BonusAdjustmentController@to_action');
+	Route::get('bonus/adjustment/to_action', 'Bonus\BonusAdjustmentController@to_action');
 	// Bonus --> Report //
 	Route::get('bonus/report', 'Bonus\BonusReportController@index');
 
