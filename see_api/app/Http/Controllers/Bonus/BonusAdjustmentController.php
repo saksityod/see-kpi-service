@@ -25,12 +25,31 @@ class BonusAdjustmentController extends Controller
     }
 
     function empAuth() {
-        $empAuth = Employee::where("emp_code", Auth::id())->first();
+        // $empAuth = Employee::where("emp_code", Auth::id())->first();
+        $empAuth = DB::table('employee')
+        ->join('org', 'org.org_id', '=', 'employee.org_id')
+        ->select('org.level_id','employee.emp_id')
+        ->where('emp_code', Auth::id())
+        ->first();
         return $empAuth;
     }
 
     public function store(Request $request) {
         $errors_validator = [];
+
+        if(empty($request['detail'])) {
+            return response()->json([
+                'status' => 400, 
+                'data' => [
+                    0 => [
+                        'SelectCheck' => [
+                            0 => 'Please Select Employee for Adjust'
+                        ]
+                    ]
+                ]
+            ]);
+        }
+
         $validator = Validator::make([
             'stage_id' => $request->stage_id
         ], [
@@ -45,7 +64,7 @@ class BonusAdjustmentController extends Controller
             $validator_detail = Validator::make([
                 'emp_result_id' => $d['emp_result_id'],
                 'percent_adjust' => $d['percent_adjust'],
-                'adjust_result_score' => $d['score']
+                'adjust_result_score' => $d['adjust_result_score']
             ], [
                 'emp_result_id' => 'required|integer',
                 'percent_adjust' => 'required|between:0,100.00',
@@ -65,6 +84,7 @@ class BonusAdjustmentController extends Controller
             $item = new EmpResultJudgement;
             $item->emp_result_id = $d['emp_result_id'];
             $item->judge_id = $this->empAuth()->emp_id;
+            $item->org_level_id = $this->empAuth()->level_id;
             $item->percent_adjust = $d['adjust_result_score'];
             $item->adjust_result_score = $d['adjust_result_score'];
             $item->is_bonus =  1;
@@ -88,11 +108,12 @@ class BonusAdjustmentController extends Controller
     }
 
     public function index(Request $request) {
+        $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $position_id = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $emp_level = empty($request->emp_level) ? "" : " AND e.level_id = '{$request->emp_level}'";
         $org_level = empty($request->org_level) ? "" : " AND o.level_id = '{$request->org_level}'";
         $emp_id = empty($request->emp_id) ? "" : " AND er.emp_id = '{$request->emp_id}'";
-        $stage = empty($request->stage_id) ? "" : " AND er.stage_id = '{$request->stage_id}'";
+        $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
 
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
@@ -103,15 +124,15 @@ class BonusAdjustmentController extends Controller
                     o.org_name, 
                     p.position_name, 
                     er.status,
-                    ee.emp_name result_score_name,
-                    erj.adjust_result_score result_score,
+                    ale.appraisal_level_name result_score_name2,
+                    erj.adjust_result_score result_score2,
                     erj.percent_adjust,
-                    ast.edit_flag,
-                    ast.stage_id
+                    ifnull(ast.edit_flag,0) edit_flag
             FROM emp_result_judgement erj
             INNER JOIN emp_result er ON er.emp_result_id = erj.emp_result_id
             INNER JOIN employee e ON e.emp_id = er.emp_id
-            INNER JOIN employee ee ON ee.emp_id = erj.judge_id
+            INNER JOIN org oo ON oo.level_id = erj.org_level_id
+            INNER JOIN appraisal_level ale ON ale.level_id = oo.level_id
             LEFT JOIN appraisal_level al ON al.level_id = e.level_id
             LEFT JOIN org o ON o.org_id = e.org_id
             LEFT JOIN position p ON p.position_id = e.position_id
@@ -120,52 +141,54 @@ class BonusAdjustmentController extends Controller
                 SELECT MAX(created_dttm)
                 FROM emp_result_judgement
                 WHERE emp_result_judgement.emp_result_id = erj.emp_result_id
-            ) AND er.period_id = '{$request->period_id}'
-            AND er.org_id = '{$request->org_id}'
-            ".$position_id.$emp_level.$org_level.$emp_id.$stage."
+            ) AND ast.emp_result_judgement_flag = 1 
+            AND er.period_id = '{$request->period_id}'
+            AND er.stage_id = '{$request->stage_id}'
+            ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
 
         ");
 
         if(empty($items)) {
             $emp_code = Auth::id();
             $items = DB::select("
-                SELECT  e.emp_code, 
+                SELECT  er.emp_result_id,
+                        e.emp_code, 
                         e.emp_name, 
                         al.appraisal_level_name, 
                         o.org_name, 
                         p.position_name, 
                         er.status,
-                        ee.emp_name result_score_name_chief,
-                        er.result_score result_score_chief,
+                        'หัวหน้า' result_score_name1,
+                        er.result_score result_score1,
                         '' percent_adjust,
                         (
                             SELECT emp_name
                             FROM employee WHERE emp_code = '{$emp_code}'
-                        ) result_score_name,
-                        er.result_score result_score,
-                        ast.edit_flag,
-                        ast.stage_id
+                        ) result_score_name2,
+                        er.result_score result_score2,
+                        ifnull(ast.edit_flag,0) edit_flag
                 FROM emp_result er
                 INNER JOIN employee e ON e.emp_id = er.emp_id
-                LEFT JOIN employee ee ON ee.emp_id = er.chief_emp_id
                 LEFT JOIN appraisal_level al ON al.level_id = e.level_id
                 LEFT JOIN org o ON o.org_id = e.org_id
                 LEFT JOIN position p ON p.position_id = e.position_id
                 LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-                AND er.period_id = '{$request->period_id}'
-                AND er.org_id = '{$request->org_id}'
-                ".$position_id.$emp_level.$org_level.$emp_id.$stage."
+                WHERE er.period_id = '{$request->period_id}'
+                AND er.stage_id = '{$request->stage_id}'
+                AND ast.emp_result_judgement_flag = 1 
+                ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
             ");
         } else {
             foreach ($items as $key1 => $value1) {
                 $items2 = DB::select("
-                    SELECT  er.emp_result_id,
-                            ee.emp_name result_score_name_chief,
-                            erj.adjust_result_score result_score_chief
+                    SELECT  ale.appraisal_level_name result_score_name1,
+                            erj.adjust_result_score result_score1
                     FROM emp_result_judgement erj
                     INNER JOIN emp_result er ON er.emp_result_id = erj.emp_result_id
                     INNER JOIN employee e ON e.emp_id = er.emp_id
                     INNER JOIN employee ee ON ee.emp_id = erj.judge_id
+                    INNER JOIN org oo ON oo.level_id = erj.org_level_id
+                    INNER JOIN appraisal_level ale ON ale.level_id = oo.level_id
                     LEFT JOIN appraisal_level al ON al.level_id = e.level_id
                     LEFT JOIN org o ON o.org_id = e.org_id
                     LEFT JOIN position p ON p.position_id = e.position_id
@@ -177,24 +200,25 @@ class BonusAdjustmentController extends Controller
                     ) AND erj.emp_result_id = {$value1->emp_result_id}
                     AND erj.emp_result_judgement_id != {$value1->emp_result_judgement_id}
                     AND er.period_id = '{$request->period_id}'
-                    AND er.org_id = '{$request->org_id}'
-                    ".$position_id.$emp_level.$org_level.$emp_id.$stage."
+                    AND er.stage_id = '{$request->stage_id}'
+                    AND ast.emp_result_judgement_flag = 1 
+                    ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
                 ");
                 
                 if(empty($items2)) {
                     $items2 = DB::select("
-                        SELECT  ee.emp_name result_score_name_chief,
-                                er.result_score result_score_chief
+                        SELECT  'หัวหน้า' result_score_name1,
+                                er.result_score result_score1
                         FROM emp_result er
                         INNER JOIN employee e ON e.emp_id = er.emp_id
-                        LEFT JOIN employee ee ON ee.emp_id = er.chief_emp_id
                         LEFT JOIN appraisal_level al ON al.level_id = e.level_id
                         LEFT JOIN org o ON o.org_id = e.org_id
                         LEFT JOIN position p ON p.position_id = e.position_id
                         LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-                        AND er.period_id = '{$request->period_id}'
-                        AND er.org_id = '{$request->org_id}'
-                        ".$position_id.$emp_level.$org_level.$emp_id.$stage."
+                        WHERE er.period_id = '{$request->period_id}'
+                        AND er.stage_id = '{$request->stage_id}'
+                        AND ast.emp_result_judgement_flag = 1 
+                        ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
                     ");
                 }
 
@@ -220,10 +244,10 @@ class BonusAdjustmentController extends Controller
         return response()->json($result);
     }
 
-    public function to_action($stage_id) {
+    public function to_action(Request $request) {
         $stage = DB::table("appraisal_stage")
         ->select("to_stage_id")
-        ->where("stage_id", $stage_id)
+        ->where("stage_id", $request->stage_id)
         ->where("level_id", $this->empAuth()->level_id)
         ->where("emp_result_judgement_flag", 1)
         ->first();

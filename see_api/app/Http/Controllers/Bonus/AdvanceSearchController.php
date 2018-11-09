@@ -195,7 +195,7 @@ class AdvanceSearchController extends Controller
 	    
         if($all_emp[0]->count_no > 0) {
 	    	$items = DB::select("
-	    		Select emp_code, emp_name
+	    		Select emp_code, emp_name, emp_id
 	    		From employee
 	    		Where emp_name like ?
 	    		and is_active = 1
@@ -207,7 +207,7 @@ class AdvanceSearchController extends Controller
         } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
 	    	$items = DB::select("
-	    		Select emp_code, emp_name
+	    		Select emp_code, emp_name, emp_id
 	    		From employee
 	    		Where find_in_set(emp_code, '".$underEmps."')
 	    		And emp_name like ?
@@ -278,6 +278,17 @@ class AdvanceSearchController extends Controller
         $status = DB::table('appraisal_stage')
             ->select('stage_id', 'status')
             ->where('bonus_appraisal_flag', 1)
+            ->get();
+        
+        return response()->json($status);
+    }
+
+    public function StatusListJudge(Request $request)
+    {
+        $status = DB::table('appraisal_stage')
+            ->select('stage_id', 'status')
+            ->where('emp_result_judgement_flag', 1)
+            ->groupBy('status')
             ->get();
         
         return response()->json($status);
