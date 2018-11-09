@@ -532,7 +532,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Bonus --> Report //
 	Route::get('bonus/report', 'Bonus\BonusReportController@index');
 
-	Route::get('test/{paramEmp}', 'TestFunctionController@GetallUnderEmp');
+	Route::get('test/{empId}', 'Bonus\BonusAppraisalController@GetNetSalaryByEmpId');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
