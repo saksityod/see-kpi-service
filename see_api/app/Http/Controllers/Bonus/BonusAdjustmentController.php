@@ -24,6 +24,11 @@ class BonusAdjustmentController extends Controller
         $this->middleware('jwt.auth');
     }
 
+    function empAuth() {
+        $empAuth = Employee::where("emp_code", Auth::id())->first();
+        return $empAuth;
+    }
+
     public function store(Request $request) {
         $errors_validator = [];
         $validator = Validator::make([
@@ -56,12 +61,10 @@ class BonusAdjustmentController extends Controller
             return response()->json(['status' => 400, 'data' => $errors_validator]);
         }
 
-        $judge_id = Employee::select("emp_id")->where("emp_code", Auth::id())->first();
-
         foreach ($request['detail'] as $d) {
             $item = new EmpResultJudgement;
             $item->emp_result_id = $d['emp_result_id'];
-            $item->judge_id = $judge_id->emp_id;
+            $item->judge_id = $this->empAuth()->emp_id;
             $item->percent_adjust = $d['adjust_result_score'];
             $item->adjust_result_score = $d['adjust_result_score'];
             $item->is_bonus =  1;
@@ -89,7 +92,7 @@ class BonusAdjustmentController extends Controller
         $emp_level = empty($request->emp_level) ? "" : " AND e.level_id = '{$request->emp_level}'";
         $org_level = empty($request->org_level) ? "" : " AND o.level_id = '{$request->org_level}'";
         $emp_id = empty($request->emp_id) ? "" : " AND er.emp_id = '{$request->emp_id}'";
-        $status = empty($request->stage_id) ? "AND ast.stage_id = '{$request->stage_id}'" : " AND ast.stage_id = '{$request->stage_id}'";
+        $stage = empty($request->stage_id) ? "" : " AND er.stage_id = '{$request->stage_id}'";
 
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
@@ -103,7 +106,8 @@ class BonusAdjustmentController extends Controller
                     ee.emp_name result_score_name,
                     erj.adjust_result_score result_score,
                     erj.percent_adjust,
-                    ast.edit_flag
+                    ast.edit_flag,
+                    ast.stage_id
             FROM emp_result_judgement erj
             INNER JOIN emp_result er ON er.emp_result_id = erj.emp_result_id
             INNER JOIN employee e ON e.emp_id = er.emp_id
@@ -118,7 +122,7 @@ class BonusAdjustmentController extends Controller
                 WHERE emp_result_judgement.emp_result_id = erj.emp_result_id
             ) AND er.period_id = '{$request->period_id}'
             AND er.org_id = '{$request->org_id}'
-            ".$position_id.$emp_level.$org_level.$emp_id.$status."
+            ".$position_id.$emp_level.$org_level.$emp_id.$stage."
 
         ");
 
@@ -131,7 +135,7 @@ class BonusAdjustmentController extends Controller
                         o.org_name, 
                         p.position_name, 
                         er.status,
-                        ee.emp_name result_score_name_chief
+                        ee.emp_name result_score_name_chief,
                         er.result_score result_score_chief,
                         '' percent_adjust,
                         (
@@ -139,7 +143,8 @@ class BonusAdjustmentController extends Controller
                             FROM employee WHERE emp_code = '{$emp_code}'
                         ) result_score_name,
                         er.result_score result_score,
-                        ast.edit_flag
+                        ast.edit_flag,
+                        ast.stage_id
                 FROM emp_result er
                 INNER JOIN employee e ON e.emp_id = er.emp_id
                 LEFT JOIN employee ee ON ee.emp_id = er.chief_emp_id
@@ -149,10 +154,10 @@ class BonusAdjustmentController extends Controller
                 LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
                 AND er.period_id = '{$request->period_id}'
                 AND er.org_id = '{$request->org_id}'
-                ".$position_id.$emp_level.$org_level.$emp_id.$status."
+                ".$position_id.$emp_level.$org_level.$emp_id.$stage."
             ");
         } else {
-            foreach ($items as $key1 => $value1 {
+            foreach ($items as $key1 => $value1) {
                 $items2 = DB::select("
                     SELECT  er.emp_result_id,
                             ee.emp_name result_score_name_chief,
@@ -173,7 +178,7 @@ class BonusAdjustmentController extends Controller
                     AND erj.emp_result_judgement_id != {$value1->emp_result_judgement_id}
                     AND er.period_id = '{$request->period_id}'
                     AND er.org_id = '{$request->org_id}'
-                    ".$position_id.$emp_level.$org_level.$emp_id.$status."
+                    ".$position_id.$emp_level.$org_level.$emp_id.$stage."
                 ");
                 
                 if(empty($items2)) {
@@ -189,7 +194,7 @@ class BonusAdjustmentController extends Controller
                         LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
                         AND er.period_id = '{$request->period_id}'
                         AND er.org_id = '{$request->org_id}'
-                        ".$position_id.$emp_level.$org_level.$emp_id.$status."
+                        ".$position_id.$emp_level.$org_level.$emp_id.$stage."
                     ");
                 }
 
@@ -197,19 +202,6 @@ class BonusAdjustmentController extends Controller
                 $items[$key]->result_score_chief = $items2[0]->result_score_chief;
             }
         }
-
-        $stage = DB::table("appraisal_stage")
-        ->select("to_stage_id")
-        ->where("stage_id", $request->stage_id)
-        ->where("emp_result_judgement_flag", 1)
-        ->first();
-
-        $to_action = DB::select("
-            SELECT stage_id, to_action
-            FROM appraisal_stage
-            WHERE emp_result_judgement_flag = 1
-            AND stage_id IN ({$stage})
-        ");
 
         // Get the current page from the url if it's not set default to 1
         empty($request->page) ? $page = 1 : $page = $request->page;
@@ -224,8 +216,27 @@ class BonusAdjustmentController extends Controller
 
         // Return the paginator with only 10 items but with the count of all items and set the it on the correct page
         $result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
-        $result->to_stage = $to_action;
 
         return response()->json($result);
+    }
+
+    public function to_action($stage_id) {
+        $stage = DB::table("appraisal_stage")
+        ->select("to_stage_id")
+        ->where("stage_id", $stage_id)
+        ->where("level_id", $this->empAuth()->level_id)
+        ->where("emp_result_judgement_flag", 1)
+        ->first();
+
+        $stage = empty($stage['to_stage_id']) || $stage == 'null' ? "''" : $stage['to_stage_id'];
+
+        $to_action = DB::select("
+            SELECT stage_id, to_action
+            FROM appraisal_stage
+            WHERE emp_result_judgement_flag = 1
+            AND stage_id IN ({$stage})
+        ");
+
+        return response()->json($to_action);
     }
 }
