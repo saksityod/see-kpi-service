@@ -2021,15 +2021,15 @@ class AppraisalAssignmentController extends Controller
 				if ($no[0]->is_no_raise_value == 1){
 					$validator = Validator::make($i, [
 						'item_id' => 'required|integer',
-						'max_value' => 'required|numeric',
-						'deduct_score_unit' => 'required|numeric',
-						'no_raise_value' => 'required|numeric',
+						'max_value' => 'numeric',
+						'deduct_score_unit' => 'numeric',
+						// 'no_raise_value' => 'required|numeric',
 					]);
 				}else {
 					$validator = Validator::make($i, [
 						'item_id' => 'required|integer',
-						'max_value' => 'required|numeric',
-						'deduct_score_unit' => 'required|numeric'
+						'max_value' => 'numeric',
+						'deduct_score_unit' => 'numeric'
 					]);
 				}	
 
@@ -2040,7 +2040,7 @@ class AppraisalAssignmentController extends Controller
 			} elseif ($i['form_id'] == 4) {
 				$validator = Validator::make($i, [
 					'item_id' => 'required|integer',
-					'max_value' => 'required|numeric',
+					'max_value' => 'numeric',
 					'reward_score_unit' => 'required|numeric',
 				]);
 				if ($validator->fails()) {
@@ -2280,14 +2280,15 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
-								$aitem->max_value = $i['max_value'];
-								$aitem->deduct_score_unit = $i['deduct_score_unit'];
+								$aitem->no_raise_value = (empty($i['no_raise_value'])) ? null : $i['no_raise_value'];
+								$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
+								$aitem->deduct_score_unit = (empty($i['deduct_score_unit'])) ? null : $i['deduct_score_unit'];
+								$aitem->value_get_zero = (empty($i['value_get_zero']) ) ? null : $i['value_get_zero'];
 								$aitem->weight_percent = 0;
 								$aitem->over_value = 0;
 								$aitem->weigh_score = 0;
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
-								$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2303,7 +2304,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
-								$aitem->max_value = $i['max_value'];
+								$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 								$aitem->reward_score_unit = $i['reward_score_unit'];
 								$aitem->weight_percent = 0;
 								$aitem->over_value = 0;
@@ -2554,14 +2555,15 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
-							$aitem->max_value = $i['max_value'];
-							$aitem->deduct_score_unit = $i['deduct_score_unit'];
+							$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
+							$aitem->deduct_score_unit = (empty($i['deduct_score_unit'])) ? null : $i['deduct_score_unit'];
+							$aitem->no_raise_value =  (empty($i['no_raise_value'])) ? null : $i['no_raise_value'];
+							$aitem->value_get_zero = (empty($i['value_get_zero']) ) ? null : $i['value_get_zero'];
 							$aitem->weight_percent = 0;
 							$aitem->over_value = 0;
 							$aitem->weigh_score = 0;
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
-							$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
@@ -2577,7 +2579,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
-							$aitem->max_value = $i['max_value'];
+							$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 							$aitem->reward_score_unit = $i['reward_score_unit'];
 							$aitem->weight_percent = 0;
 							$aitem->over_value = 0;
@@ -2772,8 +2774,8 @@ class AppraisalAssignmentController extends Controller
 
 					$validator = Validator::make($i, [
 						'item_id' => 'required|integer',
-						'max_value' => 'required|numeric',
-						'deduct_score_unit' => 'required|numeric',
+						'max_value' => 'numeric',
+						'deduct_score_unit' => 'numeric',
 					]);
 
 					if ($validator->fails()) {
@@ -3140,7 +3142,6 @@ class AppraisalAssignmentController extends Controller
 						$aitem->level_id = $level_id;
 						$aitem->chief_emp_id = $chief_emp_id;
 						$aitem->structure_weight_percent = $i['total_weight'];
-						$aitem->no_raise_value = $i['no_raise_value'];
 						$aitem->created_by = Auth::id();
 
 						if($config->item_result_log == 1){
@@ -3159,15 +3160,15 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->emp_id = $emp_result->emp_id;
 							$aitemlog->item_id = $i['item_id'];
 							$aitemlog->item_name = $i['item_name'];
-							$aitemlog->max_value = $i['max_value'];
-							$aitemlog->deduct_score_unit = $i['deduct_score_unit'];
+							$aitemlog->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
+							$aitemlog->deduct_score_unit = (empty($i['deduct_score_unit'])) ? null : $i['deduct_score_unit'];
+							$aitemlog->value_get_zero = (empty($i['value_get_zero'])) ? null : $i['value_get_zero'];
 							$aitemlog->weight_percent = 0;
 							$aitemlog->over_value = 0;
 							$aitemlog->weigh_score = 0;
 							$aitemlog->threshold_group_id = $tg_id;
 							$aitemlog->updated_by = Auth::id();
 							$aitemlog->appraisal_type_id = $emp_result->appraisal_type_id;
-							$aitemlog->value_get_zero = $aitem->value_get_zero;
 							$aitemlog->save();
 						}
 					}else {
@@ -3203,17 +3204,18 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->save();
 						}
 					}
+					
+
 					$aitem->emp_result_id = $emp_result->emp_result_id;
 					$aitem->period_id = $request->head_params['period_id'];
 					$aitem->emp_id = $emp_result->emp_id;
 					$aitem->item_id = $i['item_id'];
 					$aitem->item_name = $i['item_name'];
-					$aitem->max_value = $i['max_value'];
-					$aitem->deduct_score_unit = $i['deduct_score_unit'];
-					$aitem->no_raise_value = $i['no_raise_value'];
+					$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
+					$aitem->deduct_score_unit = (empty($i['deduct_score_unit']) ) ? null : $i['deduct_score_unit'];
+					$aitem->no_raise_value = (empty($i['no_raise_value']) ) ? null : $i['no_raise_value'];
+					$aitem->value_get_zero = (empty($i['value_get_zero']) ) ? null : $i['value_get_zero'];
 					$aitem->weight_percent = 0;
-					// $aitem->over_value = 0;
-					// $aitem->weigh_score = 0;
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
