@@ -220,7 +220,7 @@ GROUP BY aps.structure_name
 , COALESCE(air.score,0)
 , COALESCE(air.weigh_score,0)
 , COALESCE(str.weigh_score,0)
-ORDER BY emp.emp_id ASC]]>
+ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc]]>
 		</queryString>
 		<field name="structure_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
@@ -410,7 +410,7 @@ GROUP BY aps.structure_name
 , COALESCE(air.score,0)
 , COALESCE(air.weigh_score,0)
 , COALESCE(str.weigh_score,0)
-ORDER BY emp.emp_id ASC]]>
+ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>

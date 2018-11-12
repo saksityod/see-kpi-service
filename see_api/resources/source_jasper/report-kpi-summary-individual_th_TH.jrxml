@@ -241,7 +241,7 @@ INNER JOIN (SELECT org.org_id
 		AND AIR.level_id = ER.level_id
 		AND AIR.position_id = ER.position_id
 		AND AIR.org_id = ER.org_id
-	ORDER BY AIR.org_id ASC,  AIR.emp_id ASC, Pe.perspective_id ASC]]>
+		ORDER BY AIR.org_id ASC,  AIR.emp_id ASC, AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name asc]]>
 		</queryString>
 		<field name="org_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="org_id"/>
@@ -447,7 +447,7 @@ INNER JOIN (SELECT org.org_id
 		AND AIR.level_id = ER.level_id
 		AND AIR.position_id = ER.position_id
 		AND AIR.org_id = ER.org_id
-	ORDER BY AIR.org_id ASC,  AIR.emp_id ASC, Pe.perspective_id ASC]]>
+	ORDER BY AIR.org_id ASC,  AIR.emp_id ASC, AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name asc]]>
 	</queryString>
 	<field name="org_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="org_id"/>

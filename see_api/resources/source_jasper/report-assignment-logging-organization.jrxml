@@ -300,7 +300,7 @@ GROUP BY aps.structure_name
 , org.org_name
 , app.appraisal_year
 , appraisal_period_desc
-ORDER BY air.org_id ASC]]>
+ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc]]>
 		</queryString>
 		<field name="structure_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
@@ -442,7 +442,8 @@ GROUP BY aps.structure_name
 , org.org_name
 , app.appraisal_year
 , appraisal_period_desc
-ORDER BY air.org_id ASC]]>
+ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc
+]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>

@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report-Assignment" pageWidth="2384" pageHeight="1684" orientation="Landscape" columnWidth="2344" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="608bc336-d1aa-491d-9351-8c4300cff718">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -155,7 +155,7 @@ OR (emp.emp_code =   $P{param_user} OR $P{param_user} =  (select e2.emp_code fro
 	inner join appraisal_level l2 on e2.level_id = l2.level_id
 	where l2.is_all_employee = 1
 	and e2.emp_code = $P{param_user} ) ))
-ORDER BY emp_code ASC , air.org_id ASC]]>
+ORDER BY emp_code ASC , air.org_id ASC ,i.perspective_id asc ,i.kpi_id asc ,i.item_name asc]]>
 	</queryString>
 	<field name="emp_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
