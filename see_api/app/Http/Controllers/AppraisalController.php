@@ -918,7 +918,7 @@ class AppraisalController extends Controller
 				left join uom on  b.uom_id= uom.uom_id
 				where a.emp_result_id = ?
 				and d.form_id != 2
-				order by c.seq_no, b.item_name
+				order by c.seq_no asc, b.perspective_id asc ,b.kpi_id asc ,b.item_name asc
 				", array($emp_result_id));
 		} else {
 			$items = DB::select("
@@ -947,7 +947,7 @@ class AppraisalController extends Controller
 				on a.emp_result_id = h.emp_result_id
 				left join uom on  b.uom_id= uom.uom_id
 				where a.emp_result_id = ?
-				order by c.seq_no asc, b.item_name
+				order by c.seq_no asc, b.perspective_id asc ,b.kpi_id asc ,b.item_name asc
 				", array($emp_result_id));
 		}
 

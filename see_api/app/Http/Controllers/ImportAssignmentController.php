@@ -300,8 +300,9 @@ class ImportAssignmentController extends Controller
       AND vel.level_id IN({$levelStr})
       AND iorg.org_id IN({$orgIdStr})
       ".$positionStr."
-      ORDER BY ai.structure_id, ai.item_id");
-
+      ORDER BY ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc
+      ");
+      
     $groupData = [];
     foreach ($items as $str) {
       if (!in_array($str->structure_id, array_column($groupData, "structure_id"))) {

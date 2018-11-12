@@ -351,7 +351,7 @@ class AppraisalGroupController extends Controller
 				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
 				-- and d.form_id != 2
-				order by c.seq_no, b.item_id
+				order by c.seq_no asc, b.perspective_id asc ,b.kpi_id asc ,b.item_name asc
 				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
 			$items = DB::select("
@@ -382,7 +382,7 @@ class AppraisalGroupController extends Controller
 				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id 
 				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
-				order by c.seq_no asc, b.item_id
+				order by c.seq_no asc, b.perspective_id asc ,b.kpi_id asc ,b.item_name asc
 				", array($request->assessor_group_id, $request->emp_result_id));
 		}
 
