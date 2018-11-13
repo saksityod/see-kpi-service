@@ -259,7 +259,7 @@ class EmpResultJudgementController extends Controller
         ->select("to_stage_id")
         ->where("stage_id", $request->stage_id)
         ->where("level_id", $empAuth->level_id)
-        ->where("emp_result_judgement_flag", 1)
+        ->where($request->flag, 1)
         ->whereIn("assessor_see", $in)
         ->first();
 
@@ -268,7 +268,7 @@ class EmpResultJudgementController extends Controller
         $to_action = DB::select("
             SELECT stage_id, to_action
             FROM appraisal_stage
-            WHERE emp_result_judgement_flag = 1
+            WHERE {$request->flag} = 1
             AND stage_id IN ({$stage})
         ");
 
