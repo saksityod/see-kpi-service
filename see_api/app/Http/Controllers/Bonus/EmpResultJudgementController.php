@@ -24,13 +24,13 @@ class EmpResultJudgementController extends Controller
         $this->middleware('jwt.auth');
     }
 
-    function empAuth() {
+    function empAuth($emp_code) {
         // $empAuth = Employee::where("emp_code", Auth::id())->first();
         $empAuth = DB::table('employee')
         ->join('org', 'org.org_id', '=', 'employee.org_id')
         ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
         ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
-        ->where('emp_code', Auth::id())
+        ->where('emp_code', $emp_code)
         ->first();
         return $empAuth;
     }
@@ -84,8 +84,8 @@ class EmpResultJudgementController extends Controller
         foreach ($request['detail'] as $d) {
             $item = new EmpResultJudgement;
             $item->emp_result_id = $d['emp_result_id'];
-            $item->judge_id = $this->empAuth()->emp_id;
-            $item->org_level_id = $this->empAuth()->level_id;
+            $item->judge_id = $this->empAuth(Auth::id())->emp_id;
+            $item->org_level_id = $this->empAuth(Auth::id())->level_id;
             $item->percent_adjust = $d['adjust_result_score'];
             $item->adjust_result_score = $d['adjust_result_score'];
             $item->is_bonus =  1;
@@ -246,7 +246,7 @@ class EmpResultJudgementController extends Controller
     }
 
     public function to_action(Request $request) {
-        $empAuth = $this->empAuth();
+        $empAuth = $this->empAuth($request->emp_code);
 
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
