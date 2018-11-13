@@ -88,7 +88,7 @@ class EmpResultJudgementController extends Controller
             $item->org_level_id = $this->empAuth(Auth::id())->level_id;
             $item->percent_adjust = $d['adjust_result_score'];
             $item->adjust_result_score = $d['adjust_result_score'];
-            $item->is_bonus =  1;
+            $item->is_bonus =  0;
             $item->created_by = Auth::id();
             $item->save();
 
@@ -246,30 +246,17 @@ class EmpResultJudgementController extends Controller
     }
 
     public function to_action(Request $request) {
-        $empAuth = $this->empAuth($request->emp_code);
-
-        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
-        if($empAuth->is_hr==1) {
-            $in = [5]; //คือ hr
-        } else {
-            $in = [1]; //หัวหน้าของพนักงาน
-        }
-
         $stage = DB::table("appraisal_stage")
         ->select("to_stage_id")
         ->where("stage_id", $request->stage_id)
-        ->where("level_id", $empAuth->level_id)
-        ->where($request->flag, 1)
-        ->whereIn("assessor_see", $in)
         ->first();
 
-        $stage = empty($stage['to_stage_id']) || $stage == 'null' ? "''" : $stage['to_stage_id'];
+        $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
 
         $to_action = DB::select("
             SELECT stage_id, to_action
             FROM appraisal_stage
-            WHERE {$request->flag} = 1
-            AND stage_id IN ({$stage})
+            WHERE stage_id IN ({$stage})
         ");
 
         return response()->json($to_action);

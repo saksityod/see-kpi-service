@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
+use App\Http\Controllers\Bonus\EmpResultJudgementController;
 
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,11 +21,12 @@ use App\Employee;
 
 class AdvanceSearchController extends Controller
 {
-
-    public function __construct()
-	{
-		$this->middleware('jwt.auth');
-	}
+    protected $empJudge_service;
+    public function __construct(EmpResultJudgementController $empJudge_service)
+    {
+        $this->middleware('jwt.auth');
+        $this->empJudge_service = $empJudge_service;
+    }
 
 
     public function YearList(Request $request)
@@ -275,25 +277,26 @@ class AdvanceSearchController extends Controller
 
     public function StatusList(Request $request)
     {
-        $status = DB::table('appraisal_stage')
-            ->select('stage_id', 'status')
-            ->where('bonus_appraisal_flag', 1)
-            ->get();
-        
-        return response()->json($status);
-    }
+        $empAuth = $this->empJudge_service->empAuth(Auth::id());
+        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
+        if($empAuth->is_hr==1) {
+            $in = 5; //คือ hr
+        } else {
+            $in = 1; //หัวหน้าของพนักงาน
+        }
 
-    public function StatusListJudge(Request $request)
-    {
-        $status = DB::table('appraisal_stage')
-            ->select('stage_id', 'status')
-            ->where('emp_result_judgement_flag', 1)
-            ->groupBy('status')
-            ->get();
+        $status = DB::select("
+            SELECT stage_id, status
+            FROM appraisal_stage
+            WHERE level_id = {$empAuth->level_id}
+            AND {$request->flag} = 1
+            AND assessor_see LIKE '%{$in}%'
+            GROUP BY status
+            ORDER BY stage_id
+        ");
         
         return response()->json($status);
     }
-    
     
     private function GetallUnderEmp($paramEmp)
 	{
