@@ -525,14 +525,21 @@ Route::group(['middleware' => 'cors'], function()
 	// Bonus --> Bonus Appraisal //
 	Route::post('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@Index');
 	Route::patch('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@SavedAndCalculation');
-	// Emp --> Emp Adjustment //
+	// Bonus --> Emp Result Judgement //
 	Route::get('emp/adjustment', 'Bonus\EmpResultJudgementController@index');
 	Route::post('emp/adjustment', 'Bonus\EmpResultJudgementController@store');
 	Route::get('emp/adjustment/to_action', 'Bonus\EmpResultJudgementController@to_action');
+	// Bonus --> Bonus Adjustment //
+	Route::get('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@index');
+	Route::patch('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@SavedAndConfirm');
 	// Bonus --> Report //
 	Route::get('bonus/report', 'Bonus\BonusReportController@index');
 
-	Route::get('test/{empId}/{periodId}', 'Bonus\BonusAppraisalController@GetNetSalaryByEmpId');
+	
+
+	// ETL API //
+	Route::get('emp/derive_id/{paramEmp}/{paramDeriveLevel}', 'EtlApiController@GetChiefEmpDeriveLevel');
+	Route::get('org/derive_id/{paramOrg}/{paramDeriveLevel}', 'EtlApiController@GetParentOrgDeriveLevel');
 
 
 	Route::get('404', ['as' => 'notfound', function () {
