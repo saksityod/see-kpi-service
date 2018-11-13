@@ -19,5 +19,5 @@ class EmpResultJudgement extends Model
 	public $incrementing = true;
 	//public $timestamps = false;
 	protected $guarded = array();
-	//protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
+	protected $hidden = ['created_by', 'created_dttm'];
 }

@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class EmpResult extends Model
+class OrgResultJudgement extends Model
 {
     /**
      * The table associated with the model.
@@ -13,9 +13,9 @@ class EmpResult extends Model
      */
 	 
 	const CREATED_AT = 'created_dttm';
-	const UPDATED_AT = 'updated_dttm';
-    protected $table = 'emp_result';
-	protected $primaryKey = 'emp_result_id';
+	const UPDATED_AT = 'updated_dttm';	 
+    protected $table = 'org_result_judgement';
+	protected $primaryKey = 'org_result_judgement_id';
 	public $incrementing = true;
 	//public $timestamps = false;
 	protected $guarded = array();

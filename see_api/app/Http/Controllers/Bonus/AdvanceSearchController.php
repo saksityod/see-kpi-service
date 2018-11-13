@@ -297,7 +297,6 @@ class AdvanceSearchController extends Controller
     
     private function GetallUnderEmp($paramEmp)
 	{
-        $paramEmp = 'dhas001';
 		$globalEmpCodeSet = "";
 		$inLoop = true;
 		$loopCnt = 1;
