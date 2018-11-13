@@ -482,7 +482,7 @@ class BonusAppraisalController extends Controller
     }
 
 
-    private function SetPagination($page, $rpp, $itemArr)
+    public function SetPagination($page, $rpp, $itemArr)
     {
         // Get the current page from the url if it's not set default to 1
 		empty($page) ? $page = 1 : $page = $page;
