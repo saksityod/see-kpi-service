@@ -1559,35 +1559,45 @@ class AppraisalAssignmentController extends Controller
 			foreach ($items as $key => $item) {
 			    if($appraisal_type_id==2) { // individual
 			    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
-			    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-			    	->where("period_id", $period_id)
-			    	->where("emp_id", $findChiefEmp['emp_id'])
-			    	->where("status", "Complete")->first();
+			    	if($findChiefEmp['emp_id']==0) {
+			    		$items[$key]->assigned = 1;
+		    			$items[$key]->assigned_msg = '';
+			    	} else {
+				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+				    	->where("period_id", $period_id)
+				    	->where("emp_id", $findChiefEmp['emp_id'])
+				    	->where("status", "Complete")->first();
 
-			    	if(empty($findEmpResult)) {
-				    	$items[$key]->assigned = 0;
-				    	$items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
-				    } else {
-				    	$items[$key]->assigned = 1;
-				    	$items[$key]->assigned_msg = 'Complete';
-				    	$items[$key]->chief_id_array[] = $findEmpResult->emp_id;
-				    }
+				    	if(empty($findEmpResult)) {
+					    	$items[$key]->assigned = 0;
+					    	$items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
+					    } else {
+					    	$items[$key]->assigned = 1;
+					    	$items[$key]->assigned_msg = 'Complete';
+					    	$items[$key]->chief_id_array[] = $findEmpResult->emp_id;
+					    }
+					}
 
 			    } else { // Org
 			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
-			    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-			    	->where("period_id", $period_id)
-			    	->where("org_id", $findChiefEmp['org_id'])
-			    	->where("status", "Complete")->first();
+			    	if($findChiefEmp['emp_id']==0) {
+			    		$items[$key]->assigned = 1;
+		    			$items[$key]->assigned_msg = '';
+			    	} else {
+				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+				    	->where("period_id", $period_id)
+				    	->where("org_id", $findChiefEmp['org_id'])
+				    	->where("status", "Complete")->first();
 
-			    	if(empty($findEmpResult)) {
-				    	$items[$key]->assigned = 0;
-				    	$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
-				    } else {
-				    	$items[$key]->assigned = 1;
-				    	$items[$key]->assigned_msg = 'Complete';
-				    	$items[$key]->chief_id_array[] = $findEmpResult->org_id;
-				    }
+				    	if(empty($findEmpResult)) {
+					    	$items[$key]->assigned = 0;
+					    	$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
+					    } else {
+					    	$items[$key]->assigned = 1;
+					    	$items[$key]->assigned_msg = 'Complete';
+					    	$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+					    }
+					}
 			    }
 			}
 		}
@@ -1596,6 +1606,7 @@ class AppraisalAssignmentController extends Controller
 	}
 
 	function find_derive_item($chief_id_array) {
+			$chief_id_array = in_array('null', $chief_id_array) || in_array('undefined', $chief_id_array) ? "" : $chief_id_array;
 			$id = empty($chief_id_array) ? "''" : implode(',',$chief_id_array);
 
 			$query = "
