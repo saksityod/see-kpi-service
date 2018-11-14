@@ -115,6 +115,7 @@ class EmpResultJudgementController extends Controller
         $org_level = empty($request->org_level) ? "" : " AND o.level_id = '{$request->org_level}'";
         $emp_id = empty($request->emp_id) ? "" : " AND er.emp_id = '{$request->emp_id}'";
         $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
+        $form = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
 
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
@@ -145,7 +146,7 @@ class EmpResultJudgementController extends Controller
             ) AND ast.emp_result_judgement_flag = 1 
             AND er.period_id = '{$request->period_id}'
             AND er.stage_id = '{$request->stage_id}'
-            ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
+            ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
 
         ");
 
@@ -177,7 +178,7 @@ class EmpResultJudgementController extends Controller
                 WHERE er.period_id = '{$request->period_id}'
                 AND er.stage_id = '{$request->stage_id}'
                 AND ast.emp_result_judgement_flag = 1 
-                ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
+                ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
             ");
         } else {
             foreach ($items as $key1 => $value1) {
@@ -203,7 +204,7 @@ class EmpResultJudgementController extends Controller
                     AND er.period_id = '{$request->period_id}'
                     AND er.stage_id = '{$request->stage_id}'
                     AND ast.emp_result_judgement_flag = 1 
-                    ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
+                    ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
                 ");
                 
                 if(empty($items2)) {
@@ -219,7 +220,7 @@ class EmpResultJudgementController extends Controller
                         WHERE er.period_id = '{$request->period_id}'
                         AND er.stage_id = '{$request->stage_id}'
                         AND ast.emp_result_judgement_flag = 1 
-                        ".$position_id.$emp_level.$org_level.$emp_id.$org_id."
+                        ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
                     ");
                 }
 
