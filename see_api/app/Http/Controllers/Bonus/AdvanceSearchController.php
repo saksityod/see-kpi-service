@@ -288,9 +288,11 @@ class AdvanceSearchController extends Controller
         $status = DB::select("
             SELECT stage_id, status
             FROM appraisal_stage
-            WHERE level_id = {$empAuth->level_id}
+            WHERE (level_id = '{$empAuth->level_id}' OR level_id = 'all')
             AND {$request->flag} = 1
-            AND assessor_see LIKE '%{$in}%'
+            AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
+            AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+            AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
             GROUP BY status
             ORDER BY stage_id
         ");

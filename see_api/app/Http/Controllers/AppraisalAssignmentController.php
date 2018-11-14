@@ -18,6 +18,7 @@ use App\SystemConfiguration;
 use App\Phase;
 use App\ActionPlan;
 use App\AppraisalStructure;
+use App\AppraisalCriteria;
 
 use Auth;
 use DB;
@@ -1568,14 +1569,14 @@ class AppraisalAssignmentController extends Controller
 				    	->where("emp_id", $findChiefEmp['emp_id'])
 				    	->where("status", "Complete")->first();
 
-				    	if(empty($findEmpResult)) {
-					    	$items[$key]->assigned = 0;
-					    	$items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
-					    } else {
-					    	$items[$key]->assigned = 1;
-					    	$items[$key]->assigned_msg = 'Complete';
-					    	$items[$key]->chief_id_array[] = $findEmpResult->emp_id;
-					    }
+					    if(empty($findEmpResult)) {
+						    $items[$key]->assigned = 0;
+						    $items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
+						} else {
+						    $items[$key]->assigned = 1;
+						    $items[$key]->assigned_msg = 'Complete';
+						    $items[$key]->chief_id_array[] = $findEmpResult->emp_id;
+						}
 					}
 
 			    } else { // Org
@@ -1590,13 +1591,13 @@ class AppraisalAssignmentController extends Controller
 				    	->where("status", "Complete")->first();
 
 				    	if(empty($findEmpResult)) {
-					    	$items[$key]->assigned = 0;
-					    	$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
-					    } else {
-					    	$items[$key]->assigned = 1;
-					    	$items[$key]->assigned_msg = 'Complete';
-					    	$items[$key]->chief_id_array[] = $findEmpResult->org_id;
-					    }
+				    		$items[$key]->assigned = 0;
+				    		$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
+				    	} else {
+				    		$items[$key]->assigned = 1;
+				    		$items[$key]->assigned_msg = 'Complete';
+				    		$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+				    	}
 					}
 			    }
 			}
@@ -1605,8 +1606,34 @@ class AppraisalAssignmentController extends Controller
 		return $items;
 	}
 
-	function find_derive_item($chief_id_array) {
-			$chief_id_array = in_array('null', $chief_id_array) || in_array('undefined', $chief_id_array) ? "" : $chief_id_array;
+	function find_derive_item($items, $chief_id_array, $level_id, $period_id) {
+			$item_array = [];
+			foreach ($items as $value) {
+				array_push($item_array, $value->item_id);
+			}
+
+			if(empty($item_array)) {
+				$item_array = "''";
+			} else {
+				$item_array = implode(",", $item_array);
+			}
+
+			$check_structure = AppraisalCriteria::select("structure_id")
+			->where("appraisal_level_id", $level_id)->get();
+
+			$struc_array = [];
+			foreach ($check_structure as $value) {
+				array_push($struc_array, $value['structure_id']);
+			}
+
+			if(empty($struc_array)) {
+				$struc_array = "''";
+			} else {
+				$struc_array = implode(",", $struc_array);
+			}
+
+			$chief_id_array = in_array('null', $chief_id_array) || in_array('undefined', $chief_id_array) || in_array('', $chief_id_array) ? "" : $chief_id_array;
+
 			$id = empty($chief_id_array) ? "''" : implode(',',$chief_id_array);
 
 			$query = "
@@ -1651,11 +1678,13 @@ class AppraisalAssignmentController extends Controller
 				left join uom on a.uom_id = uom.uom_id
 				inner join appraisal_item_result ar on a.item_id = ar.item_id
 				where e.is_active = 1
+				and a.structure_id IN ({$struc_array})
+				and a.item_id NOT IN ({$item_array})
 				and (ar.emp_id IN ({$id}) OR ar.org_id IN ({$id}))
-				group by ar.item_result_id
+				and ar.period_id = '{$period_id}'
 			";
 
-			$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
+			$qfooter = " group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
 
 			$findResult = DB::select($query . $qfooter);
 
@@ -1789,11 +1818,11 @@ class AppraisalAssignmentController extends Controller
 		empty($request->appraisal_level_id) ?: ($query .= "and (d.level_id = ? or ar.level_id = ?) " AND $qinput[] = $request->appraisal_level_id AND $qinput[] = $request->appraisal_level_id);
 		empty($request->appraisal_level_id) ?: ($query .= " and c.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
-		$qfooter = " order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
+		$qfooter = " group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
 
 		$items = DB::select($query . $qfooter, $qinput);
 
-		$items2 = $this->find_derive_item($request->chief_id_array);
+		$items2 = $this->find_derive_item($items, $request->chief_id_array, $request->appraisal_level_id, $request->period_id);
 
 		$struc = DB::select("
 			SELECT structure_id, weight_percent
