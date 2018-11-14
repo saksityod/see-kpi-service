@@ -48,6 +48,7 @@ class AppraisalStructureController extends Controller
 				(is_org = 1 AND is_individual = 0)
 				or (is_individual = 1 AND is_org = 0)
 			)
+			ORDER BY al.seq_no
 		");
 		return response()->json($items);
 	}
