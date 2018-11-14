@@ -37,12 +37,15 @@ class BonusAdjustmentController extends Controller
         $qryOrgLevel = empty($request->org_level) ? "": " AND org.level_id = '{$request->org_level}'";
         $qryOrgId = empty($request->org_id) ? "": " AND er.org_id = '{$request->org_id}'";
         $qryEmpId = empty($request->emp_id) ? "": " AND er.emp_id = '{$request->emp_id}'";
-        $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
+        // $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
+        $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
+        $qryPositionId = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";
         $qryFormId = empty($request->appraisal_form) ? "": " AND er.appraisal_form_id = '{$request->appraisal_form}'";
 
         $dataInfo = DB::select("
             SELECT er.emp_result_id,
+                e.emp_code,
                 e.emp_name,
                 vel.appraisal_level_name,
                 pos.position_name,
@@ -77,7 +80,8 @@ class BonusAdjustmentController extends Controller
 
 
     public function SavedAndConfirm(Request $request)
-    { 
+    {
+        $errors_validator = [];
         $requestValid = Validator::make($request->all(), [
             'appraisal_year' => 'required',
             'period_id' => 'required',
@@ -85,7 +89,8 @@ class BonusAdjustmentController extends Controller
             'data' => 'required'
         ]);
         if ($requestValid->fails()) {
-            return response()->json(['status' => 400, 'data' => implode(" ", $requestValid->messages()->all())]);
+            $errors_validator[] = $requestValid->errors();
+            return response()->json(['status' => 400, 'data' => $errors_validator]);
         }
 
         foreach ($request->data as $data) {
@@ -119,7 +124,8 @@ class BonusAdjustmentController extends Controller
         $qryOrgLevel = empty($request->org_level) ? "": " AND org.level_id = '{$request->org_level}'";
         $qryOrgId = empty($request->org_id) ? "": " AND er.org_id = '{$request->org_id}'";
         $qryEmpId = empty($request->emp_id) ? "": " AND er.emp_id = '{$request->emp_id}'";
-        $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
+        // $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
+        $qryPositionId = empty($request->position_id) ? "" : " AND er.position_id IN ({$request->position_id})";
         $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";
 
         $dataInfo = DB::select("
