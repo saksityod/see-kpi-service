@@ -1875,12 +1875,36 @@ class QuestionaireDataController extends Controller
                     INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
                     LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
                     LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
-                    WHERE q.parent_question_id IS NOT NULL
-                    AND qnt.questionaire_type_id = '{$request->questionaire_type_id}'
+                    #WHERE q.parent_question_id IS NOT NULL
+                    WHERE qnt.questionaire_type_id = '{$request->questionaire_type_id}'
                     AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
                     ".$emp_snapshot_id."
                     ".$assessor_id."
-                    GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
+                    #GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
+					GROUP BY questionaire_type,
+					questionaire_name,
+					questionaire_date,
+					assessor_code,
+					assessor_name,
+					asm_code,
+					asm_name,
+					tse_code,
+					tse_name,
+					job_function_name,
+					distributor_code,
+					distributor_name,
+					region,
+					status,
+					section_name,
+					question_name,
+					full_score,
+					answer_name,
+					score,
+					desc_answer,
+					customer_code, 
+					customer_name, 
+					customer_type, 
+					industry_class
             ");
         } else {
 
@@ -1927,13 +1951,37 @@ class QuestionaireDataController extends Controller
                     INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
                     LEFT JOIN employee_snapshot asess ON asess.emp_snapshot_id = qdh.assessor_id
                     LEFT JOIN employee_snapshot asm ON asm.emp_code = es.chief_emp_code
-                    WHERE q.parent_question_id IS NOT NULL
-                    AND qnt.questionaire_type_id = '{$request->questionaire_type_id}'
+                    #WHERE q.parent_question_id IS NOT NULL
+                    WHERE qnt.questionaire_type_id = '{$request->questionaire_type_id}'
                     AND qdh.questionaire_date BETWEEN '{$request->start_date}' AND '{$request->end_date}'
                     ".$emp_snapshot_id."
                     ".$assessor_id."
                     AND qdh.emp_snapshot_id IN ({$in_emp_snap})
-                    GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
+                    #GROUP BY qdh.assessor_id, qdh.emp_snapshot_id, qdd.answer_id
+					GROUP BY questionaire_type,
+					questionaire_name,
+					questionaire_date,
+					assessor_code,
+					assessor_name,
+					asm_code,
+					asm_name,
+					tse_code,
+					tse_name,
+					job_function_name,
+					distributor_code,
+					distributor_name,
+					region,
+					status,
+					section_name,
+					question_name,
+					full_score,
+					answer_name,
+					score,
+					desc_answer,
+					customer_code, 
+					customer_name, 
+					customer_type, 
+					industry_class
             ");
         }
 
