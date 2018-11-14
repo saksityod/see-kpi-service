@@ -39,6 +39,7 @@ class BonusAdjustmentController extends Controller
         $qryEmpId = empty($request->emp_id) ? "": " AND er.emp_id = '{$request->emp_id}'";
         $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
         $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";
+        $qryFormId = empty($request->appraisal_form) ? "": " AND er.appraisal_form_id = '{$request->appraisal_form}'";
 
         $dataInfo = DB::select("
             SELECT er.emp_result_id,
@@ -60,6 +61,7 @@ class BonusAdjustmentController extends Controller
             INNER JOIN position pos ON pos.position_id = er.position_id
             INNER JOIN appraisal_stage sta ON sta.stage_id = er.stage_id
             WHERE er.period_id = '{$request->period_id}'
+            ".$qryFormId ."
             ".$qryEmpLevel."
             ".$qryOrgLevel."
             ".$qryOrgId."
