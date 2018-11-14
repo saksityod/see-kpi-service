@@ -35,6 +35,8 @@ class BonusReportController extends Controller
       $emp_id = json_decode($request->emp_id);
       $position_id = json_decode($request->position_id);
 
+      return ($emp_id);
+
       $data = DB::select("select e.emp_name, po.position_name, p.appraisal_period_desc
         from emp_result em
         left join employee e on em.emp_id = e.emp_id
@@ -50,17 +52,20 @@ class BonusReportController extends Controller
 
     public function index(Request $request){
 
-      $period_id = json_decode($request->period_id);
       $appraisal_year = json_decode($request->appraisal_year);
+      $period_id = json_decode($request->period_id);
+      $bu_org_id = json_decode($request->org_id);
 
       $AllOrg = DB::select("SELECT oo.org_id as parent_org_id
         , oo.org_code as parent_org_code
         , oo.org_name as parent_org_name
         , o.org_id, o.org_code, o.org_name
+        , (SELECT appraisal_year FROM appraisal_period WHERE period_id = ".$period_id.") as appraisal_year
         FROM org oo
         LEFT JOIN org o ON o.parent_org_code = oo.org_code
         INNER JOIN appraisal_level le ON oo.level_id = le.level_id
         WHERE le.is_start_cal_bonus = 1
+        AND FIND_IN_SET(oo.org_id, '".$bu_org_id."')
         ORDER BY oo.org_code ASC, o.org_code ASC");
 
       $Query_Information_Score = "
@@ -170,6 +175,23 @@ class BonusReportController extends Controller
         ) fre ON fre.max_frequency = information.num
         ORDER BY information.score ASC";
 
+      $Org_Result_Score = "
+        SELECT round(avg(orj.adjust_result_score),2) as org_result_score
+        FROM org_result_judgement orj
+        INNER JOIN appraisal_period pe ON orj.period_id = pe.period_id
+        WHERE FIND_IN_SET(orj.org_id , ?)
+        AND pe.period_id = ?
+        AND pe.appraisal_year = ? ";
+
+      $Before_After_Score = "
+        SELECT round(sum(em.b_amount)/sum(em.net_s_amount),2) as before_bonus
+        , round(sum(em.adjust_b_amount)/sum(em.net_s_amount),2) as after_bonus
+        FROM emp_result em
+        INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
+        WHERE FIND_IN_SET(em.org_id, ?) -- by org
+        AND pe.period_id = ?
+        AND pe.appraisal_year = ?";
+
 
       foreach ($AllOrg as $org) {
 
@@ -194,7 +216,7 @@ class BonusReportController extends Controller
         }
 
         // --------------------------คำนวนค่าของข้อมูลตาม parent_org_id-------------------------- //
-        // คำนวนค่าทางสถิติ ตาม parent_org_id
+        // คำนวนค่าทางสถิติ ตามลูกหลาน parent_org_id
         $ParentCalculationState = DB::select($Query_CalculationState
           ,array($param_parent_org, $period_id, $appraisal_year, $param_parent_org, $period_id, $appraisal_year
           , $param_parent_org, $period_id, $appraisal_year, $param_parent_org, $period_id, $appraisal_year));
@@ -208,7 +230,7 @@ class BonusReportController extends Controller
             $org->Parent_median = $ParentCalState->median;
         }
 
-        // หาค่าฐานนิยม ตาม parent_org_id
+        // หาค่าฐานนิยม ตามลูกหลาน parent_org_id
         $ParentCalculationMode = DB::select($Query_CalcutationMode
           ,array($param_parent_org, $period_id, $appraisal_year, $param_parent_org, $period_id, $appraisal_year
           , $param_parent_org, $period_id, $appraisal_year, $param_parent_org, $period_id, $appraisal_year));
@@ -217,9 +239,68 @@ class BonusReportController extends Controller
             $org->Parent_mode = $ParentCalMode->mode;
         }
 
+        // คำนวนค่า BU ตามลูกหลาน parent_org_id
+        $CalculationBU = DB::select($Org_Result_Score
+          ,array($param_parent_org, $period_id, $appraisal_year));
+
+        foreach ($CalculationBU as $CalBU) {
+            $org->CalBU = $CalBU->org_result_score;
+        }
+
+        // คำนวนค่า ผจก.BU ตาม parent_org_id
+        $CalculationManagerBU = DB::select("
+          SELECT round(avg(result.result_score),2) as score_bu_manager
+          FROM
+          (
+          	SELECT emp.result_score as result_score
+          	, emp.org_id
+          	, emp.emp_result_id
+          	, le.level_id
+          	FROM emp_result_judgement er
+          	RIGHT JOIN emp_result emp ON er.emp_result_id = emp.emp_result_id
+          	INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON emp.level_id = le.level_id
+          	WHERE FIND_IN_SET (emp.org_id , ?)
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le.is_start_cal_bonus = 1
+          	AND er.emp_result_judgement_id IS NULL
+          	UNION ALL
+          	SELECT er.adjust_result_score as result_score
+          	, emp.org_id
+          	, er.emp_result_id
+          	, le.level_id
+          	FROM emp_result_judgement er
+          	LEFT JOIN emp_result emp ON er.emp_result_id = emp.emp_result_id
+          	INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON emp.level_id = le.level_id
+          	INNER JOIN (SELECT emp_result_id, max(created_dttm) max_create
+          		FROM emp_result_judgement
+          		GROUP BY emp_result_id) created ON er.created_dttm = created.max_create
+          		AND er.emp_result_id = created.emp_result_id
+          	WHERE FIND_IN_SET (emp.org_id , ?)
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le.is_start_cal_bonus = 1
+          ) result"
+        , array($org->parent_org_id, $period_id, $appraisal_year, $org->parent_org_id, $period_id, $appraisal_year));
+
+        foreach ($CalculationManagerBU as $ManagerBU) {
+            $org->ManagerBU = $ManagerBU->score_bu_manager;
+        }
+
+        // คำนวนค่าโบนัสก่อนแก้ไข และหลังแก้ไข ตาม org_id
+        $ParentBefore_After = DB::select($Before_After_Score
+          ,array($org->parent_org_id, $period_id, $appraisal_year));
+
+        foreach ($ParentBefore_After as $PBA) {
+            $org->parent_before_bonus = $PBA->before_bonus;
+            $org->parent_after_bonus = $PBA->after_bonus;
+        }
+
 
         // --------------------------คำนวนค่าของข้อมูลตาม Org_id-------------------------- //
-        // คำนวนค่าทางสถิติ ตาม Org_id
+        // คำนวนค่าทางสถิติ ตามลูกหลาน Org_id
         $CalculationState = DB::select($Query_CalculationState
           ,array($param_org, $period_id, $appraisal_year, $param_org, $period_id, $appraisal_year
           , $param_org, $period_id, $appraisal_year, $param_org, $period_id, $appraisal_year));
@@ -233,7 +314,7 @@ class BonusReportController extends Controller
             $org->median = $CalState->median;
         }
 
-        // หาค่าฐานนิยม ตาม Org_id
+        // หาค่าฐานนิยม ตามลูกหลาน Org_id
         $CalculationMode = DB::select($Query_CalcutationMode
           ,array($param_org, $period_id, $appraisal_year, $param_org, $period_id, $appraisal_year
           , $param_org, $period_id, $appraisal_year, $param_org, $period_id, $appraisal_year));
@@ -241,6 +322,140 @@ class BonusReportController extends Controller
         foreach ($CalculationMode as $CalMode) {
             $org->mode = $CalMode->mode;
         }
+
+        // คำนวนค่า ฝ่าย ตามลูกหลาน org_id
+        $CalculationDivision = DB::select($Org_Result_Score
+          ,array($param_org, $period_id, $appraisal_year));
+
+        foreach ($CalculationDivision as $CalDivision) {
+            $org->CalDivision = $CalDivision->org_result_score;
+        }
+
+        // คำนวนค่า ผจก.ฝ่าย ตาม org_id
+        $CalculationManagerDivision = DB::select("
+          SELECT round(avg(result.result_score),2) as score_division_manager
+          FROM
+          (
+          	SELECT emp.result_score as result_score
+          	, emp.org_id
+          	, emp.emp_result_id
+          	, le.level_id
+          	, le_parent.level_id as parent_id
+          	FROM emp_result_judgement er
+          	RIGHT JOIN emp_result emp ON er.emp_result_id = emp.emp_result_id
+          	INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON emp.level_id = le.level_id
+          	INNER JOIN appraisal_level le_parent ON le_parent.level_id = le.parent_id
+          	WHERE FIND_IN_SET (emp.org_id , ?)
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le_parent.is_start_cal_bonus = 1
+          	AND er.emp_result_judgement_id IS NULL
+          	UNION ALL
+          	SELECT er.adjust_result_score as result_score
+          	, emp.org_id
+          	, er.emp_result_id
+          	, le.level_id
+          	, le_parent.level_id as parent_id
+          	FROM emp_result_judgement er
+          	LEFT JOIN emp_result emp ON er.emp_result_id = emp.emp_result_id
+          	INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON emp.level_id = le.level_id
+          	INNER JOIN appraisal_level le_parent ON le_parent.level_id = le.parent_id
+          	INNER JOIN (SELECT emp_result_id, max(created_dttm) max_create
+          		FROM emp_result_judgement
+          		GROUP BY emp_result_id) created ON er.created_dttm = created.max_create
+          		AND er.emp_result_id = created.emp_result_id
+          	WHERE FIND_IN_SET (emp.org_id , ?)
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le_parent.is_start_cal_bonus = 1
+          ) result"
+        , array($org->org_id, $period_id, $appraisal_year, $org->org_id, $period_id, $appraisal_year));
+
+        foreach ($CalculationManagerDivision as $ManagerDivision) {
+            $org->ManagerDivision = $ManagerDivision->score_division_manager;
+        }
+
+        // คำนวนค่าโบนัสก่อนแก้ไข และหลังแก้ไข ตาม org_id
+        $Before_After = DB::select($Before_After_Score
+          ,array($org->org_id, $period_id, $appraisal_year));
+
+        foreach ($Before_After as $BA) {
+            $org->before_bonus = $BA->before_bonus;
+            $org->after_bonus = $BA->after_bonus;
+        }
+
+
+        // ----------------คำนวนจำนวนข้อมูล ตาม parent_org_id และ org_id---------------- //
+        // คำนวนจำนวน ผจก.BU ตาม parent_org_id
+        $CountManagerBU = DB::select("
+          SELECT count(em.emp_id) as bu
+          FROM emp_result em
+          INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
+          INNER JOIN appraisal_level le ON em.level_id = le.level_id
+          WHERE FIND_IN_SET(em.org_id, ?)  -- parent_org
+          AND pe.period_id = ?
+          AND pe.appraisal_year = ?
+          AND le.is_start_cal_bonus = 1"
+        , array($org->parent_org_id, $period_id, $appraisal_year));
+
+        foreach ($CountManagerBU as $CountBU) {
+            $org->CountBU = $CountBU->bu;
+        }
+
+        // คำนวนจำนวน ผจก.ฝ่าย และ Staff ตาม parent_org_id
+        $CountParentManagerDivision_Staff = DB::select("
+          SELECT count(re.division) as parent_division
+          , count(re.staff) as parent_staff
+          FROM
+          (
+          	SELECT (CASE WHEN le_parent.is_start_cal_bonus = 1 THEN em.emp_id ELSE null END) as division
+          	, (CASE WHEN le_parent.is_start_cal_bonus is null THEN em.emp_id ELSE null END) as staff
+          	, em.org_id, o_parent.org_id as parent_org_id
+          	FROM emp_result em
+          	INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON em.level_id = le.level_id
+          	LEFT JOIN appraisal_level le_parent ON le_parent.level_id = le.parent_id
+          	INNER JOIN org o ON em.org_id = o.org_id
+          	LEFT JOIN org o_parent ON o_parent.org_code = o.parent_org_code
+          	WHERE FIND_IN_SET(o_parent.org_id, ?)  -- parent_org
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le.is_start_cal_bonus is null
+          ) re"
+        , array($org->parent_org_id, $period_id, $appraisal_year));
+
+        foreach ($CountParentManagerDivision_Staff as $CountParentStaff) {
+            $org->Countparent_division = $CountParentStaff->parent_division;
+            $org->Countparent_staff = $CountParentStaff->parent_staff;
+        }
+
+        // คำนวนจำนวน ผจก.ฝ่าย และ Staff ตาม org_id
+        $CountManagerDivision_Staff = DB::select("
+          SELECT count(re.division) as division
+          , count(re.staff) as staff
+          FROM
+          (
+          	SELECT (CASE WHEN le_parent.is_start_cal_bonus = 1 THEN em.emp_id ELSE null END) as division
+          	, (CASE WHEN le_parent.is_start_cal_bonus is null THEN em.emp_id ELSE null END) as staff
+          	FROM emp_result em
+          	INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
+          	INNER JOIN appraisal_level le ON em.level_id = le.level_id
+          	LEFT JOIN appraisal_level le_parent ON le_parent.level_id = le.parent_id
+          	WHERE FIND_IN_SET(em.org_id, ?) -- org
+          	AND pe.period_id = ?
+          	AND pe.appraisal_year = ?
+          	AND le.is_start_cal_bonus is null
+          ) re"
+        , array($org->org_id, $period_id, $appraisal_year));
+
+        foreach ($CountManagerDivision_Staff as $CountStaff) {
+            $org->CountDivision = $CountStaff->division;
+            $org->CountStaff = $CountStaff->staff;
+        }
+
+        // ----------------คำนวนจำนวนข้อมูล ตาม parent_org_id และ org_id---------------- //
 
       } //end foreach -> $AllOrg
 
