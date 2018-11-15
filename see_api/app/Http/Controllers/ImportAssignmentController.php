@@ -300,7 +300,7 @@ class ImportAssignmentController extends Controller
       AND vel.level_id IN({$levelStr})
       AND iorg.org_id IN({$orgIdStr})
       ".$positionStr."
-      ORDER BY ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc
+      ORDER BY strc.structure_id asc ,strc.seq_no asc ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc
       ");
       
     $groupData = [];
