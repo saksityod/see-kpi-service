@@ -31,7 +31,7 @@ class BonusAppraisalController extends Controller
 
     public function __construct()
 	{
-        // $this->middleware('jwt.auth');
+        $this->middleware('jwt.auth');
     }
 
 
@@ -58,13 +58,16 @@ class BonusAppraisalController extends Controller
      *        คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
      */
     function Index(Request $request)
-    {
+    { 
+        $employee = Employee::where('emp_code', Auth::id())->first();
         $defaultMonthlyBonusRate = SystemConfiguration::first()->monthly_bonus_rate;
         $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
 
         // 1. ตรวจสอบ emp ที่จะนำมาคำนวณว่าจะต้องมี Stage เท่ากับ "Bonus Evaluate" (**รอ Stage จากพี่ท๊อปอีกทีว่าต้องใช้อะไร)
         $empNotAdjust = DB::select("
-            SELECT SUM(1) all_emp_result, SUM(IF(bn.stage_id = er.stage_id, 1, 0)) all_emp_bonus
+            SELECT SUM(1) all_emp_result, 
+                SUM(IF(bn.stage_id = er.stage_id, 1, 0)) all_emp_bonus, 
+                MAX(er.stage_id) max_stage_id
             FROM emp_result er 
             INNER JOIN org ON org.org_id = er.org_id
             INNER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
@@ -73,23 +76,36 @@ class BonusAppraisalController extends Controller
                 FROM appraisal_stage sas 
                 WHERE bonus_appraisal_flag = 1 
             ) bn ON bn.stage_id = er.stage_id
-            WHERE er.period_id = 12
+            WHERE er.period_id = '{$request->period_id}'
             AND FIND_IN_SET(org.org_code, '{$this->GetOrganizationsBonusCalculate()}')
-        "); 
-        if(empty($empNotAdjust)){
-            return response()->json(['data'=>[], 'message'=>'ไม่พบผลการประเมิณ']);
-        }else{
-            if($empNotAdjust[0]->all_emp_result == $empNotAdjust[0]->all_emp_bonus){
-                $editFlag = 1;
-                $editMessage = 'สามารถแก้ไขข้อมูลได้';
+        ");
+        if(in_array($employee->level_id, explode(',', $appraisalStage->level_id))){
+            if(!empty($empNotAdjust) && $empNotAdjust[0]->all_emp_result == $empNotAdjust[0]->all_emp_bonus){
+                $editFlag = 1; 
+                $editMessage = '';
+            } elseif (!empty($empNotAdjust) && $empNotAdjust[0]->max_stage_id > $appraisalStage->stage_id) {
+                $editFlag = 0;
+                $editMessage = 'ไม่สามารถแก้ไขได้!! เนื่องจากได้ปรับผลคะแนนเรียบร้อยแล้ว';
             } else {
                 $editFlag = 0;
-                $editMessage = 'ไม่สามารถแก้ไขข้อมูลได้';
+                $editMessage = 'ไม่สามารถแก้ไขได้!! เนื่องจากพบพนักงานที่ยังไม่ผ่านการปรับผลประเมินจาก Board';
             }
+        }  else {
+            $editFlag = 0; 
+            $editMessage = 'ผู้ใช้งานไม่ได้รับสิทธิ์ในการปรับผลคะแนน!!';
         }
 
         // 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
+        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first();
+        if( ! empty($buLevel)){
+            $buLevel = $buLevel->level_id;
+        } else {
+            $responseData = ['status' => 400, 'data' => [], 'edit_flag'=> 0,
+                'message' => 'ไม่พบข้อมูล Level ที่ใช้ในการคำนวณเงินรางวัลพิเศษ (is_start_cal_bonus)'
+            ];
+            return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
+        }
+
         $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
 
         // 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
@@ -179,7 +195,7 @@ class BonusAppraisalController extends Controller
             });
             
         }
-        $buInfo = ['data'=>$buInfo->toArray(), 'edit_flag'=>$editFlag, 'edit_message'=>$editMessage];
+        $buInfo = ['status'=> 200, 'data'=>$buInfo->toArray(), 'edit_flag'=>$editFlag, 'message'=>$editMessage];
         return response()->json($this->SetPagination($request->page, $request->rpp, $buInfo));
     }
 
