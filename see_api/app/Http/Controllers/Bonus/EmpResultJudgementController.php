@@ -62,18 +62,22 @@ class EmpResultJudgementController extends Controller
         }
 
         foreach ($request['detail'] as $d) {
-            $validator_detail = Validator::make([
-                'emp_result_id' => $d['emp_result_id'],
-                'percent_adjust' => $d['percent_adjust'],
-                'adjust_result_score' => $d['adjust_result_score']
-            ], [
-                'emp_result_id' => 'required|integer',
-                'percent_adjust' => 'required|between:0,100.00',
-                'adjust_result_score' => 'required|between:0,100.00'
-            ]);
+            if($d['edit_flag']==1) {
+                $validator_detail = Validator::make([
+                    'emp_result_id' => $d['emp_result_id'],
+                    'percent_adjust' => $d['percent_adjust'],
+                    'adjust_result_score' => $d['adjust_result_score'],
+                    'edit_flag' => $d['edit_flag']
+                ], [
+                    'emp_result_id' => 'required|integer',
+                    'percent_adjust' => 'required|between:0,100.00',
+                    'adjust_result_score' => 'required|between:0,100.00',
+                    'edit_flag' => 'required|integer'
+                ]);
 
-            if($validator_detail->fails()) {
-                $errors_validator[] = $validator_detail->errors();
+                if($validator_detail->fails()) {
+                    $errors_validator[] = $validator_detail->errors();
+                }
             }
         }
 
@@ -83,14 +87,16 @@ class EmpResultJudgementController extends Controller
 
         $errors = [];
         foreach ($request['detail'] as $d) {
-            $item = new EmpResultJudgement;
-            $item->emp_result_id = $d['emp_result_id'];
-            $item->judge_id = $this->empAuth(Auth::id())->emp_id;
-            $item->org_level_id = $this->empAuth(Auth::id())->level_id;
-            $item->percent_adjust = $d['percent_adjust'];
-            $item->adjust_result_score = $d['adjust_result_score'];
-            $item->is_bonus =  0;
-            $item->created_by = Auth::id();
+            if($d['edit_flag']==1) {
+                $item = new EmpResultJudgement;
+                $item->emp_result_id = $d['emp_result_id'];
+                $item->judge_id = $this->empAuth(Auth::id())->emp_id;
+                $item->org_level_id = $this->empAuth(Auth::id())->level_id;
+                $item->percent_adjust = $d['percent_adjust'];
+                $item->adjust_result_score = $d['adjust_result_score'];
+                $item->is_bonus =  0;
+                $item->created_by = Auth::id();
+            }
 
             $emp = EmpResult::find($d['emp_result_id']);
             $emp->stage_id = $request->stage_id;
@@ -104,7 +110,11 @@ class EmpResultJudgementController extends Controller
             $emp_stage->updated_by = Auth::id();
 
             try {
-                $item->save();
+
+                if($d['edit_flag']==1) {
+                    $item->save();
+                }
+
                 $emp->save();
                 $emp_stage->save();
             } catch (Exception $e) {
@@ -123,7 +133,6 @@ class EmpResultJudgementController extends Controller
         $emp_id = empty($request->emp_id) ? "" : " AND er.emp_id = '{$request->emp_id}'";
         $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
         $form = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
-
         //เช็คว่ามีใน EmpJudgement ไหมแล้วเอา result_score2 ล่าสุดมา
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
@@ -154,6 +163,18 @@ class EmpResultJudgementController extends Controller
             ) AND er.period_id = '{$request->period_id}'
             AND er.stage_id = '{$request->stage_id}'
             ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
+            GROUP BY emp_result_judgement_id,
+            emp_result_id,
+            emp_code, 
+            emp_name, 
+            appraisal_level_name, 
+            org_name, 
+            position_name, 
+            status,
+            result_score_name2,
+            result_score2,
+            percent_adjust,
+            edit_flag
         ");
 
         //ถ้าไม่มีต้องเอา result_score2 มาจาก emp result
@@ -254,6 +275,34 @@ class EmpResultJudgementController extends Controller
     }
 
     public function to_action(Request $request) {
+        if(empty($request->flag)) {
+            return response()->json(['status' => 400, 'data' => 'Parameter flag is required']);
+        }
+
+        $orgAuth = DB::table('employee')
+        ->join('org', 'org.org_id', '=', 'employee.org_id')
+        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+        ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
+        ->where('emp_code', Auth::id())
+        ->first();
+
+        $empAuth = DB::table('employee')
+        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+        ->select('employee.level_id','employee.emp_id','appraisal_level.is_hr')
+        ->where('emp_code', Auth::id())
+        ->first();
+
+        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
+        if($empAuth->is_hr==1) {
+            $in = 5; //คือ hr
+        } else {
+            $in = 1; //หัวหน้าของพนักงาน
+        }
+
+        $stage_in = $this->getFieldAppraisalStage($empAuth->level_id, $orgAuth->level_id);
+
+        $appraisal_form_id = empty($request->appraisal_form_id) ? "" : "AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
+
         $stage = DB::table("appraisal_stage")
         ->select("to_stage_id")
         ->where("stage_id", $request->stage_id)
@@ -265,8 +314,40 @@ class EmpResultJudgementController extends Controller
             SELECT stage_id, to_action
             FROM appraisal_stage
             WHERE stage_id IN ({$stage})
+            AND stage_id IN ({$stage_in})
+            AND {$request->flag} = 1
+            AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
+            ".$appraisal_form_id."
+            AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+            ORDER BY stage_id
         ");
 
         return response()->json($to_action);
+    }
+
+    function getFieldAppraisalStage($level_id, $level_id_org) {
+        $level = DB::select("
+            SELECT stage_id, level_id
+            FROM appraisal_stage
+            WHERE (level_id LIKE '%{$level_id}%' OR level_id LIKE '%{$level_id_org}%' OR level_id = 'all')
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->level_id);
+            foreach ($ex as $exv) {
+                if($level_id==$exv || $level_id_org==$exv || $exv=='all') {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        } else {
+            $stage_id_array = implode(",", $stage_id_array);
+        }
+
+        return $stage_id_array;
     }
 }
