@@ -207,6 +207,7 @@ class AdvanceSearchController extends Controller
                 ".$indLevelQryStr."
                 ".$orgIdQryStr."
                 Order by emp_name
+                limit 15
                 ", array('%'.$request->employee_name.'%')
             );
         } else {
@@ -220,6 +221,7 @@ class AdvanceSearchController extends Controller
                 " . $orgIdQryStr . "
                 and is_active = 1
                 Order by emp_name
+                limit 15
                 ", array($emp->emp_code, $emp->emp_code,'%'.$request->employee_name.'%')
             );
         }
@@ -281,14 +283,14 @@ class AdvanceSearchController extends Controller
         $level = DB::select("
             SELECT stage_id, level_id
             FROM appraisal_stage
-            WHERE level_id LIKE '%{$level_id}%'
+            WHERE (level_id LIKE '%{$level_id}%' OR level_id = 'all')
         ");
 
         $stage_id_array = [];
         foreach ($level as $key => $value) {
             $ex = explode(",",$value->level_id);
             foreach ($ex as $exv) {
-                if($level_id==$exv) {
+                if($level_id==$exv || $exv=='all') {
                     array_push($stage_id_array, $value->stage_id);
                 }
             }
@@ -304,7 +306,16 @@ class AdvanceSearchController extends Controller
             return response()->json(['status' => 400, 'data' => 'Parameter flag is require']);
         }
 
-        $empAuth = $this->empJudge_service->empAuth(Auth::id());
+        if($request->appraisal_type_id==1) {
+            $empAuth = $this->empJudge_service->empAuth(Auth::id());
+        } else {
+            $empAuth = DB::table('employee')
+            ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+            ->select('employee.level_id','employee.emp_id','appraisal_level.is_hr')
+            ->where('emp_code', Auth::id())
+            ->first();
+        }
+
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
             $in = 5; //คือ hr
@@ -319,15 +330,16 @@ class AdvanceSearchController extends Controller
             $stage_in = implode(",", $stage_in);
         }
 
+        $appraisal_form_id = empty($request->appraisal_form_id) ? "" : "AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
+
         $status = DB::select("
             SELECT stage_id, status
             FROM appraisal_stage
             WHERE stage_id IN ({$stage_in})
             AND {$request->flag} = 1
             AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
-            AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+            ".$appraisal_form_id."
             AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
-            GROUP BY status
             ORDER BY stage_id
         ");
         
