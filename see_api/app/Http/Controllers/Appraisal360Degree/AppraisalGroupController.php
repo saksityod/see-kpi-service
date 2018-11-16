@@ -1039,21 +1039,22 @@ class AppraisalGroupController extends Controller
 			FROM employee
 			WHERE emp_code = '{$paramEmp}'
 		");
-		$chiefEmpCollect->push($initChiefEmp[0]->chief_emp_code);
-		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
+
+		$initChiefEmp = DB::table("employee")->select("chief_emp_code")->where("emp_code", $paramEmp)->first();
+		$chiefEmpCollect->push($initChiefEmp->chief_emp_code);
+		$curChiefEmp = $initChiefEmp->chief_emp_code;
 
 		while ($curChiefEmp != "0") {
-			$getChief = DB::select("
-				SELECT chief_emp_code
-				FROM employee
-				WHERE emp_code = '{$curChiefEmp}'
-			");
-
-			if($chiefEmpCollect->contains($getChief[0]->chief_emp_code)){
+			$getChief = DB::table("employee")->select("chief_emp_code")->where("emp_code", $curChiefEmp)->first();
+			if(empty($getChief)) {
 				$curChiefEmp = "0";
 			} else {
-				$chiefEmpCollect->push($getChief[0]->chief_emp_code);
-				$curChiefEmp = $getChief[0]->chief_emp_code;
+				if($chiefEmpCollect->contains($getChief->chief_emp_code)) {
+					$curChiefEmp = "0";
+				} else {
+					$chiefEmpCollect->push($getChief->chief_emp_code);
+					$curChiefEmp = $getChief->chief_emp_code;
+				}
 			}
 		} 
 		

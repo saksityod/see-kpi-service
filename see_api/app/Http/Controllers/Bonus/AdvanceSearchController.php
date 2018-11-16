@@ -8,6 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use App\Http\Requests;
+use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
 
 use Auth;
@@ -32,12 +33,12 @@ class AdvanceSearchController extends Controller
     public function YearList(Request $request)
     {
         $years = DB::select("
-			SELECT DISTINCT appraisal_year appraisal_year_id,
-			appraisal_year
-			from appraisal_period
-			LEFT OUTER JOIN system_config on system_config.current_appraisal_year = appraisal_period.appraisal_year
-		");
-		return response()->json($years);
+            SELECT DISTINCT appraisal_year appraisal_year_id,
+            appraisal_year
+            from appraisal_period
+            LEFT OUTER JOIN system_config on system_config.current_appraisal_year = appraisal_period.appraisal_year
+        ");
+        return response()->json($years);
     }
 
 
@@ -47,17 +48,17 @@ class AdvanceSearchController extends Controller
             ->where('is_bonus', 1)
             ->where('appraisal_year', $request->appraisal_year)
             ->get();
-		return response()->json($periods);
+        return response()->json($periods);
     }
 
 
     public function FormList(Request $request)
-	{
+    {
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
             ->where('is_active', 1)
-            ->where('is_bonus', 1)            
+            ->where('is_bonus', 1)
             ->get();
-		return response()->json($forms);
+        return response()->json($forms);
     }
     
 
@@ -110,6 +111,7 @@ class AdvanceSearchController extends Controller
                 WHERE org.is_active = 1
                 AND vel.is_active = 1
                 AND vel.is_org = 1
+                GROUP BY org.level_id
             ");
         } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
@@ -127,6 +129,7 @@ class AdvanceSearchController extends Controller
                     AND find_in_set(emp.emp_code, '".$underEmps."') 
                     ".$indLevelStr."
                 )
+                GROUP BY org.level_id
             ");
         }
 
@@ -142,7 +145,7 @@ class AdvanceSearchController extends Controller
             INNER JOIN org o on o.level_id = l.level_id
             INNER JOIN employee e on e.org_id = o.org_id
             WHERE e.emp_code = ?
-		", array(Auth::id()));
+        ", array(Auth::id()));
 
         $indLevelStr = empty($request->individual_level) ? "": " AND emp.level_id = ".$request->individual_level;
         $orgLevelStr = empty($request->organization_level) ? "": " AND org.level_id = ".$request->organization_level;
@@ -182,101 +185,129 @@ class AdvanceSearchController extends Controller
 
 
     public function GetEmployeeName(Request $request)
-	{
-	    $emp = Employee::find(Auth::id());
-	    $all_emp = DB::select("
-	    	SELECT sum(b.is_all_employee) count_no
-	    	FROM employee a
-	    	LEFT OUTER JOIN appraisal_level b ON a.level_id = b.level_id
-	    	WHERE emp_code = ?
+    {
+        $emp = Employee::find(Auth::id());
+        $all_emp = DB::select("
+            SELECT sum(b.is_all_employee) count_no
+            FROM employee a
+            LEFT OUTER JOIN appraisal_level b ON a.level_id = b.level_id
+            WHERE emp_code = ?
             ", array(Auth::id())
         );
 
         $indLevelQryStr = empty($request->individual_level) ? "" : " AND level_id = ".$request->individual_level;
-	    $orgIdQryStr = empty($request->organization_id) ? "" : " AND org_id = ".$request->organization_id;
-	    
+        $orgIdQryStr = empty($request->organization_id) ? "" : " AND org_id = ".$request->organization_id;
+        
         if($all_emp[0]->count_no > 0) {
-	    	$items = DB::select("
-	    		Select emp_code, emp_name, emp_id
-	    		From employee
-	    		Where emp_name like ?
-	    		and is_active = 1
-	    		".$indLevelQryStr."
-	    		".$orgIdQryStr."
-	    		Order by emp_name
+            $items = DB::select("
+                Select emp_code, emp_name, emp_id
+                From employee
+                Where emp_name like ?
+                and is_active = 1
+                ".$indLevelQryStr."
+                ".$orgIdQryStr."
+                Order by emp_name
                 ", array('%'.$request->employee_name.'%')
             );
         } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
-	    	$items = DB::select("
-	    		Select emp_code, emp_name, emp_id
-	    		From employee
-	    		Where find_in_set(emp_code, '".$underEmps."')
-	    		And emp_name like ?
-	    		" . $indLevelQryStr . "
-	    		" . $orgIdQryStr . "
-	    		and is_active = 1
-	    		Order by emp_name
+            $items = DB::select("
+                Select emp_code, emp_name, emp_id
+                From employee
+                Where find_in_set(emp_code, '".$underEmps."')
+                And emp_name like ?
+                " . $indLevelQryStr . "
+                " . $orgIdQryStr . "
+                and is_active = 1
+                Order by emp_name
                 ", array($emp->emp_code, $emp->emp_code,'%'.$request->employee_name.'%')
             );
-	    }
+        }
         
         return response()->json($items);
     }
     
 
     public function GetPositionName(Request $request)
-	{
-		$emp = Employee::find(Auth::id());
-		$all_emp = DB::select("
-			SELECT sum(b.is_all_employee) count_no
-			from employee a
-			left outer join appraisal_level b
-			on a.level_id = b.level_id
-			where emp_code = ?
+    {
+        $emp = Employee::find(Auth::id());
+        $all_emp = DB::select("
+            SELECT sum(b.is_all_employee) count_no
+            from employee a
+            left outer join appraisal_level b
+            on a.level_id = b.level_id
+            where emp_code = ?
             ", array(Auth::id())
         );
 
-		$orgIdQryStr = empty($request->organization_id) ? "" : " and a.org_id = ".$request->organization_id;
+        $orgIdQryStr = empty($request->organization_id) ? "" : " and a.org_id = ".$request->organization_id;
 
-		if ($all_emp[0]->count_no > 0) {
-			$items = DB::select("
-				Select distinct b.position_id, b.position_name
-				From employee a left outer join position b
-				on a.position_id = b.position_id
-				Where position_name like ?
-				and emp_name like ?
-				and a.is_active = 1
-				and b.is_active = 1
-				" . $orgIdQryStr . "
-				Order by position_name
-				limit 10
+        if ($all_emp[0]->count_no > 0) {
+            $items = DB::select("
+                Select distinct b.position_id, b.position_name
+                From employee a left outer join position b
+                on a.position_id = b.position_id
+                Where position_name like ?
+                and emp_name like ?
+                and a.is_active = 1
+                and b.is_active = 1
+                " . $orgIdQryStr . "
+                Order by position_name
+                limit 10
                 ",array('%'.$request->position_name.'%','%'.$request->employee_name.'%')
             );
-		} else {
+        } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
-			$items = DB::select("
-				Select distinct b.position_id, b.position_name
+            $items = DB::select("
+                Select distinct b.position_id, b.position_name
                 From employee a 
                 left outer join position b on a.position_id = b.position_id
-				Where find_in_set(a.emp_code, '".$underEmps."')
-				and position_name like ?
-				and emp_name like ?
-				and a.is_active = 1
-				" . $orgIdQryStr . "
-				and b.is_active = 1
-				Order by position_name
-				limit 10
+                Where find_in_set(a.emp_code, '".$underEmps."')
+                and position_name like ?
+                and emp_name like ?
+                and a.is_active = 1
+                " . $orgIdQryStr . "
+                and b.is_active = 1
+                Order by position_name
+                limit 10
                 ", array($emp->emp_code, $emp->emp_code,'%'.$request->position_name.'%','%'.$request->employee_name.'%')
             );
         }
         
-		return response()->json($items);
-	}
+        return response()->json($items);
+    }
+
+    function getFieldAppraisalStage($level_id) {
+        $level = DB::select("
+            SELECT stage_id, level_id
+            FROM appraisal_stage
+            WHERE level_id LIKE '%{$level_id}%'
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->level_id);
+            foreach ($ex as $exv) {
+                if($level_id==$exv) {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        }
+
+        return $stage_id_array;
+    }
 
 
     public function StatusList(Request $request)
     {
+        if(empty($request->flag)) {
+            return response()->json(['status' => 400, 'data' => 'Parameter flag is require']);
+        }
+
         $empAuth = $this->empJudge_service->empAuth(Auth::id());
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
@@ -285,10 +316,12 @@ class AdvanceSearchController extends Controller
             $in = 1; //หัวหน้าของพนักงาน
         }
 
+        $stage_in = $this->getFieldAppraisalStage($empAuth->level_id);
+
         $status = DB::select("
             SELECT stage_id, status
             FROM appraisal_stage
-            WHERE (level_id = '{$empAuth->level_id}' OR level_id = 'all')
+            WHERE stage_id IN ({$stage_in})
             AND {$request->flag} = 1
             AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
             AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
@@ -301,37 +334,37 @@ class AdvanceSearchController extends Controller
     }
     
     private function GetallUnderEmp($paramEmp)
-	{
-		$globalEmpCodeSet = "";
-		$inLoop = true;
-		$loopCnt = 1;
+    {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
 
-		while ($inLoop){
-			if($loopCnt == 1){
-				$LoopEmpCodeSet = $paramEmp.",";
-			}
-			
-			// Check each under //
-			$eachUnder = DB::select("
-				SELECT emp_code
-				FROM employee
-				WHERE find_in_set(chief_emp_code, '{$LoopEmpCodeSet}')
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $paramEmp.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT emp_code
+                FROM employee
+                WHERE find_in_set(chief_emp_code, '{$LoopEmpCodeSet}')
             ");
             log::info($LoopEmpCodeSet);
 
-			if(empty($eachUnder)){
-				$inLoop = false;
-			} else {
-				$LoopEmpCodeSet = "";
-				foreach ($eachUnder as $emp) {
-					$LoopEmpCodeSet .= $emp->emp_code.",";
-				}
-				$globalEmpCodeSet .= $LoopEmpCodeSet;
-			}
-			$loopCnt = $loopCnt + 1;
-		}
-		
-		return $globalEmpCodeSet;
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->emp_code.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
     }
     
 }

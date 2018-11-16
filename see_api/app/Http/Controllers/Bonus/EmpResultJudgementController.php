@@ -81,31 +81,38 @@ class EmpResultJudgementController extends Controller
             return response()->json(['status' => 400, 'data' => $errors_validator]);
         }
 
+        $errors = [];
         foreach ($request['detail'] as $d) {
             $item = new EmpResultJudgement;
             $item->emp_result_id = $d['emp_result_id'];
             $item->judge_id = $this->empAuth(Auth::id())->emp_id;
             $item->org_level_id = $this->empAuth(Auth::id())->level_id;
-            $item->percent_adjust = $d['adjust_result_score'];
+            $item->percent_adjust = $d['percent_adjust'];
             $item->adjust_result_score = $d['adjust_result_score'];
             $item->is_bonus =  0;
             $item->created_by = Auth::id();
-            $item->save();
 
             $emp = EmpResult::find($d['emp_result_id']);
             $emp->stage_id = $request->stage_id;
             $emp->status = AppraisalStage::find($request->stage_id)->status;
             $emp->updated_by = Auth::id();
-            $emp->save();
 
             $emp_stage = new EmpResultStage;
             $emp_stage->emp_result_id = $d['emp_result_id'];
             $emp_stage->stage_id = $request->stage_id;
             $emp_stage->created_by = Auth::id();
-            $emp_stage->save();
+            $emp_stage->updated_by = Auth::id();
+
+            try {
+                $item->save();
+                $emp->save();
+                $emp_stage->save();
+            } catch (Exception $e) {
+                $errors[] = substr($e, 254);
+            }
         }
 
-        return response()->json(['status' => 200, 'data' =>[]]);
+        return response()->json(['status' => 200, 'data' => $errors]);
     }
 
     public function index(Request $request) {
@@ -117,6 +124,7 @@ class EmpResultJudgementController extends Controller
         $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
         $form = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
 
+        //เช็คว่ามีใน EmpJudgement ไหมแล้วเอา result_score2 ล่าสุดมา
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
                     er.emp_result_id,
@@ -143,13 +151,12 @@ class EmpResultJudgementController extends Controller
                 SELECT MAX(created_dttm)
                 FROM emp_result_judgement
                 WHERE emp_result_judgement.emp_result_id = erj.emp_result_id
-            ) AND ast.emp_result_judgement_flag = 1 
-            AND er.period_id = '{$request->period_id}'
+            ) AND er.period_id = '{$request->period_id}'
             AND er.stage_id = '{$request->stage_id}'
             ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
-
         ");
 
+        //ถ้าไม่มีต้องเอา result_score2 มาจาก emp result
         if(empty($items)) {
             $emp_code = Auth::id();
             $items = DB::select("
@@ -177,11 +184,11 @@ class EmpResultJudgementController extends Controller
                 LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
                 WHERE er.period_id = '{$request->period_id}'
                 AND er.stage_id = '{$request->stage_id}'
-                AND ast.emp_result_judgement_flag = 1 
                 ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
             ");
         } else {
             foreach ($items as $key1 => $value1) {
+                //นำ result_score1 ของคนก่อนหน้ามาแสดง
                 $items2 = DB::select("
                     SELECT  ale.appraisal_level_name result_score_name1,
                             erj.adjust_result_score result_score1
@@ -199,15 +206,15 @@ class EmpResultJudgementController extends Controller
                         SELECT MAX(created_dttm)
                         FROM emp_result_judgement
                         WHERE emp_result_judgement.emp_result_id = erj.emp_result_id
-                    ) AND erj.emp_result_id = {$value1->emp_result_id}
-                    AND erj.emp_result_judgement_id != {$value1->emp_result_judgement_id}
-                    AND er.period_id = '{$request->period_id}'
+                        AND emp_result_judgement.emp_result_id = {$value1->emp_result_id}
+                        AND emp_result_judgement.emp_result_judgement_id != {$value1->emp_result_judgement_id}
+                    ) AND er.period_id = '{$request->period_id}'
                     AND er.stage_id = '{$request->stage_id}'
-                    AND ast.emp_result_judgement_flag = 1 
                     ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
                 ");
                 
                 if(empty($items2)) {
+                    //ถ้าไม่มีคะแนนคนก่อนหน้าให้เอา result score1 มาจาก emp result
                     $items2 = DB::select("
                         SELECT  'หัวหน้า' result_score_name1,
                                 er.result_score result_score1
@@ -217,9 +224,9 @@ class EmpResultJudgementController extends Controller
                         LEFT JOIN org o ON o.org_id = e.org_id
                         LEFT JOIN position p ON p.position_id = e.position_id
                         LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-                        WHERE er.period_id = '{$request->period_id}'
+                        WHERE er.emp_result_id = '{$value1->emp_result_id}'
+                        AND er.period_id = '{$request->period_id}'
                         AND er.stage_id = '{$request->stage_id}'
-                        AND ast.emp_result_judgement_flag = 1 
                         ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
                     ");
                 }
