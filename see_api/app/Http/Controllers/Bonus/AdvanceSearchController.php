@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
-use App\Http\Controllers\Bonus\EmpResultJudgementController;
 
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -22,13 +21,36 @@ use App\Employee;
 
 class AdvanceSearchController extends Controller
 {
-    protected $empJudge_service;
-    public function __construct(EmpResultJudgementController $empJudge_service)
+    public function __construct()
     {
         $this->middleware('jwt.auth');
-        $this->empJudge_service = $empJudge_service;
     }
 
+    function getFieldAppraisalStage($level_id) {
+        $level = DB::select("
+            SELECT stage_id, level_id
+            FROM appraisal_stage
+            WHERE (level_id LIKE '%{$level_id}%' OR level_id = 'all')
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->level_id);
+            foreach ($ex as $exv) {
+                if($level_id==$exv || $exv=='all') {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        } else {
+            $stage_id_array = implode(",", $stage_id_array);
+        }
+
+        return $stage_id_array;
+    }
 
     public function YearList(Request $request)
     {
@@ -279,27 +301,6 @@ class AdvanceSearchController extends Controller
         return response()->json($items);
     }
 
-    function getFieldAppraisalStage($level_id) {
-        $level = DB::select("
-            SELECT stage_id, level_id
-            FROM appraisal_stage
-            WHERE (level_id LIKE '%{$level_id}%' OR level_id = 'all')
-        ");
-
-        $stage_id_array = [];
-        foreach ($level as $key => $value) {
-            $ex = explode(",",$value->level_id);
-            foreach ($ex as $exv) {
-                if($level_id==$exv || $exv=='all') {
-                    array_push($stage_id_array, $value->stage_id);
-                }
-            }
-        }
-
-        return $stage_id_array;
-    }
-
-
     public function StatusList(Request $request)
     {
         if(empty($request->flag)) {
@@ -307,7 +308,12 @@ class AdvanceSearchController extends Controller
         }
 
         if($request->appraisal_type_id==1) {
-            $empAuth = $this->empJudge_service->empAuth(Auth::id());
+            $empAuth = DB::table('employee')
+            ->join('org', 'org.org_id', '=', 'employee.org_id')
+            ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+            ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
+            ->where('emp_code', Auth::id())
+            ->first();
         } else {
             $empAuth = DB::table('employee')
             ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
@@ -324,11 +330,6 @@ class AdvanceSearchController extends Controller
         }
 
         $stage_in = $this->getFieldAppraisalStage($empAuth->level_id);
-        if(empty($stage_in)) {
-            $stage_in = null;
-        } else {
-            $stage_in = implode(",", $stage_in);
-        }
 
         $appraisal_form_id = empty($request->appraisal_form_id) ? "" : "AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
 
