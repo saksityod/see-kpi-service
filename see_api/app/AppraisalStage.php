@@ -20,6 +20,6 @@ class AppraisalStage extends Model
 	
 	public $timestamps = false;
 	//protected $guarded = array();
-	protected $fillable = array('appraisal_type_id','from_stage_id','to_stage_id','from_action','to_action','status','edit_flag','hr_see','assignment_flag','appraisal_flag');
+	protected $fillable = array('appraisal_type_id','from_stage_id','to_stage_id','from_action','to_action','status','edit_flag','hr_see','assignment_flag','appraisal_flag', 'emp_result_judgement_flag', 'bonus_appraisal_flag', 'bonus_adjustment_flag');
 	//protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }

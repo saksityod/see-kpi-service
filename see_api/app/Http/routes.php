@@ -532,6 +532,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Bonus --> Bonus Adjustment //
 	Route::get('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@index');
 	Route::patch('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@SavedAndConfirm');
+	Route::post('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@Export');
 	// Bonus --> Report //
 	Route::get('bonus/report', 'Bonus\BonusReportController@index');
 

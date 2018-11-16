@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\AppraisalLevel;
+use App\AppraisalStage;
 use App\Employee;
 use App\EmpResult;
 use App\EmpResultJudgement;
@@ -30,7 +31,7 @@ class BonusAppraisalController extends Controller
 
     public function __construct()
 	{
-        $this->middleware('jwt.auth');
+        // $this->middleware('jwt.auth');
     }
 
 
@@ -59,40 +60,58 @@ class BonusAppraisalController extends Controller
     function Index(Request $request)
     {
         $defaultMonthlyBonusRate = SystemConfiguration::first()->monthly_bonus_rate;
+        $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
 
         // 1. ตรวจสอบ emp ที่จะนำมาคำนวณว่าจะต้องมี Stage เท่ากับ "Bonus Evaluate" (**รอ Stage จากพี่ท๊อปอีกทีว่าต้องใช้อะไร)
         $empNotAdjust = DB::select("
-            SELECT COUNT(1) cnt
-            FROM emp_result_judgement erj 
-            INNER JOIN emp_result er ON er.emp_result_id = erj.emp_result_id
-            WHERE er.status != 'Bonus Evaluate' 
-        ");
-        if((Integer)$empNotAdjust[0]->cnt > 0){
-            return response()->json(['data'=>[], 'message'=>'มีคนที่ยังมาไม่ถึง stage ที่สามมารถปรับคะแนนได้ (ยังคิดไม่ออก เดียวให้พี่ท๊อปคิดให้)']);
+            SELECT SUM(1) all_emp_result, SUM(IF(bn.stage_id = er.stage_id, 1, 0)) all_emp_bonus
+            FROM emp_result er 
+            INNER JOIN org ON org.org_id = er.org_id
+            INNER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
+            LEFT OUTER JOIN (
+                SELECT stage_id, status
+                FROM appraisal_stage sas 
+                WHERE bonus_appraisal_flag = 1 
+            ) bn ON bn.stage_id = er.stage_id
+            WHERE er.period_id = 12
+            AND FIND_IN_SET(org.org_code, '{$this->GetOrganizationsBonusCalculate()}')
+        "); 
+        if(empty($empNotAdjust)){
+            return response()->json(['data'=>[], 'message'=>'ไม่พบผลการประเมิณ']);
+        }else{
+            if($empNotAdjust[0]->all_emp_result == $empNotAdjust[0]->all_emp_bonus){
+                $editFlag = 1;
+                $editMessage = 'สามารถแก้ไขข้อมูลได้';
+            } else {
+                $editFlag = 0;
+                $editMessage = 'ไม่สามารถแก้ไขข้อมูลได้';
+            }
         }
 
         // 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
         $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
-        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
+        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null, $appraisalStage);
 
-        // 3. ตรวจสอบ Action ว่าเป็น "search" หรือ "re-calculate"
+        // 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
         if($request->action == 're-calculate'){
-            // 3.1 กรณีเป็น "re-calculate"
-            $clientData = collect($request->data); Log::info($clientData);
-            $buInfo = $buInfo->map(function ($data, $key) use ($clientData){
+
+            $clientData = collect($request->data);
+            
+            // 3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บัยทึกข้อมูล ในระดับ bu
+            $buInfo = $buInfo->map(function ($data) use ($clientData){
                 $clientData = $clientData
-                    ->where('org_result_judgement_id', (String) $data->org_result_judgement_id)
-                    ->where('emp_result_judgement_id', (String) $data->emp_result_judgement_id)
+                    ->where('org_result_judgement_id', (empty($data->org_result_judgement_id))?'':(String)$data->org_result_judgement_id)
+                    ->where('emp_result_judgement_id', (empty($data->emp_result_judgement_id))?'':(String)$data->emp_result_judgement_id)
                     ->first();
                 if( ! empty($clientData)){
                     // 3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้ GetBonusAppraisalOrgLevel()
                     $data->adjust_result_score = $clientData['adjust_result_score'];
                     $data->emp_adjust_result_score = $clientData['emp_adjust_result_score'];
-
                     // 3.1.2 คำนวณหาค่า bonus_score ใหม่
                     $data->bonus_score = $data->adjust_result_score * $data->total_salary;
                     $data->emp_bonus_score = $data->emp_adjust_result_score * $data->emp_salary;
                 }
+
                 return $data;
             });
         }
@@ -113,19 +132,43 @@ class BonusAppraisalController extends Controller
         // 5. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
         foreach ($buInfo as $bu) {
             // 5.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-            $depInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, null, $bu->org_code);
+            $depInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, null, $bu->org_code, $appraisalStage);
+
+            // 5.2 ตรวจสอบ Action ว่าเป็น "re-calculate"
+            if($request->action == 're-calculate'){
+
+                $clientData = collect($request->data);
+                
+                // 5.2.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บัยทึกข้อมูล ในระดับ department
+                $depInfo = $depInfo->map(function ($data) use ($clientData){
+                    $clientData = $clientData
+                        ->where('org_result_judgement_id', (empty($data->org_result_judgement_id))?'':(String)$data->org_result_judgement_id)
+                        ->where('emp_result_judgement_id', (empty($data->emp_result_judgement_id))?'':(String)$data->emp_result_judgement_id)
+                        ->first();
+                    if( ! empty($clientData)){
+                        // 5.2.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้ GetBonusAppraisalOrgLevel()
+                        $data->adjust_result_score = $clientData['adjust_result_score'];
+                        $data->emp_adjust_result_score = $clientData['emp_adjust_result_score'];
+                        // 5.2.1.2 คำนวณหาค่า bonus_score ใหม่
+                        $data->bonus_score = $data->adjust_result_score * $data->total_salary;
+                        $data->emp_bonus_score = $data->emp_adjust_result_score * $data->emp_salary;
+                    }
+    
+                    return $data;
+                });
+            }
             
-            // 5.2 หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager (prorate)) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
+            // 7 หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager (prorate)) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
             if( ! empty($bu->emp_result_judgement_id)){
                 $bu->emp_net_salary = $this->GetNetSalaryByEmpId($bu->emp_id, $request->period_id);
                 $bu->emp_bonus_score = $bu->emp_adjust_result_score * $bu->emp_net_salary;
             }
             $depTotalBonusScore = $depInfo->sum('bonus_score') + $bu->emp_bonus_score;
 
-            // 5.3 กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
+            // 8 กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
             $depTotalBonusAmount = $bu->bonus_amount;
 
-            // 5.4 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
+            // 9 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
             $bu->departments = $depInfo->map(function ($depData) use($depTotalBonusScore, $depTotalBonusAmount){
                 $depData->bonus_percent = round((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
                 $depData->bonus_amount = ($depData->bonus_percent / 100) * $depTotalBonusAmount;
@@ -133,8 +176,8 @@ class BonusAppraisalController extends Controller
             });
             
         }
-
-        return response()->json($this->SetPagination($request->page, $request->rpp, $buInfo->toArray()));
+        $buInfo = ['data'=>$buInfo->toArray(), 'edit_flag'=>$editFlag, 'edit_message'=>$editMessage];
+        return response()->json($this->SetPagination($request->page, $request->rpp, $buInfo));
     }
 
 
@@ -143,7 +186,7 @@ class BonusAppraisalController extends Controller
         $requestValid = Validator::make($request->all(), [
             'appraisal_year' => 'required',
             'period_id' => 'required',
-            'monthly_bonus_rate' => 'required',
+            'monthly_bonus_rate' => 'required_if:calculate_flag,==,1',
             'calculate_flag' => 'required',
             'data' => 'required'
         ]);
@@ -152,46 +195,42 @@ class BonusAppraisalController extends Controller
         }
 
 
-        // save bonus adjust result score into org_result_judgement, emp_result_judgement //
+        // update bonus adjust result score on org_result_judgement, emp_result_judgement.
         foreach ($request->data as $data) {
             $validator = Validator::make($data, [
                 'org_result_judgement_id' => 'required|integer',
-                'emp_result_judgement_id' => 'required|integer',
                 'adjust_result_score' => 'numeric',
-                'emp_adjust_result_score' => 'numeric'
             ]);
             if ($validator->fails()) {
                 return response()->json(['status' => 400, 'data' => implode(" ", $validator->messages()->all())]);
             }
 
             try{
-                DB::table('org_result_judgement')
-                    ->where('org_result_judgement_id', $data['org_result_judgement_id'])
-                    ->update([
-                        'adjust_result_score' => $data['adjust_result_score'],
-                        'updated_by' => Auth::id(),
-                        'updated_dttm' => date('Y-m-d H:i:s')
-                    ]);
-                
-                DB::table('emp_result_judgement')
-                    ->where('emp_result_judgement_id', $data['emp_result_judgement_id'])
-                    ->update([
-                        'adjust_result_score' => $data['emp_adjust_result_score'],
-                        'created_by' => Auth::id(),
-                        'created_dttm' => date('Y-m-d H:i:s')
-                    ]);
+                $orgResultJudgement = OrgResultJudgement::find($data['org_result_judgement_id']);
+                $orgResultJudgement->adjust_result_score = $data['adjust_result_score'];
+                $orgResultJudgement->updated_by = Auth::id();
+                $orgResultJudgement->save();
 
-            } catch (QueryException $e) {
+                try{
+                    $empResultJudgement = EmpResultJudgement::findOrFail($data['emp_result_judgement_id']);
+                    $empResultJudgement->adjust_result_score = $data['emp_adjust_result_score'];
+                    $empResultJudgement->created_by = Auth::id();
+                    $empResultJudgement->save();
+                } catch (ModelNotFoundException $e) {
+                    // not thing
+                }
+                
+            } catch (ModelNotFoundException $e) {
                 return response()->json(['status' => 400, 'data' => $e->getMessage()]);
             }
         }
 
-        
         if($request->calculate_flag == "0"){
-            // return response if not re-calculate bonus //
+            // return response if not re-calculate bonus.
             return response()->json(['status' => 200, 'data' => ["success" => [], "error" => []]]);
         } else {
-            // bonus bonuscalculation //
+            // bonus bonuscalculation.
+            // update bonus rate on system_config.
             $systemConfiguration = SystemConfiguration::first();
             $systemConfiguration->monthly_bonus_rate = $request->monthly_bonus_rate;
             $systemConfiguration->save();
@@ -228,9 +267,11 @@ class BonusAppraisalController extends Controller
      */
     private function BonusCalculation($period, $monthlyBonusRate)
     {
+        $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
+
         // 1. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
         $levelStartCalBonus = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
-        $buInfo = $this->GetBonusAppraisalOrgLevel($period, $levelStartCalBonus, null);
+        $buInfo = $this->GetBonusAppraisalOrgLevel($period, $levelStartCalBonus, null, $appraisalStage);
 
         // 2. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
         // 2.1 หา เงินเดือนทั้งหมดโดย sum เงินเดือนของทุก bu, หายอดรวมเงินโบนัสโดย (งินเดือนทั้งหมด * จำนวนเดือนที่จ่ายโบนัส), หาแต้มสิทธ์ทั้งหมดโดย sum แต้มสิทธ์ของทุก bu
@@ -255,7 +296,7 @@ class BonusAppraisalController extends Controller
         // 3. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
         foreach ($buInfo as $bu) {
             // 3.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-            $depInfo = $this->GetBonusAppraisalOrgLevel($period, null, $bu->org_code);
+            $depInfo = $this->GetBonusAppraisalOrgLevel($period, null, $bu->org_code, $appraisalStage);
             
             // 3.2 หาเงินเดือนสุทธิของ bu mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ bu mgr.
             if( ! empty($bu->emp_result_judgement_id)){
@@ -276,6 +317,7 @@ class BonusAppraisalController extends Controller
                 $bu->emp_bonus_percent = (($bu->emp_bonus_score * 100) / $depTotalBonusScore);
                 $empResultJudgement = EmpResultJudgement::find($bu->emp_result_judgement_id);
                 $empResultJudgement->percent_adjust = $bu->emp_bonus_percent;
+                $empResultJudgement->is_bonus = 1;
                 $empResultJudgement->save();
 
                 // 3.5.1.2 คำนวณเงินโบนัสของ bu mgr. และบันทึกผล
@@ -286,6 +328,8 @@ class BonusAppraisalController extends Controller
                 $empResult->adjust_b_amount = $bu->emp_bonus_amount;
                 $empResult->b_rate = $monthlyBonusRate;
                 $empResult->adjust_b_rate = $monthlyBonusRate;
+                $empResult->stage_id = $appraisalStage->to_stage_id;
+                $empResult->status = $appraisalStage->to_action;
                 $empResult->updated_by = Auth::id();
                 $empResult->save();
             }
@@ -308,7 +352,7 @@ class BonusAppraisalController extends Controller
             // 4. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ Operate
             foreach ($bu->departments as $dep) {
                 // 4.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalEmpLevel()
-                $operInfo = $this->GetBonusAppraisalEmpLevel($period, $dep->org_code);
+                $operInfo = $this->GetBonusAppraisalEmpLevel($period, $dep->org_code, $appraisalStage);
                 
                 // 4.2 หาเงินเดือนสุทธิของ dep mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ dep mgr.
                 if( ! empty($dep->emp_result_judgement_id)){
@@ -336,6 +380,7 @@ class BonusAppraisalController extends Controller
                     $dep->emp_bonus_percent = (($dep->emp_bonus_score * 100) / $operTotalBonusScore);
                     $empResultJudgement = EmpResultJudgement::find($dep->emp_result_judgement_id);
                     $empResultJudgement->percent_adjust = $dep->emp_bonus_percent;
+                    $empResultJudgement->is_bonus = 1;
                     $empResultJudgement->save();
 
                     // 4.5.1.2 คำนวณเงินโบนัสของ dep manager และบันทึกผล
@@ -346,12 +391,14 @@ class BonusAppraisalController extends Controller
                     $empResult->adjust_b_amount = $dep->emp_bonus_amount;
                     $empResult->b_rate = $monthlyBonusRate;
                     $empResult->adjust_b_rate = $monthlyBonusRate;
+                    $empResult->stage_id = $appraisalStage->to_stage_id;
+                    $empResult->status = $appraisalStage->to_action;
                     $empResult->updated_by = Auth::id();
                     $empResult->save();
                 }
 
                 // 4.6 คำนวณหาเปอร์เซ็นของ oper ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ oper * 100) / แต้มสิทธิ์ oper ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ oper)
-                $dep->employees = $operInfo->map(function ($operData) use($operTotalBonusScore, $operTotalBonusAmount, $monthlyBonusRate){
+                $dep->employees = $operInfo->map(function ($operData) use($operTotalBonusScore, $operTotalBonusAmount, $monthlyBonusRate, $appraisalStage){
                     $operData->emp_bonus_percent = (($operData->emp_bonus_score * 100) / $operTotalBonusScore);
                     $operData->emp_bonus_amount = ($operData->emp_bonus_percent / 100) * $operTotalBonusAmount;
 
@@ -359,6 +406,7 @@ class BonusAppraisalController extends Controller
                     $empResultJudgement = EmpResultJudgement::find($operData->emp_result_judgement_id);
                     $empResultJudgement->percent_adjust = $operData->emp_bonus_percent;
                     $empResultJudgement->adjust_result_score = $operData->emp_adjust_result_score;
+                    $empResultJudgement->is_bonus = 1;
                     $empResultJudgement->save();
 
                     $empResult = EmpResult::find($empResultJudgement->emp_result_id);
@@ -367,6 +415,8 @@ class BonusAppraisalController extends Controller
                     $empResult->adjust_b_amount = $operData->emp_bonus_amount;
                     $empResult->b_rate = $monthlyBonusRate;
                     $empResult->adjust_b_rate = $monthlyBonusRate;
+                    $empResult->stage_id = $appraisalStage->to_stage_id;
+                    $empResult->status = $appraisalStage->to_action;
                     $empResult->updated_by = Auth::id();
                     $empResult->save();
 
@@ -390,7 +440,7 @@ class BonusAppraisalController extends Controller
      * arg3: Parent Org คือ Org Code ของ BU (กรณีต้องการ Query ข้อมูลของ Dep ที่อยู่ภายใต้ BU นั้น ๆ)
      * Note: arg2 กับ arg3 ใส่แค่ค่าใดค่าหนึ่ง อีกค่าให้เป็น null
      */
-    private function GetBonusAppraisalOrgLevel($period, $buLevelId, $parentOrg)
+    private function GetBonusAppraisalOrgLevel($period, $buLevelId, $parentOrg, $stage)
     {
         $parentOrgQryStr = empty($parentOrg) ? "": " AND org.parent_org_code = '{$parentOrg}'";
         $buLevelQryStr = empty($buLevelId) ? "": " AND org.level_id = '{$buLevelId}'";
@@ -425,12 +475,12 @@ class BonusAppraisalController extends Controller
             LEFT OUTER JOIN(
                 SELECT e.emp_result_judgement_id, er.org_id, er.level_id, 
                     IF(e.adjust_result_score=0, er.result_score, e.adjust_result_score) adjust_result_score,
-                    emp.emp_id, emp.emp_name, emp.s_amount, stg.edit_flag
+                    emp.emp_id, emp.emp_name, emp.s_amount, IF(stg.stage_id='{$stage->stage_id}',1,0) AS edit_flag
                 FROM emp_result_judgement e
                 INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
                 INNER JOIN employee emp ON emp.emp_id = er.emp_id
                 LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
-                WHERE er.status = 'Bonus Evaluate' 
+                WHERE (er.status = '{$stage->status}' OR er.status = '{$stage->to_action}')
                 AND e.created_dttm = (
                     SELECT MAX(se.created_dttm)
                     FROM emp_result_judgement se
@@ -446,8 +496,11 @@ class BonusAppraisalController extends Controller
     }
 
 
-    private function GetBonusAppraisalEmpLevel($period, $orgCode)
+    private function GetBonusAppraisalEmpLevel($period, $orgCode, $stage)
     {
+        // get stage be used to fn().
+        $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
+        
         $orgQryStr = empty($orgCode) ? "": " AND FIND_IN_SET(org.org_code, '{$this->GetAllUnderOrg($orgCode)}')";
 
         $items = DB::select("
@@ -468,7 +521,7 @@ class BonusAppraisalController extends Controller
             INNER JOIN employee emp ON emp.emp_id = er.emp_id
             INNER JOIN org ON org.org_id = er.org_id
             LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
-            WHERE er.status = 'Bonus Evaluate' 
+            WHERE er.status = '{$appraisalStage->status}' 
             AND e.created_dttm = (
                 SELECT MAX(se.created_dttm)
                 FROM emp_result_judgement se
@@ -494,6 +547,7 @@ class BonusAppraisalController extends Controller
 
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
         $itemsForCurrentPage = array_slice($itemArr, $offSet, $perPage, false);
+        // $itemsForCurrentPage['mmmm'] = 'mmmmmm';
 		
 		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
         return new LengthAwarePaginator($itemsForCurrentPage, count($itemArr), $perPage, $page);
@@ -562,7 +616,6 @@ class BonusAppraisalController extends Controller
                 WHERE parent_org_code != ''
                 AND FIND_IN_SET(parent_org_code, '{$LoopOrgCodeSet}')
             ");
-            Log::info("SELECT org_code FROM org WHERE FIND_IN_SET(parent_org_code, '{$LoopOrgCodeSet}')");
 
 			if(empty($eachUnder)){
 				$inLoop = false;
@@ -578,5 +631,47 @@ class BonusAppraisalController extends Controller
 		
 		return $globalOrgCodeSet;
     }
+
+
+    public function GetOrganizationsBonusCalculate()
+    {
+        $orgList = '';
+        $curOrgList = '';
+        $initOrgList = DB::select("
+            SELECT CONCAT(GROUP_CONCAT(org_code), ',') AS org_code
+            FROM org
+            INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+            WHERE parent_org_code != '' 
+            AND vel.is_start_cal_bonus = 1
+        ");
+        if(empty($initOrgList)){ return "";} 
+        else {
+            $initOrgList = $initOrgList[0]; 
+            $orgList .= $initOrgList->org_code;
+            $curOrgList = $initOrgList->org_code;
+        }
+
+        $looping = true;
+        while ($looping){ Log::info($curOrgList);
+            $loopOrgList = DB::select("
+                SELECT CONCAT(GROUP_CONCAT(org_code), ',') AS org_code
+                FROM org
+                INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+                WHERE parent_org_code != '' 
+                AND FIND_IN_SET(parent_org_code, '{$curOrgList}')
+            ");
+
+            if(empty($curOrgList)){
+                $looping = false;
+            } else {
+                $orgList .= $loopOrgList[0]->org_code;
+                $curOrgList = $loopOrgList[0]->org_code;
+            }
+        }
+
+        return $orgList;
+        // return explode(",",$orgList);
+    }
+
 
 }
