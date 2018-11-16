@@ -294,10 +294,6 @@ class AdvanceSearchController extends Controller
             }
         }
 
-        if(empty($stage_id_array)) {
-            $stage_id_array = "''";
-        }
-
         return $stage_id_array;
     }
 
@@ -317,6 +313,11 @@ class AdvanceSearchController extends Controller
         }
 
         $stage_in = $this->getFieldAppraisalStage($empAuth->level_id);
+        if(empty($stage_in)) {
+            $stage_in = null;
+        } else {
+            $stage_in = implode(",", $stage_in);
+        }
 
         $status = DB::select("
             SELECT stage_id, status
