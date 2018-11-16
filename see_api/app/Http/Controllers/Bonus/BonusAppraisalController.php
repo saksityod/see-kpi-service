@@ -90,7 +90,7 @@ class BonusAppraisalController extends Controller
 
         // 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
         $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
-        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null, $appraisalStage);
+        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
 
         // 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
         if($request->action == 're-calculate'){
@@ -124,15 +124,17 @@ class BonusAppraisalController extends Controller
 
         // 4.2 คำนวณหาเปอร์เซ็นของ bu ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ bu * 100) / แต้มสิทธิ์ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสทั้งหมด)
         $buInfo = $buInfo->map(function ($buData) use($buTotalBonusScore, $buTotalBonusAmount){
-            $buData->bonus_percent = round((($buData->bonus_score * 100) / $buTotalBonusScore), 2);
-            $buData->bonus_amount = ($buData->bonus_percent / 100) * $buTotalBonusAmount;
+            $buData->bonus_percent = number_format((($buData->bonus_score * 100) / $buTotalBonusScore), 2);
+            $buData->bonus_amount = number_format(($buData->bonus_percent / 100) * $buTotalBonusAmount, 2);
+            $buData->bonus_score = number_format($buData->bonus_score, 2);
+
             return $buData;
         });
 
         // 5. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
         foreach ($buInfo as $bu) {
             // 5.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-            $depInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, null, $bu->org_code, $appraisalStage);
+            $depInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, null, $bu->org_code);
 
             // 5.2 ตรวจสอบ Action ว่าเป็น "re-calculate"
             if($request->action == 're-calculate'){
@@ -170,8 +172,9 @@ class BonusAppraisalController extends Controller
 
             // 9 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
             $bu->departments = $depInfo->map(function ($depData) use($depTotalBonusScore, $depTotalBonusAmount){
-                $depData->bonus_percent = round((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
-                $depData->bonus_amount = ($depData->bonus_percent / 100) * $depTotalBonusAmount;
+                $depData->bonus_percent = number_format((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
+                $depData->bonus_amount = number_format(($depData->bonus_percent / 100) * $depTotalBonusAmount,2);
+                $depData->bonus_score = number_format($depData->bonus_score, 2);
                 return $depData;
             });
             
@@ -271,7 +274,7 @@ class BonusAppraisalController extends Controller
 
         // 1. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
         $levelStartCalBonus = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
-        $buInfo = $this->GetBonusAppraisalOrgLevel($period, $levelStartCalBonus, null, $appraisalStage);
+        $buInfo = $this->GetBonusAppraisalOrgLevel($period, $levelStartCalBonus, null);
 
         // 2. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
         // 2.1 หา เงินเดือนทั้งหมดโดย sum เงินเดือนของทุก bu, หายอดรวมเงินโบนัสโดย (งินเดือนทั้งหมด * จำนวนเดือนที่จ่ายโบนัส), หาแต้มสิทธ์ทั้งหมดโดย sum แต้มสิทธ์ของทุก bu
@@ -296,7 +299,7 @@ class BonusAppraisalController extends Controller
         // 3. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
         foreach ($buInfo as $bu) {
             // 3.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-            $depInfo = $this->GetBonusAppraisalOrgLevel($period, null, $bu->org_code, $appraisalStage);
+            $depInfo = $this->GetBonusAppraisalOrgLevel($period, null, $bu->org_code);
             
             // 3.2 หาเงินเดือนสุทธิของ bu mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ bu mgr.
             if( ! empty($bu->emp_result_judgement_id)){
@@ -352,7 +355,7 @@ class BonusAppraisalController extends Controller
             // 4. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ Operate
             foreach ($bu->departments as $dep) {
                 // 4.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalEmpLevel()
-                $operInfo = $this->GetBonusAppraisalEmpLevel($period, $dep->org_code, $appraisalStage);
+                $operInfo = $this->GetBonusAppraisalEmpLevel($period, $dep->org_code);
                 
                 // 4.2 หาเงินเดือนสุทธิของ dep mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ dep mgr.
                 if( ! empty($dep->emp_result_judgement_id)){
@@ -408,7 +411,7 @@ class BonusAppraisalController extends Controller
                     $empResultJudgement->adjust_result_score = $operData->emp_adjust_result_score;
                     $empResultJudgement->is_bonus = 1;
                     $empResultJudgement->save();
-
+                    
                     $empResult = EmpResult::find($empResultJudgement->emp_result_id);
                     $empResult->net_s_amount = $operData->emp_net_salary;
                     $empResult->b_amount = $operData->emp_bonus_amount;
@@ -422,14 +425,10 @@ class BonusAppraisalController extends Controller
 
                     return $operData;
                 });
-
             }
         }
 
-        // return response()->json($this->SetPagination($request->page, $request->rpp, $datas->toArray()));
-        // return response()->json(['status'=>400, 'data'=>'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         return ['status'=>200, 'data'=>[]];
-
     }
     
 
@@ -440,7 +439,7 @@ class BonusAppraisalController extends Controller
      * arg3: Parent Org คือ Org Code ของ BU (กรณีต้องการ Query ข้อมูลของ Dep ที่อยู่ภายใต้ BU นั้น ๆ)
      * Note: arg2 กับ arg3 ใส่แค่ค่าใดค่าหนึ่ง อีกค่าให้เป็น null
      */
-    private function GetBonusAppraisalOrgLevel($period, $buLevelId, $parentOrg, $stage)
+    private function GetBonusAppraisalOrgLevel($period, $buLevelId, $parentOrg)
     {
         $parentOrgQryStr = empty($parentOrg) ? "": " AND org.parent_org_code = '{$parentOrg}'";
         $buLevelQryStr = empty($buLevelId) ? "": " AND org.level_id = '{$buLevelId}'";
@@ -467,26 +466,23 @@ class BonusAppraisalController extends Controller
                 0 AS emp_net_salary,
                 0 AS emp_bonus_score,
                 0 AS emp_bonus_percent,
-	            0 AS emp_bonus_amount,
-                IFNULL(erj.edit_flag, 0) AS edit_flag
+                0 AS emp_bonus_amount
             FROM org_result_judgement orj
             INNER JOIN org ON org.org_id = orj.org_id
             INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
             LEFT OUTER JOIN(
-                SELECT e.emp_result_judgement_id, er.org_id, er.level_id, 
+                SELECT e.emp_result_judgement_id, e.org_level_id, er.org_id, 
                     IF(e.adjust_result_score=0, er.result_score, e.adjust_result_score) adjust_result_score,
-                    emp.emp_id, emp.emp_name, emp.s_amount, IF(stg.stage_id='{$stage->stage_id}',1,0) AS edit_flag
+                    emp.emp_id, emp.emp_name, emp.s_amount
                 FROM emp_result_judgement e
                 INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
                 INNER JOIN employee emp ON emp.emp_id = er.emp_id
-                LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
-                WHERE (er.status = '{$stage->status}' OR er.status = '{$stage->to_action}')
-                AND e.created_dttm = (
+                WHERE e.created_dttm = (
                     SELECT MAX(se.created_dttm)
                     FROM emp_result_judgement se
                     WHERE se.emp_result_id = e.emp_result_id
                 )
-            ) erj ON erj.level_id = org.level_id AND erj.org_id = orj.org_id
+            ) erj ON erj.org_level_id = org.level_id AND erj.org_id = orj.org_id
             WHERE orj.period_id = '{$period}'
             ".$buLevelQryStr."
             ".$parentOrgQryStr."
@@ -496,10 +492,8 @@ class BonusAppraisalController extends Controller
     }
 
 
-    private function GetBonusAppraisalEmpLevel($period, $orgCode, $stage)
+    private function GetBonusAppraisalEmpLevel($period, $orgCode)
     {
-        // get stage be used to fn().
-        $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
         
         $orgQryStr = empty($orgCode) ? "": " AND FIND_IN_SET(org.org_code, '{$this->GetAllUnderOrg($orgCode)}')";
 
@@ -514,15 +508,12 @@ class BonusAppraisalController extends Controller
                 0 AS emp_net_salary,
                 0 AS emp_bonus_score,
                 0 AS emp_bonus_percent,
-                0 AS emp_bonus_amount,
-                stg.edit_flag
+                0 AS emp_bonus_amount
             FROM emp_result_judgement e
             INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
             INNER JOIN employee emp ON emp.emp_id = er.emp_id
             INNER JOIN org ON org.org_id = er.org_id
-            LEFT OUTER JOIN appraisal_stage stg ON stg.stage_id = er.stage_id
-            WHERE er.status = '{$appraisalStage->status}' 
-            AND e.created_dttm = (
+            WHERE e.created_dttm = (
                 SELECT MAX(se.created_dttm)
                 FROM emp_result_judgement se
                 WHERE se.emp_result_id = e.emp_result_id
@@ -547,7 +538,6 @@ class BonusAppraisalController extends Controller
 
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
         $itemsForCurrentPage = array_slice($itemArr, $offSet, $perPage, false);
-        // $itemsForCurrentPage['mmmm'] = 'mmmmmm';
 		
 		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
         return new LengthAwarePaginator($itemsForCurrentPage, count($itemArr), $perPage, $page);
