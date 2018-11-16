@@ -1025,6 +1025,7 @@ class AppraisalAssignmentController extends Controller
 	    	$appraisal_type_id = empty($request->appraisal_type_id) ? " ": "and er.appraisal_type_id = {$request->appraisal_type_id}";
 	    	$emp_code = empty($request->emp_code) ? " ": "and e.emp_code = '{$request->emp_code}'";
 	    	$position_id = empty($request->position_id) ? " ": "and er.position_id = {$request->position_id}";
+	    	$appraisal_form_id = empty($request->appraisal_form_id) ? " ": "and er.appraisal_form_id = {$request->appraisal_form_id}";
 
 	    	if($all_emp[0]->count_no > 0) {
 
@@ -1061,6 +1062,7 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_type_id."
 						".$emp_code."
 						".$position_id."
+						".$appraisal_form_id."
 			    	");
 				} else {
 					$items = DB::select("
@@ -1080,6 +1082,7 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_frequency_id."
 						".$appraisal_year."
 						".$appraisal_type_id."
+						".$appraisal_form_id."
 			    	");
 				}
 
@@ -1116,6 +1119,7 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_year."
 						".$appraisal_type_id."
 						".$position_id."
+						".$appraisal_form_id."
 						and (e.emp_code = '".Auth::id()."' or e.chief_emp_code = '".Auth::id()."')
 						union all
 						select 'Unassigned' to_action, 'Unassigned' status
@@ -1137,6 +1141,7 @@ class AppraisalAssignmentController extends Controller
 						".$appraisal_frequency_id."
 						".$appraisal_year."
 						".$appraisal_type_id."
+						".$appraisal_form_id."
 						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
 						union all
 						select 'Unassigned' to_action, 'Unassigned' status
@@ -1606,7 +1611,7 @@ class AppraisalAssignmentController extends Controller
 		return $items;
 	}
 
-	function find_derive_item($items, $chief_id_array, $level_id, $period_id) {
+	function find_derive_item($items, $chief_id_array, $level_id, $period_id, $appraisal_form_id) {
 			$item_array = [];
 			foreach ($items as $value) {
 				array_push($item_array, $value->item_id);
@@ -1682,6 +1687,7 @@ class AppraisalAssignmentController extends Controller
 				and a.item_id NOT IN ({$item_array})
 				and (ar.emp_id IN ({$id}) OR ar.org_id IN ({$id}))
 				and ar.period_id = '{$period_id}'
+				".$appraisal_form_id."
 			";
 
 			$qfooter = " group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc ";
@@ -1772,7 +1778,8 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		$emp_result_id = empty($request->emp_result_id) ? "" : "and ar.emp_result_id = '{$request->emp_result_id}' ";
+		$emp_result_id = empty($request->emp_result_id) ? "" : " and ar.emp_result_id = '{$request->emp_result_id}' ";
+		$appraisal_form_id = empty($request->appraisal_form_id) ? "" : " and c.appraisal_form_id = '{$request->appraisal_form_id}'";
 		$qinput = array();
 		$query = "
 			SELECT a.item_id, 
@@ -1784,7 +1791,8 @@ class AppraisalAssignmentController extends Controller
 					f.form_id, 
 					f.form_name, 
 					f.app_url,
-					if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
+					#if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
+					c.weight_percent,
 					a.max_value, 
 					a.value_get_zero, 
 					a.unit_deduct_score, 
@@ -1807,7 +1815,7 @@ class AppraisalAssignmentController extends Controller
 			left outer join uom on a.uom_id = uom.uom_id
 			left outer join appraisal_item_result ar on a.item_id = ar.item_id
 			where e.is_active = 1
-			{$emp_result_id}
+			".$emp_result_id.$appraisal_form_id."
 			and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
 
@@ -1822,7 +1830,7 @@ class AppraisalAssignmentController extends Controller
 
 		$items = DB::select($query . $qfooter, $qinput);
 
-		$items2 = $this->find_derive_item($items, $request->chief_id_array, $request->appraisal_level_id, $request->period_id);
+		$items2 = $this->find_derive_item($items, $request->chief_id_array, $request->appraisal_level_id, $request->period_id, $appraisal_form_id);
 
 		$struc = DB::select("
 			SELECT structure_id, weight_percent

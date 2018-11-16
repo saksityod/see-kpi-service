@@ -26,30 +26,6 @@ class BonusReportController extends Controller
         //$this->middleware('jwt.auth');
     }
 
-    public function test(Request $request)
-    {
-      // $org_name = DB::select("select org_name from org");
-      //
-      // return response()->json($org_name);
-      $period_id = json_decode($request->period_id);
-      $emp_id = json_decode($request->emp_id);
-      $position_id = json_decode($request->position_id);
-
-      return ($emp_id);
-
-      $data = DB::select("select e.emp_name, po.position_name, p.appraisal_period_desc
-        from emp_result em
-        left join employee e on em.emp_id = e.emp_id
-        left join appraisal_period p  on em.period_id = p.period_id
-        left join position po on em.position_id = po.position_id
-        where em.emp_id = ".$emp_id."
-        and em.period_id = ".$period_id."
-        and em.position_id = ".$position_id."");
-
-      return response()->json($data);
-
-    }
-
     public function index(Request $request){
 
       $appraisal_year = json_decode($request->appraisal_year);
@@ -455,12 +431,36 @@ class BonusReportController extends Controller
             $org->CountStaff = $CountStaff->staff;
         }
 
-        // ----------------คำนวนจำนวนข้อมูล ตาม parent_org_id และ org_id---------------- //
-
       } //end foreach -> $AllOrg
 
       return ($AllOrg);
+
+      // รายงานสถิติวิเคราะห์สำหรับการประเมินผลงาน ประจำปี 20xx (บริษัท ดี เอช เอ สยามวาลา จำกัด)
+      // คำนวณตาม org_id ของแต่ละ record
+      //  •	ผจก.ฝ่าย (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.parent_id เป็น appraisal_level.is_start_cal_bonus = 1
+      //   [คนที่มี level เป็นลูกของ ผจก.BU]
+      //  •	ผจก.BU (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.is_start_cal_bonus = 1
+      //  •	Staff (จำนวน) : จำนวนคนทั้งหมดที่ไม่ใช่ ผจก.ฝ่าย และผจก.BU
+      //  •	ผจก.ฝ่าย (จำนวน) : นับจำนวนคนที่มี appraisal_level.is_start_cal_bonus = 1
+      //  •	ผจก.BU (จำนวน) : นับจำนวนคนที่มี appraisal_level.parent_id เป็น appraisal_level.is_start_cal_bonus = 1
+      //   [คนที่มี level เป็นลูกของ ผจก.BU]
+      //  •	ก่อนแก้ไข (Bonus) : sum(b_amount)/sum(net_s_amount)
+      //  •	หลังแก้ไข (Bonus) : sum(adjust_b_amount)/sum(net_s_amount)
+      //
+      // คำนวณตาม org_id ของลูกหลานตามแต่ละ record
+      //  •	Min
+      //  •	Max
+      //  •	ผลต่าง : Max-Min
+      //  •	STD : [sum (ข้อมูลดิบ-Mean)] / จำนวนข้อมูลทั้งหมด
+      //  •	Mean : avg
+      //  •	Median (ค่ากลาง) : [ตำแหน่ง : (จำนวนข้อมูลทั้งหมด+1)/2] : นำตำแหน่งไปหาข้อมูล ณ ตำแหน่งนั้น
+      //   หากตำแหน่งเป็น 2.5 ให้นำข้อมูลตำแหน่ง 2 บวกข้อมูลตำแหน่ง 3 แล้วนำมาหาร 2
+      //  •	Mode : ข้อมูลที่ซ้ำกันมากที่สุด หากไม่มีข้อมูลที่ซ้ำกันจะถือว่าไม่มีฐานนิยม
+      //  •	ฝ่าย (คำนวณ) : avg(org_result_judgement.adjust_result_score)
+      //  •	BU (คำนวณ) : avg(org_result_judgement.adjust_result_score)
+
     }
+
 
     public function GetAllOrgCodeUnder($org_id)
     {
@@ -502,7 +502,7 @@ class BonusReportController extends Controller
       $place_parent = $place_parent.$parent; // เก็บ Org_code ล่าสุดที่หา Org_code ต่อไปไม่เจอ
 
       // นำ Org_code ไปหา Org_id ทั้งหมด
-      $AllOrgID = DB::select("SELECT org_id
+      $AllOrgID = DB::select("SELECT distinct org_id
           FROM org
           WHERE FIND_IN_SET(org_code,'".$place_parent."')
       ");
@@ -514,6 +514,20 @@ class BonusReportController extends Controller
 
       return ($AllOrg);
       // return (['AllOrgCodeUnder' => $place_parent]);
+
+
+      // ขั้นตอนหาค่า org ที่อยู่ภายใต้ org ที่ต้องการ (org ที่เป็นลูกหลานทั้งหมด)
+      // 1.หาชื่อ org_code จาก org_id
+      // 2.เก็บ org_code ที่หาได้ (แม่) ไว้ใน parent
+      //   •	วนหา org_code ที่มี parent_org_code เป็น parent
+      //   •	หากไม่มีลูกของ parent จึงกำหนดให้หยุดการวน loop
+      //   •	หากมีลูกของ parent ให้นำ parent เก็บไว้ใน place_parent
+      //   •	แล้วกำหนดให้ parent เป็นค่าว่าง (เพื่อให้สามารถเก็บข้อมูลลูกที่พึ่งหาได้)
+      //   •	กำหนด parent เป็น org_code ของลูกที่พึ่งหาได้
+      //   •	แล้วให้ทำการวน loop แบบนี้ไปเรื่อยๆจนกว่าจะหาลูกต่อไปไม่เจอ แล้วจึงให้หยุดการวน loop
+      // 3.เก็บ org_code ที่ใช้ในการหาลูกก่อนจะทำให้หยุดการวน loop ไว้ใน place_parent
+      // 4.นำ place_parent หา org_id
+
     }
 }
 
