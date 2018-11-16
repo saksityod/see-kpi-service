@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus-before-adjust" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="e2b0c612-936f-4a32-ad9c-5d2912b6df7a">
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="60" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="30" width="799" height="30" uuid="96067638-8df8-4850-a1df-e092e4e1389d"/>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["บริษัท ดี เอช เอ สยามวาลา จำกัด"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="800" height="30" uuid="8556282f-2199-4849-9a4a-2fe60e71ab9b"/>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["รายงานการจ่ายเงินรางวัลพิเศษ (ก่อนแก้ไข) ประจำปี "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="62" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="294" y="22" width="86" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="4290204c-333f-4434-baf0-72f2f0be8fcf"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[พนักงาน]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="498" y="22" width="160" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="c7478782-65ae-494a-8355-fea93527ab4d"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ประเมินผลงาน]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="715" y="42" width="45" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="6eb54006-2d67-4b79-a857-771482667b19"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[เงินรางวัล]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="498" y="42" width="40" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="21f0527c-1c4c-4299-a1e4-672c35f2bcae"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ผจก.ฝ่าย]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="316" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="47c8747f-f8e0-487e-b42c-217bdbb86ee1"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MGR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="42" width="50" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="60e09688-c9da-4909-926d-e3c7bf5f74c4"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[รหัสพนักงาน]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="618" y="42" width="40" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="ecb049ba-699f-4938-84ed-0c6c7d9ae861"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Board]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="294" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e7fc6cfd-a5c7-44a7-9a73-05eb16efeebe"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Staff]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="50" y="42" width="111" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="253f6f94-4e42-4bd2-8961-cf1bcf716634"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ชื่อ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="240" y="42" width="54" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="46dab75a-ce8c-44ce-8e26-e56df85ed74d"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[วันที่เริ่มงาน]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="360" y="42" width="20" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="9e52fb59-b200-4971-8c73-220bb2a9fbb7"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[รวม]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="380" y="42" width="60" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="078972ae-5d30-4a95-b5eb-6c57d49145fe"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Basic Salary]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="760" y="42" width="42" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="4cfa5f29-52de-4d6f-991e-336bef1012a6"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[จำนวนเท่า]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="578" y="42" width="40" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="0af304f8-c5e9-41ac-9163-2a9ef19ae0ac"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[COO]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="440" y="42" width="58" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="612e7460-d5a6-4ce2-babd-32c5d9b1c4e6"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Net Salary]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="338" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="d677c43f-c1f8-4629-ad35-9cee3dd02245"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BU]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="161" y="42" width="79" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="42205658-5537-4c90-b31a-6144e4ae3df8"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ตำแหน่ง]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="538" y="42" width="40" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="2cae4f7c-ef8c-4c8c-be7c-a48b76ad668f"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ผจก.BU]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="658" y="42" width="57" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="9006a8d0-457f-4d03-abef-e3a3c2f4dd4e"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[แต้มสิทธิ]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+</jasperReport>
