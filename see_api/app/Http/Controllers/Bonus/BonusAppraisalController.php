@@ -37,12 +37,13 @@ class BonusAppraisalController extends Controller
 
     /**
      * @ Search and Re-Calculate
-     * 1. ตรวจสอบ emp ที่จะนำมาคำนวณว่าจะต้องมี Stage เท่ากับ "Bonus Evaluate" (**รอ Stage จากพี่ท๊อปอีกทีว่าต้องใช้อะไร)
-     *    1.1 กรณีพบ emp ที่ยังมี Stage มาไม่ถึงตามที่กำหนด ทำการ retrun data:[], message:"xxxxxxxxxxxxx"
+     * 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก level ของ login
+     *    1.1 กำหนด edit_flag และ message เพื่อส่งกลับไปยัง client
      * 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-     * 3. ตรวจสอบ Action ว่าเป็น "search" หรือ "re-calculate"
-     *    3.1 กรณีเป็น "re-calculate" 
-     *       3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้ GetBonusAppraisalOrgLevel()
+     *    2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400, error message
+     * 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
+     *    3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บันทึกข้อมูล ในระดับ bu
+     *       3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้จาก GetBonusAppraisalOrgLevel()
      *       3.1.2 คำนวณหาค่า bonus_score ใหม่
      * 4. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
      *    4.1 หาเงินเดือนทั้งหมดโดย sum เงินเดือนของทุก bu, 
@@ -52,18 +53,32 @@ class BonusAppraisalController extends Controller
      *        คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสทั้งหมด)
      * 5. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
      *    5.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-     *    5.2 หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
-     *    5.3 กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
-     *    5.4 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), 
-     *        คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
+     *    5.2 ตรวจสอบ Action ว่าเป็น "re-calculate"
+     *       5.2.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บัยทึกข้อมูล ในระดับ department
+     *          5.2.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้จาก GetBonusAppraisalOrgLevel()
+     *          5.2.1.2 คำนวณหาค่า bonus_score ใหม่
+     * 6. หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager (prorate)) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
+     * 7. กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
+     * 8. คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
+     * 9. return กลับไปยัง client ด้วย status = 200, ข้อมูลที่ใช้ในการแสดง, edit flag และ message ในหัวข้อ 1.1
      */
     function Index(Request $request)
     { 
+        // เตรียมข้อมูลที่จำเป็นในการทำงาน
         $employee = Employee::where('emp_code', Auth::id())->first();
         $defaultMonthlyBonusRate = SystemConfiguration::first()->monthly_bonus_rate;
         $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
+        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first();
+        if( ! empty($buLevel)){
+            $buLevel = $buLevel->level_id;
+        } else {
+            $responseData = ['status' => 400, 'data' => [], 'edit_flag'=> 0,
+                'message' => 'ไม่พบข้อมูล Level ที่ใช้ในการคำนวณเงินรางวัลพิเศษ (is_start_cal_bonus)'
+            ];
+            return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
+        }
 
-        // 1. ตรวจสอบ emp ที่จะนำมาคำนวณว่าจะต้องมี Stage เท่ากับ "Bonus Evaluate" (**รอ Stage จากพี่ท๊อปอีกทีว่าต้องใช้อะไร)
+        // 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก level ของ login
         $empNotAdjust = DB::select("
             SELECT SUM(1) all_emp_result, 
                 SUM(IF(bn.stage_id = er.stage_id, 1, 0)) all_emp_bonus, 
@@ -80,6 +95,7 @@ class BonusAppraisalController extends Controller
             AND FIND_IN_SET(org.org_code, '{$this->GetOrganizationsBonusCalculate()}')
         ");
         if(in_array($employee->level_id, explode(',', $appraisalStage->level_id))){
+            // 1.1 กำหนด edit_flag และ message เพื่อส่งกลับไปยัง client
             if(!empty($empNotAdjust) && $empNotAdjust[0]->all_emp_result == $empNotAdjust[0]->all_emp_bonus){
                 $editFlag = 1; 
                 $editMessage = '';
@@ -95,32 +111,29 @@ class BonusAppraisalController extends Controller
             $editMessage = 'ผู้ใช้งานไม่ได้รับสิทธิ์ในการปรับผลคะแนน!!';
         }
 
-        // 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first();
-        if( ! empty($buLevel)){
-            $buLevel = $buLevel->level_id;
-        } else {
+        // 2. Query หาข้อมูลผลการประเมิณของ bu ที่ใช้ในการคำนวณ (เริ่มคำนวณจาก bu)
+        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
+        if($buInfo->count() == 0){
+            // 2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400, error message
             $responseData = ['status' => 400, 'data' => [], 'edit_flag'=> 0,
-                'message' => 'ไม่พบข้อมูล Level ที่ใช้ในการคำนวณเงินรางวัลพิเศษ (is_start_cal_bonus)'
+                'message' => 'ไม่พบข้อมูลผลการประเมิณในระดับหน่วยงาน (Organization result judgement)'
             ];
             return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
         }
-
-        $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
 
         // 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
         if($request->action == 're-calculate'){
 
             $clientData = collect($request->data);
             
-            // 3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บัยทึกข้อมูล ในระดับ bu
+            // 3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บันทึกข้อมูล ในระดับ bu
             $buInfo = $buInfo->map(function ($data) use ($clientData){
                 $clientData = $clientData
                     ->where('org_result_judgement_id', (empty($data->org_result_judgement_id))?'':(String)$data->org_result_judgement_id)
                     ->where('emp_result_judgement_id', (empty($data->emp_result_judgement_id))?'':(String)$data->emp_result_judgement_id)
                     ->first();
                 if( ! empty($clientData)){
-                    // 3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้ GetBonusAppraisalOrgLevel()
+                    // 3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้จาก GetBonusAppraisalOrgLevel()
                     $data->adjust_result_score = $clientData['adjust_result_score'];
                     $data->emp_adjust_result_score = $clientData['emp_adjust_result_score'];
                     // 3.1.2 คำนวณหาค่า bonus_score ใหม่
@@ -164,7 +177,7 @@ class BonusAppraisalController extends Controller
                         ->where('emp_result_judgement_id', (empty($data->emp_result_judgement_id))?'':(String)$data->emp_result_judgement_id)
                         ->first();
                     if( ! empty($clientData)){
-                        // 5.2.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้ GetBonusAppraisalOrgLevel()
+                        // 5.2.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้จาก GetBonusAppraisalOrgLevel()
                         $data->adjust_result_score = $clientData['adjust_result_score'];
                         $data->emp_adjust_result_score = $clientData['emp_adjust_result_score'];
                         // 5.2.1.2 คำนวณหาค่า bonus_score ใหม่
@@ -176,17 +189,17 @@ class BonusAppraisalController extends Controller
                 });
             }
             
-            // 7 หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager (prorate)) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
+            // 6. หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu manager (prorate)) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
             if( ! empty($bu->emp_result_judgement_id)){
                 $bu->emp_net_salary = $this->GetNetSalaryByEmpId($bu->emp_id, $request->period_id);
                 $bu->emp_bonus_score = $bu->emp_adjust_result_score * $bu->emp_net_salary;
             }
             $depTotalBonusScore = $depInfo->sum('bonus_score') + $bu->emp_bonus_score;
 
-            // 8 กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
+            // 7. กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
             $depTotalBonusAmount = $bu->bonus_amount;
 
-            // 9 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
+            // 8. คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
             $bu->departments = $depInfo->map(function ($depData) use($depTotalBonusScore, $depTotalBonusAmount){
                 $depData->bonus_percent = number_format((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
                 $depData->bonus_amount = number_format(($depData->bonus_percent / 100) * $depTotalBonusAmount,2);
@@ -195,6 +208,7 @@ class BonusAppraisalController extends Controller
             });
             
         }
+        // 9. return กลับไปยัง client ด้วย status = 200, ข้อมูลที่ใช้ในการแสดง, edit flag และ message ในหัวข้อ 1.1
         $buInfo = ['status'=> 200, 'data'=>$buInfo->toArray(), 'edit_flag'=>$editFlag, 'message'=>$editMessage];
         return response()->json($this->SetPagination($request->page, $request->rpp, $buInfo));
     }
@@ -259,30 +273,7 @@ class BonusAppraisalController extends Controller
     }
 
 
-    /** @ BonusCalculation
-     * 1. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-     * 2. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
-     *    2.1 หา เงินเดือนทั้งหมดโดย sum เงินเดือนของทุก bu, หายอดรวมเงินโบนัสโดย (งินเดือนทั้งหมด * จำนวนเดือนที่จ่ายโบนัส), หาแต้มสิทธ์ทั้งหมดโดย sum แต้มสิทธ์ของทุก bu
-     *    2.2 หาเปอร์เซ็นสิทธิ์ของแต่ละ bu ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ bu * 100) / แต้มสิทธิ์ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสทั้งหมด)
-     * 3. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
-     *    3.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-     *    3.2 หาเงินเดือนสุทธิของ bu mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ bu mgr.
-     *    3.3 หาแต้มสิทธ์ทั้งหมดโดย (sum แต้มสิทธ์ของทุก dep + แต้มสิทธิ์ของ bu mgr.) **เนื่องการเฉลี่ยโบนัสของ dep จะต้องหักจาก bu manager เสียก่อน
-     *    3.4 กำหนดยอดรวมโบนัสในระดับ dep **ยอดจะเท่ากับเงินโบนัสของ bu ที่เป็น parent ของ dep นั้น ๆ
-     *    3.5 ตรวจสอบว่า bu มี bu mgr. หรือไม่ 
-     *    3.6 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
-     *    3.7 บันทึกผล dep ลงตาราง org_result_judgement ที่ bonus_score(แต้มสิทธิ์), bonus_percent(เปอร์เซ็นสิทธิ์)
-     * 4. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ Operate
-     *    4.1 Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalEmpLevel()
-     *    4.2 หาเงินเดือนสุทธิของ dep mgr. โดยการคิด pro rate และหาแต้มสิทธิ์ของ dep mgr.
-     *    4.3 หาเงินเดือนสุทธิของ oper โดยการคิด prorate และหาแต้มสิทธิ์ของท oper ทุกคน
-     *    4.4 กำหนดยอดรวมโบนัสในระดับ oper **ยอดจะเท่ากับเงินโบนัสของ dep ที่เป็น parent ของ oper นั้น ๆ
-     *    4.5 ตรวจสอบว่า dep มี dep manager หรือไม่ 
-     *       4.5.1 กรณีมี dep manager 
-     *          4.5.1.1 คำนวณหาเปอร์เซ็นของ dep manager และบันทึกผล 
-     *          4.5.1.2 คำนวณเงินโบนัสของ dep manager และบันทึกผล
-     *    4.6 คำนวณหาเปอร์เซ็นของ oper ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ oper * 100) / แต้มสิทธิ์ oper ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ oper)
-     *    4.7 บันทึกผล oper ลงตาราง emp_result_judgement
+    /** @ คำนวณโบนัสโดยกระจายยอดโบนัส จากระดับบนลงล่างโดยเฉลี่ยจากคะแนนโบนัส
      */
     private function BonusCalculation($period, $monthlyBonusRate)
     {
@@ -448,8 +439,7 @@ class BonusAppraisalController extends Controller
     }
     
 
-    /**
-     * @ ดึงข้อมูลที่ใช้ในการคำนวณ Bonus
+    /** @ ดึงข้อมูลระดับ Organization ที่ใช้ในการคำนวณ Bonus
      * arg1: Parameter Period
      * arg2: level เริ่มต้นที่ใช้ในการคำนวณ bonus (กรณีต้องการ Query ข้อมูลของ BU)
      * arg3: Parent Org คือ Org Code ของ BU (กรณีต้องการ Query ข้อมูลของ Dep ที่อยู่ภายใต้ BU นั้น ๆ)
@@ -508,6 +498,10 @@ class BonusAppraisalController extends Controller
     }
 
 
+    /** @ ดึงข้อมูลระดับ Individual ที่ใช้ในการคำนวณ Bonus
+     * arg1: Parameter Period
+     * arg2: Parameter Org Code ที่ต้องการหาข้อมูลพนักงาน
+     */
     private function GetBonusAppraisalEmpLevel($period, $orgCode)
     {
         
@@ -639,6 +633,9 @@ class BonusAppraisalController extends Controller
     }
 
 
+    /** @ ดึงข้อมูล org ทั้งหมดที่อยู่ภายใต้ bu เพื่อนำไปตรวจสอบหาสถานะการประเมิณของพนักงานทั้งหมด 
+     * 
+     */
     public function GetOrganizationsBonusCalculate()
     {
         $orgList = '';
