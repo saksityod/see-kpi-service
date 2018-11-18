@@ -1586,7 +1586,7 @@ class AppraisalAssignmentController extends Controller
 
 			    } else { // Org
 			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
-			    	if($findChiefEmp['emp_id']==0) {
+			    	if($findChiefEmp['org_id']==0) {
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
 			    	} else {
