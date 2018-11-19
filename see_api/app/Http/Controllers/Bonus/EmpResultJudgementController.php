@@ -329,12 +329,13 @@ class EmpResultJudgementController extends Controller
 
         if($request->flag=='appraisal_flag') {
             //ส่วนเฉพาะหน้า Appraisal360
+            $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
             $to_action = DB::select("
                 SELECT stage_id, to_action
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
                 AND stage_id IN ({$stage_in}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
-                AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+                {$appraisal_form_id}
                 AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
                 AND {$request->flag} = 1
                 AND find_in_set('{$request->appraisal_group_id}', assessor_see)
