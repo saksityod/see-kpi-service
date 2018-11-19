@@ -319,14 +319,17 @@ class AdvanceSearchController extends Controller
             $in = 1; //หัวหน้าของพนักงาน
         }
 
+        $flag = "ast.".$request->flag." = 1";
+
         $status = DB::select("
-            SELECT stage_id, status
-            FROM appraisal_stage
-            WHERE {$request->flag} = 1
-            AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
-            AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
-            AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
-            ORDER BY stage_id
+            SELECT DISTINCT ast.stage_id, ast.status
+            FROM appraisal_stage ast
+            INNER JOIN emp_result er ON er.stage_id = ast.stage_id
+            WHERE {$flag}
+            AND (ast.assessor_see LIKE '%{$in}%' OR ast.assessor_see = 'all')
+            AND (ast.appraisal_form_id = '{$request->appraisal_form_id}' OR ast.appraisal_form_id = 'all')
+            AND (ast.appraisal_type_id = '{$request->appraisal_type_id}' OR ast.appraisal_type_id = 'all')
+            ORDER BY ast.stage_id
         ");
         
         return response()->json($status);
