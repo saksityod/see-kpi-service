@@ -268,21 +268,20 @@ class AdvanceSearchController extends Controller
         );
 
         $orgIdQryStr = empty($request->organization_id) ? "" : " and a.org_id = ".$request->organization_id;
+        $empIdQryStr = empty($request->employee_id) ? "" : " and a.emp_id = ".$request->employee_id;
+        
 
         if ($all_emp[0]->count_no > 0) {
             $items = DB::select("
                 Select distinct b.position_id, b.position_name
-                From employee a left outer join position b
-                on a.position_id = b.position_id
-                Where position_name like ?
-                and emp_name like ?
-                and a.is_active = 1
+                From employee a 
+                left outer join position b on a.position_id = b.position_id
+                where a.is_active = 1
                 and b.is_active = 1
-                " . $orgIdQryStr . "
+                ".$orgIdQryStr."
+                ".$empIdQryStr."
                 Order by position_name
-                limit 10
-                ",array('%'.$request->position_name.'%','%'.$request->employee_name.'%')
-            );
+            ");
         } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
             $items = DB::select("
@@ -290,15 +289,12 @@ class AdvanceSearchController extends Controller
                 From employee a 
                 left outer join position b on a.position_id = b.position_id
                 Where find_in_set(a.emp_code, '".$underEmps."')
-                and position_name like ?
-                and emp_name like ?
                 and a.is_active = 1
-                " . $orgIdQryStr . "
                 and b.is_active = 1
+                ".$orgIdQryStr."
+                ".$empIdQryStr."
                 Order by position_name
-                limit 10
-                ", array($emp->emp_code, $emp->emp_code,'%'.$request->position_name.'%','%'.$request->employee_name.'%')
-            );
+            ");
         }
         
         return response()->json($items);
