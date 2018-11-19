@@ -29,32 +29,6 @@ class AdvanceSearchController extends Controller
         $this->erj_service = $erj_service;
     }
 
-    function getFieldAppraisalStage($level_id, $level_id_org) {
-        $level = DB::select("
-            SELECT stage_id, level_id
-            FROM appraisal_stage
-            WHERE (level_id LIKE '%{$level_id}%' OR level_id LIKE '%{$level_id_org}%' OR level_id = 'all')
-        ");
-
-        $stage_id_array = [];
-        foreach ($level as $key => $value) {
-            $ex = explode(",",$value->level_id);
-            foreach ($ex as $exv) {
-                if($level_id==$exv || $level_id_org==$exv || $exv=='all') {
-                    array_push($stage_id_array, $value->stage_id);
-                }
-            }
-        }
-
-        if(empty($stage_id_array)) {
-            $stage_id_array = "''";
-        } else {
-            $stage_id_array = implode(",", $stage_id_array);
-        }
-
-        return $stage_id_array;
-    }
-
     public function YearList(Request $request)
     {
         $years = DB::select("
