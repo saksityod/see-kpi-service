@@ -65,15 +65,20 @@ class BonusAppraisalController extends Controller
     function Index(Request $request)
     { 
         // เตรียมข้อมูลที่จำเป็นในการทำงาน
-        $employee = Employee::where('emp_code', Auth::id())->first();
+        // $employee = Employee::where('emp_code', Auth::id())->first();
+        $employee = DB::table('employee')
+            ->join('org', 'org.org_id', '=', 'employee.org_id')
+            ->select('org.*')
+            ->where('employee.emp_code', Auth::id())
+            ->first();
         $defaultMonthlyBonusRate = SystemConfiguration::first()->monthly_bonus_rate;
         $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
-        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first();
+        $buLevel = AppraisalLevel::where('is_start_cal_bonus', 1)->where('is_org', 1)->get()->first();
         if( ! empty($buLevel)){
             $buLevel = $buLevel->level_id;
         } else {
             $responseData = ['status' => 400, 'data' => [], 'edit_flag'=> 0,
-                'message' => 'ไม่พบข้อมูล Level ที่ใช้ในการคำนวณเงินรางวัลพิเศษ (is_start_cal_bonus)'
+                'message' => 'ไม่พบข้อมูล Level ในระดับ Organization ที่ใช้ในการคำนวณเงินรางวัลพิเศษ (is_start_cal_bonus)'
             ];
             return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
         }
@@ -153,6 +158,10 @@ class BonusAppraisalController extends Controller
 
         // 4.2 คำนวณหาเปอร์เซ็นของ bu ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ bu * 100) / แต้มสิทธิ์ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสทั้งหมด)
         $buInfo = $buInfo->map(function ($buData) use($buTotalBonusScore, $buTotalBonusAmount){
+            // Set Zoro to 1
+            $buTotalBonusAmount = ($buTotalBonusAmount == 0) ? 1: $buTotalBonusAmount;
+            $buTotalBonusScore = ($buTotalBonusScore == 0) ? 1: $buTotalBonusScore;
+
             $buData->bonus_percent = number_format((($buData->bonus_score * 100) / $buTotalBonusScore), 2);
             $buData->bonus_amount = number_format(($buData->bonus_percent / 100) * $buTotalBonusAmount, 2);
             $buData->bonus_score = number_format($buData->bonus_score, 2);
@@ -201,6 +210,10 @@ class BonusAppraisalController extends Controller
 
             // 8. คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
             $bu->departments = $depInfo->map(function ($depData) use($depTotalBonusScore, $depTotalBonusAmount){
+                // set zero to 1
+                $depTotalBonusScore = ($depTotalBonusScore == 0) ? 1: $depTotalBonusScore;
+                $depTotalBonusAmount = ($depTotalBonusAmount == 0) ? 1: $depTotalBonusAmount;
+
                 $depData->bonus_percent = number_format((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
                 $depData->bonus_amount = number_format(($depData->bonus_percent / 100) * $depTotalBonusAmount,2);
                 $depData->bonus_score = number_format($depData->bonus_score, 2);
@@ -280,7 +293,7 @@ class BonusAppraisalController extends Controller
         $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
 
         // 1. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-        $levelStartCalBonus = AppraisalLevel::where('is_start_cal_bonus', 1)->get()->first()->level_id;
+        $levelStartCalBonus = AppraisalLevel::where('is_start_cal_bonus', 1)->where('is_org', 1)->get()->first()->level_id;
         $buInfo = $this->GetBonusAppraisalOrgLevel($period, $levelStartCalBonus, null);
 
         // 2. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
@@ -291,6 +304,10 @@ class BonusAppraisalController extends Controller
 
         // 2.2 หาเปอร์เซ็นสิทธิ์ของแต่ละ bu ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ bu * 100) / แต้มสิทธิ์ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสทั้งหมด)
         $buInfo = $buInfo->map(function ($buData) use($buTotalBonusScore, $buTotalBonusAmount){
+            // set zero to 1
+            $buTotalBonusScore = ($buTotalBonusScore == 0) ? 1: $buTotalBonusScore;
+            $buTotalBonusAmount = ($buTotalBonusAmount == 0) ? 1: $buTotalBonusAmount;
+
             $buData->bonus_percent = ($buData->bonus_score * 100) / $buTotalBonusScore;
             $buData->bonus_amount = ($buData->bonus_percent / 100) * $buTotalBonusAmount;
 
@@ -322,6 +339,9 @@ class BonusAppraisalController extends Controller
 
             // 3.5 ตรวจสอบว่า bu มี bu mgr. หรือไม่ 
             if( ! empty($bu->emp_result_judgement_id)){
+                // set zero to 1
+                $depTotalBonusScore = ($depTotalBonusScore == 0) ? 1: $depTotalBonusScore;
+
                 // 3.5.1 กรณีมี bu manager 
                 // 3.5.1.1 คำนวณหาเปอร์เซ็นของ bu mgr. และบันทึกผล 
                 $bu->emp_bonus_percent = (($bu->emp_bonus_score * 100) / $depTotalBonusScore);
@@ -346,6 +366,9 @@ class BonusAppraisalController extends Controller
             
             // 3.6 คำนวณหาเปอร์เซ็นของ dep ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ dep * 100) / แต้มสิทธิ์ dep ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ dep)
             $bu->departments = $depInfo->map(function ($depData) use($depTotalBonusScore, $depTotalBonusAmount){
+                // set zero to 1
+                $depTotalBonusScore = ($depTotalBonusScore == 0) ? 1: $depTotalBonusScore;
+
                 $depData->bonus_percent = (($depData->bonus_score * 100) / $depTotalBonusScore);
                 $depData->bonus_amount = ($depData->bonus_percent / 100) * $depTotalBonusAmount;
 
@@ -385,6 +408,9 @@ class BonusAppraisalController extends Controller
 
                 // 4.5 ตรวจสอบว่า dep มี dep manager หรือไม่ 
                 if( ! empty($dep->emp_result_judgement_id)){
+                    // set zero to 1
+                    $operTotalBonusScore = ($operTotalBonusScore == 0) ? 1: $operTotalBonusScore;
+
                     // 4.5.1 กรณีมี dep manager 
                     // 4.5.1.1 คำนวณหาเปอร์เซ็นของ dep manager และบันทึกผล 
                     $dep->emp_bonus_percent = (($dep->emp_bonus_score * 100) / $operTotalBonusScore);
@@ -409,6 +435,9 @@ class BonusAppraisalController extends Controller
 
                 // 4.6 คำนวณหาเปอร์เซ็นของ oper ที่จะได้เงินโบนัส ((แต้มสิทธิ์ของ oper * 100) / แต้มสิทธิ์ oper ทั้งหมด), คำนวณหาเงินโบนัสที่จะได้ ((เปอร์เซ็นก่อนหน้า / 100) * ยอดรวมโบนัสของ oper)
                 $dep->employees = $operInfo->map(function ($operData) use($operTotalBonusScore, $operTotalBonusAmount, $monthlyBonusRate, $appraisalStage){
+                    // set zero to 1
+                    $operTotalBonusScore = ($operTotalBonusScore == 0) ? 1: $operTotalBonusScore;
+
                     $operData->emp_bonus_percent = (($operData->emp_bonus_score * 100) / $operTotalBonusScore);
                     $operData->emp_bonus_amount = ($operData->emp_bonus_percent / 100) * $operTotalBonusAmount;
 
@@ -591,6 +620,8 @@ class BonusAppraisalController extends Controller
             }
             
             // 3.1.4 คำนวณหา net salary
+            // set zero to 1
+            $periodMonthCnt = ($periodMonthCnt == 0) ? 1: $periodMonthCnt;
             return ($empInfo->s_amount * $empMonthCnt) / $periodMonthCnt;
         }
 
