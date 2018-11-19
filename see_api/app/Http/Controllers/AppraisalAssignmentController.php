@@ -1509,7 +1509,7 @@ class AppraisalAssignmentController extends Controller
 
 	    	$items = DB::select($query_unassign . " order by period_id,emp_code,org_code asc ", $qinput);
 
-	    	$items2 = $this->find_derive($items, $request->appraisal_type_id, $request->appraisal_form, $request->period_id);
+	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id);
 
 		// Get the current page from the url if it's not set default to 1
 	    	empty($request->page) ? $page = 1 : $page = $request->page;
@@ -1545,11 +1545,12 @@ class AppraisalAssignmentController extends Controller
 
 	}
 
-	function find_derive($items, $appraisal_type_id, $appraisal_form, $period_id) {
+	function find_derive($items, $appraisal_form, $period_id) {
 		$findDerive = DB::select("
-			SELECT DISTINCT ast.level_id
+			SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
 			FROM appraisal_structure ast
 			INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+			INNER JOIN appraisal_level al ON al.level_id = ast.level_id
 			WHERE ast.is_derive = 1
 			AND ac.appraisal_form_id = '{$appraisal_form}'
 		");
@@ -1563,7 +1564,8 @@ class AppraisalAssignmentController extends Controller
 
 		foreach ($findDerive as $findDerives) {
 			foreach ($items as $key => $item) {
-			    if($appraisal_type_id==2) { // individual
+			    if($findDerives->is_individual==1) {
+			    	//หา chief emp ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
 			    	if($findChiefEmp['emp_id']==0) {
 			    		$items[$key]->assigned = 1;
@@ -1584,7 +1586,8 @@ class AppraisalAssignmentController extends Controller
 						}
 					}
 
-			    } else { // Org
+			    } else if($findDerives->is_org==1) {
+			    	//หา parent org ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
 			    	if($findChiefEmp['org_id']==0) {
 			    		$items[$key]->assigned = 1;
@@ -1602,6 +1605,7 @@ class AppraisalAssignmentController extends Controller
 				    		$items[$key]->assigned = 1;
 				    		$items[$key]->assigned_msg = 'Complete';
 				    		$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+				    		$data[] = $findEmpResult->org_id;
 				    	}
 					}
 			    }

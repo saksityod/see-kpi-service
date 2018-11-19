@@ -327,16 +327,32 @@ class EmpResultJudgementController extends Controller
 
         $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
 
-        $to_action = DB::select("
-            SELECT stage_id, to_action
-            FROM appraisal_stage
-            WHERE stage_id IN ({$stage})
-            AND stage_id IN ({$stage_in})
-            AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
-            AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
-            AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
-            ORDER BY stage_id
-        ");
+        if($request->flag=='appraisal_flag') {
+            //ส่วนเฉพาะหน้า Appraisal360
+            $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                {$appraisal_form_id}
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                AND {$request->flag} = 1
+                AND find_in_set('{$request->appraisal_group_id}', assessor_see)
+                ORDER BY stage_id
+            ");
+        } else {
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
+                AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                ORDER BY stage_id
+            ");
+        }
 
         return response()->json($to_action);
     }
