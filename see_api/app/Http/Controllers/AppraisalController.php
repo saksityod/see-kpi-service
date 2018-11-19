@@ -77,6 +77,21 @@ class AppraisalController extends Controller
 		", array($request->appraisal_year));
 		return response()->json($items);
 	}
+	
+	public function OrgBUList(Request $request)
+	{
+		// return ("jahja");
+			$OrgBU = DB::select("
+				SELECT o.org_id, o.org_name
+				FROM emp_result em
+				INNER JOIN org o ON em.org_id = o.org_id
+				INNER JOIN appraisal_level le ON o.level_id = le.level_id
+				WHERE le.is_start_cal_bonus = 1
+				GROUP BY o.org_id, o.org_name
+				ORDER BY o.org_id ASC");
+
+		 return response()->json($OrgBU);
+	}
 
 
     public function al_list()

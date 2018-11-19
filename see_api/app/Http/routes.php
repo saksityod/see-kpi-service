@@ -177,6 +177,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('appraisal/upload_file/{item_result_id}', 'AppraisalController@appraisal_upload_files');
 	Route::get('appraisal/upload_file/{item_result_id}','AppraisalController@upload_files_list');
 	Route::get('appraisal/delete_file/{result_doc_id}','AppraisalController@delete_file');
+	Route::get('appraisal/organization/OrgBUList', 'AppraisalController@OrgBUList');
 
 
 	// Database Connection //
