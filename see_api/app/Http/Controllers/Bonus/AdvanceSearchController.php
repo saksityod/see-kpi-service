@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
+use App\Http\Controllers\Bonus\EmpResultJudgementController;
 
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -21,9 +22,11 @@ use App\Employee;
 
 class AdvanceSearchController extends Controller
 {
-    public function __construct()
+    protected $erj_service;
+    public function __construct(EmpResultJudgementController $erj_service)
     {
         $this->middleware('jwt.auth');
+        $this->erj_service = $erj_service;
     }
 
     function getFieldAppraisalStage($level_id, $level_id_org) {
@@ -307,19 +310,7 @@ class AdvanceSearchController extends Controller
             return response()->json(['status' => 400, 'data' => 'Parameter flag is required']);
         }
 
-
-        $orgAuth = DB::table('employee')
-        ->join('org', 'org.org_id', '=', 'employee.org_id')
-        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
-        ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
-        ->where('emp_code', Auth::id())
-        ->first();
-
-        $empAuth = DB::table('employee')
-        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
-        ->select('employee.level_id','employee.emp_id','appraisal_level.is_hr')
-        ->where('emp_code', Auth::id())
-         ->first();
+        $empAuth = $this->erj_service->empAuth(Auth::id());
 
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
@@ -328,16 +319,12 @@ class AdvanceSearchController extends Controller
             $in = 1; //หัวหน้าของพนักงาน
         }
 
-        // $stage_in = $this->getFieldAppraisalStage($empAuth->level_id, $orgAuth->level_id);
-
-        $appraisal_form_id = empty($request->appraisal_form_id) ? "" : "AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
-
         $status = DB::select("
             SELECT stage_id, status
             FROM appraisal_stage
             WHERE {$request->flag} = 1
             AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
-            ".$appraisal_form_id."
+            AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
             AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
             ORDER BY stage_id
         ");
