@@ -13,6 +13,7 @@ use App\Http\Controllers\Bonus\BonusAppraisalController;
 use App\Http\Controllers\Bonus\EmpResultJudgementController;
 
 use App\EmpResult;
+use App\AppraisalStage;
 
 use Auth;
 use DB;
@@ -24,7 +25,7 @@ use Log;
 class BonusAdjustmentController extends Controller
 {
     public function __construct()
-	{
+    {
        $this->middleware('jwt.auth');
     }
 
@@ -81,12 +82,24 @@ class BonusAdjustmentController extends Controller
 
     public function SavedAndConfirm(Request $request)
     {
+        if(empty($request['data'])) {
+            return response()->json([
+                'status' => 400, 
+                'data' => [
+                    0 => [
+                        'SelectCheck' => [
+                            0 => 'Please Select Employee for Adjust'
+                        ]
+                    ]
+                ]
+            ]);
+        }
+
         $errors_validator = [];
         $requestValid = Validator::make($request->all(), [
             'appraisal_year' => 'required',
             'period_id' => 'required',
-            'confirm_flag' => 'required',
-            'data' => 'required'
+            'confirm_flag' => 'required'
         ]);
         if ($requestValid->fails()) {
             $errors_validator[] = $requestValid->errors();
@@ -104,10 +117,8 @@ class BonusAdjustmentController extends Controller
             $empResult->adjust_b_rate = $data['adjust_b_rate'];
             $empResult->updated_by = Auth::id();
             if($request->confirm_flag == "1"){
-                $stageInfo = (new EmpResultJudgementController)->to_action($request);
-                $stageInfo = json_decode($stageInfo->content(), true);
-                $empResult->stage_id = $stageInfo[0]['stage_id'];
-                $empResult->status = $stageInfo[0]['to_action'];
+                $empResult->stage_id = $request->stage_id;
+                $empResult->status = AppraisalStage::find($request->stage_id)->status;
             }
             $empResult->save();
         }
@@ -157,11 +168,11 @@ class BonusAdjustmentController extends Controller
         $data = json_decode( json_encode($dataInfo), true);
         $fileName = 'Bonus Adjustment '.date('y-M-d');
 
-		return Excel::create($fileName, function($excel) use ($data) {
-			$excel->sheet('Sheet1', function($sheet) use ($data){
+        return Excel::create($fileName, function($excel) use ($data) {
+            $excel->sheet('Sheet1', function($sheet) use ($data){
                 $sheet->fromArray($data);
             });
-		})->download('xlsx');
+        })->download('xlsx');
     }
 
 }
