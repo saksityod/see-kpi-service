@@ -1593,6 +1593,7 @@ class AppraisalAssignmentController extends Controller
 			    } else if($findDerives->is_org==1) {
 			    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+			    	// exit(json_encode(['data' => $findChiefEmp]));
 			    	if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
@@ -1714,9 +1715,13 @@ class AppraisalAssignmentController extends Controller
 		$chiefEmpId = 0;
 		$chiefEmpCode = '';
 		$initChiefEmp = DB::table('employee')
-		->select('chief_emp_code')
+		->select('chief_emp_code','level_id','emp_id')
 		->where('emp_code', $paramEmp)
 		->get();
+
+		if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
+			return ['emp_id' => $initParentOrg[0]->emp_id, 'chief_emp_code' => $initParentOrg[0]->chief_emp_code];
+		}
 
 		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
 
@@ -1750,9 +1755,13 @@ class AppraisalAssignmentController extends Controller
 		$parentOrgId = 0;
 		$parentOrgCode = '';
 		$initParentOrg = DB::table('org')
-		->select('parent_org_code')
+		->select('parent_org_code','level_id','org_id')
 		->where('org_code', $paramOrg)
 		->get();
+
+		if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
+			return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
+		}
 
 		$curParentOrg = $initParentOrg[0]->parent_org_code;
 
