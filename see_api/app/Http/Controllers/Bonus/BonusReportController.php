@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\URL;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
@@ -13,6 +14,9 @@ use App\SystemConfiguration;
 use App\AppraisalLevel;
 use App\Org;
 use Auth;
+use DateTime;
+use push;
+use File;
 use DB;
 use Validator;
 use Exception;
@@ -23,7 +27,7 @@ class BonusReportController extends Controller
 {
     public function __construct()
 	  {
-        //$this->middleware('jwt.auth');
+        $this->middleware('jwt.auth');
     }
 
     public function index(Request $request){
@@ -32,11 +36,6 @@ class BonusReportController extends Controller
       $period_id = json_decode($request->period_id);
       $bu_org_id = json_decode($request->org_id);
       $param_user = json_decode($request->param_user);
-      // $appraisal_year = 2018;
-      // $period_id = 1;
-      // $bu_org_id = "5,7,6";
-      // $param_user = "admin";
-
 
       $AllOrg = DB::select("SELECT oo.org_id as parent_org_id
         , oo.org_code as parent_org_code
@@ -44,7 +43,12 @@ class BonusReportController extends Controller
         , o.org_id, o.org_code, o.org_name
         , (SELECT appraisal_year FROM appraisal_period WHERE period_id = ".$period_id.") as appraisal_year
         FROM org oo
-        LEFT JOIN org o ON o.parent_org_code = oo.org_code
+        -- LEFT JOIN org o ON o.parent_org_code = oo.org_code
+        LEFT JOIN (
+					 SELECT o.org_id, o.org_code, o.org_name, o.level_id, o.parent_org_code
+					 FROM org o
+					 INNER JOIN (SELECT org_id FROM emp_result GROUP BY org_id) e_o ON e_o.org_id = o.org_id
+				) o ON o.parent_org_code = oo.org_code
         INNER JOIN appraisal_level le ON oo.level_id = le.level_id
         WHERE le.is_start_cal_bonus = 1
         AND FIND_IN_SET(oo.org_id, '".$bu_org_id."')
@@ -353,7 +357,16 @@ class BonusReportController extends Controller
         $o->SumAllStaff = $groups[$o->parent_org_id]['sum_staff']+$o->CountStaffBU;
       }
 
-      return ($AllOrg);
+      // return ($AllOrg);
+
+      $now = new DateTime();
+      $date = $now->format('Y-m-d_H-i-s');
+      $data = json_encode($AllOrg);
+      $namefile = 'BonusReportController_'.$date;
+      $fileName = $namefile.'.json';
+      File::put(base_path("resources/generate/").$fileName,$data);
+      return response()->json(['status' => 200, 'data' => $namefile]);
+
 
       // รายงานสถิติวิเคราะห์สำหรับการประเมินผลงาน ประจำปี 20xx (บริษัท ดี เอช เอ สยามวาลา จำกัด)
       // คำนวณตาม org_id ของแต่ละ record
@@ -487,14 +500,20 @@ class BonusReportController extends Controller
         	AND pe.period_id = ".$period_id."
         	AND pe.appraisal_year = ".$appraisal_year."
         	AND le.seq_no = ".$min_seq[0]->seq_no."
-        	AND emp.appraisal_type_id = 2";
+        	AND emp.appraisal_type_id = 2
+          LIMIT 1";
 
         $manager = DB::select("
-          SELECT count(manager.emp_id) as num_emp FROM(
-          	SELECT re.emp_id FROM(".$manager_org.") re
-          	INNER JOIN (".$manager_org.") result ON re.emp_id = result.chief_emp_id
-          ) manager
+          SELECT count(manager.emp_id) as num_emp
+          FROM( ".$manager_org.") manager
           ");
+
+        // $manager = DB::select("
+        //   SELECT count(manager.emp_id) as num_emp FROM(
+        //   	SELECT re.emp_id FROM(".$manager_org.") re
+        //   	INNER JOIN (".$manager_org.") result ON re.emp_id = result.chief_emp_id
+        //   ) manager
+        //   ");
 
         return($manager[0]->num_emp);
       }
@@ -567,17 +586,26 @@ class BonusReportController extends Controller
           } else {
 
             $ManagerMinSeqNo = DB::select("
-              SELECT re.emp_id
+              SELECT result.emp_id
               FROM(".$main_query."
-                AND le.seq_no = ".$MinSeqNO[0]->min_seq_no.") re
-              INNER JOIN (".$main_query."
                 AND le.seq_no = ".$MinSeqNO[0]->min_seq_no."
-              ) result ON re.emp_id = result.chief_emp_id");
+                ORDER BY emp.emp_id ASC
+              ) result
+              LIMIT 1 ");
 
-            $EmpManagerID = "";
-            foreach ($ManagerMinSeqNo as $EmpManager) {
-              $EmpManagerID = $EmpManagerID.$EmpManager->emp_id.",";
-            }
+            $EmpManagerID = $ManagerMinSeqNo[0]->emp_id;
+
+            // "SELECT re.emp_id
+            //   FROM(".$main_query."
+            //     AND le.seq_no = ".$MinSeqNO[0]->min_seq_no.") re
+            //   INNER JOIN (".$main_query."
+            //     AND le.seq_no = ".$MinSeqNO[0]->min_seq_no."
+            //   ) result ON re.emp_id = result.chief_emp_id"
+
+            // $EmpManagerID = "";
+            // foreach ($ManagerMinSeqNo as $EmpManager) {
+            //   $EmpManagerID = $EmpManagerID.$EmpManager->emp_id.",";
+            // }
           }
       }
 
@@ -621,6 +649,7 @@ class BonusReportController extends Controller
       return($ValueManager);
 
     }
+
 
 }
 

@@ -209,8 +209,13 @@ class JasperController extends Controller
         //shell_exec('java -jar '.base_path('resources/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
         //shell_exec('java -jar '.base_path('vendor/cossou/jasperphp/src/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
         //shell_exec('java -jar '.base_path('vendor/imake/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
-
-     if(!empty($used_connection) && $used_connection == '1') {
+    
+    if(!empty($request->json_name)) {
+        $command .= " -t json";
+        $command .= " --data-file ".base_path("resources/generate/").$request->json_name.".json";
+        $command .= " --json-query=";
+    }
+     else if(!empty($used_connection) && $used_connection == '1') {
          if (!empty($db_connection) && strlen(trim($db_connection)) > 0) {
              $command .= " -t " . $db_connection;
          }
