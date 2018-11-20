@@ -337,8 +337,9 @@ class AppraisalGroupController extends Controller
 			$items = DB::select("
 				select DISTINCT b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
 					if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount,
-					((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
-					((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
+					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
 				from appraisal_item_result a
 				left outer join appraisal_item b
 				on a.item_id = b.item_id
@@ -374,8 +375,9 @@ class AppraisalGroupController extends Controller
 					IF(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, 
 					a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, 
 					(select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount,
-					((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
-					((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
+					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
+					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
 				FROM appraisal_item_result a
 				LEFT OUTER JOIN appraisal_item b ON a.item_id = b.item_id
 				INNER JOIN appraisal_item ai ON ai.item_id = a.item_id
