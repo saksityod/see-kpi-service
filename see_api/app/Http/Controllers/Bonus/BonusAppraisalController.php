@@ -222,8 +222,26 @@ class BonusAppraisalController extends Controller
             
         }
         // 9. return กลับไปยัง client ด้วย status = 200, ข้อมูลที่ใช้ในการแสดง, edit flag และ message ในหัวข้อ 1.1
-        $buInfo = ['status'=> 200, 'data'=>$buInfo->toArray(), 'edit_flag'=>$editFlag, 'message'=>$editMessage];
-        return response()->json($this->SetPagination($request->page, $request->rpp, $buInfo));
+        // ทำขึ้นเพื่อให้สามารถแบ่ง page ได้
+        $seq = 0;
+        foreach ($buInfo as $info) {
+            $seq = $seq+1;
+            $info->seq = $seq;
+            $info->parent_org_group = $info->org_code;
+
+            foreach ($info->departments as $val) {
+                $seq = $seq+1;
+                $val->seq = $seq;
+                $val->parent_org_group = $info->org_code;
+
+                $buInfo->push($val);
+            }
+            unset($info->departments);
+        }
+        $buInfo = $buInfo->sortBy('seq')->values()->all();
+        $buInfo = $this->SetPagination($request->page, $request->rpp, $buInfo);
+
+        return response()->json(['status'=> 200, 'edit_flag'=>$editFlag, 'message'=>$editMessage, 'datas'=> $buInfo->toArray()]);
     }
 
 
@@ -517,7 +535,15 @@ class BonusAppraisalController extends Controller
                     FROM emp_result_judgement se
                     WHERE se.emp_result_id = e.emp_result_id
                 )
-            ) erj ON erj.org_level_id = org.level_id AND erj.org_id = orj.org_id
+                AND emp.emp_id = (
+                    SELECT se.emp_id
+                    FROM employee se 
+                    INNER JOIN appraisal_level vel ON vel.level_id = se.level_id
+                    WHERE se.org_id = er.org_id
+                    ORDER BY vel.seq_no
+                    LIMIT 1
+                )
+            ) erj ON erj.org_id = orj.org_id
             WHERE orj.period_id = '{$period}'
             ".$buLevelQryStr."
             ".$parentOrgQryStr."
