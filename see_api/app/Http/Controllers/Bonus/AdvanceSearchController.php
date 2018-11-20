@@ -305,7 +305,7 @@ class AdvanceSearchController extends Controller
         return response()->json($status);
     }
     
-    private function GetallUnderEmp($paramEmp)
+    public function GetallUnderEmp($paramEmp)
     {
         $globalEmpCodeSet = "";
         $inLoop = true;

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
+use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 use App\EmpResultJudgement;
 use App\Employee;
@@ -19,9 +20,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EmpResultJudgementController extends Controller
 {
-    public function __construct()
+    protected $AdvancedSearch_service;
+    public function __construct(AdvanceSearchController $AdvancedSearch_service)
     {
         $this->middleware('jwt.auth');
+        $this->AdvancedSearch_service = $AdvancedSearch_service;
     }
 
     function empAuth($emp_code) {
@@ -193,6 +196,21 @@ class EmpResultJudgementController extends Controller
         $emp_id = empty($request->emp_id) ? "" : " AND er.emp_id = '{$request->emp_id}'";
         $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
         $form = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+
+        $all_emp = DB::select("
+            SELECT sum(b.is_all_employee) count_no
+            FROM employee a
+            LEFT OUTER JOIN appraisal_level b on a.level_id = b.level_id
+            WHERE emp_code = ?
+        ", array(Auth::id()));
+
+        if ($all_emp[0]->count_no > 0) {
+            $emp_all = "";
+        } else {
+            $gue = $this->AdvancedSearch_service->GetallUnderEmp(Auth::id());
+            $emp_all = empty($gue) ? "" : " AND find_in_set(e.emp_code, '{$gue}')";
+        }
+
         //เช็คว่ามีใน EmpJudgement ไหมแล้วเอา result_score2 ล่าสุดมา
         $items = DB::select("
             SELECT  erj.emp_result_judgement_id,
@@ -222,7 +240,7 @@ class EmpResultJudgementController extends Controller
                 WHERE emp_result_judgement.emp_result_id = erj.emp_result_id
             ) AND er.period_id = '{$request->period_id}'
             AND er.stage_id = '{$request->stage_id}'
-            ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
+            ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form.$emp_all."
             GROUP BY emp_result_judgement_id,
             emp_result_id,
             emp_code, 
@@ -265,7 +283,7 @@ class EmpResultJudgementController extends Controller
                 LEFT JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
                 WHERE er.period_id = '{$request->period_id}'
                 AND er.stage_id = '{$request->stage_id}'
-                ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
+                ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form.$emp_all."
             ");
         } else {
             foreach ($items as $key1 => $value1) {
@@ -291,7 +309,7 @@ class EmpResultJudgementController extends Controller
                         AND emp_result_judgement.emp_result_judgement_id != {$value1->emp_result_judgement_id}
                     ) AND er.period_id = '{$request->period_id}'
                     AND er.stage_id = '{$request->stage_id}'
-                    ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
+                    ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form.$emp_all."
                 ");
                 
                 if(empty($items2)) {
@@ -308,7 +326,7 @@ class EmpResultJudgementController extends Controller
                         WHERE er.emp_result_id = '{$value1->emp_result_id}'
                         AND er.period_id = '{$request->period_id}'
                         AND er.stage_id = '{$request->stage_id}'
-                        ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form."
+                        ".$position_id.$emp_level.$org_level.$emp_id.$org_id.$form.$emp_all."
                     ");
                 }
 
