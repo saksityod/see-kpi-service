@@ -315,12 +315,13 @@ class AppraisalItemController extends Controller
 					i.max_value,
 					i.unit_deduct_score,
 					i.unit_reward_score,
-					i.value_get_zero,
+					ifnull(i.value_get_zero,'') value_get_zero,
 					i.is_active,
 					f.form_name,
 					f.app_url,
 					f.form_id,
-					s.is_no_raise_value
+					s.is_no_raise_value,
+					s.is_value_get_zero
 				FROM appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
@@ -356,12 +357,13 @@ class AppraisalItemController extends Controller
 					u.uom_name,
 					i.max_value,
 					i.unit_deduct_score,
-					i.value_get_zero,
+					ifnull(i.value_get_zero,'') value_get_zero,
 					i.is_active,
 					f.form_name,
 					f.app_url,
 					f.form_id,
-					s.is_no_raise_value
+					s.is_no_raise_value,
+					s.is_value_get_zero
 				FROM
 					appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
