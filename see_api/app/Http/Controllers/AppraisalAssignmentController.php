@@ -1556,30 +1556,34 @@ class AppraisalAssignmentController extends Controller
 		");
 
 		if(empty($findDerive)) {
+			// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
 			foreach ($items as $key => $item) {
 				$items[$key]->assigned = 1;
 		    	$items[$key]->assigned_msg = '';
 			}
 		}
 
-		foreach ($findDerive as $findDerives) {
-			foreach ($items as $key => $item) {
+		foreach ($items as $key => $item) { // loop พนักงาน หรือ organization
+			foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
 			    if($findDerives->is_individual==1) {
-			    	//หา chief emp ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
+			    	//หา chief emp code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
-			    	if($findChiefEmp['emp_id']==0) {
+			    	if($findChiefEmp['emp_id']==0) { // กรณีไม่มี chief_emp_code
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
 			    	} else {
 				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
 				    	->where("period_id", $period_id)
 				    	->where("emp_id", $findChiefEmp['emp_id'])
-				    	->where("status", "Complete")->first();
+				    	->where("status", "Accepted")->first();
 
-					    if(empty($findEmpResult)) {
-						    $items[$key]->assigned = 0;
-						    $items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
-						} else {
+					    if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+				    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) {
+				    			// กรณี ยังไม่มีการ complete เลย
+					    		$items[$key]->assigned = 0;
+					    		$items[$key]->assigned_msg = $findChiefEmp['chief_emp_code'].' not Assign to Stage Complete';
+				    		}
+				    	} else {
 						    $items[$key]->assigned = 1;
 						    $items[$key]->assigned_msg = 'Complete';
 						    $items[$key]->chief_id_array[] = $findEmpResult->emp_id;
@@ -1587,25 +1591,27 @@ class AppraisalAssignmentController extends Controller
 					}
 
 			    } else if($findDerives->is_org==1) {
-			    	//หา parent org ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
+			    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
-			    	if($findChiefEmp['org_id']==0) {
+			    	if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
 			    	} else {
 				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
 				    	->where("period_id", $period_id)
 				    	->where("org_id", $findChiefEmp['org_id'])
-				    	->where("status", "Complete")->first();
+				    	->where("status", "Accepted")->first();
 
-				    	if(empty($findEmpResult)) {
-				    		$items[$key]->assigned = 0;
-				    		$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
+				    	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+				    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
+				    			// กรณี ยังไม่มีการ complete เลย
+					    		$items[$key]->assigned = 0;
+					    		$items[$key]->assigned_msg = $findChiefEmp['parent_org_code'].' not Assign to Stage Complete';
+				    		}
 				    	} else {
 				    		$items[$key]->assigned = 1;
 				    		$items[$key]->assigned_msg = 'Complete';
 				    		$items[$key]->chief_id_array[] = $findEmpResult->org_id;
-				    		$data[] = $findEmpResult->org_id;
 				    	}
 					}
 			    }
@@ -1627,12 +1633,15 @@ class AppraisalAssignmentController extends Controller
 				$item_array = implode(",", $item_array);
 			}
 
-			$check_structure = AppraisalCriteria::select("structure_id")
-			->where("appraisal_level_id", $level_id)->get();
+			$check_structure = DB::select("
+				SELECT DISTINCT structure_id
+				FROM appraisal_criteria
+				WHERE appraisal_level_id = '{$level_id}'
+			");
 
 			$struc_array = [];
 			foreach ($check_structure as $value) {
-				array_push($struc_array, $value['structure_id']);
+				array_push($struc_array, $value->structure_id);
 			}
 
 			if(empty($struc_array)) {
