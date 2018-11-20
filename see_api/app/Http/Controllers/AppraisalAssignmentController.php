@@ -1720,7 +1720,7 @@ class AppraisalAssignmentController extends Controller
 		->get();
 
 		if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
-			return ['emp_id' => $initParentOrg[0]->emp_id, 'chief_emp_code' => $initParentOrg[0]->chief_emp_code];
+			return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
 		}
 
 		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
