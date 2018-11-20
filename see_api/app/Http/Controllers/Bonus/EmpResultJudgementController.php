@@ -43,7 +43,7 @@ class EmpResultJudgementController extends Controller
         return $orgAuth;
     }
 
-    function getFieldAppraisalStage($level_id, $level_id_org) {
+    function getFieldLevelStage($level_id, $level_id_org) {
         $level = DB::select("
             SELECT stage_id, level_id
             FROM appraisal_stage
@@ -55,6 +55,32 @@ class EmpResultJudgementController extends Controller
             $ex = explode(",",$value->level_id);
             foreach ($ex as $exv) {
                 if($level_id==$exv || $level_id_org==$exv || $exv=='all') {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        } else {
+            $stage_id_array = implode(",", $stage_id_array);
+        }
+
+        return $stage_id_array;
+    }
+
+    function getFieldFormStage($form) {
+        $level = DB::select("
+            SELECT stage_id, appraisal_form_id
+            FROM appraisal_stage
+            WHERE (appraisal_form_id LIKE '%{$form}%' OR appraisal_form_id = 'all')
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->appraisal_form_id);
+            foreach ($ex as $exv) {
+                if($form==$exv || $exv=='all') {
                     array_push($stage_id_array, $value->stage_id);
                 }
             }
@@ -224,7 +250,7 @@ class EmpResultJudgementController extends Controller
                         er.status,
                         'หัวหน้า' result_score_name1,
                         er.result_score result_score1,
-                        '' percent_adjust,
+                        100.00 percent_adjust,
                         (
                             SELECT emp_name
                             FROM employee WHERE emp_code = '{$emp_code}'
@@ -311,7 +337,8 @@ class EmpResultJudgementController extends Controller
     public function to_action(Request $request) {
         $empAuth = $this->empAuth(Auth::id());
         $orgAuth = $this->orgAuth(Auth::id());
-        $stage_in = $this->getFieldAppraisalStage($empAuth->level_id, $orgAuth->level_id);
+        $stage_in_level = $this->getFieldLevelStage($empAuth->level_id, $orgAuth->level_id);
+        $stage_in_form = $this->getFieldFormStage($request->appraisal_form_id);
 
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
@@ -334,7 +361,7 @@ class EmpResultJudgementController extends Controller
                 SELECT stage_id, to_action
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
-                AND stage_id IN ({$stage_in}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
                 {$appraisal_form_id}
                 AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
                 AND {$request->flag} = 1
@@ -346,7 +373,7 @@ class EmpResultJudgementController extends Controller
                 SELECT stage_id, to_action
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
-                AND stage_id IN ({$stage_in}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
                 AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
                 AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
                 AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
