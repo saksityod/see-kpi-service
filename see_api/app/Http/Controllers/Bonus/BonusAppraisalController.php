@@ -14,6 +14,7 @@ use App\AppraisalStage;
 use App\Employee;
 use App\EmpResult;
 use App\EmpResultJudgement;
+use App\AppraisalFrequency;
 use App\Org;
 use App\OrgResultJudgement;
 use App\AppraisalPeriod;
@@ -620,24 +621,26 @@ class BonusAppraisalController extends Controller
 
         // 2. ดึงข้อมูล period เพื่อน้ำข้อมูลวันที่เริ่มต้น และสิ้นสุดของช่วงการคำนวณโบนัส
         $periodInfo = AppraisalPeriod::where('period_id', $periodId)->get()->first();
+        // 2.1 ดึงข้อมูล frequency หาค่าความถี่ของ period นั้น เพื่อนำไปหาเดือนเริ่มต้นของการคำนวณ
+        $appraisalFrequency = AppraisalFrequency::find($periodInfo->appraisal_frequency_id);
         if($periodInfo->count() == 0) {
-            // 2.1 ในกรณีที่ไม่พบ period ให้การ returm net salary เป็น 0
+            // 2.2 ในกรณีที่ไม่พบ period ให้การ returm net salary เป็น 0
             return 0;
         }
 
-        // 3. ทำการหา Net Salary
-        // 3.1 ตรวจสอบวันเริ่มงานของพนักงาน
-        if($empInfo->working_start_date <= $periodInfo->start_date){
-            // 3.1.1 ถ้าวันเริ่มงานน้อยกว่าวันเริ่มของ period แสดงว่าทำงานครบปีใช้ basic salary ให้ใช้ basic amount
+        // 3. หาจำนวนเดือนของ และวันเริ่มต้น ของ period         
+        $periodEnd = Carbon::createFromFormat('Y-m-d', $periodInfo->end_date);
+        $periodStart = Carbon::createFromFormat('Y-m-d', $periodEnd->year.'-'.(($periodEnd->month-$appraisalFrequency->frequency_month_value)+1).'-01');
+        $periodMonthCnt = ($periodStart->diffInMonths($periodEnd) + 1);
+
+        // 4. ทำการหา Net Salary
+        // 4.1 ตรวจสอบวันเริ่มงานของพนักงาน
+        if($empInfo->working_start_date <= $periodStart){
+            // 4.1.1 ถ้าวันเริ่มงานน้อยกว่าวันเริ่มของ period แสดงว่าทำงานครบเดือนโบนัส นำ s_amount ไปใช้งาน
             return round($empInfo->s_amount, 2);
         } 
-        else {
-            // 3.1.2 หาจำนวนเดือนของ period            
-            $periodEnd = Carbon::createFromFormat('Y-m-d', $periodInfo->end_date);
-            $periodStart = Carbon::createFromFormat('Y-m-d', $periodEnd->year.'-01-01');
-            $periodMonthCnt = ($periodStart->diffInMonths($periodEnd) + 1);
-
-            // 3.1.3 หาจำนวนเดือนที่พนักงานทำงาน (เข้างานวันที่ 1-15 คิดเป็น 1 เดือน, เข้างานวันที่ 16 เป็นต้นไป ไปคิดเดือนหน้า)
+        else {       
+            // 4.2 หาจำนวนเดือนที่พนักงานทำงาน (เข้างานวันที่ 1-15 คิดเป็น 1 เดือน, เข้างานวันที่ 16 เป็นต้นไป ไปคิดเดือนหน้า)
             $empWorkStartDate = Carbon::createFromFormat('Y-m-d', $empInfo->working_start_date);
             if($empWorkStartDate->day > 15){
                 $empMonthCnt = $empWorkStartDate->diffInMonths($periodEnd);
@@ -645,7 +648,7 @@ class BonusAppraisalController extends Controller
                 $empMonthCnt = ($empWorkStartDate->diffInMonths($periodEnd) + 1);
             }
             
-            // 3.1.4 คำนวณหา net salary
+            // 4.3 คำนวณหา net salary
             // set zero to 1
             $periodMonthCnt = ($periodMonthCnt == 0) ? 1: $periodMonthCnt;
             return ($empInfo->s_amount * $empMonthCnt) / $periodMonthCnt;
