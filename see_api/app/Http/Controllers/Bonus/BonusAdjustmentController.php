@@ -51,7 +51,14 @@ class BonusAdjustmentController extends Controller
                 vel.appraisal_level_name,
                 pos.position_name,
                 org.org_name,
-                er.s_amount,
+                IF(
+                    IFNULL(er.net_s_amount,0)=0, 
+                    IF(
+                        IFNULL(er.s_amount,0)=0,
+                        e.s_amount,
+                        er.s_amount), 
+                    er.net_s_amount
+                ) AS s_amount,
                 er.adjust_b_amount AS b_amount,
                 er.adjust_b_amount,
                 er.adjust_b_rate AS b_rate,
