@@ -359,24 +359,26 @@ class BonusReportController extends Controller
 
       // return ($AllOrg);
 
-      $now = new DateTime();
-      $date = $now->format('Y-m-d_H-i-s');
+      $now = new DateTime(); 
+      $date = $now->format('Y-m-d_H-i-s');   
       $data = json_encode($AllOrg);
-      $namefile = 'BonusReportController_'.$date;
+      $namefile = 'BonusReportController_'.$date;  
       $fileName = $namefile.'.json';
-      File::put(base_path("resources/generate/").$fileName,$data);
-      return response()->json(['status' => 200, 'data' => $namefile]);
+      File::put(base_path("resources/generate/").$fileName,$data);  // สร้างไฟล์ JSON บันทึกข้อมูลลง JSON ไฟล์
+      if(file_exists(base_path("resources/generate/".$fileName))){  // ตรวจสอบไฟล์นั้นถูกสร้างสำเร็จแล้วยัง ? 
+        return response()->json(['status' => 200, 'data' => $namefile]);  // ส่งชื่อ JSON ไฟล์ไปยัง Front 
+       }else{ 
+        return response()->json(['status' => 400, 'data' => 'Generate File Not Success!']); 
+      }
 
 
       // รายงานสถิติวิเคราะห์สำหรับการประเมินผลงาน ประจำปี 20xx (บริษัท ดี เอช เอ สยามวาลา จำกัด)
       // คำนวณตาม org_id ของแต่ละ record
-      //  •	ผจก.ฝ่าย (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.parent_id เป็น appraisal_level.is_start_cal_bonus = 1
-      //   [คนที่มี level เป็นลูกของ ผจก.BU]
-      //  •	ผจก.BU (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.is_start_cal_bonus = 1
+      //  •	ผจก.ฝ่าย (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด
+      //  •	ผจก.BU (คำนวณ) : ค่าข้อมูลคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด
       //  •	Staff (จำนวน) : จำนวนคนทั้งหมดที่ไม่ใช่ ผจก.ฝ่าย และผจก.BU
-      //  •	ผจก.ฝ่าย (จำนวน) : นับจำนวนคนที่มี appraisal_level.is_start_cal_bonus = 1
-      //  •	ผจก.BU (จำนวน) : นับจำนวนคนที่มี appraisal_level.parent_id เป็น appraisal_level.is_start_cal_bonus = 1
-      //   [คนที่มี level เป็นลูกของ ผจก.BU]
+      //  •	ผจก.ฝ่าย (จำนวน) : นับจำนวนคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด 
+      //  •	ผจก.BU (จำนวน) : นับจำนวนคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด
       //  •	ก่อนแก้ไข (Bonus) : sum(b_amount)/sum(net_s_amount)
       //  •	หลังแก้ไข (Bonus) : sum(adjust_b_amount)/sum(net_s_amount)
       //
