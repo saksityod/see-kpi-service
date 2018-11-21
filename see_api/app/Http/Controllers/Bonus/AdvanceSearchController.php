@@ -1,32 +1,139 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
-use App\Http\Controllers\Bonus\EmpResultJudgementController;
 
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-
-use App\Http\Requests;
-use Illuminate\Support\Collection;
-use App\Http\Controllers\Controller;
+use App\Employee;
 
 use Auth;
 use DB;
 use Validator;
 use Exception;
 use Log;
-
-use App\Employee;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AdvanceSearchController extends Controller
 {
-    protected $erj_service;
-    public function __construct(EmpResultJudgementController $erj_service)
+    public function __construct()
     {
         $this->middleware('jwt.auth');
-        $this->erj_service = $erj_service;
+    }
+
+    function empAuth() {
+        $empAuth = DB::table('employee')
+        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+        ->select('employee.level_id','employee.emp_id','appraisal_level.is_hr')
+        ->where('emp_code', Auth::id())
+        ->first();
+        return $empAuth;
+    }
+
+    function orgAuth() {
+        $orgAuth = DB::table('employee')
+        ->join('org', 'org.org_id', '=', 'employee.org_id')
+        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
+        ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
+        ->where('emp_code', Auth::id())
+        ->first();
+        return $orgAuth;
+    }
+
+    function getFieldLevelStage($level_id, $level_id_org) {
+        $level = DB::select("
+            SELECT stage_id, level_id
+            FROM appraisal_stage
+            WHERE (level_id LIKE '%{$level_id}%' OR level_id LIKE '%{$level_id_org}%' OR level_id = 'all')
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->level_id);
+            foreach ($ex as $exv) {
+                if($level_id==$exv || $level_id_org==$exv || $exv=='all') {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        } else {
+            $stage_id_array = implode(",", $stage_id_array);
+        }
+
+        return $stage_id_array;
+    }
+
+    function getFieldFormStage($form) {
+        $level = DB::select("
+            SELECT stage_id, appraisal_form_id
+            FROM appraisal_stage
+            WHERE (appraisal_form_id LIKE '%{$form}%' OR appraisal_form_id = 'all')
+        ");
+
+        $stage_id_array = [];
+        foreach ($level as $key => $value) {
+            $ex = explode(",",$value->appraisal_form_id);
+            foreach ($ex as $exv) {
+                if($form==$exv || $exv=='all') {
+                    array_push($stage_id_array, $value->stage_id);
+                }
+            }
+        }
+
+        if(empty($stage_id_array)) {
+            $stage_id_array = "''";
+        } else {
+            $stage_id_array = implode(",", $stage_id_array);
+        }
+
+        return $stage_id_array;
+    }
+
+    function GetallUnderEmp($paramEmp) {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
+
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $paramEmp.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT emp_code
+                FROM employee
+                WHERE find_in_set(chief_emp_code, '{$LoopEmpCodeSet}')
+            ");
+            log::info($LoopEmpCodeSet);
+
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->emp_code.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
+    }
+
+    function isAll() {
+         $all_emp = DB::select("
+            SELECT sum(b.is_all_employee) count_no
+            FROM employee a
+            LEFT OUTER JOIN appraisal_level b on a.level_id = b.level_id
+            WHERE emp_code = ?
+        ", array(Auth::id()));
+         return $all_emp;
     }
 
     public function YearList(Request $request)
@@ -280,7 +387,7 @@ class AdvanceSearchController extends Controller
             return response()->json(['status' => 400, 'data' => 'Parameter flag is required']);
         }
 
-        $empAuth = $this->erj_service->empAuth(Auth::id());
+        $empAuth = $this->empAuth();
 
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
@@ -304,39 +411,4 @@ class AdvanceSearchController extends Controller
         
         return response()->json($status);
     }
-    
-    public function GetallUnderEmp($paramEmp)
-    {
-        $globalEmpCodeSet = "";
-        $inLoop = true;
-        $loopCnt = 1;
-
-        while ($inLoop){
-            if($loopCnt == 1){
-                $LoopEmpCodeSet = $paramEmp.",";
-            }
-            
-            // Check each under //
-            $eachUnder = DB::select("
-                SELECT emp_code
-                FROM employee
-                WHERE find_in_set(chief_emp_code, '{$LoopEmpCodeSet}')
-            ");
-            log::info($LoopEmpCodeSet);
-
-            if(empty($eachUnder)){
-                $inLoop = false;
-            } else {
-                $LoopEmpCodeSet = "";
-                foreach ($eachUnder as $emp) {
-                    $LoopEmpCodeSet .= $emp->emp_code.",";
-                }
-                $globalEmpCodeSet .= $LoopEmpCodeSet;
-            }
-            $loopCnt = $loopCnt + 1;
-        }
-        
-        return $globalEmpCodeSet;
-    }
-    
 }

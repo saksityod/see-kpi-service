@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Bonus;
+
 use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 use App\EmpResultJudgement;
@@ -20,82 +21,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EmpResultJudgementController extends Controller
 {
-    protected $AdvancedSearch_service;
-    public function __construct(AdvanceSearchController $AdvancedSearch_service)
+    public function __construct()
     {
         $this->middleware('jwt.auth');
-        $this->AdvancedSearch_service = $AdvancedSearch_service;
-    }
-
-    function empAuth($emp_code) {
-        $empAuth = DB::table('employee')
-        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
-        ->select('employee.level_id','employee.emp_id','appraisal_level.is_hr')
-        ->where('emp_code', Auth::id())
-        ->first();
-        return $empAuth;
-    }
-
-    function orgAuth($emp_code) {
-        $orgAuth = DB::table('employee')
-        ->join('org', 'org.org_id', '=', 'employee.org_id')
-        ->join('appraisal_level', 'appraisal_level.level_id', '=', 'employee.level_id')
-        ->select('org.level_id','employee.emp_id','appraisal_level.is_hr')
-        ->where('emp_code', Auth::id())
-        ->first();
-        return $orgAuth;
-    }
-
-    function getFieldLevelStage($level_id, $level_id_org) {
-        $level = DB::select("
-            SELECT stage_id, level_id
-            FROM appraisal_stage
-            WHERE (level_id LIKE '%{$level_id}%' OR level_id LIKE '%{$level_id_org}%' OR level_id = 'all')
-        ");
-
-        $stage_id_array = [];
-        foreach ($level as $key => $value) {
-            $ex = explode(",",$value->level_id);
-            foreach ($ex as $exv) {
-                if($level_id==$exv || $level_id_org==$exv || $exv=='all') {
-                    array_push($stage_id_array, $value->stage_id);
-                }
-            }
-        }
-
-        if(empty($stage_id_array)) {
-            $stage_id_array = "''";
-        } else {
-            $stage_id_array = implode(",", $stage_id_array);
-        }
-
-        return $stage_id_array;
-    }
-
-    function getFieldFormStage($form) {
-        $level = DB::select("
-            SELECT stage_id, appraisal_form_id
-            FROM appraisal_stage
-            WHERE (appraisal_form_id LIKE '%{$form}%' OR appraisal_form_id = 'all')
-        ");
-
-        $stage_id_array = [];
-        foreach ($level as $key => $value) {
-            $ex = explode(",",$value->appraisal_form_id);
-            foreach ($ex as $exv) {
-                if($form==$exv || $exv=='all') {
-                    array_push($stage_id_array, $value->stage_id);
-                }
-            }
-        }
-
-        if(empty($stage_id_array)) {
-            $stage_id_array = "''";
-        } else {
-            $stage_id_array = implode(",", $stage_id_array);
-        }
-
-        return $stage_id_array;
+        $this->advanSearch = new AdvanceSearchController;
     }
 
     public function store(Request $request) {
@@ -153,8 +82,8 @@ class EmpResultJudgementController extends Controller
             if($d['edit_flag']==1) {
                 $item = new EmpResultJudgement;
                 $item->emp_result_id = $d['emp_result_id'];
-                $item->judge_id = $this->orgAuth(Auth::id())->emp_id;
-                $item->org_level_id = $this->orgAuth(Auth::id())->level_id;
+                $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
+                $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
                 $item->percent_adjust = $d['percent_adjust'];
                 $item->adjust_result_score = $d['adjust_result_score'];
                 $item->is_bonus =  0;
@@ -197,17 +126,12 @@ class EmpResultJudgementController extends Controller
         $org_id = empty($request->org_id) ? "" : " AND er.org_id = '{$request->org_id}'";
         $form = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
 
-        $all_emp = DB::select("
-            SELECT sum(b.is_all_employee) count_no
-            FROM employee a
-            LEFT OUTER JOIN appraisal_level b on a.level_id = b.level_id
-            WHERE emp_code = ?
-        ", array(Auth::id()));
+        $all_emp = $this->advanSearch->isAll();
 
         if ($all_emp[0]->count_no > 0) {
             $emp_all = "";
         } else {
-            $gue = $this->AdvancedSearch_service->GetallUnderEmp(Auth::id());
+            $gue = $this->advanSearch->GetallUnderEmp(Auth::id());
             $emp_all = empty($gue) ? "" : " AND find_in_set(e.emp_code, '{$gue}')";
         }
 
@@ -353,10 +277,10 @@ class EmpResultJudgementController extends Controller
     }
 
     public function to_action(Request $request) {
-        $empAuth = $this->empAuth(Auth::id());
-        $orgAuth = $this->orgAuth(Auth::id());
-        $stage_in_level = $this->getFieldLevelStage($empAuth->level_id, $orgAuth->level_id);
-        $stage_in_form = $this->getFieldFormStage($request->appraisal_form_id);
+        $empAuth = $this->advanSearch->empAuth();
+        $orgAuth = $this->advanSearch->orgAuth();
+        $stage_in_level = $this->advanSearch->getFieldLevelStage($empAuth->level_id, $orgAuth->level_id);
+        $stage_in_form = $this->advanSearch->getFieldFormStage($request->appraisal_form_id);
 
         //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
         if($empAuth->is_hr==1) {
