@@ -529,7 +529,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Bonus --> Emp Result Judgement //
 	Route::get('emp/adjustment', 'Bonus\EmpResultJudgementController@index');
 	Route::post('emp/adjustment', 'Bonus\EmpResultJudgementController@store');
-	Route::get('emp/adjustment/to_action', 'Bonus\EmpResultJudgementController@to_action');
+	Route::get('emp/adjustment/to_action', 'Bonus\AdvanceSearchController@to_action');
 	// Bonus --> Bonus Adjustment //
 	Route::get('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@index');
 	Route::patch('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@SavedAndConfirm');

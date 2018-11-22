@@ -411,4 +411,114 @@ class AdvanceSearchController extends Controller
         
         return response()->json($status);
     }
+
+    function to_action_call($request) {
+        $empAuth = $this->empAuth();
+        $orgAuth = $this->orgAuth();
+        $stage_in_level = $this->getFieldLevelStage($empAuth->level_id, $orgAuth->level_id);
+        $stage_in_form = $this->getFieldFormStage($request->appraisal_form_id);
+
+        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
+        if($empAuth->is_hr==1) {
+            $in = 5; //คือ hr
+        } else {
+            $in = 1; //หัวหน้าของพนักงาน
+        }
+
+        $stage = DB::table("appraisal_stage")
+        ->select("to_stage_id")
+        ->where("stage_id", $request->stage_id)
+        ->first();
+
+        $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
+
+        if($request->flag=='appraisal_flag') {
+            //ส่วนเฉพาะหน้า Appraisal360
+            $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                {$appraisal_form_id}
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                AND {$request->flag} = 1
+                AND find_in_set('{$request->appraisal_group_id}', assessor_see)
+                ORDER BY stage_id
+            ");
+        } else {
+            //หน้าที่ใช้ stage นี่
+            //EmpJudgement
+            //BonusJudgement
+            //Assignment
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                AND {$request->flag} = 1
+                AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
+                AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                ORDER BY stage_id
+            ");
+        }
+
+        return $to_action;
+    }
+
+    public function to_action(Request $request) {
+        $empAuth = $this->empAuth();
+        $orgAuth = $this->orgAuth();
+        $stage_in_level = $this->getFieldLevelStage($empAuth->level_id, $orgAuth->level_id);
+        $stage_in_form = $this->getFieldFormStage($request->appraisal_form_id);
+
+        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
+        if($empAuth->is_hr==1) {
+            $in = 5; //คือ hr
+        } else {
+            $in = 1; //หัวหน้าของพนักงาน
+        }
+
+        $stage = DB::table("appraisal_stage")
+        ->select("to_stage_id")
+        ->where("stage_id", $request->stage_id)
+        ->first();
+
+        $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
+
+        if($request->flag=='appraisal_flag') {
+            //ส่วนเฉพาะหน้า Appraisal360
+            $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                {$appraisal_form_id}
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                AND {$request->flag} = 1
+                AND find_in_set('{$request->appraisal_group_id}', assessor_see)
+                ORDER BY stage_id
+            ");
+        } else {
+            //หน้าที่ใช้ stage นี่
+            //EmpJudgement
+            //BonusJudgement
+            //Assignment
+            $to_action = DB::select("
+                SELECT stage_id, to_action
+                FROM appraisal_stage
+                WHERE stage_id IN ({$stage})
+                AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
+                AND {$request->flag} = 1
+                AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
+                AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
+                AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
+                ORDER BY stage_id
+            ");
+        }
+
+        return response()->json($to_action);
+    }
 }
