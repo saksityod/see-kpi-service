@@ -267,7 +267,7 @@
 					<textFieldExpression><![CDATA[($F{Parent_min} == null) ? "-" : $F{Parent_min}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="610" y="0" width="38" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="ec9e6def-7e8e-4118-98b7-a0480517fe35"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="643" y="0" width="35" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="ec9e6def-7e8e-4118-98b7-a0480517fe35"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -278,7 +278,7 @@
 					<textFieldExpression><![CDATA[$F{SumAllManager}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="648" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="c60792cf-653b-4d3d-ab81-f494ea3ed26b"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="678" y="0" width="35" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="c60792cf-653b-4d3d-ab81-f494ea3ed26b"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -311,7 +311,7 @@
 					<textFieldExpression><![CDATA[($F{CalBU} ==  null) ? "-" : $F{CalBU}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="762" y="0" width="40" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="662389fb-9abb-4a55-8348-2c084a2ad6b6"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="757" y="0" width="45" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="662389fb-9abb-4a55-8348-2c084a2ad6b6"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -322,7 +322,7 @@
 					<textFieldExpression><![CDATA[($F{parent_after_bonus} == null) ? "-" :  $F{parent_after_bonus}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="685" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="f60c25b4-7668-4f1b-8dff-65837929176e"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="573" y="0" width="35" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="f60c25b4-7668-4f1b-8dff-65837929176e"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -333,7 +333,7 @@
 					<textFieldExpression><![CDATA[Integer.parseInt($F{SumAllStaff})+Integer.parseInt($F{SumAllManager})+Integer.parseInt($F{CountManagerBU})]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="722" y="0" width="40" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="8f664cff-6793-4d47-ac6e-de9a4ee085cb"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="713" y="0" width="44" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="8f664cff-6793-4d47-ac6e-de9a4ee085cb"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -355,7 +355,7 @@
 					<textFieldExpression><![CDATA[($F{ValueManagerBU} == null) ? "-" : $F{ValueManagerBU}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="573" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="d20c54f1-b196-4c7f-9a79-350d61148704"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="608" y="0" width="35" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="d20c54f1-b196-4c7f-9a79-350d61148704"/>
 					<box leftPadding="0" bottomPadding="4" rightPadding="2">
 						<pen lineWidth="0.25"/>
 					</box>
@@ -384,15 +384,14 @@
 	<columnHeader>
 		<band height="141">
 			<staticText>
-				<reportElement mode="Opaque" x="762" y="101" width="40" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="85ecc4f2-4b1a-4e6c-b766-cfcda7b22d4c"/>
+				<reportElement mode="Opaque" x="757" y="121" width="45" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="85ecc4f2-4b1a-4e6c-b766-cfcda7b22d4c"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
-					<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<text><![CDATA[หลัง
-แก้ไข]]></text>
+				<text><![CDATA[หลังปรับ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement mode="Opaque" x="229" y="101" width="37" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="357bebe8-100d-4d3e-889d-2fb696be5de3"/>
@@ -405,15 +404,14 @@
 				<text><![CDATA[ผลต่าง]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="722" y="101" width="40" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1df7aff5-16b1-4d3f-be1c-7c299412b014"/>
+				<reportElement mode="Opaque" x="713" y="121" width="44" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1df7aff5-16b1-4d3f-be1c-7c299412b014"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
-					<font fontName="TH SarabunPSK" size="15" isBold="true"/>
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<text><![CDATA[ก่อน
-แก้ไข]]></text>
+				<text><![CDATA[ก่อนปรับ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement mode="Opaque" x="536" y="101" width="37" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="d0e0aecd-5045-4ca0-901a-e46e7c673640"/>
@@ -457,7 +455,7 @@ BU]]></text>
 				<text><![CDATA[ฝ่าย]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="573" y="101" width="37" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="97fb1966-4ef2-41e4-9c8d-6b9c90e28a32"/>
+				<reportElement mode="Opaque" x="608" y="101" width="35" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="97fb1966-4ef2-41e4-9c8d-6b9c90e28a32"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
@@ -467,7 +465,7 @@ BU]]></text>
 				<text><![CDATA[Staff]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="610" y="101" width="38" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="a6d921ad-38c8-4e03-90bf-cab53e48a102"/>
+				<reportElement mode="Opaque" x="643" y="101" width="35" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="a6d921ad-38c8-4e03-90bf-cab53e48a102"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
@@ -529,14 +527,14 @@ BU]]></text>
 ฝ่าย]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="685" y="101" width="37" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="5659fe3e-5df5-4324-bbd5-6f12967ec9f2"/>
+				<reportElement mode="Opaque" x="573" y="101" width="35" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="5659fe3e-5df5-4324-bbd5-6f12967ec9f2"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
 					<font fontName="TH SarabunPSK" size="15" isBold="true"/>
 				</textElement>
-				<text><![CDATA[รวม]]></text>
+				<text><![CDATA[ทั้งหมด]]></text>
 			</staticText>
 			<staticText>
 				<reportElement mode="Opaque" x="340" y="101" width="43" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="3855af9a-9661-4dfe-861d-ebd7ac225349"/>
@@ -549,7 +547,7 @@ BU]]></text>
 				<text><![CDATA[Median]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="648" y="101" width="37" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1e235b5c-2511-43ad-8657-f41e16fd8785"/>
+				<reportElement mode="Opaque" x="678" y="101" width="35" height="40" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1e235b5c-2511-43ad-8657-f41e16fd8785"/>
 				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
 					<pen lineWidth="0.25" lineColor="#000000"/>
 				</box>
@@ -593,7 +591,7 @@ BU]]></text>
 				<text><![CDATA[คะแนนประเมินผลงาน]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="573" y="81" width="149" height="20" isRemoveLineWhenBlank="true" backcolor="#28FCBD" uuid="5ec35548-b5d1-4d8c-a811-23a7e60e1c59">
+				<reportElement mode="Opaque" x="573" y="81" width="140" height="20" isRemoveLineWhenBlank="true" backcolor="#28FCBD" uuid="5ec35548-b5d1-4d8c-a811-23a7e60e1c59">
 					<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -602,7 +600,7 @@ BU]]></text>
 				<text><![CDATA[จำนวน]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="722" y="81" width="80" height="20" isRemoveLineWhenBlank="true" backcolor="#FFEB85" uuid="f77c7d7d-ff72-4963-acc6-591ed83b699c">
+				<reportElement mode="Opaque" x="713" y="81" width="89" height="20" isRemoveLineWhenBlank="true" backcolor="#FFEB85" uuid="f77c7d7d-ff72-4963-acc6-591ed83b699c">
 					<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
@@ -619,10 +617,20 @@ BU]]></text>
 				</textElement>
 				<text><![CDATA[ข้อมูล]]></text>
 			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="713" y="101" width="89" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="8bbc8182-9a5b-4d76-8f21-6a6cfc88904a"/>
+				<box topPadding="2" leftPadding="1" bottomPadding="2" rightPadding="0">
+					<pen lineWidth="0.25" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bonus]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="20" splitType="Stretch">
+		<band height="45" splitType="Stretch">
 			<printWhenExpression><![CDATA[($F{org_code} != null) ? true : false]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="45" y="0" width="110" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="e1b6b844-42d1-4fd3-87e8-a9098885b648"/>
@@ -651,7 +659,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="722" y="0" width="40" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="80e89e5e-38d8-4492-b7ca-3e6336cbabf2"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="713" y="0" width="44" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="80e89e5e-38d8-4492-b7ca-3e6336cbabf2"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -661,7 +669,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[($F{before_bonus} == null) ? "-" : $F{before_bonus}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="610" y="0" width="38" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="34da0cc0-fe7e-4b53-8a04-31ec44987448"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="643" y="0" width="35" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="34da0cc0-fe7e-4b53-8a04-31ec44987448"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -681,7 +689,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="762" y="0" width="40" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="7744fff3-f957-4dce-8942-f7c190f6a036"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="757" y="0" width="45" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="7744fff3-f957-4dce-8942-f7c190f6a036"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -691,7 +699,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[($F{after_bonus} == null) ? "-" : $F{after_bonus}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="648" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="d8f1de00-fb7a-4db0-a674-cae2b6cebde9"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="678" y="0" width="35" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="d8f1de00-fb7a-4db0-a674-cae2b6cebde9"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -701,7 +709,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="573" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="ee5aa458-c3ed-43a0-b081-53e5c200a7c1"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="608" y="0" width="35" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="ee5aa458-c3ed-43a0-b081-53e5c200a7c1"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -731,7 +739,7 @@ BU]]></text>
 				<textFieldExpression><![CDATA[($F{CalDivision} == null) ? "-" : $F{CalDivision}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="685" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="2a1bea3b-7978-49eb-8362-e7a5fdfb5087"/>
+				<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="573" y="0" width="35" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="2a1bea3b-7978-49eb-8362-e7a5fdfb5087"/>
 				<box leftPadding="0" rightPadding="2">
 					<pen lineWidth="0.25"/>
 				</box>
@@ -820,17 +828,16 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
-		</band>
-	</detail>
-	<pageFooter>
-		<band height="25">
 			<textField>
-				<reportElement x="0" y="0" width="802" height="25" uuid="734aeada-dbcd-44d8-8760-89e093856abc"/>
+				<reportElement x="0" y="20" width="802" height="25" uuid="734aeada-dbcd-44d8-8760-89e093856abc"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA["- "+$V{PAGE_NUMBER}+" -"]]></textFieldExpression>
 			</textField>
 		</band>
+	</detail>
+	<pageFooter>
+		<band height="25"/>
 	</pageFooter>
 </jasperReport>
