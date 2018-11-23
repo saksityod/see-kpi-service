@@ -7,6 +7,7 @@ use App\EmpResult;
 use App\AppraisalItemResult;
 use App\EmpResultStage;
 use App\Employee;
+use App\SystemConfiguration;
 
 use Illuminate\Http\Request;
 use DB;
@@ -275,6 +276,7 @@ class ImportAssignmentController extends Controller
    public function item_list(Request $request){
      $levelStr = (empty($request->level_id)) ? "' '" : "'".implode("','", $request->level_id)."'";
      $orgIdStr = (empty($request->org_id)) ? "' '" : "'".implode("','", $request->org_id)."'" ;
+     $appraisalForm = (empty($request->appraisal_form)) ? "" : " AND ac.appraisal_form_id = '{$request->appraisal_form}'";
 
      // In case, do not specify a position for retrieval by ignoring position.
      if(empty($request->position_id)){
@@ -297,6 +299,7 @@ class ImportAssignmentController extends Controller
       AND vel.level_id IN({$levelStr})
       AND iorg.org_id IN({$orgIdStr})
       ".$positionStr."
+      ".$appraisalForm."
       ORDER BY ai.structure_id, ai.item_id");
 
     $groupData = [];
@@ -343,7 +346,7 @@ class ImportAssignmentController extends Controller
       $extension = "xlsx";
       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
 
-      try {
+      // try {
         // Set Input parameter
         $appraisal_type_id = $request->appraisal_type_id;
         $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
@@ -357,6 +360,7 @@ class ImportAssignmentController extends Controller
         $period_id = $request->period_id;
         $appraisal_year = $request->appraisal_year;
         $frequency_id = $request->frequency_id;
+        $appraisal_form = $request->appraisal_form;
 
         // Set parameter string in sql where clause
         $positionStr = (empty($position_id)) ? "" : " emp.position_id = '{$position_id}'";
@@ -375,7 +379,7 @@ class ImportAssignmentController extends Controller
           : "AND prd.period_id = '{$period_id}'" ;
 
         $items = DB::select("
-          SELECT
+          SELECT '{$appraisal_form}' as appraisal_form_id,
           	prd.period_id, prd.year, prd.start_date, prd.end_date,
           	typ.appraisal_type_id, typ.appraisal_type_name, emp.default_stage_id as stage_id, emp.status,
           	emp.level_id, emp.appraisal_level_name level_name, emp.org_id,
@@ -461,30 +465,38 @@ class ImportAssignmentController extends Controller
               AND level_id = {$value->level_id}
               LIMIT 1
             ");
+
+            // veriry threshold display from system config
+            $systemConThreshold = SystemConfiguration::first()->threshold;
             if (empty($assignedQry)) {
               $assignedInfo["target_value"] = "";
               $assignedInfo["weight_percent"] = "";
-              $assignedInfo["score0"] = "";
-              $assignedInfo["score1"] = "";
-              $assignedInfo["score2"] = "";
-              $assignedInfo["score3"] = "";
-              $assignedInfo["score4"] = "";
-              $assignedInfo["score5"] = "";
+              if((Int)$systemConThreshold == 1){
+                $assignedInfo["score0"] = "";
+                $assignedInfo["score1"] = "";
+                $assignedInfo["score2"] = "";
+                $assignedInfo["score3"] = "";
+                $assignedInfo["score4"] = "";
+                $assignedInfo["score5"] = "";
+              }
             } else {
               foreach ($assignedQry as $asVal) {
                 $assignedInfo["target_value"] = $asVal->target_value;
                 $assignedInfo["weight_percent"] = $asVal->weight_percent;
-                $assignedInfo["score0"] = $asVal->score0;
-                $assignedInfo["score1"] = $asVal->score1;
-                $assignedInfo["score2"] = $asVal->score2;
-                $assignedInfo["score3"] = $asVal->score3;
-                $assignedInfo["score4"] = $asVal->score4;
-                $assignedInfo["score5"] = $asVal->score5;
+                if((Int)$systemConThreshold == 1){
+                  $assignedInfo["score0"] = $asVal->score0;
+                  $assignedInfo["score1"] = $asVal->score1;
+                  $assignedInfo["score2"] = $asVal->score2;
+                  $assignedInfo["score3"] = $asVal->score3;
+                  $assignedInfo["score4"] = $asVal->score4;
+                  $assignedInfo["score5"] = $asVal->score5;
+                }
               }
             }
 
             if ($value->form_id == "1") {
               $itemList[$value->structure_name][$form1Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
                 "period_id" => $value->period_id,
                 "year" => $value->year,
                 "start_date" => $value->start_date,
@@ -514,15 +526,18 @@ class ImportAssignmentController extends Controller
               ];
 
               // Generate range by appraisal_structure.nof_target_score
-              $rangekey = 0;
-              while($rangekey <= $value->nof_target_score) {
-                $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
-                $rangekey = $rangekey+1;
+              if((Int)$systemConThreshold == 1){
+                $rangekey = 0;
+                while($rangekey <= $value->nof_target_score) {
+                  $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+                  $rangekey = $rangekey+1;
+                }
+                $form1Key = $form1Key+1;
               }
-              $form1Key = $form1Key+1;
 
             } else if($value->form_id == "2") {
               $itemList[$value->structure_name][$form2Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
                 "period_id" => $value->period_id,
                 "year" => $value->year,
                 "start_date" => $value->start_date,
@@ -561,6 +576,7 @@ class ImportAssignmentController extends Controller
               }
 
               $itemList[$value->structure_name][$form3Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
                 "period_id" => $value->period_id,
                 "year" => $value->year,
                 "start_date" => $value->start_date,
@@ -608,9 +624,9 @@ class ImportAssignmentController extends Controller
           return response()->json(['status' => 404, 'data' => 'Assignment Item Result not found.']);
         }
 
-      } catch(QueryException $e) {
-        return response()->json(['status' => 404, 'data' => 'Assignment Item Result is set time limit 1000 sec.']);
-      }
+      // } catch(QueryException $e) {
+      //   return response()->json(['status' => 404, 'data' => 'Assignment Item Result is set time limit 1000 sec.']);
+      // }
     }
 
 
@@ -643,6 +659,7 @@ class ImportAssignmentController extends Controller
          $period_id = $request->period_id;
          $appraisal_year = $request->appraisal_year;
          $frequency_id = $request->frequency_id;
+         $appraisal_form = $request->appraisal_form;
 
          // Set parameter string in sql where clause
          $periodStr = (empty($period_id))
@@ -652,7 +669,7 @@ class ImportAssignmentController extends Controller
            : "AND prd.period_id = '{$period_id}'" ;
 
          $items = DB::select("
-           SELECT
+           SELECT '{$appraisal_form}' as appraisal_form_id,
            	prd.period_id, prd.year, prd.start_date, prd.end_date,
             typ.appraisal_type_id, typ.appraisal_type_name, org.default_stage_id as stage_id, org.status,
             org.level_id, org.appraisal_level_name level_name, org.org_id,
@@ -726,30 +743,38 @@ class ImportAssignmentController extends Controller
                AND level_id = {$value->level_id}
                LIMIT 1
              ");
+
+            // veriry threshold display from system config
+            $systemConThreshold = SystemConfiguration::first()->threshold;
              if (empty($assignedQry)) {
                $assignedInfo["target_value"] = "";
                $assignedInfo["weight_percent"] = "";
-               $assignedInfo["score0"] = "";
-               $assignedInfo["score1"] = "";
-               $assignedInfo["score2"] = "";
-               $assignedInfo["score3"] = "";
-               $assignedInfo["score4"] = "";
-               $assignedInfo["score5"] = "";
+               if((Int)$systemConThreshold == 1){
+                $assignedInfo["score0"] = "";
+                $assignedInfo["score1"] = "";
+                $assignedInfo["score2"] = "";
+                $assignedInfo["score3"] = "";
+                $assignedInfo["score4"] = "";
+                $assignedInfo["score5"] = "";
+               }
              } else {
                foreach ($assignedQry as $asVal) {
                  $assignedInfo["target_value"] = $asVal->target_value;
                  $assignedInfo["weight_percent"] = $asVal->weight_percent;
-                 $assignedInfo["score0"] = $asVal->score0;
-                 $assignedInfo["score1"] = $asVal->score1;
-                 $assignedInfo["score2"] = $asVal->score2;
-                 $assignedInfo["score3"] = $asVal->score3;
-                 $assignedInfo["score4"] = $asVal->score4;
-                 $assignedInfo["score5"] = $asVal->score5;
+                 if((Int)$systemConThreshold == 1){
+                  $assignedInfo["score0"] = $asVal->score0;
+                  $assignedInfo["score1"] = $asVal->score1;
+                  $assignedInfo["score2"] = $asVal->score2;
+                  $assignedInfo["score3"] = $asVal->score3;
+                  $assignedInfo["score4"] = $asVal->score4;
+                  $assignedInfo["score5"] = $asVal->score5;
+                }
                }
              }
 
              if ($value->form_id == "1") {
                $itemList[$value->structure_name][$form1Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
                  "period_id" => $value->period_id,
                  "year" => $value->year,
                  "start_date" => $value->start_date,
@@ -771,15 +796,18 @@ class ImportAssignmentController extends Controller
                ];
 
                // Generate range by appraisal_structure.nof_target_score
-               $rangekey = 0;
-               while($rangekey <= $value->nof_target_score) {
-                 $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
-                 $rangekey = $rangekey+1;
-               }
-               $form1Key = $form1Key+1;
+               if((Int)$systemConThreshold == 1){
+                $rangekey = 0;
+                while($rangekey <= $value->nof_target_score) {
+                  $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+                  $rangekey = $rangekey+1;
+                }
+                $form1Key = $form1Key+1;
+              }
 
              } else if($value->form_id == "2") {
                 $itemList[$value->structure_name][$form2Key] = [
+                  "appraisal_form_id" => $value->appraisal_form_id,
                   "period_id" => $value->period_id,
                   "year" => $value->year,
                   "start_date" => $value->start_date,
@@ -810,6 +838,7 @@ class ImportAssignmentController extends Controller
               }
 
                $itemList[$value->structure_name][$form3Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
                  "period_id" => $value->period_id,
                  "year" => $value->year,
                  "start_date" => $value->start_date,
@@ -894,6 +923,7 @@ class ImportAssignmentController extends Controller
           foreach ($sheets as $key => $row) {
             if($row->appraisal_type_id == "1"){
               $validator = Validator::make($row->all(), [
+                "appraisal_form_id" => "required|numeric",
                  "period_id" => "required|numeric",
                  "year" => "numeric",
                  "start_date" => "date",
@@ -919,6 +949,7 @@ class ImportAssignmentController extends Controller
               ]);
             } else {
               $validator = Validator::make($row->all(), [
+                "appraisal_form_id" => "required|numeric",
                  "period_id" => "required|numeric",
                  "year" => "numeric",
                  "start_date" => "date",
@@ -983,7 +1014,8 @@ class ImportAssignmentController extends Controller
               $empResultExist = DB::select("
                 SELECT emp_result_id
                 FROM emp_result
-                WHERE period_id = {$row->period_id}
+                WHERE appraisal_form_id = {$row->appraisal_form_id}
+                AND period_id = {$row->period_id}
                 AND appraisal_type_id = {$row->appraisal_type_id}
                 AND level_id = {$row->level_id}
                 AND org_id = {$row->org_id}
@@ -998,7 +1030,8 @@ class ImportAssignmentController extends Controller
               //-- Checking if record exists in emp_result.
               if (empty($empResultExist)) {
                 //---- Insert @emp_result
-    						$empResult = new EmpResult;
+                $empResult = new EmpResult;
+                $empResult->appraisal_form_id = $row->appraisal_form_id;
     						$empResult->period_id = $row->period_id;
                 $empResult->appraisal_type_id = $row->appraisal_type_id;
                 $empResult->level_id = $row->level_id;
@@ -1052,7 +1085,8 @@ class ImportAssignmentController extends Controller
               $itemResultExist = DB::select("
                 SELECT item_result_id
                 FROM appraisal_item_result
-                WHERE emp_result_id = {$currentEmpResultId}
+                WHERE appraisal_form_id = {$row->appraisal_form_id}
+                AND emp_result_id = {$currentEmpResultId}
                 AND item_id = {$row->appraisal_item_id}
                 AND period_id = {$row->period_id}
                 AND level_id = {$row->level_id}
@@ -1067,6 +1101,7 @@ class ImportAssignmentController extends Controller
               if (empty($itemResultExist)) {
                 //---- Insert @appraisal_item_result
                 $appraisalItemResult = new AppraisalItemResult;
+                $appraisalItemResult->appraisal_form_id = $row->appraisal_form_id;
                 $appraisalItemResult->emp_result_id = $currentEmpResultId;
                 $appraisalItemResult->item_id = $row->appraisal_item_id;
                 $appraisalItemResult->period_id = $row->period_id;

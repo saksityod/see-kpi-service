@@ -38,12 +38,15 @@ class BonusAppraisalController extends Controller
 
     /**
      * @ Search and Re-Calculate
-     * 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก level ของ login
-     *    1.1 กำหนด edit_flag และ message เพื่อส่งกลับไปยัง client
-     * 2. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
-     *    2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400, error message
-     * 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
-     *    3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บันทึกข้อมูล ในระดับ bu
+     * 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก org level ของ login
+     *    1.1 กรณี stage ไม่อนุญาติให้ผู้ใช้งานปรับผลคะแนน เซ็ต edit_flag = 0, message = 'ไม่ได้รับสิทธิ์'
+     *    1.2 กรณี emp ทั้งหมดผ่านการประเมิณเรียบร้อยแล้ว เซ็ต edit_flag = 1, message = ''
+     *    1.3 กรณี emp ผ่านการปรับผลไปแล้ว เซ็ต edit_flag = 1, message = 'ผ่านการปรับผมไปแล้ว'
+     *    1.4 กรณี emp ทั้งหมดยังไม่ผ่านการประเมิณจาก board เซ็ต edit_flag = 1, message = ''
+     * 2. Query หาข้อมูลผลการประเมิณของ bu ที่ใช้ในการคำนวณโบนัส (เริ่มคำนวณจาก bu)
+     *    2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400 พร้อม error message
+     * 3. ตรวจสอบ action จาก client ว่าผู้ใช้งานทำการ re-calculate เพื่อนำคะแนนที่ปรับแล้วมาใช้ในการคำนวณ
+     *    3.1 map ผลคะแนนที่ปรับจาก client ไปยังข้อมูลที่ได้จากการ query ในข้อ 2
      *       3.1.1 นำข้อมูล adjust_result_score จาก client แทนค่าที่ได้จาก GetBonusAppraisalOrgLevel()
      *       3.1.2 คำนวณหาค่า bonus_score ใหม่
      * 4. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ business unit
@@ -84,7 +87,7 @@ class BonusAppraisalController extends Controller
             return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
         }
 
-        // 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก level ของ login
+        // 1. ตรวจสอบผลการประเมิณของ emp ทั้งหมดจะต้องผ่านการประเมิณจาก board เรียบร้อยแล้ว และเช็คสิทธิ์การทำงานจาก stage โดยเช็คจาก org level ของ login
         $empNotAdjust = DB::select("
             SELECT SUM(1) all_emp_result, 
                 SUM(IF(bn.stage_id = er.stage_id, 1, 0)) all_emp_bonus, 
@@ -101,38 +104,42 @@ class BonusAppraisalController extends Controller
             AND FIND_IN_SET(org.org_code, '{$this->GetOrganizationsBonusCalculate()}')
         ");
         if(in_array($employee->level_id, explode(',', $appraisalStage->level_id))){
-            // 1.1 กำหนด edit_flag และ message เพื่อส่งกลับไปยัง client
             if(!empty($empNotAdjust) && $empNotAdjust[0]->all_emp_result == $empNotAdjust[0]->all_emp_bonus){
+                // 1.2 กรณี emp ทั้งหมดผ่านการประเมิณเรียบร้อยแล้ว เซ็ต edit_flag = 1, message = ''
                 $editFlag = 1; 
                 $editMessage = '';
             } elseif (!empty($empNotAdjust) && $empNotAdjust[0]->max_stage_id > $appraisalStage->stage_id) {
+                // 1.3 กรณี emp ผ่านการปรับผลไปแล้ว เซ็ต edit_flag = 1, message = 'ผ่านการปรับผมไปแล้ว'
                 $editFlag = 0;
                 $editMessage = 'ไม่สามารถแก้ไขได้!! เนื่องจากได้ปรับผลคะแนนเรียบร้อยแล้ว';
             } else {
+                // 1.4 กรณี emp ทั้งหมดยังไม่ผ่านการประเมิณจาก board เซ็ต edit_flag = 1, message = ''
                 $editFlag = 0;
                 $editMessage = 'ไม่สามารถแก้ไขได้!! เนื่องจากพบพนักงานที่ยังไม่ผ่านการปรับผลประเมินจาก Board';
             }
         }  else {
+            // 1.1 กรณี stage ไม่อนุญาติให้ผู้ใช้งานปรับผลคะแนน เซ็ต edit_flag = 0, message = 'ไม่ได้รับสิทธิ์'
             $editFlag = 0; 
             $editMessage = 'ผู้ใช้งานไม่ได้รับสิทธิ์ในการปรับผลคะแนน!!';
         }
 
-        // 2. Query หาข้อมูลผลการประเมิณของ bu ที่ใช้ในการคำนวณ (เริ่มคำนวณจาก bu)
+        // 2. Query หาข้อมูลผลการประเมิณของ bu ที่ใช้ในการคำนวณโบนัส (เริ่มคำนวณจาก bu)
         $buInfo = $this->GetBonusAppraisalOrgLevel($request->period_id, $buLevel, null);
         if($buInfo->count() == 0){
-            // 2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400, error message
-            $responseData = ['status' => 400, 'data' => [], 'edit_flag'=> 0,
-                'message' => 'ไม่พบข้อมูลผลการประเมิณในระดับหน่วยงาน (Organization result judgement)'
-            ];
-            return response()->json($this->SetPagination($request->page, $request->rpp, $responseData));
+            // 2.1 ในกรณีไม่พบข้อมูลให้ return กลับด้วย status = 400 พร้อม error message
+            return response()->json([
+                'status' => 400, 'edit_flag' => 0, 
+                'message' => 'ไม่พบข้อมูลผลการประเมิณในระดับหน่วยงาน (Organization result judgement)', 
+                'datas' => []
+            ]);
         }
 
-        // 3. ตรวจสอบ Action ว่าเป็น "re-calculate"
+        // 3. ตรวจสอบ action จาก client ว่าผู้ใช้งานทำการ re-calculate เพื่อนำคะแนนที่ปรับแล้วมาใช้ในการคำนวณ
         if($request->action == 're-calculate'){
 
             $clientData = collect($request->data);
             
-            // 3.1 map ข้อมูลที่ส่งมาจากหน้าจอเพื่อนำไปคำนวนแบบไม่บันทึกข้อมูล ในระดับ bu
+            // 3.1 map ผลคะแนนที่ปรับจาก client ไปยังข้อมูลที่ได้จากการ query ในข้อ 2
             $buInfo = $buInfo->map(function ($data) use ($clientData){
                 $clientData = $clientData
                     ->where('org_result_judgement_id', (empty($data->org_result_judgement_id))?'':(String)$data->org_result_judgement_id)
