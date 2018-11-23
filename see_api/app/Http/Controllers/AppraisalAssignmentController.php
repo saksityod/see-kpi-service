@@ -1700,9 +1700,9 @@ class AppraisalAssignmentController extends Controller
 		->where('emp_code', $paramEmp)
 		->get();
 
-		if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
-			return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
-		}
+		// if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
+		// 	return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
+		// }
 
 		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
 
@@ -1740,9 +1740,9 @@ class AppraisalAssignmentController extends Controller
 		->where('org_code', $paramOrg)
 		->get();
 
-		if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
-			return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
-		}
+		// if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
+		// 	return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
+		// }
 
 		$curParentOrg = $initParentOrg[0]->parent_org_code;
 
