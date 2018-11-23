@@ -146,6 +146,7 @@ class BonusAdjustmentController extends Controller
         $qryPositionId = empty($request->position_id) ? "" : " AND er.position_id IN ({$request->position_id})";
         $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";
 
+        /* old template
         $dataInfo = DB::select("
             SELECT 
                 e.emp_code AS รหัส,
@@ -171,6 +172,29 @@ class BonusAdjustmentController extends Controller
             ".$qryPositionId."
             ".$qryStageId."
         ");
+        */
+
+        // new template
+        $dataInfo = DB::select("
+            SELECT 
+                e.emp_code AS employeeid,
+                100 AS companyid,
+                'N123' AS tabid,
+                er.adjust_b_amount AS data
+            FROM emp_result er
+            INNER JOIN employee e ON e.emp_id = er.emp_id
+            INNER JOIN appraisal_level vel ON vel.level_id = er.level_id
+            INNER JOIN org ON org.org_id = er.org_id
+            INNER JOIN position pos ON pos.position_id = er.position_id
+            WHERE er.period_id = '{$request->period_id}'
+            ".$qryEmpLevel."
+            ".$qryOrgLevel."
+            ".$qryOrgId."
+            ".$qryEmpId."
+            ".$qryPositionId."
+            ".$qryStageId."
+        ");
+
 
         $data = json_decode( json_encode($dataInfo), true);
         $fileName = 'Bonus Adjustment '.date('y-M-d');
