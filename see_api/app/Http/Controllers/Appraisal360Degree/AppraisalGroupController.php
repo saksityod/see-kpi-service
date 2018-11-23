@@ -306,6 +306,8 @@ class AppraisalGroupController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
+		$allow_input_actual = (empty($config->allow_input_actual)? 0 : $config->allow_input_actual);
+		
 		$head = DB::select("
 			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id, af.appraisal_form_name
 			FROM emp_result a
@@ -340,6 +342,7 @@ class AppraisalGroupController extends Controller
 					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
 					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
 					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
+					, ".$allow_input_actual." as allow_input_actual 
 				from appraisal_item_result a
 				left outer join appraisal_item b
 				on a.item_id = b.item_id
@@ -378,6 +381,7 @@ class AppraisalGroupController extends Controller
 					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
 					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
 					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
+					, ".$allow_input_actual." as allow_input_actual 
 				FROM appraisal_item_result a
 				LEFT OUTER JOIN appraisal_item b ON a.item_id = b.item_id
 				INNER JOIN appraisal_item ai ON ai.item_id = a.item_id
