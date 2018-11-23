@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-comment-supreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="0a000e9b-852c-410a-aaf2-eefa246cdce9">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -237,7 +237,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
 					</box>
 					<textElement verticalAlignment="Top">
-						<font fontName="TH SarabunPSK" size="19" isBold="true"/>
+						<font fontName="BrowalliaUPC" size="19" isBold="true"/>
 						<paragraph leftIndent="5" spacingBefore="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>
@@ -292,7 +292,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement verticalAlignment="Middle">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								<paragraph leftIndent="5"/>
 							</textElement>
 							<text><![CDATA[Region]]></text>
@@ -303,7 +303,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement verticalAlignment="Middle">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								<paragraph leftIndent="5"/>
 							</textElement>
 							<text><![CDATA[Position Code]]></text>
@@ -314,7 +314,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement verticalAlignment="Middle">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								<paragraph leftIndent="5"/>
 							</textElement>
 							<text><![CDATA[ผู้ประเมิณ]]></text>
@@ -325,7 +325,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement verticalAlignment="Middle">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								<paragraph leftIndent="5"/>
 							</textElement>
 							<text><![CDATA[วันที่]]></text>
@@ -341,7 +341,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#FFFFFF" uuid="a7550e7d-0394-4a3a-be46-e1997a05137c"/>
 								<textElement verticalAlignment="Top">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{region}]]></textFieldExpression>
@@ -361,7 +361,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="90" height="20" backcolor="#FFFFFF" uuid="18503ef1-9dbb-4839-a104-b077330e6773"/>
 								<textElement verticalAlignment="Top">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_code_snapshot}]]></textFieldExpression>
@@ -381,7 +381,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#FFFFFF" uuid="cd8a6a1c-f8dc-47d2-ba87-a07b18cb5264"/>
 								<textElement verticalAlignment="Top">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_code_assessor}]]></textFieldExpression>
@@ -401,7 +401,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="150" height="20" backcolor="#FFFFFF" uuid="1a320428-be4c-4775-b9b6-5da8e0dbbfb7"/>
 								<textElement verticalAlignment="Top">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{questionaire_date_show}]]></textFieldExpression>
@@ -435,7 +435,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 									<pen lineWidth="0.5"/>
 								</box>
 								<textElement verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 									<paragraph leftIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{question_name}]]></textFieldExpression>
@@ -460,7 +460,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 						<textField isStretchWithOverflow="true">
 							<reportElement mode="Opaque" x="0" y="0" width="240" height="20" backcolor="#FFFFFF" uuid="676e148e-0520-4635-a36f-83a76d12fb45"/>
 							<textElement verticalAlignment="Top">
-								<font fontName="TH SarabunPSK" size="16"/>
+								<font fontName="BrowalliaUPC" size="16"/>
 								<paragraph leftIndent="5"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{desc_answer_MEASURE}]]></textFieldExpression>

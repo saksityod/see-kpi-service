@@ -155,7 +155,7 @@ ORDER BY
 							<textField>
 								<reportElement x="0" y="0" width="316" height="20" forecolor="#454545" uuid="b3cce7ba-86fc-4af8-bdc7-eaaa33fd3d1d"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>
 							</textField>
@@ -172,7 +172,7 @@ ORDER BY
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
 								<textElement markup="none">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{question_name}]]></textFieldExpression>
 							</textField>
@@ -191,7 +191,7 @@ ORDER BY
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								</textElement>
 								<text><![CDATA[คะแนน]]></text>
 							</staticText>
@@ -208,7 +208,7 @@ ORDER BY
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA[IF($F{is_not_applicable} == 1, "N/A", $F{score})]]></textFieldExpression>
 							</textField>
@@ -227,7 +227,7 @@ ORDER BY
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 								</textElement>
 								<text><![CDATA[comment]]></text>
 							</staticText>
@@ -244,7 +244,7 @@ ORDER BY
 									<pen lineWidth="0.5" lineColor="#555555"/>
 								</box>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{desc_answer}]]></textFieldExpression>
 							</textField>

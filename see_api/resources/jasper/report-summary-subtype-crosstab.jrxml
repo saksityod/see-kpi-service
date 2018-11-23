@@ -528,7 +528,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 									<reportElement x="0" y="0" width="316" height="20" forecolor="#FFFFFF" uuid="8f6d63ff-edc8-4ec7-a7c4-d81f2f35abec"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="14"/>
+										<font fontName="BrowalliaUPC" size="14"/>
 									</textElement>
 									<text><![CDATA[สรุปคะแนน]]></text>
 								</staticText>
@@ -538,7 +538,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 										<pen lineWidth="0.5" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="14"/>
+										<font fontName="BrowalliaUPC" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{parent_question_all_cnt}]]></textFieldExpression>
 								</textField>
@@ -605,7 +605,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 							<textField>
 								<reportElement x="0" y="0" width="45" height="20" forecolor="#FFFFFF" uuid="af952c80-474c-4d94-8893-46becf7d71d4"/>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{sumscoretotal_MEASURE}]]></textFieldExpression>
 							</textField>
@@ -620,7 +620,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{totalfull_score}]]></textFieldExpression>
 							</textField>
@@ -630,7 +630,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{sumscore}]]></textFieldExpression>
 							</textField>
@@ -640,7 +640,7 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 :
 String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100))+"%"]]></textFieldExpression>
@@ -651,7 +651,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : ($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100.00) >= $V{pass_score}.doubleValue() ? "ผ่าน" : "ไม่ผ่าน"]]></textFieldExpression>
 							</textField>
@@ -697,7 +697,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 							</textElement>
 							<text><![CDATA[ชื่อร้าน]]></text>
 						</staticText>
@@ -711,7 +711,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
-								<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 							</textElement>
 							<text><![CDATA[คะแนนเฉลี่ย]]></text>
 						</staticText>
@@ -731,6 +731,9 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 						<cellContents mode="Opaque" style="Crosstab 1_CH">
 							<textField>
 								<reportElement x="0" y="0" width="0" height="40" uuid="ebaba314-d672-4fdd-8527-2034e432536c"/>
+								<textElement>
+									<font fontName="BrowalliaUPC"/>
+								</textElement>
 								<textFieldExpression><![CDATA[$V{parent_seq_no}]]></textFieldExpression>
 							</textField>
 						</cellContents>
@@ -762,6 +765,9 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 						<cellContents mode="Opaque" style="Crosstab 1_CH">
 							<textField>
 								<reportElement x="0" y="0" width="0" height="20" uuid="0a5f51f8-ee5e-4d06-b6a4-6060dae60d1e"/>
+								<textElement>
+									<font fontName="BrowalliaUPC"/>
+								</textElement>
 								<textFieldExpression><![CDATA[$V{seq_no}]]></textFieldExpression>
 							</textField>
 						</cellContents>
@@ -773,7 +779,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<reportElement x="0" y="0" width="316" height="20" uuid="67926e1e-ee8e-409a-97e7-ce982a5cae48"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{parent_question_name}]]></textFieldExpression>
 							</textField>
@@ -783,7 +789,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_question}]]></textFieldExpression>
 							</textField>
@@ -800,7 +806,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<reportElement x="0" y="0" width="380" height="20" uuid="07337ea4-8544-41e3-951a-7421e5d52a6b"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{question_name}]]></textFieldExpression>
 							</textField>
@@ -822,7 +828,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="45" height="160" uuid="a017e70b-b9dd-4cd1-98bb-0d7e52cf7425"/>
 								<box bottomPadding="3"/>
 								<textElement verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph lineSpacing="AtLeast"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{customer_name}]]></textFieldExpression>
@@ -838,7 +844,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<text><![CDATA[คะแนนเต็ม]]></text>
 							</staticText>
@@ -848,7 +854,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<text><![CDATA[คะแนนที่ได้]]></text>
 							</staticText>
@@ -858,7 +864,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<text><![CDATA[เปอร์เซ็นที่ได้]]></text>
 							</staticText>
@@ -868,7 +874,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 									<pen lineWidth="0.5" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<text><![CDATA[สถานะ]]></text>
 							</staticText>
@@ -904,7 +910,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 						<textField isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="45" height="20" uuid="e7b103a4-f7eb-4fe2-b788-658d2de9126a"/>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{score_MEASURE}]]></textFieldExpression>
 						</textField>
@@ -926,7 +932,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 						<textField isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="45" height="20" uuid="edb6b575-c4a5-4bc7-b842-7c833e71006b"/>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sumscore}]]></textFieldExpression>
 						</textField>
@@ -943,7 +949,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{totalfull_score}.doubleValue()]]></textFieldExpression>
 						</textField>
@@ -955,7 +961,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sumscore}.doubleValue()]]></textFieldExpression>
 						</textField>
@@ -967,7 +973,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[($V{totalfull_score}.doubleValue() == 0 ? 0.00 : String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100)
 )+"%"]]></textFieldExpression>
@@ -980,7 +986,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 								<pen lineWidth="0.5" lineColor="#000000"/>
 							</box>
 							<textElement textAlignment="Center">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{pass_score}.doubleValue()== 0 ? "N/A"  : (($V{totalfull_score}.doubleValue() == 0 ? 0.00 : ($V{sumscore}.doubleValue()/$V{totalfull_score}.doubleValue())*100.00) >= $V{pass_score}.doubleValue() ? "ผ่าน" : "ไม่ผ่าน")]]></textFieldExpression>
 						</textField>

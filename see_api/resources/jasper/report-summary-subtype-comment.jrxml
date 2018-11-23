@@ -52,7 +52,7 @@ and que.answer_type_id  = 7]]>
 						<pen lineWidth="0.5" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left" verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+						<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 						<paragraph leftIndent="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>
@@ -75,7 +75,7 @@ and que.answer_type_id  = 7]]>
 					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 					<paragraph leftIndent="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{question_name}]]></textFieldExpression>
@@ -90,7 +90,7 @@ and que.answer_type_id  = 7]]>
 					<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="TH SarabunPSK" size="14"/>
+					<font fontName="BrowalliaUPC" size="14"/>
 					<paragraph firstLineIndent="20" leftIndent="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desc_answer}]]></textFieldExpression>

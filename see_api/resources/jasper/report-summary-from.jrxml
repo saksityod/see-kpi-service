@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-summary-from" pageWidth="845" pageHeight="1500" orientation="Landscape" whenNoDataType="NoPages" columnWidth="805" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="9f5c47da-ce6f-4f38-9162-0d3b4d225bcf">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
@@ -221,14 +221,14 @@ GROUP BY qtail.section_id]]>
 							<textField>
 								<reportElement x="0" y="0" width="352" height="20" uuid="d7719d40-e347-4c0f-896b-8c0454250ee5"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Acknowledged by : "+$F{acknowledge_by}]]></textFieldExpression>
 							</textField>
 							<textField>
 								<reportElement x="0" y="20" width="352" height="20" uuid="ec87fd26-4feb-494e-b615-2368441a3072"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA["วันเวลา : "+$F{acknowledge_date}]]></textFieldExpression>
 							</textField>
@@ -258,14 +258,14 @@ GROUP BY qtail.section_id]]>
 							<textField>
 								<reportElement x="0" y="0" width="352" height="20" uuid="9eb0ac95-6982-4504-bcb0-c9b9864e8496"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Completed by : "+$F{complete_by}]]></textFieldExpression>
 							</textField>
 							<textField>
 								<reportElement x="0" y="20" width="352" height="20" uuid="d90c9c28-a8ef-4c9d-8795-b422a6342ff8"/>
 								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 								</textElement>
 								<textFieldExpression><![CDATA["วันเวลา : "+$F{complete_date}]]></textFieldExpression>
 							</textField>

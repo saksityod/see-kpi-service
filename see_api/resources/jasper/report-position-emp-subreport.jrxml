@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
@@ -658,7 +658,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10" rightIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ตำแหน่ง:  "+ (( $F{appraisal_level_name}== null ) ? "-" : $F{appraisal_level_name})+"          ประเภท:  "+  (( $F{questionaire_type} == null ) ? "-" : $F{questionaire_type} )]]></textFieldExpression>
@@ -672,7 +672,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10" rightIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ระยะเวลา: "+$F{date_start}+" - "+$F{date_end}]]></textFieldExpression>
@@ -680,7 +680,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textField isStretchWithOverflow="true">
 									<reportElement x="0" y="56" width="800" height="27" uuid="4e6b3144-27bd-4f2c-a5fa-7a253139b787"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ชื่อ: "+ (( $F{emp_name} == null ) ? "-" : $F{emp_name} )+"     รหัสตำแหน่ง:  "+  (( $F{position_code} == null ) ? "-" : $F{position_code} )]]></textFieldExpression>
@@ -688,7 +688,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textField isStretchWithOverflow="true">
 									<reportElement x="0" y="83" width="800" height="27" uuid="d71972db-765b-49fb-9bed-ebfcf0fb157b"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["หัวหน้าปัจจุบัน:  "+(( $F{chief_emp_name} == null ) ? "-" : $F{chief_emp_name})+"          รหัสตำแหน่ง:  "+(( $F{chief_position} == null ) ? "-" : $F{chief_position} )]]></textFieldExpression>
@@ -741,7 +741,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[Region]]></text>
@@ -752,7 +752,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[Code]]></text>
@@ -763,7 +763,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[ผู้ประเมิน]]></text>
@@ -774,7 +774,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[วันที่ประเมิน]]></text>
@@ -785,7 +785,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[จำนวนฟอร์ม]]></text>
@@ -796,7 +796,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[รับทราบแล้ว]]></text>
@@ -807,7 +807,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.2"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<text><![CDATA[จำนวนร้านค้าที่ประเมิน]]></text>
@@ -900,7 +900,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{region_MEASURE}]]></textFieldExpression>
 							</textField>
@@ -910,7 +910,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_code_snapshot_MEASURE}]]></textFieldExpression>
 							</textField>
@@ -920,7 +920,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_code_assessor_MEASURE}]]></textFieldExpression>
 							</textField>
@@ -930,7 +930,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{questionaire_date_show}]]></textFieldExpression>
 							</textField>
@@ -940,7 +940,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_form}]]></textFieldExpression>
 							</textField>
@@ -950,7 +950,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_stage}]]></textFieldExpression>
 							</textField>
@@ -960,7 +960,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_customer}]]></textFieldExpression>
 							</textField>
@@ -974,7 +974,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
@@ -984,7 +984,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
@@ -994,7 +994,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
@@ -1004,7 +1004,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 							</textField>
@@ -1014,7 +1014,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_form_sum}]]></textFieldExpression>
 							</textField>
@@ -1024,7 +1024,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_stage_sum}]]></textFieldExpression>
 							</textField>
@@ -1034,7 +1034,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.2"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{num_customer_sum}]]></textFieldExpression>
 							</textField>
@@ -1108,7 +1108,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 								<textField>
 									<reportElement mode="Opaque" x="0" y="0" width="400" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="53c9e8f8-f402-461c-80d1-85b86326366c"/>
 									<textElement verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+										<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["รวมคะแนนทั้งหมด"]]></textFieldExpression>
@@ -1174,7 +1174,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="abf9028d-701b-4e57-ba6b-39ee3f27d3b9"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 									<paragraph rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{total_each_date_parent_MEASURE}+"%"]]></textFieldExpression>
@@ -1186,7 +1186,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 							<textField>
 								<reportElement x="0" y="0" width="80" height="30" forecolor="#FFFFFF" uuid="6eba1f5c-7e73-4ee6-80e9-6e9100337ca0"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 									<paragraph rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{total_date_parent}+"%"]]></textFieldExpression>
@@ -1322,7 +1322,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 										<pen lineWidth="0.5"/>
 									</box>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{section_name}]]></textFieldExpression>
@@ -1394,7 +1394,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<pen lineWidth="0.5"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["คะแนน% ที่ได้"]]></textFieldExpression>
 							</textField>
@@ -1415,7 +1415,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Center">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 								</textElement>
 								<textFieldExpression><![CDATA["คะแนน% ที่ได้"]]></textFieldExpression>
 							</textField>

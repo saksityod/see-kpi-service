@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary-head" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty" uuid="f45b8231-2931-49fb-82f8-8d5d5f9eedf6">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl-bk"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -96,7 +96,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["วันที่ :  "+DATEFORMAT($F{questionaire_date}, "dd/MM/yyyy")]]></textFieldExpression>
 			</textField>
@@ -110,7 +110,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ชื่อพนักงานขาย :  "+$F{employee_name}]]></textFieldExpression>
 			</textField>
@@ -124,7 +124,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ชื่อผู้แทนจำหน่าย :  "+$F{distributor_name}]]></textFieldExpression>
 			</textField>
@@ -138,7 +138,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ชื่อผู้ทำการประเมิน :  "+$F{assessor_name}]]></textFieldExpression>
 			</textField>
@@ -152,7 +152,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["รหัสพนักงานขาย :  "+$F{position_code}]]></textFieldExpression>
 			</textField>
@@ -166,7 +166,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["สถานะ :  "+$F{stage_name}]]></textFieldExpression>
 			</textField>
@@ -176,7 +176,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<pen lineWidth="1.0" lineColor="#000099"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="20" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["ผลรวมทั้งสิ้น"]]></textFieldExpression>
 			</textField>
@@ -186,7 +186,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<pen lineWidth="1.0" lineColor="#330099"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="20" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
 			</textField>
@@ -206,14 +206,14 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Opaque" x="0" y="0" width="804" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="948e7e2a-9e16-49e2-8384-0c59cb51c26b"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="22" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="22" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{questionaire_name}]]></textFieldExpression>
 			</textField>

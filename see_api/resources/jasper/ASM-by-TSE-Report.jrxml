@@ -521,7 +521,7 @@ ORDER BY qdh.assessor_id ASC]]>
 			<staticText>
 				<reportElement key="" mode="Transparent" x="0" y="0" width="800" height="30" isRemoveLineWhenBlank="true" backcolor="rgba(196, 61, 59, 0.0)" uuid="29339155-3814-4ca8-a885-4d0ace43c37a"/>
 				<textElement verticalAlignment="Middle">
-					<font fontName="TH SarabunPSK" size="24" isBold="true"/>
+					<font fontName="BrowalliaUPC" size="24" isBold="true"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
 				<text><![CDATA[ASM by TSE Report]]></text>
@@ -570,7 +570,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Center" verticalAlignment="Bottom">
-								<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+								<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 							</textElement>
 							<text><![CDATA[วันที่ประเมิน]]></text>
 						</staticText>
@@ -621,7 +621,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="0" y="0" width="70" height="40" uuid="446b275b-d336-40fc-b0cf-dd3d424923e3"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_employee}]]></textFieldExpression>
 							</textField>
@@ -629,7 +629,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="70" y="0" width="182" height="40" uuid="5ca3b2fb-5a60-413a-9306-116e63a39ace"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{name_employee}]]></textFieldExpression>
 							</textField>
@@ -640,13 +640,16 @@ ORDER BY qdh.assessor_id ASC]]>
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 							<textField>
 								<reportElement x="252" y="0" width="98" height="20" uuid="849c48bb-708f-464f-ae8e-0aa7b9810857"/>
+								<textElement>
+									<font fontName="BrowalliaUPC"/>
+								</textElement>
 								<textFieldExpression><![CDATA[""]]></textFieldExpression>
 							</textField>
 							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 								<reportElement x="1" y="0" width="69" height="20" uuid="98651d63-763a-4a6e-a308-0a7a28736b35"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{position_assor}]]></textFieldExpression>
 							</textField>
@@ -654,7 +657,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="70" y="0" width="182" height="20" uuid="ec77e51b-83cd-4162-a996-30adb4b95247"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{name_assessor}]]></textFieldExpression>
 							</textField>
@@ -671,7 +674,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="0" y="0" width="98" height="20" uuid="983107cd-b59e-40c4-a134-294600bd5c7d"/>
 								<box leftPadding="3"/>
 								<textElement textAlignment="Left">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{questionaire_date}]]></textFieldExpression>
 							</textField>
@@ -683,7 +686,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="0" y="0" width="98" height="20" uuid="164294c3-55ce-4c62-a518-32e46b9aacc8"/>
 								<box leftPadding="3"/>
 								<textElement>
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA["Total  "+$V{position_employee}]]></textFieldExpression>
 							</textField>
@@ -701,7 +704,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement mode="Opaque" x="0" y="0" width="145" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="42605c7e-17a1-4dfb-91a6-99e7aec8e546"/>
 								<box leftPadding="5"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="18" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="18" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{questionaire_type}]]></textFieldExpression>
 							</textField>
@@ -722,7 +725,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<reportElement x="0" y="0" width="40" height="140" uuid="c19bff93-c9ce-4aee-a81b-574447d40034"/>
 								<box bottomPadding="3"/>
 								<textElement verticalAlignment="Top" rotation="Left">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{question_name}]]></textFieldExpression>
 							</textField>
@@ -737,7 +740,7 @@ ORDER BY qdh.assessor_id ASC]]>
 									<pen lineWidth="0.5"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<text><![CDATA[จำนวนฟอร์ม]]></text>
 							</staticText>
@@ -750,7 +753,7 @@ ORDER BY qdh.assessor_id ASC]]>
 									<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<text><![CDATA[จำนวนร้าน]]></text>
 							</staticText>
@@ -760,7 +763,7 @@ ORDER BY qdh.assessor_id ASC]]>
 									<pen lineWidth="0.5"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<text><![CDATA[รับทราบแล้ว]]></text>
 							</staticText>
@@ -824,7 +827,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<reportElement x="0" y="0" width="40" height="20" uuid="6189482f-1df6-461b-8dea-736cc959234b"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{percent}]]></textFieldExpression>
 						</textField>
@@ -839,7 +842,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{num_from}]]></textFieldExpression>
 						</textField>
@@ -849,7 +852,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{num_cus}]]></textFieldExpression>
 						</textField>
@@ -859,7 +862,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{know}]]></textFieldExpression>
 						</textField>
@@ -892,7 +895,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<reportElement x="0" y="0" width="40" height="20" uuid="fbb71ec4-4104-4292-b31c-92508f2960bb"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{percent_all}]]></textFieldExpression>
 						</textField>
@@ -910,7 +913,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{n_form}]]></textFieldExpression>
 						</textField>
@@ -920,7 +923,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{n_cus}]]></textFieldExpression>
 						</textField>
@@ -930,7 +933,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{n_know}]]></textFieldExpression>
 						</textField>
@@ -942,7 +945,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<reportElement x="0" y="0" width="40" height="20" uuid="de4d3ba6-6bed-4145-b6d6-9cefdd8658ac"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{percent_by_total}]]></textFieldExpression>
 						</textField>
@@ -960,7 +963,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sum_num_from}]]></textFieldExpression>
 						</textField>
@@ -970,7 +973,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sum_num_cus}]]></textFieldExpression>
 						</textField>
@@ -980,7 +983,7 @@ ORDER BY qdh.assessor_id ASC]]>
 								<pen lineWidth="0.5"/>
 							</box>
 							<textElement textAlignment="Right">
-								<font fontName="TH SarabunPSK" size="14"/>
+								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sum_know}]]></textFieldExpression>
 						</textField>

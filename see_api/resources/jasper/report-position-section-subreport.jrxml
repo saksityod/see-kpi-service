@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-section-subreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="85dc9a31-2f9f-4c3e-b36e-340e30351bb2">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -664,7 +664,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 								<textField isStretchWithOverflow="true">
 									<reportElement mode="Opaque" x="0" y="0" width="400" height="20" isRemoveLineWhenBlank="true" backcolor="#7DAEDB" uuid="d0345a1e-ccc2-4b7b-a83f-5bac67924b6a"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{parent_question_name}]]></textFieldExpression>
@@ -733,7 +733,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" isRemoveLineWhenBlank="true" backcolor="#7DAEDB" uuid="518f1c7f-371d-43a6-a12e-f926b2393b57"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[($V{perant_percent_MEASURE} == null) ? "0.00%" : $V{perant_percent_MEASURE}+"%"]]></textFieldExpression>
@@ -745,7 +745,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#7DAEDB" uuid="9ce105c3-960b-4cc7-80d8-02cf761a61a3"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{result}+"%"]]></textFieldExpression>
@@ -834,7 +834,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 								<textField isStretchWithOverflow="true">
 									<reportElement mode="Opaque" x="0" y="0" width="400" height="20" isRemoveLineWhenBlank="true" uuid="ff188b37-d010-43f4-a45e-002b103dd205"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="16"/>
+										<font fontName="BrowalliaUPC" size="16"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{question_name}]]></textFieldExpression>
@@ -903,7 +903,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 							<textField>
 								<reportElement mode="Transparent" x="0" y="0" width="80" height="20" isRemoveLineWhenBlank="true" backcolor="#FFFFFF" uuid="62641409-dbf5-438f-9588-7f617b876e82"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[($V{question_percent_MEASURE}==null)? "0.00%": $V{question_percent_MEASURE}+"%"]]></textFieldExpression>
@@ -915,7 +915,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#F0F8FF" uuid="ab2b3844-6bc7-4e5a-ad4f-a35c86ee0b8f"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="16"/>
+									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{result}+"%"]]></textFieldExpression>
@@ -952,7 +952,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
-						<font fontName="TH SarabunPSK" size="22"/>
+						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["emp: "+$F{emp_snapshot_id}]]></textFieldExpression>
 				</textField>
@@ -961,7 +961,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
-						<font fontName="TH SarabunPSK" size="22"/>
+						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["asses: "+$F{assessor_id}]]></textFieldExpression>
 				</textField>
@@ -970,7 +970,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
-						<font fontName="TH SarabunPSK" size="22"/>
+						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["sec: "+$F{section_id}]]></textFieldExpression>
 				</textField>
@@ -979,7 +979,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
-						<font fontName="TH SarabunPSK" size="22"/>
+						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["qusetion: "+$F{question_id}]]></textFieldExpression>
 				</textField>
@@ -988,7 +988,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
-						<font fontName="TH SarabunPSK" size="22"/>
+						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["parent: "+$F{parent_question_id}]]></textFieldExpression>
 				</textField>

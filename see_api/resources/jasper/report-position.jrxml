@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="9ca9d851-6728-447d-b9e1-91ccd1b54823">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -189,7 +189,7 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10" rightIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ตำแหน่ง:  "+ (( $F{appraisal_level_name}== null ) ? "-" : $F{appraisal_level_name})+"          ประเภท:  "+  (( $F{questionaire_type} == null ) ? "-" : $F{questionaire_type} )]]></textFieldExpression>
@@ -203,7 +203,7 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10" rightIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ระยะเวลา: "+$F{date_start}+" - "+$F{date_end}]]></textFieldExpression>
@@ -211,7 +211,7 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 								<textField isStretchWithOverflow="true">
 									<reportElement x="0" y="56" width="800" height="27" uuid="e5fb8783-cf35-4577-bdf9-6d7eb85aadc2"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["ชื่อ: "+ (( $F{emp_name} == null ) ? "-" : $F{emp_name} )+"     รหัสตำแหน่ง:  "+  (( $F{position_code} == null ) ? "-" : $F{position_code} )]]></textFieldExpression>
@@ -219,7 +219,7 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 								<textField isStretchWithOverflow="true">
 									<reportElement x="0" y="83" width="800" height="27" uuid="0aa0ad3d-47bb-4074-8c2c-9a359f689f87"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="18" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
 										<paragraph leftIndent="10"/>
 									</textElement>
 									<textFieldExpression><![CDATA["หัวหน้าปัจจุบัน:  "+(( $F{chief_emp_name} == null ) ? "-" : $F{chief_emp_name})+"          รหัสตำแหน่ง:  "+(( $F{chief_position} == null ) ? "-" : $F{chief_position} )]]></textFieldExpression>
