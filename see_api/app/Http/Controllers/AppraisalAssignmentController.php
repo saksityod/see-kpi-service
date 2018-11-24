@@ -1164,7 +1164,7 @@ class AppraisalAssignmentController extends Controller
 
 	    function query_index_org() {
 	    	$query = "
-	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, af.appraisal_form_name, ast.edit_flag, ast.delete_flag
+	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, af.appraisal_form_name, ast.edit_flag, ast.delete_flag, er.level_id
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast, appraisal_form af
 	    				Where er.org_id = o.org_id 
 	    				and er.appraisal_type_id = t.appraisal_type_id
@@ -1293,7 +1293,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id
 	    				From org o
 	    				left outer join appraisal_level al on o.level_id = al.level_id
 	    				Where o.is_active = 1
@@ -1446,7 +1446,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign = "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id
 	    				From org o
 	    				left outer join appraisal_level al on o.level_id = al.level_id
 	    				Where o.is_active = 1
@@ -1549,24 +1549,96 @@ class AppraisalAssignmentController extends Controller
 	}
 
 	function find_derive($items, $appraisal_form, $period_id) {
-		$findDerive = DB::select("
-			SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
-			FROM appraisal_structure ast
-			INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
-			INNER JOIN appraisal_level al ON al.level_id = ast.level_id
-			WHERE ast.is_derive = 1
-			AND ac.appraisal_form_id = '{$appraisal_form}'
-		");
+		// $findDerive = DB::select("
+		// 	SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
+		// 	FROM appraisal_structure ast
+		// 	INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+		// 	INNER JOIN appraisal_level al ON al.level_id = ast.level_id
+		// 	WHERE ast.is_derive = 1
+		// 	AND ac.appraisal_form_id = '{$appraisal_form}'
+		// ");
 
-		if(empty($findDerive)) {
-			// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
-			foreach ($items as $key => $item) {
-				$items[$key]->assigned = 1;
-		    	$items[$key]->assigned_msg = '';
-			}
-		}
+		// if(empty($findDerive)) {
+		// 	// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
+		// 	foreach ($items as $key => $item) {
+		// 		$items[$key]->assigned = 1;
+		//     	$items[$key]->assigned_msg = '';
+		// 	}
+		// }
+
+		// foreach ($items as $key => $item) { // loop พนักงาน หรือ organization
+		// 	foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
+		// 	    if($findDerives->is_individual==1) {
+		// 	    	//หา chief emp code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
+		// 	    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
+		// 	    	if($findChiefEmp['emp_id']==0) { // กรณีไม่มี chief_emp_code
+		// 	    		$items[$key]->assigned = 1;
+		//     			$items[$key]->assigned_msg = '';
+		// 	    	} else {
+		// 		    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+		// 		    	->where("period_id", $period_id)
+		// 		    	->where("emp_id", $findChiefEmp['emp_id'])
+		// 		    	->where("status", "Accepted")->first();
+
+		// 			    if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+		// 		    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) {
+		// 		    			// กรณี ยังไม่มีการ complete เลย
+		// 			    		$items[$key]->assigned = 0;
+		// 			    		$items[$key]->assigned_msg = 'Chief Employee not Assign to Stage Complete';
+		// 		    		}
+		// 		    	} else {
+		// 				    $items[$key]->assigned = 1;
+		// 				    $items[$key]->assigned_msg = 'Complete';
+		// 				    $items[$key]->chief_id_array[] = $findEmpResult->emp_id;
+		// 				}
+		// 			}
+
+		// 	    } else if($findDerives->is_org==1) {
+		// 	    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
+		// 	    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+		// 	    	// exit(json_encode(['data' => $findChiefEmp]));
+		// 	    	if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
+		// 	    		$items[$key]->assigned = 1;
+		//     			$items[$key]->assigned_msg = '';
+		// 	    	} else {
+		// 		    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+		// 		    	->where("period_id", $period_id)
+		// 		    	->where("org_id", $findChiefEmp['org_id'])
+		// 		    	->where("status", "Accepted")->first();
+
+		// 		    	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+		// 		    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
+		// 		    			// กรณี ยังไม่มีการ complete เลย
+		// 			    		$items[$key]->assigned = 0;
+		// 			    		$items[$key]->assigned_msg = 'Parent Org not Assign to Stage Complete';
+		// 		    		}
+		// 		    	} else {
+		// 		    		$items[$key]->assigned = 1;
+		// 		    		$items[$key]->assigned_msg = 'Complete';
+		// 		    		$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+		// 		    	}
+		// 			}
+		// 	    }
+		// 	}
+		// }
 
 		foreach ($items as $key => $item) { // loop พนักงาน หรือ organization
+			$findDerive = DB::select("
+				SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
+				FROM appraisal_structure ast
+				INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+				INNER JOIN appraisal_level al ON al.level_id = ast.level_id
+				WHERE ast.is_derive = 1
+				AND ac.appraisal_form_id = '{$appraisal_form}'
+				AND ac.appraisal_level_id = '{$item->level_id}'
+			");
+
+			if(empty($findDerive)) {
+				// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
+					$items[$key]->assigned = 1;
+			    	$items[$key]->assigned_msg = '';
+			}
+
 			foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
 			    if($findDerives->is_individual==1) {
 			    	//หา chief emp code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
@@ -1590,6 +1662,7 @@ class AppraisalAssignmentController extends Controller
 						    $items[$key]->assigned = 1;
 						    $items[$key]->assigned_msg = 'Complete';
 						    $items[$key]->chief_id_array[] = $findEmpResult->emp_id;
+						    $items[$key]->is_derive_check[] = 'emp';
 						}
 					}
 
@@ -1615,18 +1688,19 @@ class AppraisalAssignmentController extends Controller
 				    	} else {
 				    		$items[$key]->assigned = 1;
 				    		$items[$key]->assigned_msg = 'Complete';
-				    		$items[$key]->chief_id_array[] = $findEmpResult->org_id;
+				    		$items[$key]->org_id_array[] = $findEmpResult->org_id;
+				    		$items[$key]->is_derive_check[] = 'org';
 				    	}
 					}
 			    }
 			}
+
 		}
 
 		return $items;
 	}
 
-	function find_derive_item($chief_id_array, $query_structure, $period_id, $appraisal_form_id) {
-
+	function find_derive_item($is_derive_array, $chief_id_array, $org_id_array, $query_structure, $period_id, $appraisal_form_id) {
 		$struc_array = [];
 		foreach ($query_structure as $value) {
 			array_push($struc_array, $value->structure_id);
@@ -1635,8 +1709,33 @@ class AppraisalAssignmentController extends Controller
 		$structure_in = empty($struc_array) ? "" : "and a.structure_id IN (".implode(",", $struc_array).")";
 
 		$chief_id_array = in_array('null', $chief_id_array) || in_array('undefined', $chief_id_array) || in_array('', $chief_id_array) ? "" : $chief_id_array;
+		$emp_in = empty($chief_id_array) ? "''" : implode(',',$chief_id_array);
 
-		$id = empty($chief_id_array) ? "''" : implode(',',$chief_id_array);
+		$org_id_array = in_array('null', $org_id_array) || in_array('undefined', $org_id_array) || in_array('', $org_id_array) ? "" : $org_id_array;
+		$org_in = empty($org_id_array) ? "''" : implode(',',$org_id_array);
+
+		//$is_derive_array
+		//แปลงค่า implode ['org,org,org'] เป็น org,org,org
+		//แปลงค่า explode org,org,org เป็น ['org','org','org']
+		$derive_array = explode(',',implode(',',$is_derive_array));
+
+		//เช็คว่า derive เป็ฯแบบ org หรือ emp
+		if (count(array_unique($derive_array)) === 1 && end($derive_array) === 'org') {
+			$ques = " and ar.org_id IN ({$org_in}) and ar.emp_id is null ";
+		} else if(count(array_unique($derive_array)) === 1 && end($derive_array) === 'emp') {
+			$ques = " and ar.emp_id IN ({$emp_in}) ";
+		} else {
+			$ques = " 
+				and (ar.emp_id IN ({$emp_in}) OR ar.org_id IN (
+							select org_id
+							from appraisal_item_result
+							where ar.item_result_id = item_result_id
+							and emp_id is null
+							and org_id IN ({$org_in})
+					)
+				)
+			";
+		}
 
 			$query = "
 				SELECT a.item_id, 
@@ -1680,7 +1779,7 @@ class AppraisalAssignmentController extends Controller
 				left join uom on a.uom_id = uom.uom_id
 				inner join appraisal_item_result ar on a.item_id = ar.item_id
 				where e.is_active = 1
-				and (ar.emp_id IN ({$id}) OR ar.org_id IN ({$id}))
+				{$ques}
 				and ar.period_id = '{$period_id}'
 				and c.appraisal_form_id = '{$appraisal_form_id}'
 				{$structure_in}
@@ -1791,7 +1890,7 @@ class AppraisalAssignmentController extends Controller
 		check_structure คือ structureใน criteria ว่ามีกี่ structure
 		*/
 
-		$items_chief = $this->find_derive_item($request->chief_id_array, $check_structure, $request->period_id, $request->appraisal_form_id);
+		$items_chief = $this->find_derive_item($request->is_derive_check, $request->chief_id_array,  $request->org_id_array, $check_structure, $request->period_id, $request->appraisal_form_id);
 
 		$item_array = [];
 		foreach ($items_chief as $value) {
