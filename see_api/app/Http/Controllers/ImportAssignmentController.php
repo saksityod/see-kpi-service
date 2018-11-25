@@ -389,7 +389,7 @@ class ImportAssignmentController extends Controller
           	emp.emp_name, item.item_id appraisal_item_id,
           	item.item_name appraisal_item_name, item.uom_name,
             item.max_value, item.unit_deduct_score, item.value_get_zero,
-          	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
+          	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero, item.unit_reward_score
           FROM(
           	SELECT
           		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
@@ -415,7 +415,7 @@ class ImportAssignmentController extends Controller
           INNER JOIN (
           	SELECT ail.level_id, aio.org_id,
           		itm.item_id, itm.item_name, uom.uom_name,
-              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
+              itm.max_value, itm.unit_deduct_score, itm.value_get_zero, itm.unit_reward_score,
           		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
           	FROM appraisal_item itm
           	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
@@ -450,7 +450,7 @@ class ImportAssignmentController extends Controller
         if(!empty($items)){
           // Set grouped to create sheets.
           $itemList = [];
-          $form1Key = 0; $form2Key = 0; $form3Key = 0;
+          $form1Key = 0; $form2Key = 0; $form3Key = 0; $form4Key = 0;
           foreach($items as $value) {
             // Get assigned value //
             $assignedInfo = [];
@@ -608,6 +608,29 @@ class ImportAssignmentController extends Controller
               ];
               $form3Key = $form3Key + 1;
             }
+            else if($value->form_id == "4"){
+              $itemList[$value->structure_name][$form4Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
+                 "period_id" => $value->period_id,
+                 "year" => $value->year,
+                 "start_date" => $value->start_date,
+                 "end_date" => $value->end_date,
+                 "appraisal_type_id" => $value->appraisal_type_id,
+                 "appraisal_type_name" => $value->appraisal_type_name,
+                 "stage_id" => $value->stage_id,
+                 "status" => $value->status,
+                 "level_id" => $value->level_id,
+                 "level_name" => $value->level_name,
+                 "org_id" => $value->org_id,
+                 "org_name" => $value->org_name,
+                 "appraisal_item_id" => $value->appraisal_item_id,
+                 "appraisal_item_name" => $value->appraisal_item_name,
+                 "max_value" => $value->max_value,
+                 "reward_per_unit" => $value->unit_reward_score
+                //  "".$column_value_get_zero."" => $value_get_zero
+              ];
+              $form4Key = $form4Key + 1;
+            }
           }
 
           Excel::create($fileName, function($excel) use ($itemList) {
@@ -679,7 +702,7 @@ class ImportAssignmentController extends Controller
             org.org_name, item.item_id appraisal_item_id,
             item.item_name appraisal_item_name, item.uom_name,
             item.max_value, item.unit_deduct_score, item.value_get_zero,
-            item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
+            item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero, item.unit_reward_score
           FROM(
             SELECT
            		org.level_id, vel.appraisal_level_name, vel.default_stage_id,
@@ -695,7 +718,7 @@ class ImportAssignmentController extends Controller
           INNER JOIN (
             SELECT ail.level_id, aio.org_id,
               itm.item_id, itm.item_name, uom.uom_name,
-              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
+              itm.max_value, itm.unit_deduct_score, itm.value_get_zero, itm.unit_reward_score,
               strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
             FROM appraisal_item itm
             LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
@@ -730,7 +753,7 @@ class ImportAssignmentController extends Controller
         if(!empty($items)){
           // Set grouped to create sheets.
           $itemList = [];
-          $form1Key = 0; $form2Key = 0; $form3Key = 0;
+          $form1Key = 0; $form2Key = 0; $form3Key = 0; $form4Key = 0;
           foreach($items as $value) {
             // Get assigned value //
             $assignedInfo = [];
@@ -863,8 +886,31 @@ class ImportAssignmentController extends Controller
                  "".$column_value_get_zero."" => $value_get_zero
                ];
                $form3Key = $form3Key + 1;
-             }
-           }
+            } 
+            else if($value->form_id == "4"){
+              $itemList[$value->structure_name][$form4Key] = [
+                "appraisal_form_id" => $value->appraisal_form_id,
+                 "period_id" => $value->period_id,
+                 "year" => $value->year,
+                 "start_date" => $value->start_date,
+                 "end_date" => $value->end_date,
+                 "appraisal_type_id" => $value->appraisal_type_id,
+                 "appraisal_type_name" => $value->appraisal_type_name,
+                 "stage_id" => $value->stage_id,
+                 "status" => $value->status,
+                 "level_id" => $value->level_id,
+                 "level_name" => $value->level_name,
+                 "org_id" => $value->org_id,
+                 "org_name" => $value->org_name,
+                 "appraisal_item_id" => $value->appraisal_item_id,
+                 "appraisal_item_name" => $value->appraisal_item_name,
+                 "max_value" => $value->max_value,
+                 "reward_per_unit" => $value->unit_reward_score
+                //  "".$column_value_get_zero."" => $value_get_zero
+              ];
+              $form4Key = $form4Key + 1;
+            }
+          }
 
            Excel::create($fileName, function($excel) use ($itemList) {
 
