@@ -1184,6 +1184,7 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->structure_weight_percent = (empty($criteriaInfoQry)) ? "0" : $criteriaInfoQry[0]->weight_percent;
                 $appraisalItemResult->created_by = Auth::id();
                 $appraisalItemResult->updated_by = Auth::id();
+                $appraisalItemResult->reward_score_unit = (empty($row->reward_per_unit)) ? "0": $row->reward_per_unit;
                 try {
     							$appraisalItemResult->save();
     						} catch (Exception $e) {
@@ -1217,6 +1218,7 @@ class ImportAssignmentController extends Controller
                   "weight_percent" => (empty($row->weight)) ? "0": $row->weight,
                   //"weigh_score" => "0",
                   "structure_weight_percent" => (empty($criteriaInfoQry)) ? "0" : $criteriaInfoQry[0]->weight_percent,
+                  "reward_score_unit" => (empty($row->reward_per_unit)) ? "0": $row->reward_per_unit,
                   "updated_by" => Auth::id(),
                   "updated_dttm" => date("Y-m-d H:i:s")
                 ]);
