@@ -17,6 +17,7 @@ use Excel;
 use Response;
 use Validator;
 use Exception;
+use Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -457,7 +458,8 @@ class ImportAssignmentController extends Controller
               SELECT target_value, weight_percent,
               	score0, score1, score2, score3, score4, score5
               FROM appraisal_item_result
-              WHERE period_id = {$value->period_id}
+              WHERE appraisal_form_id = {$value->appraisal_form_id}
+              AND period_id = {$value->period_id}
               AND emp_id = {$value->emp_id}
               AND org_id = {$value->org_id}
               AND position_id = {$value->position_id}
@@ -532,8 +534,9 @@ class ImportAssignmentController extends Controller
                   $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
                   $rangekey = $rangekey+1;
                 }
-                $form1Key = $form1Key+1;
               }
+
+              $form1Key = $form1Key+1;
 
             } else if($value->form_id == "2") {
               $itemList[$value->structure_name][$form2Key] = [
@@ -631,54 +634,54 @@ class ImportAssignmentController extends Controller
 
 
 
-    /**
-     * Assignment export to Excel (Organization).
-     *
-     * @author P.Wirun (GJ)
-     * @param  \Illuminate\Http\Request
-     *         $request (appraisal_type_id, position_id, emp_id, period_id, appraisal_year,
-     *                   frequency_id, org_id[], appraisal_item_id[], appraisal_level_id[])
-     * @return \Illuminate\Http\Response
-     */
-     public function export_template_organization(Request $request){
+  /**
+    * Assignment export to Excel (Organization).
+    *
+    * @author P.Wirun (GJ)
+    * @param  \Illuminate\Http\Request
+    *         $request (appraisal_type_id, position_id, emp_id, period_id, appraisal_year,
+    *                   frequency_id, org_id[], appraisal_item_id[], appraisal_level_id[])
+    * @return \Illuminate\Http\Response
+    */
+  public function export_template_organization(Request $request){
 
-       // Set file name and directory.
-       set_time_limit(1000); //
-       $extension = "xlsx";
-       $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
+    // Set file name and directory.
+    set_time_limit(1000);
+    $extension = "xlsx";
+    $fileName = "import_assignment_".date('Ymd His');;  //yyyymmdd hhmmss
 
-       try {
-         // Set Input parameter
-         $appraisal_type_id = $request->appraisal_type_id;
-         $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
-         $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
-         $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
-         // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
-         // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
-         // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
-         $period_id = $request->period_id;
-         $appraisal_year = $request->appraisal_year;
-         $frequency_id = $request->frequency_id;
-         $appraisal_form = $request->appraisal_form;
+    try {
+      // Set Input parameter
+      $appraisal_type_id = $request->appraisal_type_id;
+      $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : $request->appraisal_level_id;
+      $org_id = (empty($request->org_id)) ? "''" : $request->org_id;
+      $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : $request->appraisal_item_id;
+      // $appraisal_level_id = (empty($request->appraisal_level_id)) ? "''" : "'".implode("','", $request->appraisal_level_id)."'" ;
+      // $org_id = (empty($request->org_id)) ? "''" : "'".implode("','", $request->org_id)."'" ;
+      // $appraisal_item_id = (empty($request->appraisal_item_id)) ? "''" : "'".implode("','", $request->appraisal_item_id)."'" ;
+      $period_id = $request->period_id;
+      $appraisal_year = $request->appraisal_year;
+      $frequency_id = $request->frequency_id;
+      $appraisal_form = $request->appraisal_form;
 
-         // Set parameter string in sql where clause
-         $periodStr = (empty($period_id))
-           ? "
-             AND prd.appraisal_year = '{$appraisal_year}'
-             AND prd.appraisal_frequency_id = '{$frequency_id}'"
-           : "AND prd.period_id = '{$period_id}'" ;
+      // Set parameter string in sql where clause
+        $periodStr = (empty($period_id))
+          ? "
+            AND prd.appraisal_year = '{$appraisal_year}'
+            AND prd.appraisal_frequency_id = '{$frequency_id}'"
+          : "AND prd.period_id = '{$period_id}'" ;
 
-         $items = DB::select("
-           SELECT '{$appraisal_form}' as appraisal_form_id,
-           	prd.period_id, prd.year, prd.start_date, prd.end_date,
+        $items = DB::select("
+          SELECT '{$appraisal_form}' as appraisal_form_id,
+            prd.period_id, prd.year, prd.start_date, prd.end_date,
             typ.appraisal_type_id, typ.appraisal_type_name, org.default_stage_id as stage_id, org.status,
             org.level_id, org.appraisal_level_name level_name, org.org_id,
             org.org_name, item.item_id appraisal_item_id,
             item.item_name appraisal_item_name, item.uom_name,
             item.max_value, item.unit_deduct_score, item.value_get_zero,
             item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero
-           FROM(
-           	SELECT
+          FROM(
+            SELECT
            		org.level_id, vel.appraisal_level_name, vel.default_stage_id,
               org.org_id, org.org_name, stg.status
            	FROM org
@@ -688,80 +691,81 @@ class ImportAssignmentController extends Controller
            	AND org.is_active = 1
            	AND org.level_id IN({$appraisal_level_id})
            	AND org.org_id IN({$org_id})
-           )org
-           INNER JOIN (
-           	SELECT ail.level_id, aio.org_id,
-           		itm.item_id, itm.item_name, uom.uom_name,
-               itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
-           		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
-           	FROM appraisal_item itm
-           	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
-           	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
-           	LEFT JOIN appraisal_structure strc ON strc.structure_id = itm.structure_id
-           	LEFT JOIN uom ON uom.uom_id = itm.uom_id
-           	WHERE itm.item_id IN({$appraisal_item_id})
-           	AND ail.level_id IN({$appraisal_level_id})
-           	AND aio.org_id IN({$org_id})
-           )item ON item.level_id = org.level_id AND item.org_id = org.org_id
-           CROSS JOIN(
-           	SELECT apt.appraisal_type_id, apt.appraisal_type_name,
-           		aps.stage_id, aps.status
+          )org
+          INNER JOIN (
+            SELECT ail.level_id, aio.org_id,
+              itm.item_id, itm.item_name, uom.uom_name,
+              itm.max_value, itm.unit_deduct_score, itm.value_get_zero,
+              strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
+            FROM appraisal_item itm
+            LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
+            LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
+            LEFT JOIN appraisal_structure strc ON strc.structure_id = itm.structure_id
+            LEFT JOIN uom ON uom.uom_id = itm.uom_id
+            WHERE itm.item_id IN({$appraisal_item_id})
+            AND ail.level_id IN({$appraisal_level_id})
+            AND aio.org_id IN({$org_id})
+          )item ON item.level_id = org.level_id AND item.org_id = org.org_id
+          CROSS JOIN(
+            SELECT apt.appraisal_type_id, apt.appraisal_type_name,
+           	  aps.stage_id, aps.status
            	FROM appraisal_type apt
-           	LEFT JOIN appraisal_stage aps
-           		ON aps.appraisal_type_id = apt.appraisal_type_id
+            LEFT JOIN appraisal_stage aps 
+              ON aps.appraisal_type_id = apt.appraisal_type_id
            		AND aps.stage_id = (
            			SELECT MIN(stage_id) FROM appraisal_stage
            			WHERE appraisal_type_id = apt.appraisal_type_id
            		)
            	WHERE apt.appraisal_type_id = '{$appraisal_type_id}'
-           )typ
-           CROSS JOIN(
-           	SELECT prd.period_id, prd.appraisal_year year, prd.start_date, prd.end_date
-           	FROM appraisal_period prd
-           	WHERE 1 = 1
+          )typ
+          CROSS JOIN(
+            SELECT prd.period_id, prd.appraisal_year year, prd.start_date, prd.end_date
+            FROM appraisal_period prd
+            WHERE 1 = 1
            	".$periodStr."
-           )prd
-         ");
+          )prd
+        ");
 
          // Generate Excel from query result. Return 404, If not found data.
-         if(!empty($items)){
-           // Set grouped to create sheets.
-           $itemList = [];
-           $form1Key = 0; $form2Key = 0; $form3Key = 0;
-           foreach($items as $value) {
-             // Get assigned value //
-             $assignedInfo = [];
-             $assignedQry = DB::select("
-               SELECT target_value, weight_percent,
-               	score0, score1, score2, score3, score4, score5
-               FROM appraisal_item_result
-               WHERE period_id = {$value->period_id}
-               AND emp_id is null
-               AND org_id = {$value->org_id}
-               AND position_id is null
-               AND item_id = {$value->appraisal_item_id}
-               AND level_id = {$value->level_id}
-               LIMIT 1
-             ");
+        if(!empty($items)){
+          // Set grouped to create sheets.
+          $itemList = [];
+          $form1Key = 0; $form2Key = 0; $form3Key = 0;
+          foreach($items as $value) {
+            // Get assigned value //
+            $assignedInfo = [];
+            $assignedQry = DB::select("
+              SELECT target_value, weight_percent,
+              	score0, score1, score2, score3, score4, score5
+              FROM appraisal_item_result
+              WHERE appraisal_form_id = {$value->appraisal_form_id}
+              AND period_id = {$value->period_id}
+              AND emp_id is null
+              AND org_id = {$value->org_id}
+              AND position_id is null
+              AND item_id = {$value->appraisal_item_id}
+              AND level_id = {$value->level_id}
+              LIMIT 1
+            ");
 
             // veriry threshold display from system config
             $systemConThreshold = SystemConfiguration::first()->threshold;
-             if (empty($assignedQry)) {
-               $assignedInfo["target_value"] = "";
-               $assignedInfo["weight_percent"] = "";
-               if((Int)$systemConThreshold == 1){
-                $assignedInfo["score0"] = "";
-                $assignedInfo["score1"] = "";
-                $assignedInfo["score2"] = "";
-                $assignedInfo["score3"] = "";
-                $assignedInfo["score4"] = "";
-                $assignedInfo["score5"] = "";
-               }
-             } else {
-               foreach ($assignedQry as $asVal) {
-                 $assignedInfo["target_value"] = $asVal->target_value;
-                 $assignedInfo["weight_percent"] = $asVal->weight_percent;
-                 if((Int)$systemConThreshold == 1){
+            if (empty($assignedQry)) {
+              $assignedInfo["target_value"] = "";
+              $assignedInfo["weight_percent"] = "";
+              if((Int)$systemConThreshold == 1){
+               $assignedInfo["score0"] = "";
+               $assignedInfo["score1"] = "";
+               $assignedInfo["score2"] = "";
+               $assignedInfo["score3"] = "";
+               $assignedInfo["score4"] = "";
+               $assignedInfo["score5"] = "";
+              }
+            } else {
+              foreach ($assignedQry as $asVal) {
+                $assignedInfo["target_value"] = $asVal->target_value;
+                $assignedInfo["weight_percent"] = $asVal->weight_percent;
+                if((Int)$systemConThreshold == 1){
                   $assignedInfo["score0"] = $asVal->score0;
                   $assignedInfo["score1"] = $asVal->score1;
                   $assignedInfo["score2"] = $asVal->score2;
@@ -769,41 +773,42 @@ class ImportAssignmentController extends Controller
                   $assignedInfo["score4"] = $asVal->score4;
                   $assignedInfo["score5"] = $asVal->score5;
                 }
-               }
-             }
+              }
+            }
 
-             if ($value->form_id == "1") {
-               $itemList[$value->structure_name][$form1Key] = [
+            if ($value->form_id == "1") {
+              $itemList[$value->structure_name][$form1Key] = [
                 "appraisal_form_id" => $value->appraisal_form_id,
-                 "period_id" => $value->period_id,
-                 "year" => $value->year,
-                 "start_date" => $value->start_date,
-                 "end_date" => $value->end_date,
-                 "appraisal_type_id" => $value->appraisal_type_id,
-                 "appraisal_type_name" => $value->appraisal_type_name,
-                 "stage_id" => $value->stage_id,
-                 "status" => $value->status,
-                 "level_id" => $value->level_id,
-                 "level_name" => $value->level_name,
-                 "org_id" => $value->org_id,
-                 "org_name" => $value->org_name,
-                 "appraisal_item_id" => $value->appraisal_item_id,
-                 "appraisal_item_name" => $value->appraisal_item_name,
-                 "uom_name" => $value->uom_name,
-                 "target" => $assignedInfo["target_value"],
-                 "weight" => $assignedInfo["weight_percent"]
-                 //-- Generate range by appraisal_structure.nof_target_score --//
-               ];
+                "period_id" => $value->period_id,
+                "year" => $value->year,
+                "start_date" => $value->start_date,
+                "end_date" => $value->end_date,
+                "appraisal_type_id" => $value->appraisal_type_id,
+                "appraisal_type_name" => $value->appraisal_type_name,
+                "stage_id" => $value->stage_id,
+                "status" => $value->status,
+                "level_id" => $value->level_id,
+                "level_name" => $value->level_name,
+                "org_id" => $value->org_id,
+                "org_name" => $value->org_name,
+                "appraisal_item_id" => $value->appraisal_item_id,
+                "appraisal_item_name" => $value->appraisal_item_name,
+                "uom_name" => $value->uom_name,
+                "target" => $assignedInfo["target_value"],
+                "weight" => $assignedInfo["weight_percent"]
+                //-- Generate range by appraisal_structure.nof_target_score --//
+              ];
 
-               // Generate range by appraisal_structure.nof_target_score
-               if((Int)$systemConThreshold == 1){
+              // Generate range by appraisal_structure.nof_target_score
+              if((Int)$systemConThreshold == 1){
                 $rangekey = 0;
                 while($rangekey <= $value->nof_target_score) {
                   $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
                   $rangekey = $rangekey+1;
                 }
-                $form1Key = $form1Key+1;
               }
+
+              $form1Key = $form1Key+1;
 
              } else if($value->form_id == "2") {
                 $itemList[$value->structure_name][$form2Key] = [
