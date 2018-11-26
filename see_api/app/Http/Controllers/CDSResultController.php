@@ -217,7 +217,7 @@ class CDSResultController extends Controller
 		
 		if ($request->appraisal_type_id == 2) {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, ifnull(cr.cds_value,0) as cds_value, ap.appraisal_year
 				from appraisal_item_result r
 				left outer join employee e on r.emp_id = e.emp_id 
 				inner join appraisal_item i on r.item_id = i.item_id
@@ -339,7 +339,7 @@ class CDSResultController extends Controller
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 				
 				if ($request->appraisal_type_id == 2) {
-					$sheet->appendRow(array('Appraisal Type ID', 'Level ID', 'Level Name', 'Organization ID', 'Organization Name', 'Employee ID', 'Employee Name', 'Position ID', 'Position Name', 'CDS ID', 'CDS Name', 'Year', 'Month', 'CDS Value'));
+					$sheet->appendRow(array('Appraisal Type ID', 'Level ID', 'Level Name', 'Organization ID', 'Organization Name', 'Employee ID', 'Employee Code','Employee Name', 'Position ID', 'Position Name', 'CDS ID', 'CDS Name', 'Year', 'Month', 'CDS Value'));
 
 					foreach ($items as $i) {
 						// empty($i->appraisal_year) ? $appraisal_year = $request->current_appraisal_year : $appraisal_year = $i->appraisal_year;
@@ -353,6 +353,7 @@ class CDSResultController extends Controller
 							$i->org_id,
 							$i->org_name,
 							$i->emp_id, 
+							$i->emp_code, 
 							$i->emp_name,
 							$i->position_id,
 							$i->position_name,
