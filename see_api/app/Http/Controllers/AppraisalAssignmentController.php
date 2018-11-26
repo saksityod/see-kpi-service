@@ -1624,13 +1624,14 @@ class AppraisalAssignmentController extends Controller
 
 		foreach ($items as $key => $item) { // loop พนักงาน หรือ organization
 			$findDerive = DB::select("
-				SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
+				SELECT ast.level_id, al.is_org, al.is_individual
 				FROM appraisal_structure ast
 				INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
 				INNER JOIN appraisal_level al ON al.level_id = ast.level_id
 				WHERE ast.is_derive = 1
 				AND ac.appraisal_form_id = '{$appraisal_form}'
 				AND ac.appraisal_level_id = '{$item->level_id}'
+				GROUP BY ast.level_id
 			");
 
 			if(empty($findDerive)) {
