@@ -261,19 +261,19 @@ class AppraisalItemController extends Controller
 	public function index(Request $request)
 	{	
 		// Set Parameter //
-		$level_id = empty($request->level_id) && empty($request->level_id_org) ? "" : "AND (ail.level_id = '{$request->level_id}' or ail.level_id = '{$request->level_id_org}')";
-		$structure_id = empty($request->structure_id) ? "" : "AND i.structure_id = {$request->structure_id}";
-		$kpi_type_id = empty($request->kpi_type_id) ? "" : "AND i.kpi_type_id = {$request->kpi_type_id}";
-		$item_id = empty($request->item_id) ? "" : "AND i.item_id = {$request->item_id}";
+		$level_id = empty($request->level_id) && empty($request->level_id_org) ? "" : " AND (ail.level_id = '{$request->level_id}' or ail.level_id = '{$request->level_id_org}')";
+		$structure_id = empty($request->structure_id) ? "" : " AND i.structure_id = {$request->structure_id}";
+		$kpi_type_id = empty($request->kpi_type_id) ? "" : " AND i.kpi_type_id = {$request->kpi_type_id}";
+		$item_id = empty($request->item_id) ? "" : " AND i.item_id = {$request->item_id}";
 
 		if ($request->structure_id == 1 || empty($request->structure_id)) {
-			$perspective_id = empty($request->perspective_id) ? "" : "AND i.perspective_id = {$request->perspective_id}";
+			$perspective_id = empty($request->perspective_id) ? "" : " AND i.perspective_id = {$request->perspective_id}";
 		} else {
 			$perspective_id="";
 		}
 
 		if($request->org_id!='null' && !empty($request->org_id)) {
-			$org_id = "AND aio.org_id IN ({$request->org_id})";
+			$org_id = " AND aio.org_id IN ({$request->org_id})";
 		} else {
 			$org_id = "";
 		}
@@ -287,7 +287,7 @@ class AppraisalItemController extends Controller
 			} else {
 				$assign_status_exist = "NOT";
 			}
-			$assign_status = "AND {$assign_status_exist} EXISTS (SELECT 1 FROM appraisal_item_result air WHERE air.item_id = i.item_id)";
+			$assign_status = " AND {$assign_status_exist} EXISTS (SELECT 1 FROM appraisal_item_result air WHERE air.item_id = i.item_id)";
 		}
 
 		
@@ -328,11 +328,11 @@ class AppraisalItemController extends Controller
 				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
 				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
 				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_level ale ON ale.level_id = ail.level_id and ale.is_hr = 0
 				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
 				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
-				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
-				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
-				WHERE al.is_hr = 0
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id and al.is_hr = 0
+				WHERE 1=1
 				".$level_id."
 				".$structure_id."
 				".$kpi_type_id."
@@ -340,7 +340,9 @@ class AppraisalItemController extends Controller
 				".$item_id."
 				".$org_id."
 				".$assign_status."
-				GROUP BY i.item_id
+				GROUP BY seq_no, structure_name, structure_id, item_id, item_name, kpi_id, perspective_name, 
+				uom_name, max_value, unit_deduct_score, unit_reward_score, value_get_zero, is_active, form_name,
+				app_url, form_id, is_no_raise_value, is_value_get_zero
 			";
 
 		} else {
@@ -371,11 +373,12 @@ class AppraisalItemController extends Controller
 				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
 				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
 				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_level ale ON ale.level_id = ail.level_id and ale.is_hr = 0
 				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
 				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
 				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
-				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
-				WHERE al.is_hr = 0
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id and al.is_hr = 0
+				WHERE 1=1
 				".$level_id."
 				".$structure_id."
 				".$kpi_type_id."
@@ -384,7 +387,9 @@ class AppraisalItemController extends Controller
 				".$org_id."
 				".$assign_status."
 				AND (e.chief_emp_code = '".Auth::id()."' OR e.emp_code = '".Auth::id()."')
-				GROUP BY i.item_id
+				GROUP BY seq_no, structure_name, structure_id, item_id, item_name, kpi_id, perspective_name, 
+				uom_name, max_value, unit_deduct_score, unit_reward_score, value_get_zero, is_active, form_name,
+				app_url, form_id, is_no_raise_value, is_value_get_zero
 			";
 		}
 
@@ -814,18 +819,17 @@ class AppraisalItemController extends Controller
 				SELECT
 					i.item_id,
 					i.item_name
-				FROM
-					appraisal_item i
+				FROM appraisal_item i
 				LEFT OUTER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 				LEFT OUTER JOIN perspective p ON i.perspective_id = p.perspective_id
 				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
 				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
 				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_level ale ON ale.level_id = ail.level_id and ale.is_hr = 0
 				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
 				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
-				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
-				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
-				WHERE al.is_hr = 0
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id and al.is_hr = 0
+				WHERE 1=1
 				".$level_id."
 				".$structure_id."
 				".$kpi_type_id."
@@ -848,11 +852,12 @@ class AppraisalItemController extends Controller
 				LEFT OUTER JOIN uom u ON i.uom_id = u.uom_id
 				LEFT OUTER JOIN form_type f ON s.form_id = f.form_id
 				LEFT OUTER JOIN appraisal_item_level ail ON ail.item_id = i.item_id
+				LEFT OUTER JOIN appraisal_level ale ON ale.level_id = ail.level_id and ale.is_hr = 0
 				LEFT OUTER JOIN appraisal_item_org aio ON aio.item_id = i.item_id
 				LEFT OUTER JOIN org o ON o.org_id = aio.org_id
 				LEFT OUTER JOIN employee e ON e.org_id = o.org_id
-				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id
-				WHERE al.is_hr = 0
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = o.level_id and al.is_hr = 0
+				WHERE 1=1
 				".$level_id."
 				".$structure_id."
 				".$kpi_type_id."
