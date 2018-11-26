@@ -1642,15 +1642,24 @@ class AppraisalAssignmentController extends Controller
 			foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
 			    if($findDerives->is_individual==1) {
 			    	//หา chief emp code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
-			    	$findChiefEmp = $this->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
+			    	$findChiefEmp = $this->advanSearch->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
 			    	if($findChiefEmp['emp_id']==0) { // กรณีไม่มี chief_emp_code
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
 			    	} else {
-				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-				    	->where("period_id", $period_id)
-				    	->where("emp_id", $findChiefEmp['emp_id'])
-				    	->where("status", "Accepted")->first();
+				    	// $findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+				    	// ->where("period_id", $period_id)
+				    	// ->where("emp_id", $findChiefEmp['emp_id'])
+				    	// ->where("status", "Accepted")->first();
+
+				    	$findEmpResult = DB::table('emp_result')
+				        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+				        ->where('emp_result.period_id', $period_id)
+				        ->where('emp_result.appraisal_form_id', $appraisal_form)
+				        ->where('emp_result.emp_id', $findChiefEmp['emp_id'])
+				        ->where('appraisal_stage.assignment_flag', 1)
+				        ->where('appraisal_stage.edit_flag', 0)
+				        ->first();
 
 					    if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
 				    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) {
@@ -1668,16 +1677,26 @@ class AppraisalAssignmentController extends Controller
 
 			    } else if($findDerives->is_org==1) {
 			    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
-			    	$findChiefEmp = $this->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+			    	$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
 			    	// exit(json_encode(['data' => $findChiefEmp]));
 			    	if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
 			    		$items[$key]->assigned = 1;
 		    			$items[$key]->assigned_msg = '';
 			    	} else {
-				    	$findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-				    	->where("period_id", $period_id)
-				    	->where("org_id", $findChiefEmp['org_id'])
-				    	->where("status", "Accepted")->first();
+				    	// $findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
+				    	// ->where("period_id", $period_id)
+				    	// ->where("org_id", $findChiefEmp['org_id'])
+				    	// ->where("status", "Accepted")->first();
+
+				    	$findEmpResult = DB::table('emp_result')
+				        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+				        ->where('emp_result.period_id', $period_id)
+				        ->where('emp_result.appraisal_form_id', $appraisal_form)
+				        ->where('emp_result.org_id', $findChiefEmp['org_id'])
+				        ->where('emp_result.emp_id', null)
+				        ->where('appraisal_stage.assignment_flag', 1)
+				        ->where('appraisal_stage.edit_flag', 0)
+				        ->first();
 
 				    	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
 				    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
@@ -1789,86 +1808,6 @@ class AppraisalAssignmentController extends Controller
 			$findResult = DB::select($query);
 
 		return $findResult;
-	}
-
-	private function GetChiefEmpDeriveLevel($paramEmp, $paramDeriveLevel) {
-		$chiefEmpId = 0;
-		$chiefEmpCode = '';
-		$initChiefEmp = DB::table('employee')
-		->select('chief_emp_code','level_id','emp_id')
-		->where('emp_code', $paramEmp)
-		->get();
-
-		// if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
-		// 	return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
-		// }
-
-		$curChiefEmp = $initChiefEmp[0]->chief_emp_code;
-
-		while ($curChiefEmp != "0") {
-			$getChief = DB::table('employee')
-			->select('emp_id', 'level_id', 'chief_emp_code')
-			->where('emp_code', $curChiefEmp)
-			->get();
-
-			if(! empty($getChief) ){
-				if($getChief[0]->level_id == $paramDeriveLevel){ 
-					$chiefEmpId = $getChief[0]->emp_id;
-					$chiefEmpCode = $getChief[0]->chief_emp_code;
-					$curChiefEmp = "0";
-				} else {
-					if($getChief[0]->chief_emp_code != "0"){
-						$curChiefEmp = $getChief[0]->chief_emp_code;
-					} else {
-						$curChiefEmp = "0";
-					}
-				}
-			} else {
-				$curChiefEmp = "0";
-			}
-		}
-
-		return ['emp_id' => $chiefEmpId, 'chief_emp_code' => $chiefEmpCode];
-	}
-
-	private function GetParentOrgDeriveLevel($paramOrg, $paramDeriveLevel) {
-		$parentOrgId = 0;
-		$parentOrgCode = '';
-		$initParentOrg = DB::table('org')
-		->select('parent_org_code','level_id','org_id')
-		->where('org_code', $paramOrg)
-		->get();
-
-		// if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
-		// 	return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
-		// }
-
-		$curParentOrg = $initParentOrg[0]->parent_org_code;
-
-		while ($curParentOrg != "0") {
-			$getChief = DB::table('org')
-			->select('org_id', 'level_id', 'parent_org_code')
-			->where('org_code', $curParentOrg)
-			->get();
-
-			if(!empty($getChief)) {
-				if($getChief[0]->level_id == $paramDeriveLevel) {
-					$parentOrgId = $getChief[0]->org_id;
-					$parentOrgCode = $getChief[0]->parent_org_code;
-					$curParentOrg = "0";
-				} else {
-					if($getChief[0]->parent_org_code != "0" || $getChief[0]->parent_org_code != "") {
-						$curParentOrg = $getChief[0]->parent_org_code;
-					} else {
-						$curParentOrg = "0";
-					}
-				}
-			} else {
-				$curParentOrg = "0";
-			}
-		}
-
-		return ['org_id' => $parentOrgId, 'parent_org_code' => $parentOrgCode];
 	}
 
 	public function assign_template(Request $request)

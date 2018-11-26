@@ -136,6 +136,86 @@ class AdvanceSearchController extends Controller
          return $all_emp;
     }
 
+    function GetChiefEmpDeriveLevel($paramEmp, $paramDeriveLevel) {
+        $chiefEmpId = 0;
+        $chiefEmpCode = '';
+        $initChiefEmp = DB::table('employee')
+        ->select('chief_emp_code','level_id','emp_id')
+        ->where('emp_code', $paramEmp)
+        ->get();
+
+        // if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
+        //  return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
+        // }
+
+        $curChiefEmp = $initChiefEmp[0]->chief_emp_code;
+
+        while ($curChiefEmp != "0") {
+            $getChief = DB::table('employee')
+            ->select('emp_id', 'level_id', 'chief_emp_code')
+            ->where('emp_code', $curChiefEmp)
+            ->get();
+
+            if(! empty($getChief) ){
+                if($getChief[0]->level_id == $paramDeriveLevel){ 
+                    $chiefEmpId = $getChief[0]->emp_id;
+                    $chiefEmpCode = $getChief[0]->chief_emp_code;
+                    $curChiefEmp = "0";
+                } else {
+                    if($getChief[0]->chief_emp_code != "0"){
+                        $curChiefEmp = $getChief[0]->chief_emp_code;
+                    } else {
+                        $curChiefEmp = "0";
+                    }
+                }
+            } else {
+                $curChiefEmp = "0";
+            }
+        }
+
+        return ['emp_id' => $chiefEmpId, 'chief_emp_code' => $chiefEmpCode];
+    }
+
+    function GetParentOrgDeriveLevel($paramOrg, $paramDeriveLevel) {
+        $parentOrgId = 0;
+        $parentOrgCode = '';
+        $initParentOrg = DB::table('org')
+        ->select('parent_org_code','level_id','org_id')
+        ->where('org_code', $paramOrg)
+        ->get();
+
+        // if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
+        //  return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
+        // }
+
+        $curParentOrg = $initParentOrg[0]->parent_org_code;
+
+        while ($curParentOrg != "0") {
+            $getChief = DB::table('org')
+            ->select('org_id', 'level_id', 'parent_org_code')
+            ->where('org_code', $curParentOrg)
+            ->get();
+
+            if(!empty($getChief)) {
+                if($getChief[0]->level_id == $paramDeriveLevel) {
+                    $parentOrgId = $getChief[0]->org_id;
+                    $parentOrgCode = $getChief[0]->parent_org_code;
+                    $curParentOrg = "0";
+                } else {
+                    if($getChief[0]->parent_org_code != "0" || $getChief[0]->parent_org_code != "") {
+                        $curParentOrg = $getChief[0]->parent_org_code;
+                    } else {
+                        $curParentOrg = "0";
+                    }
+                }
+            } else {
+                $curParentOrg = "0";
+            }
+        }
+
+        return ['org_id' => $parentOrgId, 'parent_org_code' => $parentOrgCode];
+    }
+
     public function YearList(Request $request)
     {
         $years = DB::select("
