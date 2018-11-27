@@ -1387,14 +1387,33 @@ class AppraisalItemController extends Controller
 				// $f_cds_name = array();
 				// $key = 0;
 				KPICDSMapping::where('item_id',$item->item_id)->delete();
-				preg_match_all('/cds(.*?)\]/', $request->formula_cds_id, $cds);
-				foreach ($cds[1] as $c) {
-					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c);
-					
+				
+				$loop_formula_cds_id = str_split($request->formula_cds_id);
+				$concat_formula_cds_id = "";
+				$request->formula_cds_id = "";
+				foreach ($loop_formula_cds_id as $key => $value) {
+					if('['==$value) {
+						$concat_formula_cds_id = "";
+					}
+
+					$concat_formula_cds_id .= $value;
+
+					if(']'==$value) {
+						$request->formula_cds_id .= $concat_formula_cds_id;
+						$concat_formula_cds_id = "";
+					}
+				}
+
+				$request->formula_cds_id = array_unique(array_filter(explode("]",str_replace('[', '', $request->formula_cds_id))));
+
+				foreach ($request->formula_cds_id as $c) {
+					$c = explode(":",str_replace('cds', '', $c));
+					$checkmap = KPICDSMapping::where('item_id',$item->item_id)->where('cds_id',$c[1]);
 					if ($checkmap->count() == 0) {
 						$map = new KPICDSMapping;
 						$map->item_id = $item->item_id;
-						$map->cds_id = $c;
+						$map->cds_id = $c[1];
+						$map->function_type = $c[0];
 						$map->created_by = Auth::id();
 						$map->save();
 					}
