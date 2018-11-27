@@ -843,6 +843,7 @@ class AppraisalGroupController extends Controller
 						'group_name' => $item->assessor_group_name,
 						'group_id' => $item->assessor_group_id,
 						'total_weight_percent' => $item->total_weight_percent,
+						'structure_weight_percent' => $item->structure_weight_percent,
 						'result_type' => $config->result_type,
 						'no_weight' => $item->no_weight,
 						'total_weight' => $total_weight,
@@ -853,7 +854,8 @@ class AppraisalGroupController extends Controller
 							'items' => array($item),
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
-							'total_weigh_score' => $item->total_weigh_score,							
+							'total_weigh_score' => $item->total_weigh_score,
+							'structure_weight_percent' => $item->structure_weight_percent,							
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -866,6 +868,7 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
+							'structure_weight_percent' => $item->structure_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -880,6 +883,7 @@ class AppraisalGroupController extends Controller
 						'group_id' => $item->assessor_group_id,
 						'total_weigh_score' => $item->total_weigh_score,
 						'total_weight_percent' => $item->total_weight_percent,
+						'structure_weight_percent' => $item->structure_weight_percent,
 						'result_type' => $config->result_type,
 						'no_weight' => $item->no_weight,
 						'total_weight' => $total_weight,
@@ -891,6 +895,7 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
+							'structure_weight_percent' => $item->structure_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
@@ -903,6 +908,7 @@ class AppraisalGroupController extends Controller
 							'emp_name' => $item->emp_name,
 							'emp_id' => $item->assessor_id,
 							'total_weigh_score' => $item->total_weigh_score,
+							'structure_weight_percent' => $item->structure_weight_percent,
 						);
 					}else {
 						$groups[$key][$k][$emp]['items'][] = $item;
