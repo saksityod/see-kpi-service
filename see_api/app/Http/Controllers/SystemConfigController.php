@@ -78,6 +78,7 @@ class SystemConfigController extends Controller
 			'result_type' => 'required|integer',
 			'entity_type_resorting' => 'required|integer',
 			'allow_input_actual' => 'required|integer',
+			'appraisal_360_flag' => 'required|integer',
 			'raise_type' => 'required|integer',
 			'theme_color' => 'required|max:15',
 			'email_reminder_flag' => 'boolean',
