@@ -147,7 +147,8 @@ class AppraisalGroupController extends Controller
 			$query = "
 				SELECT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 					e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
-					po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+					po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id,
+					g.start_date as appraisal_period_start_date, 
 					concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
 					af.appraisal_form_name
 				FROM emp_result a
@@ -181,6 +182,7 @@ class AppraisalGroupController extends Controller
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, 
 						o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+						g.start_date as appraisal_period_start_date,
 						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
 						af.appraisal_form_name
 					from emp_result a
@@ -214,6 +216,7 @@ class AppraisalGroupController extends Controller
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
 						e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, 
 						po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, 
+						g.start_date as appraisal_period_start_date,
 						concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc,
 						af.appraisal_form_name
 					from emp_result a
@@ -285,6 +288,7 @@ class AppraisalGroupController extends Controller
 				$groups[$key] = array(
 					'items' => array($item),
 					'appraisal_period_desc' => $item->appraisal_period_desc,
+					'appraisal_period_start_date' => $item->appraisal_period_start_date,
 					'count' => 1,
 				);
 			} else {

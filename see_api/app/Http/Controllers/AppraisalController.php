@@ -635,7 +635,9 @@ class AppraisalController extends Controller
 
 		if ($all_emp[0]->count_no > 0) {
 			$query = "
-				select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+				select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+				, g.start_date as appraisal_period_start_date
+				, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 				from emp_result a
 				left outer join employee b
 				on a.emp_id = b.emp_id
@@ -764,7 +766,9 @@ class AppraisalController extends Controller
 			$dotline_code = Auth::id();
 			if ($request->appraisal_type_id == 2) {
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
 					left outer join employee b
 					on a.emp_id = b.emp_id
@@ -784,6 +788,7 @@ class AppraisalController extends Controller
 					on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
+					and b.has_second_line = 1
 					and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
 
@@ -808,7 +813,9 @@ class AppraisalController extends Controller
 			} else {
 
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
 					left outer join employee b
 					on a.emp_id = b.emp_id
@@ -890,6 +897,7 @@ class AppraisalController extends Controller
 				$groups[$key] = array(
 					'items' => array($item),
 					'appraisal_period_desc' => $item->appraisal_period_desc,
+					'appraisal_period_start_date' => $item->appraisal_period_start_date,
 					'count' => 1,
 				);
 			} else {
@@ -1485,6 +1493,7 @@ class AppraisalController extends Controller
 		}
 
 		if($request->action_update == 'submit'){
+			// return "submit";
 			$stage = WorkflowStage::find($request->stage_id);
 			$emp = EmpResult::find($emp_result_id);
 			$emp->stage_id = $request->stage_id;
@@ -1499,35 +1508,26 @@ class AppraisalController extends Controller
 			$emp_stage->created_by = Auth::id();
 			$emp_stage->updated_by = Auth::id();
 			$emp_stage->save();
-		} 
-		elseif($request->action_update == 'calculate'){
-			$emp = EmpResult::find($emp_result_id);
-			$emp->updated_by = Auth::id();
-			$emp->save();
 
-			$emp_stage = new EmpResultStage;
-			$emp_stage->emp_result_id = $emp_result_id;
-			$emp_stage->remark = $request->remark;
-			$emp_stage->created_by = Auth::id();
-			$emp_stage->updated_by = Auth::id();
-			$emp_stage->save();
+		} if($request->action_update == 'calculate'){
+			$emp = EmpResult::find($emp_result_id);
 		}
 
 
-		$stage = WorkflowStage::find($request->stage_id);
-		$emp = EmpResult::find($emp_result_id);
-		$emp->stage_id = $request->stage_id;
-		$emp->status = $stage->status;
-		$emp->updated_by = Auth::id();
-		$emp->save();
+		// $stage = WorkflowStage::find($request->stage_id);
+		// $emp = EmpResult::find($emp_result_id);
+		// $emp->stage_id = $request->stage_id;
+		// $emp->status = $stage->status;
+		// $emp->updated_by = Auth::id();
+		// $emp->save();
 
-		$emp_stage = new EmpResultStage;
-		$emp_stage->emp_result_id = $emp_result_id;
-		$emp_stage->stage_id = $request->stage_id;
-		$emp_stage->remark = $request->remark;
-		$emp_stage->created_by = Auth::id();
-		$emp_stage->updated_by = Auth::id();
-		$emp_stage->save();
+		// $emp_stage = new EmpResultStage;
+		// $emp_stage->emp_result_id = $emp_result_id;
+		// $emp_stage->stage_id = $request->stage_id;
+		// $emp_stage->remark = $request->remark;
+		// $emp_stage->created_by = Auth::id();
+		// $emp_stage->updated_by = Auth::id();
+		// $emp_stage->save();
 
 		$mail_error = '';
 		
