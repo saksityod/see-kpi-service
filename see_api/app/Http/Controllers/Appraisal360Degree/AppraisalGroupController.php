@@ -1276,46 +1276,43 @@ class AppraisalGroupController extends Controller
 		return response()->json(['status' => 200]);
 	}
 	
+	public function calculate_etl(Request $request){ 
 	
-	public function Calculate_result_score_ETL(Request $request){
+		if(empty($request->emp_result_id)){
+			return response()->json(["status"=>400, "data"=>"emp_result_id not found"]); 
+		}
+		
+		$server = "10.7.200.176"; // server IP/hostname of the SSH server 
+		$username = "root"; // username for the user you are connecting as on the SSH server 
+		$password = "seekpi@1234"; // password for the user you are connecting as on the SSH server 
+		$command = "sh /root/etl/batch_file/mainjob_appraisal360.sh {$request->emp_result_id} {$request->start_date}"; // could be anything available on the server you are SSH'ing to 
 
-		$ETL_path = "/root/etl/data-integration";
-		$Rep_path = "etl_seekpi";
-		$Dir = "SeeKPI";
-		$Job_name = "kpiMainJob_Appraisal360";
-		$User = "admin";
-		$Password = "admin";
-		$Param_emp_result = $request->param_emp_result;
-		$Param_start_date = $request->param_start_date;
-		$Level = "Basic";
-		$Log_path = "/root/etl/log_file/";
-		$Date_now = new DateTime();
-		$Date_now = $Date_now->format('Ymd');
-		$File_log = "kpiMainJob_Appraisal360_".$Date_now.".txt";
+		// Establish a connection to the SSH Server. Port is the second param. 
+		$connection = ssh2_connect($server, 22); 
 
-		$command = $ETL_path."/kitchen.sh -rep:".$Rep_path." -dir:/".$Dir." -job:".$Job_name
-							." -user:".$User." -pass:".$Password
-							." -param:param_emp_result=".$Param_emp_result
-							." -param:param_start_date=".$Param_start_date
-							." -loglevel:".$Level
-							." -logfile:".$Log_path.$File_log;
+		// Authenticate with the SSH server 
+		//ssh2_auth_password($connection, $username, $password); 
+		if ( ! ssh2_auth_password($connection, $username, $password)) { 
+			return response()->json(["status"=>400, "data"=>'SSH Authentication Failed...']); 
+		} 
 
-		$handle = popen($command);
+		// Execute a command on the connected server and capture the response 
+		$stream = ssh2_exec($connection, $command); 
 
 
-		// if ($handle === FALSE) {
-		// 	return response()->json(['status' => 404, 'data' => 'ETL is not runing.']);
-		// } else {
-		//
-		// }
+		// Sets blocking mode on the stream 
+		stream_set_blocking($stream, true); 
 
-		// return ($command);
+		// Get the response of the executed command in a human readable form 
+		$output = stream_get_contents($stream); 
 
+		// echo output 
+		// echo "<pre>{$output}</pre>"; 
+		return response()->json(["status"=>200, "data"=>$output]); 
 	}
+	
 
-
-
-	private function getAssessorGroup($searchEmpCode)
+	public function getAssessorGroup($searchEmpCode)
 	{
 		$loginEmpCode = Auth::id();
 		$assGroupId = 0; 
