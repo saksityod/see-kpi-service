@@ -9,10 +9,13 @@ use App\AppraisalLevel;
 use App\EmpResultStage;
 use App\ActionPlan;
 use App\Reason;
+use App\AssessorGroup;
 use App\AttachFile;
 use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
+use App\Http\Controllers\Appraisal360Degree\AppraisalGroupController;
+
 
 use Auth;
 use DB;
@@ -855,6 +858,27 @@ class AppraisalController extends Controller
 		// Get only the items you need using array_slice (only get 10 items since that's what you need)
 		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
 
+		// Add Assessor Group.
+		foreach($itemsForCurrentPage as $item) {
+			// Is Organization.
+			if($request->appraisal_type_id == 1){
+				$assGroup = AssessorGroup::find(4);
+				$item->group_id = $assGroup->assessor_group_id;
+				$item->group_name = $assGroup->assessor_group_name;
+			} else {  // Is Individual.
+				// $assGroup = $this->AppraisalGroup->getAssessorGroup($item->emp_code);
+				$assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup($item->emp_code);
+				if($assGroup != null){
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				} else {
+					$assGroup = AssessorGroup::find(4);
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				}
+			}
+		}
+
 		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
 		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
 
@@ -1460,6 +1484,36 @@ class AppraisalController extends Controller
 			}
 		}
 
+		if($request->action_update == 'submit'){
+			$stage = WorkflowStage::find($request->stage_id);
+			$emp = EmpResult::find($emp_result_id);
+			$emp->stage_id = $request->stage_id;
+			$emp->status = $stage->status;
+			$emp->updated_by = Auth::id();
+			$emp->save();
+
+			$emp_stage = new EmpResultStage;
+			$emp_stage->emp_result_id = $emp_result_id;
+			$emp_stage->stage_id = $request->stage_id;
+			$emp_stage->remark = $request->remark;
+			$emp_stage->created_by = Auth::id();
+			$emp_stage->updated_by = Auth::id();
+			$emp_stage->save();
+		} 
+		elseif($request->action_update == 'calculate'){
+			$emp = EmpResult::find($emp_result_id);
+			$emp->updated_by = Auth::id();
+			$emp->save();
+
+			$emp_stage = new EmpResultStage;
+			$emp_stage->emp_result_id = $emp_result_id;
+			$emp_stage->remark = $request->remark;
+			$emp_stage->created_by = Auth::id();
+			$emp_stage->updated_by = Auth::id();
+			$emp_stage->save();
+		}
+
+
 		$stage = WorkflowStage::find($request->stage_id);
 		$emp = EmpResult::find($emp_result_id);
 		$emp->stage_id = $request->stage_id;
@@ -2062,6 +2116,7 @@ class AppraisalController extends Controller
 		
 		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and a.org_id in (" . $request->org_id_multi . ") ";
 		empty($request->org_id) ? $org = " " : $org = " and a.org_id = " . $request->org_id . " ";
+		empty($request->org_level) ? $org_level = " " : $org_level = " and org.level_id = " . $request->org_level . " ";
 		$levelStr = (empty($request->level_id)) ? " " : " AND a.level_id = {$request->level_id} " ;
 		
 		if ($empLevInfo["is_all"]) {
@@ -2069,17 +2124,19 @@ class AppraisalController extends Controller
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp inner join appraisal_item_result a
-				on a.emp_id = emp.emp_id
+				on a.emp_id = emp.emp_id inner join org on org.org_id = a.org_id
+				inner join org on org.org_id = a.org_id
 				WHERE emp.is_active = 1
-				" . $org_multi . $org . $levelStr ."
+				" . $org_multi . $org . $levelStr . $org_level."
 				AND emp.emp_name like '%{$request->emp_name}%' ");
 		} else {
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp inner join appraisal_item_result a
-				on a.emp_id = emp.emp_id
+				on a.emp_id = emp.emp_id 
+				inner join org on org.org_id = a.org_id
 				WHERE emp.is_active = 1
-				" . $org . $org_multi . "
+				" . $org . $org_multi . $org_level."
 				AND (
 					emp.emp_code = '{$empCode}'
 					OR emp.chief_emp_code = '{$empCode}'
@@ -2088,8 +2145,9 @@ class AppraisalController extends Controller
 						SELECT de.emp_code
 						FROM employee de
 						INNER JOIN employee ce ON ce.emp_code = de.chief_emp_code
-						WHERE de.has_second_line = 1
-						AND de.is_active = 1
+						WHERE -- de.has_second_line = 1
+						-- AND 
+						de.is_active = 1
 						AND ce.is_active = 1
 						AND ce.chief_emp_code = '{$empCode}'
 					)
