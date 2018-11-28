@@ -1269,6 +1269,44 @@ class AppraisalGroupController extends Controller
 		
 		return response()->json(['status' => 200]);
 	}
+	
+	
+	public function Calculate_result_score_ETL(Request $request){
+
+		$ETL_path = "/root/etl/data-integration";
+		$Rep_path = "etl_seekpi";
+		$Dir = "SeeKPI";
+		$Job_name = "kpiMainJob_Appraisal360";
+		$User = "admin";
+		$Password = "admin";
+		$Param_emp_result = $request->param_emp_result;
+		$Param_start_date = $request->param_start_date;
+		$Level = "Basic";
+		$Log_path = "/root/etl/log_file/";
+		$Date_now = new DateTime();
+		$Date_now = $Date_now->format('Ymd');
+		$File_log = "kpiMainJob_Appraisal360_".$Date_now.".txt";
+
+		$command = $ETL_path."/kitchen.sh -rep:".$Rep_path." -dir:/".$Dir." -job:".$Job_name
+							." -user:".$User." -pass:".$Password
+							." -param:param_emp_result=".$Param_emp_result
+							." -param:param_start_date=".$Param_start_date
+							." -loglevel:".$Level
+							." -logfile:".$Log_path.$File_log;
+
+		$handle = popen($command);
+
+
+		// if ($handle === FALSE) {
+		// 	return response()->json(['status' => 404, 'data' => 'ETL is not runing.']);
+		// } else {
+		//
+		// }
+
+		// return ($command);
+
+	}
+
 
 
 	private function getAssessorGroup($searchEmpCode)
