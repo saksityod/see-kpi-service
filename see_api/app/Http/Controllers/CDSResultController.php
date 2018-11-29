@@ -1077,7 +1077,7 @@ class CDSResultController extends Controller
 
 		$result = array();
 
-			$path = $_SERVER['DOCUMENT_ROOT'] . '/see_api/public/cds_result_files/' . $cds_result_id . '/';
+			$path = $_SERVER['DOCUMENT_ROOT'] . '/dhas_api/public/cds_result_files/' . $cds_result_id . '/';
 			foreach ($request->file() as $f) {
 				$filename = iconv('UTF-8','windows-874',$f->getClientOriginalName());
 				//$f->move($path,$filename);
@@ -1120,7 +1120,7 @@ class CDSResultController extends Controller
 			return response()->json(['status' => 404, 'data' => 'File not found.']);
 		}
 		           //$_SERVER['DOCUMENT_ROOT'] . '/see_api/public/attach_files/' . $item_result_id . '/';
-		File::Delete($_SERVER['DOCUMENT_ROOT'] . '/see_api/public/'.$item->doc_path);
+		File::Delete($_SERVER['DOCUMENT_ROOT'] . '/dhas_api/public/'.$item->doc_path);
 		$item->delete();
 
 		return response()->json(['status' => 200]);
