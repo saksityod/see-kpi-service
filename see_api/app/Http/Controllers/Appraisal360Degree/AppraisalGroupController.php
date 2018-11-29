@@ -347,6 +347,7 @@ class AppraisalGroupController extends Controller
 					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
 					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
 					, ".$allow_input_actual." as allow_input_actual 
+					, c.is_no_raise_value
 				from appraisal_item_result a
 				left outer join appraisal_item b
 				on a.item_id = b.item_id
@@ -385,7 +386,8 @@ class AppraisalGroupController extends Controller
 					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
 					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
 					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
-					, ".$allow_input_actual." as allow_input_actual 
+					, ".$allow_input_actual." as allow_input_actual
+					, c.is_no_raise_value					
 				FROM appraisal_item_result a
 				LEFT OUTER JOIN appraisal_item b ON a.item_id = b.item_id
 				INNER JOIN appraisal_item ai ON ai.item_id = a.item_id
@@ -483,7 +485,8 @@ class AppraisalGroupController extends Controller
 					'total_weight_percent' => $item->structure_weight_percent,
 					'no_weight' => $item->no_weight,
 					'threshold' => $config->threshold,
-					'result_type' => $config->result_type
+					'result_type' => $config->result_type,
+					'is_no_raise_value' => $item->is_no_raise_value
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
