@@ -1464,6 +1464,7 @@ class AppraisalController extends Controller
 					array_key_exists('score', $a) ? $aresult->score = $a['score'] : null;
 					array_key_exists('forecast_value', $a) ? $aresult->forecast_value = $a['forecast_value'] : null;
 					array_key_exists('actual_value', $a) ? $aresult->actual_value = $a['actual_value'] : null;
+					array_key_exists('contribute_percent', $a) ? $aresult->contribute_percent = $a['contribute_percent'] : null;
 					$aresult->updated_by = Auth::id();
 					$aresult->save();
 				}

@@ -1198,6 +1198,8 @@ class AppraisalGroupController extends Controller
 
 		foreach ($datas as $da){
 
+			$chief_emp = $da->chief_emp_id;
+
 			$item_result = DB::select("
 					select air.item_result_id
 					, air.period_id
@@ -1207,13 +1209,14 @@ class AppraisalGroupController extends Controller
 					, air.item_id
 					, air.level_id
 					, air.item_name
-					, air.chief_emp_id
+					, '{$chief_emp}' as chief_emp_id
 					, air.threshold_group_id
 					, emp.auth_emp_id
 					from appraisal_item_result air
 					cross join (select emp_id as auth_emp_id from employee where emp_code = '{$auth}') emp 
 					where air.item_result_id = ? "
 			,array($da->item_result_id));
+			//เนื่องจาก chief_emp_id จากตาราง appraisal_item_result เป็นค่า null จึงต้องใช้ค่าจากหน้าจอ เพราะตาราง CompetencyResult มี type : chief_emp_id เป็น not null
 
 			// return ($auth);
 			// return response()->json($item_result);
