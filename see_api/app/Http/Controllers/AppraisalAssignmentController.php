@@ -1790,18 +1790,15 @@ class AppraisalAssignmentController extends Controller
 						ar.score5,
 						ar.target_value
 				from appraisal_item a
+				inner join appraisal_item_result ar on a.item_id = ar.item_id
 				left outer join appraisal_structure b on a.structure_id = b.structure_id
 				left outer join form_type f on b.form_id = f.form_id
-				left outer join appraisal_criteria c on b.structure_id = c.structure_id
-				left outer join appraisal_item_level d on a.item_id = d.item_id
-				left outer join appraisal_item_org o on a.item_id = o.item_id
-				left outer join appraisal_level e on d.level_id = e.level_id
+				left outer join appraisal_level e on e.level_id = ar.level_id
 				left join uom on a.uom_id = uom.uom_id
-				inner join appraisal_item_result ar on a.item_id = ar.item_id
-				where e.is_active = 1
+				where 1=1
 				{$ques}
 				and ar.period_id = '{$period_id}'
-				and c.appraisal_form_id = '{$appraisal_form_id}'
+				and ar.appraisal_form_id = '{$appraisal_form_id}'
 				{$structure_in}
 				group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc
 			";
