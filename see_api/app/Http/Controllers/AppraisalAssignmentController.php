@@ -3605,11 +3605,20 @@ class AppraisalAssignmentController extends Controller
 		try {
 			// if ($item->status == 'Assigned' || strpos(strtolower($item->status),'reject') !== false || $item->status == 'Draft' || strpos(strtolower($item->status),'review') !== false) {
 
+				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
+				AppraisalItemResultLog::where('emp_result_id',$item->emp_result_id)->delete();
+				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('emp_result_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('emp_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('assessment_opinion')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('emp_result_log')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+
 				$air = DB::select("
 					select emp_id, level_id, position_id, org_id, period_id, item_result_id
 					from appraisal_item_result
 					where emp_result_id = {$item->emp_result_id}
-					");
+				");
 
 				if(!empty($air)) {
 					$cds = DB::select("
@@ -3620,30 +3629,23 @@ class AppraisalAssignmentController extends Controller
 						and position_id = '".$air[0]->position_id."'
 						and org_id = '".$air[0]->org_id."'
 						and period_id = '".$air[0]->period_id."'
-						");
+					");
+
+					foreach ($cds as $key => $value) {
+						DB::table('cds_result')->where('cds_result_id', '=', $value->cds_result_id)->delete();
+						DB::table('cds_result_doc')->where('cds_result_id', '=', $value->cds_result_id)->delete();
+					}
+
+					foreach ($air as $key => $value) {
+						DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('competency_result')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('action_plan')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('phase')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('reason')->where('item_result_id', '=', $value->item_result_id)->delete();
+					}
 				}
 
-				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
 				AppraisalItemResult::where('emp_result_id',$item->emp_result_id)->delete();
-				AppraisalItemResultLog::where('emp_result_id',$item->emp_result_id)->delete();
-				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-				DB::table('emp_result_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-
-				if(!empty($air)) {
-					DB::table('cds_result')
-					->where('emp_id', '=', $air[0]->emp_id)
-					->where('level_id', '=', $air[0]->level_id)
-					->where('position_id', '=', $air[0]->position_id)
-					->where('org_id', '=', $air[0]->org_id)
-					->where('period_id', '=', $air[0]->period_id)->delete();
-					DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $air[0]->item_result_id)->delete();
-				}
-
-				if(!empty($cds)) {
-					DB::table('cds_result_doc')->where('cds_result_id', '=', $cds[0]->cds_result_id)->delete();
-				}
-
 				$item->delete();
 			// } else {
 			// 	return response()->json(['status' => 400, 'data' => 'Cannot delete Appraisal Assignment at this stage.']);
