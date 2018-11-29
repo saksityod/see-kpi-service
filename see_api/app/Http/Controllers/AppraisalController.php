@@ -639,22 +639,14 @@ class AppraisalController extends Controller
 				, g.start_date as appraisal_period_start_date
 				, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 				from emp_result a
-				left outer join employee b
-				on a.emp_id = b.emp_id
-				left outer join appraisal_level d
-				on a.level_id = d.level_id
-				left outer join appraisal_type e
-				on a.appraisal_type_id = e.appraisal_type_id
-				left outer join appraisal_stage f
-				on a.stage_id = f.stage_id
-				left outer join appraisal_period g
-				on a.period_id = g.period_id
-				left outer join position p
-				on a.position_id = p.position_id
-				left outer join org o
-				on a.org_id = o.org_id
-				left outer join org po
-				on o.parent_org_code = po.org_code
+				left outer join employee b on a.emp_id = b.emp_id
+				left outer join appraisal_level d on a.level_id = d.level_id
+				left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+				left outer join appraisal_stage f on a.stage_id = f.stage_id
+				left outer join appraisal_period g on a.period_id = g.period_id
+				left outer join position p on a.position_id = p.position_id
+				left outer join org o on a.org_id = o.org_id
+				left outer join org po on o.parent_org_code = po.org_code
 				inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 				where d.is_hr = 0
 			";
@@ -771,38 +763,21 @@ class AppraisalController extends Controller
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
-					left outer join employee b
-					on a.emp_id = b.emp_id
-					left outer join appraisal_level d
-					on a.level_id = d.level_id
-					left outer join appraisal_type e
-					on a.appraisal_type_id = e.appraisal_type_id
-					left outer join appraisal_stage f
-					on a.stage_id = f.stage_id
-					left outer join appraisal_period g
-					on a.period_id = g.period_id
-					left outer join position p
-					on a.position_id = p.position_id
-					left outer join org o
-					on a.org_id = o.org_id
-					left outer join org po
-					on o.parent_org_code = po.org_code
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
-					and b.chief_emp_code = '{$dotline_code}'
-					and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
+					and (b.emp_code = '{$dotline_code}' or b.dotline_code = '{$dotline_code}' or b.chief_emp_code = '{$dotline_code}')
+					-- and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
-
-				// empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
-				// empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
-				// empty($request->level_id) ?: ($query .= " and FIND_IN_SET(a.level_id, ?)" AND $qinput[] = $request->level_id);
-				// empty($request->level_id_org) ?: ($query .= " and FIND_IN_SET(o.level_id, ?)" AND $qinput[] = $request->level_id_org);
-				// empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-				// empty($request->org_id) ?: ($query .= " and FIND_IN_SET(a.org_id, ?)" AND $qinput[] = $request->org_id);
-				// empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
-				// empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
-				// empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-				
+				// User ที่ไม่ใช่ Admin และเป็นแบบ Individual เวลาที่หาให้แสดงตนเอง คนที่เป็นลูกน้องโดยตรงของตนเอง และคนที่ตนเองสามารถประเมิณได้
+	
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
 				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
@@ -828,22 +803,14 @@ class AppraisalController extends Controller
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
-					left outer join employee b
-					on a.emp_id = b.emp_id
-					left outer join appraisal_level d
-					on a.level_id = d.level_id
-					left outer join appraisal_type e
-					on a.appraisal_type_id = e.appraisal_type_id
-					left outer join appraisal_stage f
-					on a.stage_id = f.stage_id
-					left outer join appraisal_period g
-					on a.period_id = g.period_id
-					left outer join position p
-					on a.position_id = p.position_id
-					left outer join org o
-					on a.org_id = o.org_id
-					left outer join org po
-					on o.parent_org_code = po.org_code
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 				";
@@ -2134,8 +2101,8 @@ class AppraisalController extends Controller
 			
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
-				FROM employee emp inner join appraisal_item_result a
-				on a.emp_id = emp.emp_id inner join org on org.org_id = a.org_id
+				FROM employee emp
+				inner join appraisal_item_result a on a.emp_id = emp.emp_id
 				inner join org on org.org_id = a.org_id
 				WHERE emp.is_active = 1
 				" . $org_multi . $org . $levelStr . $org_level."
