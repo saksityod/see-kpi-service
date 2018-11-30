@@ -9,6 +9,8 @@ use App\EmpResultStage;
 use App\Employee;
 use App\SystemConfiguration;
 
+use App\Http\Controllers\Bonus\AdvanceSearchController;
+
 use Illuminate\Http\Request;
 use DB;
 use File;
@@ -27,7 +29,8 @@ class ImportAssignmentController extends Controller
 {
 
   public function __construct(){
-	   $this->middleware('jwt.auth');
+     $this->middleware('jwt.auth');
+     $this->advanSearch = new AdvanceSearchController;
 	}
 
 
@@ -741,7 +744,7 @@ class ImportAssignmentController extends Controller
             SELECT apt.appraisal_type_id, apt.appraisal_type_name,
            	  aps.stage_id, aps.status
            	FROM appraisal_type apt
-            LEFT JOIN appraisal_stage aps 
+            LEFT JOIN appraisal_stage aps
               ON aps.appraisal_type_id = apt.appraisal_type_id
            		AND aps.stage_id = (
            			SELECT MIN(stage_id) FROM appraisal_stage
@@ -894,7 +897,7 @@ class ImportAssignmentController extends Controller
                  "".$column_value_get_zero."" => $value_get_zero
                ];
                $form3Key = $form3Key + 1;
-            } 
+            }
             else if($value->form_id == "4"){
               $itemList[$value->structure_name][$form4Key] = [
                 "appraisal_form_id" => $value->appraisal_form_id,
@@ -1141,6 +1144,7 @@ class ImportAssignmentController extends Controller
 
               // -- Start -- Insert/Update @appraisal_item_result ------------//
               $existItemResultId = 0;
+              $existItemResultDerive = true; //เอาไว้เช็คว่ามีการ derive แล้วหรือยัง
               $itemResultExist = DB::select("
                 SELECT item_result_id
                 FROM appraisal_item_result
@@ -1158,6 +1162,7 @@ class ImportAssignmentController extends Controller
 
               //-- Checking if record exists in appraisal_item_result.
               if (empty($itemResultExist)) {
+
                 //---- Insert @appraisal_item_result
                 $appraisalItemResult = new AppraisalItemResult;
                 $appraisalItemResult->appraisal_form_id = $row->appraisal_form_id;
@@ -1195,6 +1200,7 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->reward_score_unit = (empty($row->reward_per_unit)) ? "0": $row->reward_per_unit;
                 try {
     							$appraisalItemResult->save();
+                  $existItemResultDerive = false; //เพิ่ม status ว่ายังไม่ derive
     						} catch (Exception $e) {
                   $errors[] = [
                     "title"=>"Sheet:".$sheetArr[$i],
@@ -1321,6 +1327,284 @@ class ImportAssignmentController extends Controller
       }//End File
 
       $retVal = (empty($errors)) ? $status_ = 200 : $status_ = 400 ;
+
+      if($status_==200) { //จะทำงานเมื่อข้อมูลก่อนหน้า save แล้วเท่านั้น
+        foreach ($request->file() as $f) {
+          // Sheet to array
+          $sheetArr = Excel::load($f)->getSheetNames();
+          // Loop through all sheets
+          for ($i=0; $i < count($sheetArr); $i++) {
+            $sheets = Excel::selectSheets($sheetArr[$i])->load($f, function($reader){})->get();
+
+            foreach ($sheets as $key => $row) {
+
+              if($existItemResultDerive==false) { //false คือยังไม่มีมีการ derive
+                $findDerive = DB::select("
+                  SELECT ast.level_id, al.is_org, al.is_individual
+                  FROM appraisal_structure ast
+                  INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+                  INNER JOIN appraisal_level al ON al.level_id = ast.level_id
+                  WHERE ast.is_derive = 1
+                  AND ac.appraisal_form_id = '{$row->appraisal_form_id}'
+                  AND ac.appraisal_level_id = '{$row->level_id}'
+                  GROUP BY ast.level_id
+                ");
+
+                foreach ($findDerive as $findDerives) {
+                  $check_structure = DB::table('appraisal_criteria')
+                  ->where('appraisal_level_id', '=', $row->level_id)
+                  ->where('appraisal_form_id', '=', $row->appraisal_form_id)
+                  ->get();
+
+                  $struc_array = [];
+                  foreach ($check_structure as $value) {
+                    array_push($struc_array, $value->structure_id);
+                  }
+
+                  if($findDerives->is_individual==1) {
+                    $findChiefEmp = $this->advanSearch->GetChiefEmpDeriveLevel($row->emp_code, $findDerives->level_id);
+                    if($findChiefEmp['emp_id']!=0) {
+                      $findEmpResult = DB::table('emp_result')
+                      ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+                      ->where('emp_result.period_id', '=', $row->period_id)
+                      ->where('emp_result.appraisal_form_id', '=', $row->appraisal_form_id)
+                      ->where('emp_result.emp_id', '=', $findChiefEmp['emp_id'])
+                      ->where('appraisal_stage.assignment_flag', 1)
+                      ->where('appraisal_stage.edit_flag', 0)
+                      ->first();
+                      if(empty($findEmpResult)) {
+                        //ถ้าข้อมูลที่มีการ set derive ยังไม่ complete ต้องลบข้อมูลออกก่อน
+                        DB::table("appraisal_item_result")
+                        ->where("appraisal_form_id", '=', $row->appraisal_form_id)
+                        ->where("period_id", '=', $row->period_id)
+                        ->where("emp_id", '=', $row->emp_id)
+                        ->where("org_id", '=', $row->org_id)
+                        ->where("position_id", '=', $row->position_id)
+                        ->where("level_id", '=', $row->level_id)
+                        ->delete();
+                      } else {
+                        //ทำการหา item ของหัวหน้าที่ is derive แล้วมาใส่
+                        $structure_in = empty($struc_array) ? "" : " and a.structure_id IN (".implode(",", $struc_array).")";
+                        $chiefEmpId = $findChiefEmp['emp_id'];
+                        $items_chief = DB::select("
+                          SELECT a.item_id, a.item_name, uom.uom_name, a.structure_id, b.structure_name,
+                          b.nof_target_score, f.form_id, f.form_name, f.app_url, ar.weight_percent, a.unit_deduct_score,
+                          a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero,
+                          a.no_raise_value, b.is_no_raise_value, b.seq_no, ar.actual_value, ar.score0,
+                          ar.score1, ar.score2, ar.score3, ar.score4, ar.score5, ar.target_value, ar.forecast_value,
+                          ar.percent_achievement, ar.max_value, ar.deduct_score_unit, ar.over_value, ar.value_get_zero, ar.score,
+                          ar.threshold_group_id, ar.reward_score_unit, ar.weigh_score
+                          from appraisal_item a
+                          inner join appraisal_item_result ar on a.item_id = ar.item_id
+                          left outer join appraisal_structure b on a.structure_id = b.structure_id
+                          left outer join form_type f on b.form_id = f.form_id
+                          left outer join appraisal_level e on e.level_id = ar.level_id
+                          left join uom on a.uom_id = uom.uom_id
+                          where 1=1
+                          and ar.emp_id = '{$chiefEmpId}'
+                          and ar.period_id = '{$row->period_id}'
+                          and ar.appraisal_form_id = '{$row->appraisal_form_id}'
+                          {$structure_in}
+                          group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc
+                        ");
+
+                        foreach ($items_chief as $vChief) {
+                          foreach ($check_structure as $k_struc => $v_struc) {
+                            if($v_struc->structure_id==$vChief->structure_id) {
+                              $itemChiefIndividual = new AppraisalItemResult;
+                              $itemChiefIndividual->period_id = $row->period_id;
+                              $itemChiefIndividual->level_id = $row->level_id;
+                              $itemChiefIndividual->org_id = $row->org_id;
+                              $itemChiefIndividual->emp_id = $row->emp_id;
+                              $itemChiefIndividual->position_id = $row->position_id;
+                              $itemChiefIndividual->appraisal_form_id = $row->appraisal_form_id;
+                              $itemChiefIndividual->emp_result_id = $currentEmpResultId;
+                              $itemChiefIndividual->chief_emp_id = $row->chief_emp_id;
+                              $itemChiefIndividual->item_id = $vChief->item_id;
+                              $itemChiefIndividual->item_name = $vChief->item_name;
+                              $itemChiefIndividual->score0 = $vChief->score0;
+                              $itemChiefIndividual->score1 = $vChief->score1;
+                              $itemChiefIndividual->score2 = $vChief->score2;
+                              $itemChiefIndividual->score3 = $vChief->score3;
+                              $itemChiefIndividual->score4 = $vChief->score4;
+                              $itemChiefIndividual->score5 = $vChief->score5;
+                              $itemChiefIndividual->target_value = $vChief->target_value;
+                              $itemChiefIndividual->forecast_value = $vChief->forecast_value;
+                              $itemChiefIndividual->actual_value = $vChief->actual_value;
+                              $itemChiefIndividual->percent_achievement = $vChief->percent_achievement;
+                              $itemChiefIndividual->max_value = $vChief->max_value;
+                              $itemChiefIndividual->deduct_score_unit = $vChief->deduct_score_unit;
+                              $itemChiefIndividual->over_value = $vChief->over_value;
+                              $itemChiefIndividual->value_get_zero = $vChief->value_get_zero;
+                              $itemChiefIndividual->score = $vChief->score;
+                              $itemChiefIndividual->threshold_group_id = $vChief->threshold_group_id;
+                              $itemChiefIndividual->weight_percent = number_format(($v_struc->weight_percent*$vChief->weight_percent)/$vChief->structure_weight_percent,2);
+                              $itemChiefIndividual->weigh_score = $vChief->weigh_score;
+                              $itemChiefIndividual->structure_weight_percent = $v_struc->weight_percent;
+                              $itemChiefIndividual->created_by = Auth::id();
+                              $itemChiefIndividual->updated_by = Auth::id();
+                              $itemChiefIndividual->reward_score_unit = $vChief->reward_score_unit;
+                              $itemChiefIndividual->save();
+                            }
+                          }
+                        }
+
+                        // $get_air = DB::select("
+                        //   SELECT ar.item_result_id, a.structure_id, ar.weight_percent, ar.structure_weight_percent
+                        //   from appraisal_item a
+                        //   inner join appraisal_item_result ar on a.item_id = ar.item_id
+                        //   where ar.appraisal_form_id = '$row->appraisal_form_id'
+                        //   and ar.period_id = '{$row->period_id}'
+                        //   and ar.emp_id = '{$row->emp_id}'
+                        //   and ar.org_id = '{$row->org_id}'
+                        //   and ar.position_id = '{$row->position_id}'
+                        //   and ar.level_id = '{$row->level_id}'
+                        //   group by a.item_id
+                        // ");
+
+                        // foreach ($get_air as $value2) {
+                        //   foreach ($check_structure as $k_struc => $v_struc) {
+                        //     if($v_struc->structure_id==$value2->structure_id) {
+                        //       $data_weight_percent = number_format(($v_struc->weight_percent*$value2->weight_percent)/$value2->structure_weight_percent,2);
+                        //       DB::table("appraisal_item_result")
+                        //       ->where("item_result_id", $value2->item_result_id)
+                        //       ->update([
+                        //         'weight_percent' => $data_weight_percent,
+                        //         'structure_weight_percent' => $v_struc->weight_percent
+                        //       ]);
+                        //     }
+                        //   }
+                        // }
+
+                      }
+                    }
+                  } else if($findDerives->is_org==1) {
+                    $r_org_code = DB::table("org")->select("org_code")->where("org_id", $row->org_id)->first();
+                    $findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($r_org_code->org_code, $findDerives->level_id);
+                    if($findChiefEmp['org_id']!=0) {
+                      $findEmpResult = DB::table('emp_result')
+                      ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+                      ->where('emp_result.period_id', '=', $row->period_id)
+                      ->where('emp_result.appraisal_form_id', '=', $row->appraisal_form_id)
+                      ->where('emp_result.org_id', '=', $findChiefEmp['org_id'])
+                      ->where('emp_result.emp_id', null)
+                      ->where('appraisal_stage.assignment_flag', 1)
+                      ->where('appraisal_stage.edit_flag', 0)
+                      ->first();
+                      if(empty($findEmpResult)) {
+                        //ถ้าข้อมูลที่มีการ set derive ยังไม่ complete ต้องลบข้อมูลออกก่อน
+                        DB::table("appraisal_item_result")
+                        ->where("appraisal_form_id", '=', $row->appraisal_form_id)
+                        ->where("period_id", '=', $row->period_id)
+                        ->where("emp_id", null)
+                        ->where("org_id", '=', $row->org_id)
+                        ->where("position_id", '=', $row->position_id)
+                        ->where("level_id", '=', $row->level_id)
+                        ->delete();
+                      } else {
+                        //ทำการหา item ของหัวหน้าที่ is derive แล้วมาใส่
+                        $structure_in = empty($struc_array) ? "" : " and a.structure_id IN (".implode(",", $struc_array).")";
+                        $chiefEmpId = $findChiefEmp['org_id'];
+                        $items_chief = DB::select("
+                          SELECT a.item_id, a.item_name, uom.uom_name, a.structure_id, b.structure_name,
+                          b.nof_target_score, f.form_id, f.form_name, f.app_url, ar.weight_percent, a.unit_deduct_score,
+                          a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero,
+                          a.no_raise_value, b.is_no_raise_value, b.seq_no, ar.actual_value, ar.score0,
+                          ar.score1, ar.score2, ar.score3, ar.score4, ar.score5, ar.target_value, ar.forecast_value,
+                          ar.percent_achievement, ar.max_value, ar.deduct_score_unit, ar.over_value, ar.value_get_zero, ar.score,
+                          ar.threshold_group_id, ar.reward_score_unit, ar.weigh_score
+                          from appraisal_item a
+                          inner join appraisal_item_result ar on a.item_id = ar.item_id
+                          left outer join appraisal_structure b on a.structure_id = b.structure_id
+                          left outer join form_type f on b.form_id = f.form_id
+                          left outer join appraisal_level e on e.level_id = ar.level_id
+                          left join uom on a.uom_id = uom.uom_id
+                          where 1=1
+                          and ar.org_id = '{$chiefEmpId}'
+                          and ar.emp_id is null
+                          and ar.period_id = '{$row->period_id}'
+                          and ar.appraisal_form_id = '{$row->appraisal_form_id}'
+                          {$structure_in}
+                          group by a.item_id order by b.seq_no, a.item_id, ar.structure_weight_percent desc
+                        ");
+
+                        foreach ($items_chief as $value2) {
+                          foreach ($check_structure as $k_struc => $v_struc) {
+                            if($v_struc->structure_id==$value2->structure_id) {
+                              $itemChiefIndividual = new AppraisalItemResult;
+                              $itemChiefIndividual->period_id = $row->period_id;
+                              $itemChiefIndividual->level_id = $row->level_id;
+                              $itemChiefIndividual->org_id = $row->org_id;
+                              $itemChiefIndividual->emp_id = null;
+                              $itemChiefIndividual->position_id = $row->position_id;
+                              $itemChiefIndividual->appraisal_form_id = $row->appraisal_form_id;
+                              $itemChiefIndividual->emp_result_id = $currentEmpResultId;
+                              $itemChiefIndividual->chief_emp_id = $row->chief_emp_id;
+                              $itemChiefIndividual->item_id = $vChief->item_id;
+                              $itemChiefIndividual->item_name = $vChief->item_name;
+                              $itemChiefIndividual->score0 = $vChief->score0;
+                              $itemChiefIndividual->score1 = $vChief->score1;
+                              $itemChiefIndividual->score2 = $vChief->score2;
+                              $itemChiefIndividual->score3 = $vChief->score3;
+                              $itemChiefIndividual->score4 = $vChief->score4;
+                              $itemChiefIndividual->score5 = $vChief->score5;
+                              $itemChiefIndividual->target_value = $vChief->target_value;
+                              $itemChiefIndividual->forecast_value = $vChief->forecast_value;
+                              $itemChiefIndividual->actual_value = $vChief->actual_value;
+                              $itemChiefIndividual->percent_achievement = $vChief->percent_achievement;
+                              $itemChiefIndividual->max_value = $vChief->max_value;
+                              $itemChiefIndividual->deduct_score_unit = $vChief->deduct_score_unit;
+                              $itemChiefIndividual->over_value = $vChief->over_value;
+                              $itemChiefIndividual->value_get_zero = $vChief->value_get_zero;
+                              $itemChiefIndividual->score = $vChief->score;
+                              $itemChiefIndividual->threshold_group_id = $vChief->threshold_group_id;
+                              $itemChiefIndividual->weight_percent = number_format(($v_struc->weight_percent*$value2->weight_percent)/$value2->structure_weight_percent,2);
+                              $itemChiefIndividual->weigh_score = $vChief->weigh_score;
+                              $itemChiefIndividual->structure_weight_percent = $v_struc->weight_percent;
+                              $itemChiefIndividual->created_by = Auth::id();
+                              $itemChiefIndividual->updated_by = Auth::id();
+                              $itemChiefIndividual->reward_score_unit = $vChief->reward_score_unit;
+                              $itemChiefIndividual->save();
+                            }
+                          }
+                        }
+
+                        // $get_air = DB::select("
+                        //   SELECT ar.item_result_id, a.structure_id, ar.weight_percent, ar.structure_weight_percent
+                        //   from appraisal_item a
+                        //   inner join appraisal_item_result ar on a.item_id = ar.item_id
+                        //   where ar.appraisal_form_id = '$row->appraisal_form_id'
+                        //   and ar.period_id = '{$row->period_id}'
+                        //   and ar.emp_id is null
+                        //   and ar.org_id = '{$row->org_id}'
+                        //   and ar.position_id = '{$row->position_id}'
+                        //   and ar.level_id = '{$row->level_id}'
+                        //   group by a.item_id
+                        // ");
+
+                        // foreach ($get_air as $value2) {
+                        //   foreach ($check_structure as $k_struc => $v_struc) {
+                        //     if($v_struc->structure_id==$value2->structure_id) {
+                        //       $data_weight_percent = number_format(($v_struc->weight_percent*$value2->weight_percent)/$value2->structure_weight_percent,2);
+                        //       DB::table("appraisal_item_result")
+                        //       ->where("item_result_id", $value2->item_result_id)
+                        //       ->update([
+                        //         'weight_percent' => $data_weight_percent,
+                        //         'structure_weight_percent' => $v_struc->weight_percent
+                        //       ]);
+                        //     }
+                        //   }
+                        // }
+
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
 
   		return response()->json(['status' => $status_, 'errors' => $errors]);
     }
