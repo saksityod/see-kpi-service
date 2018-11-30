@@ -396,28 +396,26 @@ class AdvanceSearchController extends Controller
             $items = DB::select("
                 Select emp_code, emp_name, emp_id
                 From employee
-                Where emp_name like ?
+                Where emp_name like '%{$request->employee_name}%'
                 and is_active = 1
                 ".$indLevelQryStr."
                 ".$orgIdQryStr."
                 Order by emp_name
                 limit 15
-                ", array('%'.$request->employee_name.'%')
-            );
+            ");
         } else {
             $underEmps = $this->GetallUnderEmp(Auth::id());
             $items = DB::select("
                 Select emp_code, emp_name, emp_id
                 From employee
                 Where find_in_set(emp_code, '".$underEmps."')
-                And emp_name like ?
+                And emp_name like '%{$request->employee_name}%'
                 " . $indLevelQryStr . "
                 " . $orgIdQryStr . "
                 and is_active = 1
                 Order by emp_name
                 limit 15
-                ", array($emp->emp_code, $emp->emp_code,'%'.$request->employee_name.'%')
-            );
+            ");
         }
         
         return response()->json($items);
