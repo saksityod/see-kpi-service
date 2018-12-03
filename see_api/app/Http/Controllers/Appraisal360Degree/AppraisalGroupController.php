@@ -35,6 +35,35 @@ class AppraisalGroupController extends Controller
 		$this->middleware('jwt.auth');
 	}
 
+	public function check_permission_popup($emp_result_id) {
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+		
+		if ($all_emp[0]->count_no > 0) {
+			$status = 200;
+		} else {
+			$emp = DB::table("employee")->where("emp_code", Auth::id())->first();
+			$emp_result = DB::select("
+				SELECT 1
+				FROM emp_result
+				WHERE emp_result_id = '{$emp_result_id}'
+				AND (emp_id = '{$emp->emp_id}' OR chief_emp_id = '{$emp->emp_id}')
+			");
+
+			if(empty($emp_result)) {
+				$status = 401;
+			} else {
+				$status = 200;
+			}
+		}
+
+		return response()->json(['status' => $status]);
+	}
 
 	public function emp_level_list(Request $request)
 	{
