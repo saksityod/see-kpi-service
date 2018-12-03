@@ -20,6 +20,6 @@ class UOM extends Model
 	//public $timestamps = false;
 	//protected $guarded = array();
 	
-	protected $fillable = array('uom_name','is_active');
+	protected $fillable = array('uom_name','is_active' ,'is_date');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }

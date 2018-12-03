@@ -27,7 +27,7 @@ class UOMController extends Controller
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			select uom_id, uom_name, is_active
+			select uom_id, uom_name, is_active , is_date
 			from uom
 			order by uom_id asc
 		");
@@ -38,8 +38,9 @@ class UOMController extends Controller
 	{
 	
 		$validator = Validator::make($request->all(), [
-			'uom_name' => 'required|max:100|unique:uom',
+			'uom_name'  => 'required|max:100|unique:uom',
 			'is_active' => 'required|boolean',
+			'is_date'   => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {
@@ -76,6 +77,7 @@ class UOMController extends Controller
 		$validator = Validator::make($request->all(), [
 			'uom_name' => 'required|max:100|unique:uom,uom_name,' . $uom_id . ',uom_id',
 			'is_active' => 'required|boolean',
+			'is_date' => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {
@@ -98,6 +100,13 @@ class UOMController extends Controller
 			return response()->json(['status' => 404, 'data' => 'UOM not found.']);
 		}	
 
+		$item_uom = DB::select(
+			"select count(*) as num_item from appraisal_item
+			where uom_id = {$uom_id} " );
+		if($item_uom[0]->num_item >0 ){
+			return response()->json(['status' => 400, 'data' => 'Cannot delete because this UOM is in use.']);
+		}			
+
 		try {
 			$item->delete();
 		} catch (Exception $e) {
@@ -107,7 +116,6 @@ class UOMController extends Controller
 				return response()->json($e->errorInfo);
 			}
 		}
-		
 		return response()->json(['status' => 200]);
 		
 	}	
