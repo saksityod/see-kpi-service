@@ -79,12 +79,12 @@ class BonusAdjustmentController extends Controller
             ".$qryEmpId."
             ".$qryPositionId."
             ".$qryStageId."
+            ORDER BY er.org_id DESC, er.level_id DESC, e.emp_code ASC
         ");
 
         $dataInfo = (new BonusAppraisalController)->SetPagination($request->page, $request->rpp, $dataInfo);
         return response()->json($dataInfo);
     }
-
 
 
     public function SavedAndConfirm(Request $request)
@@ -134,8 +134,8 @@ class BonusAdjustmentController extends Controller
     }
 
 
-
-    public function Export(Request $request){
+    public function Export(Request $request)
+    {
         // set parameter for query 
         $request->period_id = empty($request->period_id) ? "": $request->period_id;
         $qryEmpLevel = empty($request->emp_level) ? "": " AND er.level_id = '{$request->emp_level}'";
@@ -193,11 +193,12 @@ class BonusAdjustmentController extends Controller
             ".$qryEmpId."
             ".$qryPositionId."
             ".$qryStageId."
+            ORDER BY er.org_id DESC, er.level_id DESC, e.emp_code ASC
         ");
 
 
         $data = json_decode( json_encode($dataInfo), true);
-        $fileName = 'Bonus Adjustment '.date('y-M-d');
+        $fileName = 'Bonus Adjustment '.date('d-m-Y');
 
         return Excel::create($fileName, function($excel) use ($data) {
             $excel->sheet('Sheet1', function($sheet) use ($data){
