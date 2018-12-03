@@ -983,6 +983,23 @@ class ImportAssignmentController extends Controller
 
           // Loop through all rows
           foreach ($sheets as $key => $row) {
+
+            if(empty($row->appraisal_item_id)) {
+              $nofData = "";
+            } else {
+              $item_structure = DB::table('appraisal_item')
+              ->join('appraisal_structure', 'appraisal_structure.structure_id', '=', 'appraisal_item.structure_id')
+              ->select('appraisal_structure.nof_target_score', 'appraisal_structure.form_id')
+              ->where('appraisal_item.item_id', '=', $row->appraisal_item_id)
+              ->first();
+
+              if($item_structure->form_id==2) {
+                $nofData = "|between:0,".$item_structure->nof_target_score;
+              } else {
+                $nofData = "";
+              }
+            }
+
             if($row->appraisal_type_id == "1"){
               $validator = Validator::make($row->all(), [
                 "appraisal_form_id" => "required|numeric",
@@ -1000,7 +1017,7 @@ class ImportAssignmentController extends Controller
                  "emp_id" => "numeric",
                  "appraisal_item_id" => "required|numeric",
                  "appraisal_item_name" => "required",
-                 "target" => "sometimes|required|numeric",
+                 "target" => "sometimes|required|numeric".$nofData,
                  "weight" => "sometimes|required|numeric",
                  "range0" => "sometimes|required|numeric",
                  "range1" => "sometimes|required|numeric",
@@ -1023,7 +1040,7 @@ class ImportAssignmentController extends Controller
                  "org_id" => "required|numeric",
                  "appraisal_item_id" => "required|numeric",
                  "appraisal_item_name" => "required",
-                 "target" => "sometimes|required|numeric",
+                 "target" => "sometimes|required|numeric".$nofData,
                  "weight" => "sometimes|required|numeric",
                  "range0" => "sometimes|required|numeric",
                  "range1" => "sometimes|required|numeric",
@@ -1382,6 +1399,15 @@ class ImportAssignmentController extends Controller
                         ->where("position_id", '=', $row->position_id)
                         ->where("level_id", '=', $row->level_id)
                         ->delete();
+
+                        DB::table("emp_result")
+                        ->where("appraisal_form_id", '=', $row->appraisal_form_id)
+                        ->where("period_id", '=', $row->period_id)
+                        ->where("emp_id", '=', $row->emp_id)
+                        ->where("org_id", '=', $row->org_id)
+                        ->where("position_id", '=', $row->position_id)
+                        ->where("level_id", '=', $row->level_id)
+                        ->delete();
                       } else {
                         //ทำการหา item ของหัวหน้าที่ is derive แล้วมาใส่
                         $structure_in = empty($struc_array) ? "" : " and a.structure_id IN (".implode(",", $struc_array).")";
@@ -1494,6 +1520,15 @@ class ImportAssignmentController extends Controller
                       if(empty($findEmpResult)) {
                         //ถ้าข้อมูลที่มีการ set derive ยังไม่ complete ต้องลบข้อมูลออกก่อน
                         DB::table("appraisal_item_result")
+                        ->where("appraisal_form_id", '=', $row->appraisal_form_id)
+                        ->where("period_id", '=', $row->period_id)
+                        ->where("emp_id", null)
+                        ->where("org_id", '=', $row->org_id)
+                        ->where("position_id", '=', $row->position_id)
+                        ->where("level_id", '=', $row->level_id)
+                        ->delete();
+
+                        DB::table("emp_result")
                         ->where("appraisal_form_id", '=', $row->appraisal_form_id)
                         ->where("period_id", '=', $row->period_id)
                         ->where("emp_id", null)
