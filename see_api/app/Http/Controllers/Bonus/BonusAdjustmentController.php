@@ -52,15 +52,15 @@ class BonusAdjustmentController extends Controller
                 pos.position_name,
                 org.org_name,
                 IF(
-                    IFNULL(er.net_s_amount,0)=0, 
+                    IFNULL(CAST(FROM_BASE64(er.net_s_amount) AS DECIMAL(10,2)),0)=0, 
                     IF(
-                        IFNULL(er.s_amount,0)=0,
-                        e.s_amount,
-                        er.s_amount), 
-                    er.net_s_amount
+                        IFNULL(CAST(FROM_BASE64(er.s_amount) AS DECIMAL(10,2)),0)=0, 
+                        CAST(FROM_BASE64(e.s_amount) AS DECIMAL(10,2)), 
+                        CAST(FROM_BASE64(er.s_amount) AS DECIMAL(10,2))), 
+                    CAST(FROM_BASE64(er.net_s_amount) AS DECIMAL(10,2))
                 ) AS s_amount,
-                er.adjust_b_amount AS b_amount,
-                er.adjust_b_amount,
+                CAST(FROM_BASE64(er.adjust_b_amount) AS DECIMAL(10,2)) AS b_amount,
+                CAST(FROM_BASE64(er.adjust_b_amount) AS DECIMAL(10,2)) AS adjust_b_amount,
                 er.adjust_b_rate AS b_rate,
                 er.adjust_b_rate,
                 er.status,
@@ -120,7 +120,7 @@ class BonusAdjustmentController extends Controller
                 return response()->json(['status' => 400, 'data' => "emp result not found"]);
             }
 
-            $empResult->adjust_b_amount = $data['adjust_b_amount'];
+            $empResult->adjust_b_amount = base64_encode($data['adjust_b_amount']);
             $empResult->adjust_b_rate = $data['adjust_b_rate'];
             $empResult->updated_by = Auth::id();
             if($request->confirm_flag == "1"){
@@ -180,7 +180,7 @@ class BonusAdjustmentController extends Controller
                 e.emp_code AS employeeid,
                 100 AS companyid,
                 'N123' AS tabid,
-                er.adjust_b_amount AS data
+                CAST(FROM_BASE64(er.adjust_b_amount) AS DECIMAL(10,2)) AS data
             FROM emp_result er
             INNER JOIN employee e ON e.emp_id = er.emp_id
             INNER JOIN appraisal_level vel ON vel.level_id = er.level_id
