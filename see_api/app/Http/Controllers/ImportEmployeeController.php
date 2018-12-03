@@ -9,6 +9,7 @@ use App\Org;
 use App\User;
 
 use Auth;
+use Crypt;
 use DB;
 use File;
 use Validator;
@@ -64,7 +65,7 @@ class ImportEmployeeController extends Controller
 				if ($validator->fails()) {
 					$errors[] = ['employee_code' => $i->employee_code, 'errors' => $validator->errors()];
 				} else {
-					$emp = Employee::where('emp_code',$i->employee_code)->first();
+					$emp = Employee::where('emp_code', $i->employee_code)->first();
 					if (empty($emp)) {
 						$emp = new Employee;
 						$emp->emp_code = $i->employee_code;
@@ -75,7 +76,7 @@ class ImportEmployeeController extends Controller
 						$emp->org_id = $org_id;
 						$emp->position_id = $position_id;
 						$emp->chief_emp_code = $i->chief_employee_code;
-						$emp->s_amount = $i->salary_amount;
+						$emp->s_amount = base64_encode($i->salary_amount);
 						$emp->email = $i->email;
 						$emp->emp_type = $i->employee_type;
 						$emp->dotline_code = $i->dotline_code;
@@ -85,8 +86,7 @@ class ImportEmployeeController extends Controller
 						$emp->updated_by = Auth::id();
 						try {
 							$emp->save();
-
-							// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+							// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay
 							$newEmp[] = ["emp_code"=> $i->employee_code, "emp_name"=>$i->employee_name, "email"=>$i->email];
 						} catch (Exception $e) {
 							$errors[] = ['employee_code' => $i->employee_code, 'errors' => substr($e,0,254)];
@@ -99,7 +99,7 @@ class ImportEmployeeController extends Controller
 						$emp->org_id = $org_id;
 						$emp->position_id = $position_id;
 						$emp->chief_emp_code = $i->chief_employee_code;
-						$emp->s_amount = $i->salary_amount;
+						$emp->s_amount = base64_encode($i->salary_amount);
 						$emp->email = $i->email;
 						$emp->emp_type = $i->employee_type;
 						$emp->dotline_code = $i->dotline_code;
@@ -304,7 +304,7 @@ class ImportEmployeeController extends Controller
 			$item->chief_emp_code = $request->chief_emp_code;
 			$item->level_id = $request->level_id;
 			$item->step = $request->step;
-			$item->s_amount = $request->s_amount;
+			$item->s_amount = base64_encode($request->s_amount);
 			$item->email = $request->email;
 			$item->emp_type = $request->emp_type;
 			$item->dotline_code = $request->dotline_code;
