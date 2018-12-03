@@ -1294,19 +1294,20 @@ class AppraisalGroupController extends Controller
 						$competency->created_by = $auth;
 						$competency->created_dttm = $now;
 						$competency->save();
-					}
+					} else {
 
-					if($config->result_type == 1){
-						$competency->weigh_score = $da->score * $da->weight_percent;
-					} elseif ($config->result_type == 2) {
-						$competency->weigh_score = ($da->score * $da->weight_percent) / 100;
+						if($config->result_type == 1){
+							$competency->weigh_score = $da->score * $da->weight_percent;
+						} elseif ($config->result_type == 2) {
+							$competency->weigh_score = ($da->score * $da->weight_percent) / 100;
+						}
+						$competency->weight_percent = $da->weight_percent;
+						$competency->score = $da->score;
+						$competency->group_weight_percent = $da->group_weight_percent ;
+						$competency->updated_by = $auth;
+						$competency->updated_dttm = $now;
+						$competency->save();
 					}
-					$competency->weight_percent = $da->weight_percent;
-					$competency->score = $da->score;
-					$competency->group_weight_percent = $da->group_weight_percent ;
-					$competency->updated_by = $auth;
-					$competency->updated_dttm = $now;
-					$competency->save();
 				}
 			}//end for item
 		}//end for datas
