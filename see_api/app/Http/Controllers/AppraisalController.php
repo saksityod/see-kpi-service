@@ -697,6 +697,7 @@ class AppraisalController extends Controller
 					where chief_emp_code in ({$in_emp})
 					and is_active = 1
 					and chief_emp_code != emp_code
+					and has_second_line = 1;
 				");
 
 				foreach ($emp_items as $e) {
@@ -784,7 +785,8 @@ class AppraisalController extends Controller
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
 			} else {
-
+				$emp_code = Auth::id();
+				$all_org = $this->GetAllOrgCodeUnder($emp_code,$request->appraisal_year,$request->period_no);
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc
 					from emp_result a
@@ -805,6 +807,7 @@ class AppraisalController extends Controller
 					left outer join org po
 					on o.parent_org_code = po.org_code
 					where d.is_hr = 0
+					AND find_in_set(a.org_id, '{$all_org}')
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
@@ -1971,9 +1974,9 @@ class AppraisalController extends Controller
 		group by level_id, appraisal_level_name
 		order by seq_no ASC
       ");
-    }
-
-		return response()->json($result);
+	}
+	
+	return response()->json($result);
 	}
 
 
