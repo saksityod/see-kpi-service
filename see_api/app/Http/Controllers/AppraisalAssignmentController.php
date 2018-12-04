@@ -2516,6 +2516,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->weigh_score = 0;
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
+								$aitem->contribute_percent = 100;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2539,6 +2540,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->weigh_score = 0;
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
+								$aitem->contribute_percent = 100;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2564,6 +2566,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
 								$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
+								$aitem->contribute_percent = 100;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2587,6 +2590,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->weigh_score = 0;
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
+								$aitem->contribute_percent = 100;
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2795,6 +2799,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->weigh_score = 0;
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
+							$aitem->contribute_percent = 100;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
@@ -2818,6 +2823,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->weigh_score = 0;
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
+							$aitem->contribute_percent = 100;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
@@ -2843,6 +2849,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
 							$aitem->no_raise_value =  $i['no_raise_value']; // $request->no_raise_value;
+							$aitem->contribute_percent = 100;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
@@ -2866,6 +2873,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->weigh_score = 0;
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
+							$aitem->contribute_percent = 100;
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
