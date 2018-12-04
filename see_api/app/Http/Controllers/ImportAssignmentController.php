@@ -1212,6 +1212,7 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->weight_percent = (empty($row->weight)) ? "0": $row->weight;
                 $appraisalItemResult->weigh_score = "0";
                 $appraisalItemResult->structure_weight_percent = (empty($criteriaInfoQry)) ? "0" : $criteriaInfoQry[0]->weight_percent;
+                $appraisalItemResult->contribute_percent = 100;
                 $appraisalItemResult->created_by = Auth::id();
                 $appraisalItemResult->updated_by = Auth::id();
                 $appraisalItemResult->reward_score_unit = (empty($row->reward_per_unit)) ? "0": $row->reward_per_unit;
@@ -1467,6 +1468,7 @@ class ImportAssignmentController extends Controller
                               $itemChiefIndividual->weight_percent = number_format(($v_struc->weight_percent*$vChief->weight_percent)/$vChief->structure_weight_percent,2);
                               $itemChiefIndividual->weigh_score = $vChief->weigh_score;
                               $itemChiefIndividual->structure_weight_percent = $v_struc->weight_percent;
+                              $itemChiefIndividual->contribute_percent = 100;
                               $itemChiefIndividual->created_by = Auth::id();
                               $itemChiefIndividual->updated_by = Auth::id();
                               $itemChiefIndividual->reward_score_unit = $vChief->reward_score_unit;
@@ -1596,6 +1598,7 @@ class ImportAssignmentController extends Controller
                               $itemChiefIndividual->weight_percent = number_format(($v_struc->weight_percent*$value2->weight_percent)/$value2->structure_weight_percent,2);
                               $itemChiefIndividual->weigh_score = $vChief->weigh_score;
                               $itemChiefIndividual->structure_weight_percent = $v_struc->weight_percent;
+                              $itemChiefIndividual->contribute_percent = 100;
                               $itemChiefIndividual->created_by = Auth::id();
                               $itemChiefIndividual->updated_by = Auth::id();
                               $itemChiefIndividual->reward_score_unit = $vChief->reward_score_unit;
