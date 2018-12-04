@@ -293,6 +293,11 @@ class ImportEmployeeController extends Controller
         	empty($request->working_start_date) ? $request->working_start_date = null : $request->working_start_date;
 			empty($request->probation_end_date) ? $request->probation_end_date = null : $request->probation_end_date;
 			empty($request->acting_end_date) ? $request->acting_end_date = null : $request->acting_end_date;
+
+			// check salary amount is base64
+			if ( ! (base64_encode(base64_decode($request->s_amount)) === $request->s_amount) ){
+				$item->s_amount = base64_encode($request->s_amount);
+			}
 			
 			$item->emp_code = $request->emp_code;
 			$item->emp_name = $request->emp_name;
@@ -304,7 +309,7 @@ class ImportEmployeeController extends Controller
 			$item->chief_emp_code = $request->chief_emp_code;
 			$item->level_id = $request->level_id;
 			$item->step = $request->step;
-			$item->s_amount = base64_encode($request->s_amount);
+			$item->s_amount = $item->s_amount;
 			$item->email = $request->email;
 			$item->emp_type = $request->emp_type;
 			$item->dotline_code = $request->dotline_code;
