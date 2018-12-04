@@ -75,14 +75,33 @@ class EmpResultJudgementController extends Controller
         $errors = [];
         foreach ($request['detail'] as $d) {
             if($d['edit_flag']==1) {
-                $item = new EmpResultJudgement;
-                $item->emp_result_id = $d['emp_result_id'];
-                $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
-                $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
-                $item->percent_adjust = $d['percent_adjust'];
-                $item->adjust_result_score = $d['adjust_result_score'];
-                $item->is_bonus =  0;
-                $item->created_by = Auth::id();
+
+                // get current value
+                $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
+                    ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
+                    ->first();
+                
+                // chech insert or update
+                if($empResultJudgement->count() == 0){
+                    $item = new EmpResultJudgement;
+                    $item->emp_result_id = $d['emp_result_id'];
+                    $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
+                    $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
+                    $item->percent_adjust = $d['percent_adjust'];
+                    $item->adjust_result_score = $d['adjust_result_score'];
+                    $item->is_bonus =  0;
+                    $item->created_by = Auth::id();
+
+                    try {
+                        $item->save();
+                    } catch (Exception $e) {
+                        $errors[] = substr($e, 254);
+                    }
+                } else {
+                    DB::table('emp_result_judgement')
+                        ->where('emp_result_judgement_id', $empResultJudgement->emp_result_judgement_id)
+                        ->update(['percent_adjust'=>$d['percent_adjust'], 'adjust_result_score'=>$d['adjust_result_score']]);
+                }
             }
 
             $emp = EmpResult::find($d['emp_result_id']);
@@ -97,11 +116,6 @@ class EmpResultJudgementController extends Controller
             $emp_stage->updated_by = Auth::id();
 
             try {
-
-                if($d['edit_flag']==1) {
-                    $item->save();
-                }
-
                 $emp->save();
                 $emp_stage->save();
             } catch (Exception $e) {
