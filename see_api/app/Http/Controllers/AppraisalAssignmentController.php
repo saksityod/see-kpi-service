@@ -2237,6 +2237,7 @@ class AppraisalAssignmentController extends Controller
 								array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 								array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 								array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
+								array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
 								array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 								$aitem->over_value = 0;
 								$aitem->weigh_score = 0;
@@ -2512,6 +2513,7 @@ class AppraisalAssignmentController extends Controller
 							array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 							array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 							array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
+							array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
 							array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 							$aitem->over_value = 0;
 							$aitem->weigh_score = 0;
@@ -2918,6 +2920,7 @@ class AppraisalAssignmentController extends Controller
 							array_key_exists('score3', $i) ? $aitemlog->score3 = $i['score3'] : null;
 							array_key_exists('score4', $i) ? $aitemlog->score4 = $i['score4'] : null;
 							array_key_exists('score5', $i) ? $aitemlog->score5 = $i['score5'] : null;
+							array_key_exists('score6', $i) ? $aitemlog->score5 = $i['score6'] : null;
 							array_key_exists('forecast_value', $i) ? $aitemlog->forecast_value = $i['forecast_value'] : null;
 							$aitemlog->over_value = 0;
 							$aitemlog->weigh_score = 0;
@@ -2935,6 +2938,7 @@ class AppraisalAssignmentController extends Controller
 								|| array_key_exists('score3', $i)
 								|| array_key_exists('score4', $i)
 								|| array_key_exists('score5', $i)
+								|| array_key_exists('score6', $i)
 								// || array_key_exists('forecast_value', $i) edit-2018-11-05
 								|| array_key_exists('target_value', $i)
 								|| array_key_exists('weight_percent', $i)) {
@@ -2944,6 +2948,7 @@ class AppraisalAssignmentController extends Controller
 									|| $aitem->score3!=$i['score3']
 									|| $aitem->score4!=$i['score4']
 									|| $aitem->score5!=$i['score5']
+									|| $aitem->score6!=$i['score6']
 									// || $aitem->forecast_value!=$i['forecast_value'] edit-2018-11-05
 									|| $aitem->target_value!=$i['target_value']
 									|| ($aitem->weight_percent!=$i['weight_percent'] && $noweight->no_weight==0)) {
@@ -2972,6 +2977,7 @@ class AppraisalAssignmentController extends Controller
 									$aitemlog->score3 = $aitem->score3;
 									$aitemlog->score4 = $aitem->score4;
 									$aitemlog->score5 = $aitem->score5;
+									$aitemlog->score6 = $aitem->score6;
 									$aitemlog->forecast_value = $aitem->forecast_value;
 									$aitemlog->over_value = $aitem->over_value;
 									$aitemlog->weigh_score = $aitem->weigh_score;
@@ -3043,6 +3049,7 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 					array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 					array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
+					array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
 					//$aitem->weigh_score = 0;
@@ -3294,6 +3301,7 @@ class AppraisalAssignmentController extends Controller
 						$aitemlog->score3 = $aitem->score3;
 						$aitemlog->score4 = $aitem->score4;
 						$aitemlog->score5 = $aitem->score5;
+						$aitemlog->score6 = $aitem->score6;
 						$aitemlog->forecast_value = $aitem->forecast_value;
 						$aitemlog->over_value = $aitem->over_value;
 						$aitemlog->weigh_score = $aitem->weigh_score;
