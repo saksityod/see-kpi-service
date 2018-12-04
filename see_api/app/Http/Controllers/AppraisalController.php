@@ -1905,29 +1905,39 @@ class AppraisalController extends Controller
 		// Get user level
     $userlevelId = 0; $userlevelAllEmp = 0; $userParentId = 0;
     $userlevelDb = DB::select("
-      SELECT org.level_id, al.appraisal_level_name, al.is_all_employee, al.parent_id
+      SELECT org.level_id, al.appraisal_level_name, al.is_all_employee, al.parent_id, org.org_code
       FROM employee emp
       INNER JOIN org ON org.org_id = emp.org_id
       INNER JOIN appraisal_level al ON al.level_id = org.level_id
       WHERE emp_code = '{$empCode}'
-      AND al.is_org = 1
-      AND al.is_active = 1
-      AND emp.is_active = 1
-      AND org.is_active = 1
+      -- AND al.is_org = 1
+      -- AND al.is_active = 1
+	  -- AND emp.is_active = 1
+	  -- AND org.is_active = 1
       LIMIT 1");
 
+	  	if (empty($userlevelDb)) {
+			return [
+				"is_all" => false,
+				"level_id" => 0,
+				"is_all_employee" => 0,
+				"parent_id" => 0 ,
+				"org_code" => 0 ];
+		}
 		if ($userlevelDb[0]->is_all_employee == '1' || $userlevelDb[0]->parent_id == 0) {
 			return [
 				"is_all" => true,
 				"level_id" => $userlevelDb[0]->level_id,
 				"is_all_employee" => $userlevelDb[0]->is_all_employee,
-				"parent_id" => $userlevelDb[0]->parent_id];
+				"parent_id" => $userlevelDb[0]->parent_id,
+				"org_code" => $userlevelDb[0]->org_code ];
 		} else {
 			return [
 				"is_all" => false,
 				"level_id" => $userlevelDb[0]->level_id,
 				"is_all_employee" => $userlevelDb[0]->is_all_employee,
-				"parent_id" => $userlevelDb[0]->parent_id];
+				"parent_id" => $userlevelDb[0]->parent_id,
+				"org_code" => $userlevelDb[0]->org_code ];
 		}
 	}
 
@@ -1940,10 +1950,9 @@ class AppraisalController extends Controller
    * @param  \Illuminate\Http\Request
    * @return \Illuminate\Http\Response
    */
-  public function org_level_list(Request $request){
-    $empLevInfo = $this->is_all_employee(Auth::id());
-
-		if ($empLevInfo["is_all"]) {
+  public function org_level_list(Request $request){//daris
+	$empLevInfo = $this->is_all_employee(Auth::id());
+	if ($empLevInfo["is_all"]) {
       $result = DB::select("
         SELECT level_id, appraisal_level_name
         FROM appraisal_level
@@ -1951,26 +1960,17 @@ class AppraisalController extends Controller
 		and is_org = 1
 		order by seq_no ASC");
     } else {
-      $result = DB::select("
-      SELECT level_id, appraisal_level_name
-      FROM appraisal_level
-      WHERE is_active = 1
-	  and is_org = 1
-      AND level_id = {$empLevInfo["level_id"]}
-      OR level_id in(
-      	SELECT
-      		@id := (
-      			SELECT level_id
-      			FROM appraisal_level
-      			WHERE parent_id = @id
-      		) AS level_id
-      	FROM(
-      		SELECT @id := {$empLevInfo["level_id"]}
-      	) cur_id
-      	STRAIGHT_JOIN appraisal_level
-		  WHERE @id IS NOT NULL
-		  order by seq_no ASC
-      )");
+	  $LevelUnder = $this->GetAllLevelUnder($empLevInfo["org_code"],$empLevInfo["level_id"]);
+	//   return($LevelUnder);
+	  $result = DB::select("
+	  	SELECT level_id, appraisal_level_name
+        FROM appraisal_level
+		WHERE find_in_set(level_id, '".$LevelUnder."')
+		and is_active = 1
+		and is_org = 1
+		group by level_id, appraisal_level_name
+		order by seq_no ASC
+      ");
     }
 
 		return response()->json($result);
@@ -2162,6 +2162,7 @@ class AppraisalController extends Controller
 					".$levelStr."
 					".$periodStr."
 					AND lev.is_org = 1
+					AND lev.is_active = 1 
 					order by lev.seq_no ASC");
 	    } else {
 	      $result = DB::select("
@@ -2190,6 +2191,7 @@ class AppraisalController extends Controller
 					".$levelStr."
 					".$periodStr."
 					AND lev.is_org = 1
+					AND lev.is_active = 1 
 					order by lev.seq_no ASC");
 	    }
 
@@ -2281,6 +2283,8 @@ class AppraisalController extends Controller
 					".$empIdStr."
 					".$periodStr."
 					AND lev.is_org = 1
+					AND lev.is_active = 1
+					AND org.is_active = 1
 					ORDER BY org.level_id ASC, org.org_code ASC");
 	    } else {
 	      $result = DB::select("
@@ -2311,10 +2315,151 @@ class AppraisalController extends Controller
 					".$empIdStr."
 					".$periodStr."
 					AND lev.is_org = 1
+					AND lev.is_active = 1
+					AND org.is_active = 1
 					ORDER BY org.level_id ASC, org.org_code ASC");
 	    }	
 
 		return response()->json($result);
 	}
+	
+	public function org_organization (Request $request){
+			$empCode = Auth::id();
+			$empLevInfo = $this->is_all_employee($empCode);
+				$orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
+				$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
+			if ($empLevInfo["is_all"]) {
+			  $result = DB::select("
+				SELECT distinct emp.org_id, org.org_name
+						FROM appraisal_item_result emp
+						INNER JOIN org ON org.org_id = emp.org_id
+						INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+						WHERE 1 = 1
+						".$orgLevelStr."
+						".$periodStr."
+						AND lev.is_org = 1
+						AND org.is_active = 1
+						AND lev.is_active = 1
+						ORDER BY org.level_id ASC, org.org_code ASC");
+			} else {
+				$AllOrg = $this->GetAllOrgCodeUnder($empCode, $request->appraisal_year, $request->period_id);
+				$result = DB::select("
+				SELECT distinct emp.org_id, org.org_name
+						FROM appraisal_item_result emp
+						INNER JOIN org ON org.org_id = emp.org_id
+						INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+						WHERE 1 = 1
+						AND find_in_set(emp.org_id, '{$AllOrg}')
+						".$orgLevelStr."
+						".$periodStr."
+						AND lev.is_org = 1
+						AND org.is_active = 1
+						AND lev.is_active = 1
+						ORDER BY org.level_id ASC, org.org_code ASC");
+			}	
+			return response()->json($result);
+	}
 
+
+	public function GetAllOrgCodeUnder($emp_code, $appraisal_year, $period_id)
+	{
+		$EmpStr = ((empty($emp_code)) ? "" : "AND em.emp_code = '{$emp_code}'");
+		$YearStr = ((empty($appraisal_year)) ? "" : "AND pe.appraisal_year = {$appraisal_year}");
+		$PeriodStr = ((empty($period_id)) ? "" : "AND pe.period_id = {$period_id}");
+
+		$org_code = DB::select("SELECT o.org_code
+			FROM appraisal_item_result air
+			INNER JOIN employee em ON air.emp_id = em.emp_id
+			INNER JOIN appraisal_period pe ON air.period_id = pe.period_id
+			INNER JOIN org o ON air.org_id = o.org_id
+			WHERE 1 = 1
+			".$EmpStr."
+			".$YearStr."
+			".$PeriodStr."
+			GROUP BY o.org_code");
+
+		$parent = "";
+		$place_parent = "";
+		$have = true;
+
+		foreach ($org_code as $o) {
+			$parent = $parent.$o->org_code.",";
+		}
+
+		while($have){
+			$org = DB::select("SELECT org_code
+			FROM org
+			WHERE FIND_IN_SET(parent_org_code,'".$parent."')
+			AND parent_org_code != ''
+			");
+
+			if(empty($org)) {
+			$have = false;
+			//  สิ้นสุดสาย Org
+			}// end if
+			else if (!empty($org)){
+			$place_parent = $place_parent.$parent; // เก็บ Org_code ก่อนหน้าไว้ใน $place_parent
+			$parent = "";
+
+			foreach ($org as $o) {
+				$parent = $parent.$o->org_code.",";
+				// ข้อมูล Org_code ล่าสุดที่ได้จาก Query
+			}
+			}
+		}// end else
+
+		$place_parent = $place_parent.$parent; // เก็บ Org_code ล่าสุดที่หา Org_code ต่อไปไม่เจอ
+
+		// นำ Org_code ไปหา Org_id ทั้งหมด
+		$AllOrgID = DB::select("SELECT org_id
+			FROM org
+			WHERE FIND_IN_SET(org_code,'".$place_parent."')
+		");
+
+		$AllOrg = "";     // เก็บ Org_id ในรูปแบบของ String
+		foreach ($AllOrgID as $OrgID) {
+			$AllOrg = $AllOrg.$OrgID->org_id.",";
+		}
+
+		return ($AllOrg);
+		// return (['AllOrgCodeUnder' => $place_parent]);
+	}
+
+public function GetAllLevelUnder($org,$level) 
+    { 
+      $parent = $org.","; 
+      $place_parent = ""; 
+      $have = true; 
+      $level_id = $level.",";
+
+      while($have){ 
+        $org = DB::select(" 
+          SELECT org_code ,level_id
+          FROM org 
+		  WHERE FIND_IN_SET(parent_org_code, '".$parent."') 
+		  AND parent_org_code != ''
+        "); 
+ 
+        if(empty($org)) { 
+          $have = false; 
+          // สิ้นสุดสาย org 
+        }// end if 
+        else if (!empty($org)){ 
+          $place_parent = $place_parent.$level_id; // เก็บ level_id ก่อนหน้าไว้ใน $place_parent 
+			$parent = ""; 
+			$level_id = "";
+ 
+          foreach ($org as $l) { 
+   		$parent = $parent.$l->org_code.","; 
+   		$level_id = $level_id.$l->level_id.","; 
+            // ข้อมูล level_id ล่าสุดที่ได้จาก Query 
+          } 
+        } 
+      }// end else 
+ 
+   $place_parent = $place_parent.$level_id; // เก็บ level_id ล่าสุดที่หา level_id ต่อไปไม่เจอ 
+   
+      return ($place_parent); 
+ }
+	
 }
