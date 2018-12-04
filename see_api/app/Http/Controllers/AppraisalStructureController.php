@@ -59,8 +59,10 @@ class AppraisalStructureController extends Controller
 
 		if($request->form_id==2) {
 			$nof_max = 10;
+		} else if($request->form_id==1) {
+			$nof_max = 6;
 		} else {
-			$nof_max = 5;
+			$nof_max = 0;
 		}
 
 		$validator = Validator::make($request->all(), [
@@ -134,8 +136,10 @@ class AppraisalStructureController extends Controller
 		
 		if($request->form_id==2) {
 			$nof_max = 10;
+		} else if($request->form_id==1) {
+			$nof_max = 6;
 		} else {
-			$nof_max = 5;
+			$nof_max = 0;
 		}
 		
 		$validator = Validator::make($request->all(), [
