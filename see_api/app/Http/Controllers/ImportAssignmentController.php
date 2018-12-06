@@ -465,27 +465,57 @@ class ImportAssignmentController extends Controller
               AND level_id = {$value->level_id}
               LIMIT 1
             ");
+
+            // if (empty($assignedQry)) {
+            //   $assignedInfo["target_value"] = "";
+            //   $assignedInfo["weight_percent"] = "";
+            //   $assignedInfo["score0"] = "";
+            //   $assignedInfo["score1"] = "";
+            //   $assignedInfo["score2"] = "";
+            //   $assignedInfo["score3"] = "";
+            //   $assignedInfo["score4"] = "";
+            //   $assignedInfo["score5"] = "";
+            //   $assignedInfo["score6"] = "";
+            // } else {
+            //   foreach ($assignedQry as $asVal) {
+            //     $assignedInfo["target_value"] = $asVal->target_value;
+            //     $assignedInfo["weight_percent"] = $asVal->weight_percent;
+            //     $assignedInfo["score0"] = $asVal->score0;
+            //     $assignedInfo["score1"] = $asVal->score1;
+            //     $assignedInfo["score2"] = $asVal->score2;
+            //     $assignedInfo["score3"] = $asVal->score3;
+            //     $assignedInfo["score4"] = $asVal->score4;
+            //     $assignedInfo["score5"] = $asVal->score5;
+            //     $assignedInfo["score6"] = $asVal->score6;
+            //   }
+            // }
+            // veriry threshold display from system config
+            $systemConThreshold = SystemConfiguration::first()->threshold;
             if (empty($assignedQry)) {
               $assignedInfo["target_value"] = "";
               $assignedInfo["weight_percent"] = "";
-              $assignedInfo["score0"] = "";
-              $assignedInfo["score1"] = "";
-              $assignedInfo["score2"] = "";
-              $assignedInfo["score3"] = "";
-              $assignedInfo["score4"] = "";
-              $assignedInfo["score5"] = "";
-              $assignedInfo["score6"] = "";
+              if((Int)$systemConThreshold == 1){
+                $assignedInfo["score0"] = "";
+                $assignedInfo["score1"] = "";
+                $assignedInfo["score2"] = "";
+                $assignedInfo["score3"] = "";
+                $assignedInfo["score4"] = "";
+                $assignedInfo["score5"] = "";
+                $assignedInfo["score6"] = "";
+              }
             } else {
               foreach ($assignedQry as $asVal) {
                 $assignedInfo["target_value"] = $asVal->target_value;
                 $assignedInfo["weight_percent"] = $asVal->weight_percent;
-                $assignedInfo["score0"] = $asVal->score0;
-                $assignedInfo["score1"] = $asVal->score1;
-                $assignedInfo["score2"] = $asVal->score2;
-                $assignedInfo["score3"] = $asVal->score3;
-                $assignedInfo["score4"] = $asVal->score4;
-                $assignedInfo["score5"] = $asVal->score5;
-                $assignedInfo["score6"] = $asVal->score6;
+                if((Int)$systemConThreshold == 1){
+                  $assignedInfo["score0"] = $asVal->score0;
+                  $assignedInfo["score1"] = $asVal->score1;
+                  $assignedInfo["score2"] = $asVal->score2;
+                  $assignedInfo["score3"] = $asVal->score3;
+                  $assignedInfo["score4"] = $asVal->score4;
+                  $assignedInfo["score5"] = $asVal->score5;
+                  $assignedInfo["score6"] = $asVal->score6;
+                }
               }
             }
 
@@ -520,10 +550,17 @@ class ImportAssignmentController extends Controller
               ];
 
               // Generate range by appraisal_structure.nof_target_score
-              $rangekey = 0;
-              while($rangekey <= $value->nof_target_score) {
-                $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
-                $rangekey = $rangekey+1;
+              // $rangekey = 0;
+              // while($rangekey <= $value->nof_target_score) {
+              //   $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+              //   $rangekey = $rangekey+1;
+              // }
+              if((Int)$systemConThreshold == 1){
+                $rangekey = 0;
+                while($rangekey <= $value->nof_target_score) {
+                  $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+                  $rangekey = $rangekey+1;
+                }
               }
               $form1Key = $form1Key+1;
 
@@ -732,9 +769,36 @@ class ImportAssignmentController extends Controller
                AND level_id = {$value->level_id}
                LIMIT 1
              ");
-             if (empty($assignedQry)) {
-               $assignedInfo["target_value"] = "";
-               $assignedInfo["weight_percent"] = "";
+
+             // if (empty($assignedQry)) {
+             //   $assignedInfo["target_value"] = "";
+             //   $assignedInfo["weight_percent"] = "";
+             //   $assignedInfo["score0"] = "";
+             //   $assignedInfo["score1"] = "";
+             //   $assignedInfo["score2"] = "";
+             //   $assignedInfo["score3"] = "";
+             //   $assignedInfo["score4"] = "";
+             //   $assignedInfo["score5"] = "";
+             //   $assignedInfo["score6"] = "";
+             // } else {
+             //   foreach ($assignedQry as $asVal) {
+             //     $assignedInfo["target_value"] = $asVal->target_value;
+             //     $assignedInfo["weight_percent"] = $asVal->weight_percent;
+             //     $assignedInfo["score0"] = $asVal->score0;
+             //     $assignedInfo["score1"] = $asVal->score1;
+             //     $assignedInfo["score2"] = $asVal->score2;
+             //     $assignedInfo["score3"] = $asVal->score3;
+             //     $assignedInfo["score4"] = $asVal->score4;
+             //     $assignedInfo["score5"] = $asVal->score5;
+             //     $assignedInfo["score6"] = $asVal->score6;
+             //   }
+             // }
+             // veriry threshold display from system config
+            $systemConThreshold = SystemConfiguration::first()->threshold;
+            if (empty($assignedQry)) {
+              $assignedInfo["target_value"] = "";
+              $assignedInfo["weight_percent"] = "";
+              if((Int)$systemConThreshold == 1){
                $assignedInfo["score0"] = "";
                $assignedInfo["score1"] = "";
                $assignedInfo["score2"] = "";
@@ -742,19 +806,22 @@ class ImportAssignmentController extends Controller
                $assignedInfo["score4"] = "";
                $assignedInfo["score5"] = "";
                $assignedInfo["score6"] = "";
-             } else {
-               foreach ($assignedQry as $asVal) {
-                 $assignedInfo["target_value"] = $asVal->target_value;
-                 $assignedInfo["weight_percent"] = $asVal->weight_percent;
-                 $assignedInfo["score0"] = $asVal->score0;
-                 $assignedInfo["score1"] = $asVal->score1;
-                 $assignedInfo["score2"] = $asVal->score2;
-                 $assignedInfo["score3"] = $asVal->score3;
-                 $assignedInfo["score4"] = $asVal->score4;
-                 $assignedInfo["score5"] = $asVal->score5;
-                 $assignedInfo["score6"] = $asVal->score6;
-               }
-             }
+              }
+            } else {
+              foreach ($assignedQry as $asVal) {
+                $assignedInfo["target_value"] = $asVal->target_value;
+                $assignedInfo["weight_percent"] = $asVal->weight_percent;
+                if((Int)$systemConThreshold == 1){
+                  $assignedInfo["score0"] = $asVal->score0;
+                  $assignedInfo["score1"] = $asVal->score1;
+                  $assignedInfo["score2"] = $asVal->score2;
+                  $assignedInfo["score3"] = $asVal->score3;
+                  $assignedInfo["score4"] = $asVal->score4;
+                  $assignedInfo["score5"] = $asVal->score5;
+                  $assignedInfo["score6"] = $asVal->score6;
+                }
+              }
+            }
 
              if ($value->form_id == "1") {
                $itemList[$value->structure_name][$form1Key] = [
@@ -779,11 +846,18 @@ class ImportAssignmentController extends Controller
                ];
 
                // Generate range by appraisal_structure.nof_target_score
-               $rangekey = 0;
-               while($rangekey <= $value->nof_target_score) {
-                 $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
-                 $rangekey = $rangekey+1;
-               }
+               // $rangekey = 0;
+               // while($rangekey <= $value->nof_target_score) {
+               //   $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+               //   $rangekey = $rangekey+1;
+               // }
+               if((Int)$systemConThreshold == 1){
+                $rangekey = 0;
+                while($rangekey <= $value->nof_target_score) {
+                  $itemList[$value->structure_name][$form1Key]["range".$rangekey] = $assignedInfo["score".$rangekey];
+                  $rangekey = $rangekey+1;
+                }
+              }
                $form1Key = $form1Key+1;
 
              } else if($value->form_id == "2") {
