@@ -342,7 +342,7 @@ class AppraisalGroupController extends Controller
 		$allow_input_actual = (empty($config->allow_input_actual)? 0 : $config->allow_input_actual);
 		
 		$head = DB::select("
-			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id, af.appraisal_form_name
+			SELECT b.emp_code, b.emp_name, b.working_start_date, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, al.no_weight, a.position_id, a.org_id, af.appraisal_form_name, if(a.grade IS NULL, '', CONCAT( '(', a.grade, ')' )) grade
 			FROM emp_result a
 			left outer join employee b
 			on a.emp_id = b.emp_id
