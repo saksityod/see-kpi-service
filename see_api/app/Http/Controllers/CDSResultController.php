@@ -817,10 +817,11 @@ class CDSResultController extends Controller
 		
 		if ($request->appraisal_type_id == 2) {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_name, r.emp_id, e.emp_code, e.emp_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month ,uom.is_date
 				from appraisal_item_result r
 				left outer join employee e on r.emp_id = e.emp_id 
 				inner join appraisal_item i on r.item_id = i.item_id
+				inner join uom on i.uom_id = uom.uom_id
 				left outer join appraisal_item_position p on i.item_id = p.item_id
 				inner join kpi_cds_mapping m on i.item_id = m.item_id
 				inner join cds on m.cds_id = cds.cds_id
@@ -849,9 +850,10 @@ class CDSResultController extends Controller
 			
 		} else {
 			$query = "
-				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month
+				select distinct r.level_id, al.appraisal_level_name, r.org_id, org.org_code, org.org_name, r.position_id, po.position_name, cds.cds_id, cds.cds_name, cr.cds_result_id, ifnull(cr.cds_value,'') as cds_value, {$request->current_appraisal_year} year, {$request->month_id} month ,uom.is_date
 				from appraisal_item_result r
 				inner join appraisal_item i on r.item_id = i.item_id
+				inner join uom on i.uom_id = uom.uom_id
 				left outer join appraisal_item_position p on i.item_id = p.item_id
 				inner join kpi_cds_mapping m on i.item_id = m.item_id
 				inner join cds on m.cds_id = cds.cds_id
