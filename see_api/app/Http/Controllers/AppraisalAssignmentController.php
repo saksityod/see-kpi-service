@@ -1770,7 +1770,7 @@ class AppraisalAssignmentController extends Controller
 					order by b.target_score asc
 					",array($item->structure_id));
 
-				foreach (range(0,4,1) as $i) {
+				foreach (range(0,5,1) as $i) {
 					if (array_key_exists($i,$tc)) {
 					} else {
 						$place_holder = ["target_score" => $i + 1, "color_code" => "DDDDDD"];
