@@ -447,7 +447,7 @@ class AppraisalAssignmentController extends Controller
 			}
 		} else {
 			$workflow = WorkflowStage::find($request->stage_id);
-			if ($workflow->no_second_line_stage_id == 0) {
+			if ($workflow['no_second_line_stage_id'] == 0) {
 				$items = DB::select("
 					select stage_id, to_action
 					from appraisal_stage
@@ -1602,7 +1602,7 @@ class AppraisalAssignmentController extends Controller
 
 		$qinput = array();
 		$query = "
-		select a.item_id, a.item_name, uom.uom_name,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
+		select a.item_id, a.item_name, uom.uom_name, uom.is_date,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
 		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
 		, a.no_raise_value, b.is_no_raise_value
@@ -1808,7 +1808,8 @@ class AppraisalAssignmentController extends Controller
 					'threshold' => $config->threshold,
 					'threshold_color' => $tc,
 					'is_no_raise_value' => $item->is_no_raise_value,
-					'no_raise_value' => $item->no_raise_value
+					'no_raise_value' => $item->no_raise_value,
+					'is_date' => $item->is_date
 				);
 			} else {
 				$groups[$key]['items'][] = $item;
@@ -2237,7 +2238,7 @@ class AppraisalAssignmentController extends Controller
 								array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 								array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 								array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
-								array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
+								array_key_exists('score6', $i) ? $aitem->score6 = $i['score6'] : null;
 								array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 								$aitem->over_value = 0;
 								$aitem->weigh_score = 0;
@@ -2513,7 +2514,7 @@ class AppraisalAssignmentController extends Controller
 							array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 							array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 							array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
-							array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
+							array_key_exists('score6', $i) ? $aitem->score6 = $i['score6'] : null;
 							array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 							$aitem->over_value = 0;
 							$aitem->weigh_score = 0;
@@ -2634,9 +2635,10 @@ class AppraisalAssignmentController extends Controller
 			", array($emp_result_id));
 
 		$items = DB::select("
-			select b.item_name, b.structure_id, a.*
+			select b.item_name, b.structure_id, a.* ,uom.is_date
 			from appraisal_item_result a
 			left outer join appraisal_item b
+			left join uom on  b.uom_id= uom.uom_id
 			on a.item_id = b.item_id
 			where a.emp_result_id = ?
 			", array($emp_result_id));
@@ -2920,7 +2922,7 @@ class AppraisalAssignmentController extends Controller
 							array_key_exists('score3', $i) ? $aitemlog->score3 = $i['score3'] : null;
 							array_key_exists('score4', $i) ? $aitemlog->score4 = $i['score4'] : null;
 							array_key_exists('score5', $i) ? $aitemlog->score5 = $i['score5'] : null;
-							array_key_exists('score6', $i) ? $aitemlog->score5 = $i['score6'] : null;
+							array_key_exists('score6', $i) ? $aitemlog->score6 = $i['score6'] : null;
 							array_key_exists('forecast_value', $i) ? $aitemlog->forecast_value = $i['forecast_value'] : null;
 							$aitemlog->over_value = 0;
 							$aitemlog->weigh_score = 0;
@@ -3049,7 +3051,7 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('score3', $i) ? $aitem->score3 = $i['score3'] : null;
 					array_key_exists('score4', $i) ? $aitem->score4 = $i['score4'] : null;
 					array_key_exists('score5', $i) ? $aitem->score5 = $i['score5'] : null;
-					array_key_exists('score6', $i) ? $aitem->score5 = $i['score6'] : null;
+					array_key_exists('score6', $i) ? $aitem->score6 = $i['score6'] : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
 					//$aitem->weigh_score = 0;
