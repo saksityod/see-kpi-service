@@ -90,7 +90,7 @@ class ImportAssignmentController extends Controller
           on ee.org_id = e.org_id
           where (ee.chief_emp_code = ? or ee.emp_code = ?)
           and l.is_org = 1
-          group by l.level_id 
+          group by l.level_id
           order by l.seq_no ASC
           ", array(Auth::id(), Auth::id()));
         }
@@ -111,7 +111,7 @@ class ImportAssignmentController extends Controller
           on l.level_id = ee.level_id
           where (ee.chief_emp_code = ? or ee.emp_code = ?)
           and l.is_individual = 1
-          group by l.level_id 
+          group by l.level_id
           order by seq_no ASC
           ", array(Auth::id(), Auth::id()));
         }
@@ -302,7 +302,7 @@ class ImportAssignmentController extends Controller
       ".$positionStr."
       ORDER BY strc.structure_id asc ,strc.seq_no asc ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc
       ");
-      
+
     $groupData = [];
     foreach ($items as $str) {
       if (!in_array($str->structure_id, array_column($groupData, "structure_id"))) {
@@ -455,7 +455,7 @@ class ImportAssignmentController extends Controller
             $assignedInfo = [];
             $assignedQry = DB::select("
               SELECT target_value, weight_percent,
-              	score0, score1, score2, score3, score4, score5
+              	score0, score1, score2, score3, score4, score5, score6
               FROM appraisal_item_result
               WHERE period_id = {$value->period_id}
               AND emp_id = {$value->emp_id}
@@ -474,6 +474,7 @@ class ImportAssignmentController extends Controller
               $assignedInfo["score3"] = "";
               $assignedInfo["score4"] = "";
               $assignedInfo["score5"] = "";
+              $assignedInfo["score6"] = "";
             } else {
               foreach ($assignedQry as $asVal) {
                 $assignedInfo["target_value"] = $asVal->target_value;
@@ -484,6 +485,7 @@ class ImportAssignmentController extends Controller
                 $assignedInfo["score3"] = $asVal->score3;
                 $assignedInfo["score4"] = $asVal->score4;
                 $assignedInfo["score5"] = $asVal->score5;
+                $assignedInfo["score6"] = $asVal->score6;
               }
             }
 
@@ -720,7 +722,7 @@ class ImportAssignmentController extends Controller
              $assignedInfo = [];
              $assignedQry = DB::select("
                SELECT target_value, weight_percent,
-               	score0, score1, score2, score3, score4, score5
+               	score0, score1, score2, score3, score4, score5, score6
                FROM appraisal_item_result
                WHERE period_id = {$value->period_id}
                AND emp_id is null
@@ -739,6 +741,7 @@ class ImportAssignmentController extends Controller
                $assignedInfo["score3"] = "";
                $assignedInfo["score4"] = "";
                $assignedInfo["score5"] = "";
+               $assignedInfo["score6"] = "";
              } else {
                foreach ($assignedQry as $asVal) {
                  $assignedInfo["target_value"] = $asVal->target_value;
@@ -749,6 +752,7 @@ class ImportAssignmentController extends Controller
                  $assignedInfo["score3"] = $asVal->score3;
                  $assignedInfo["score4"] = $asVal->score4;
                  $assignedInfo["score5"] = $asVal->score5;
+                 $assignedInfo["score6"] = $asVal->score6;
                }
              }
 
@@ -920,6 +924,7 @@ class ImportAssignmentController extends Controller
                  "range3" => "sometimes|required|numeric",
                  "range4" => "sometimes|required|numeric",
                  "range5" => "sometimes|required|numeric",
+                 "range6" => "sometimes|required|numeric",
               ]);
             } else {
               $validator = Validator::make($row->all(), [
@@ -942,6 +947,7 @@ class ImportAssignmentController extends Controller
                  "range3" => "sometimes|required|numeric",
                  "range4" => "sometimes|required|numeric",
                  "range5" => "sometimes|required|numeric",
+                 "range6" => "sometimes|required|numeric",
               ]);
             }
 
@@ -1087,6 +1093,7 @@ class ImportAssignmentController extends Controller
                 $appraisalItemResult->score3 = $row->range3;
                 $appraisalItemResult->score4 = $row->range4;
                 $appraisalItemResult->score5 = $row->range5;
+                $appraisalItemResult->score6 = $row->range6;
                 $appraisalItemResult->target_value = $row->target;
                 $appraisalItemResult->forecast_value = 0;
                 $appraisalItemResult->actual_value = 0;
@@ -1128,6 +1135,7 @@ class ImportAssignmentController extends Controller
                   "score3" => $row->range3,
                   "score4" => $row->range4,
                   "score5" => $row->range5,
+                  "score6" => $row->range6,
                   "target_value" => $row->target,
                   "max_value" => $row->max_value,
                   "value_get_zero"=>$row->value_get_zero,
