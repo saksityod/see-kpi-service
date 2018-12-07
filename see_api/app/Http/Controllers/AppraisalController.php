@@ -1468,16 +1468,40 @@ class AppraisalController extends Controller
 					$employee = Employee::where('emp_id',$emp->emp_id)->first();
 					$chief_emp = Employee::where('emp_code',$employee->chief_emp_code)->first();
 
-					$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, "web_domain" => $config->web_domain,  'emp_result_id' => $emp->emp_result_id, 'appraisal_type_id' => $emp->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
-					$to = [$employee->email, $chief_emp->email];
+					if(!empty($request->template_name) && $request->template_name=='kpi-result-360') {
+						$assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup($employee->emp_code);
 
-					//$from = $config->mail_username;
+						if($assGroup != null) {
+							$group_id = $assGroup->assessor_group_id;
+						} else {
+							$assGroup = AssessorGroup::find(4);
+							$group_id = $assGroup->assessor_group_id;
+						}
 
-					Mail::send('emails.status', $data, function($message) use ($from, $to)
-					{
-						$message->from($from['address'], $from['name']);
-						$message->to($to)->subject('ระบบได้ทำการประเมิน');
-					});
+						$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, "web_domain" => $config->web_domain,  'emp_result_id' => $emp->emp_result_id, 'group_id' => $group_id];
+						$to = [$employee->email, $chief_emp->email];
+
+						//$from = $config->mail_username;
+
+						Mail::send('emails.appraisal360_status', $data, function($message) use ($from, $to)
+						{
+							$message->from($from['address'], $from['name']);
+							$message->to($to)->subject('ระบบได้ทำการประเมิน');
+						});
+
+					} else {
+						$data = ["chief_emp_name" => $chief_emp->emp_name, "emp_name" => $employee->emp_name, "status" => $stage->status, "web_domain" => $config->web_domain,  'emp_result_id' => $emp->emp_result_id, 'appraisal_type_id' => $emp->appraisal_type_id, 'assignment_flag' => $stage->assignment_flag];
+						$to = [$employee->email, $chief_emp->email];
+
+						//$from = $config->mail_username;
+
+						Mail::send('emails.status', $data, function($message) use ($from, $to)
+						{
+							$message->from($from['address'], $from['name']);
+							$message->to($to)->subject('ระบบได้ทำการประเมิน');
+						});
+
+					}
 				} catch (Exception $e) {
 					$mail_error = $e->getMessage();
 
