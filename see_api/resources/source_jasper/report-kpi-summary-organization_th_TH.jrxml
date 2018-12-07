@@ -87,7 +87,7 @@ FROM
 	LEFT OUTER JOIN appraisal_period_month apm ON mon.appraisal_month_no = apm.month_id 
 	AND mon.period_id = apm.period_id 
 WHERE
-	mon.item_id = $P{item} -- and mon.year = 2018
+	mon.item_id = $P{item} 
 	
 	AND mon.period_id = $P{period} 
 	AND mon.org_id = $P{org} 
@@ -116,7 +116,7 @@ FROM
 	LEFT OUTER JOIN appraisal_period_month apm ON mon.appraisal_month_no = apm.month_id 
 	AND mon.period_id = apm.period_id 
 WHERE
-	mon.item_id = $P{item} -- and mon.year = 2018
+	mon.item_id = $P{item} 
 	
 	AND mon.period_id = $P{period} 
 	AND mon.org_id = $P{org} 
@@ -811,7 +811,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 							<jr:detailCell style="Table 1_TD" height="81">
 								<barChart>
 									<chart isShowLegend="false">
-										<reportElement x="0" y="0" width="189" height="81" uuid="f3bfec46-601d-4cd5-b375-816339085fa6"/>
+										<reportElement x="0" y="0" width="189" height="81" uuid="45ddb07d-68fc-4966-a164-1aa455786292"/>
 										<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 											<pen lineWidth="0.5"/>
 										</box>
@@ -821,7 +821,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 									</chart>
 									<categoryDataset>
 										<dataset>
-											<datasetRun subDataset="chart" uuid="c118f853-81dd-4695-8214-201f73c75c93">
+											<datasetRun subDataset="chart" uuid="166cd6be-70c5-4f60-888d-a9fad2e1f57d">
 												<datasetParameter name="period">
 													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 												</datasetParameter>

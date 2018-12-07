@@ -807,7 +807,7 @@ SCORE]]></text>
 							<jr:detailCell style="Table 1_TD" height="81">
 								<barChart>
 									<chart isShowLegend="false">
-										<reportElement x="0" y="0" width="189" height="81" uuid="f3bfec46-601d-4cd5-b375-816339085fa6"/>
+										<reportElement x="0" y="0" width="189" height="81" uuid="f8004803-b10e-4ba3-a4c0-977e3c30b530"/>
 										<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 											<pen lineWidth="0.5"/>
 										</box>
@@ -817,7 +817,7 @@ SCORE]]></text>
 									</chart>
 									<categoryDataset>
 										<dataset>
-											<datasetRun subDataset="chart" uuid="c118f853-81dd-4695-8214-201f73c75c93">
+											<datasetRun subDataset="chart" uuid="66093dd2-5a7e-419a-b79d-98fe9ca9eec8">
 												<datasetParameter name="period">
 													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 												</datasetParameter>

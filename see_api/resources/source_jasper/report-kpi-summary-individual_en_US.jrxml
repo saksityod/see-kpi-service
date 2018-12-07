@@ -957,7 +957,7 @@ SCORE]]></text>
 							<jr:detailCell style="Table 1_TD" height="80">
 								<barChart>
 									<chart isShowLegend="false">
-										<reportElement x="0" y="0" width="205" height="80" uuid="89825951-440f-4c42-9037-68a1d0a5282f"/>
+										<reportElement x="0" y="0" width="205" height="80" uuid="dad55f8c-b9ab-454b-bc3b-f13ca50376ef"/>
 										<box>
 											<pen lineWidth="0.5" lineColor="#000000"/>
 										</box>
@@ -973,7 +973,7 @@ SCORE]]></text>
 									</chart>
 									<categoryDataset>
 										<dataset>
-											<datasetRun subDataset="chart" uuid="1f93e373-b510-4140-a9f6-282d809bf3c7">
+											<datasetRun subDataset="chart" uuid="feebc3c5-ae3d-4839-8dfd-32c16f23f444">
 												<datasetParameter name="period">
 													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 												</datasetParameter>
@@ -1203,36 +1203,6 @@ SCORE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="51" y="0" width="100" height="30" uuid="b33dc38d-927b-4985-8455-9f58998ddf73">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="184fe7ae-cae4-4965-82e1-bc774f57fe33"/>
-				</reportElement>
-				<text><![CDATA[period_id]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="211" y="0" width="100" height="30" uuid="3101bad1-1482-4578-a29a-365ea2109aaf">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="288ab9f1-d2e1-4173-a095-6b8972d476d8"/>
-				</reportElement>
-				<text><![CDATA[org_id]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="477" y="0" width="100" height="30" uuid="1b1d67c1-1732-4819-a062-231c2bd87ecf">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d122acdd-14f2-4e8f-9e64-c95809e58387"/>
-				</reportElement>
-				<text><![CDATA[item_id]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="492" y="0" width="100" height="30" uuid="b418c71d-81f2-46a1-9caf-d14201cc24ca">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7338cd27-a0bd-409f-8754-40af148e9d63"/>
-				</reportElement>
-				<text><![CDATA[emp_id]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="652" y="0" width="100" height="30" uuid="d034484b-d589-48ad-bba5-0962f4ffc027">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6cadf4ba-c1d3-4c84-8928-91dee9b355c4"/>
-				</reportElement>
-				<text><![CDATA[emp_result_id]]></text>
-			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
