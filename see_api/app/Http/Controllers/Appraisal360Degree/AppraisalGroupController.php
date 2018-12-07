@@ -32,7 +32,8 @@ class AppraisalGroupController extends Controller
 
 	public function __construct()
 	{
-		$this->middleware('jwt.auth');
+		$this->middleware('jwt.auth', ['except' => ['GetCompetencyInfo']]);
+		// $this->middleware('jwt.auth');
 	}
 
 
@@ -1808,6 +1809,83 @@ class AppraisalGroupController extends Controller
 		}
 
 		return response()->json($groups);
+	}
+
+
+	public function GetCompetencyInfo(Request $request){
+		try {
+			$config = SystemConfiguration::firstOrFail();
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
+		}
+
+		if(in_array($request->assessor_group_id, [1,5])){
+			$assessorRroupQrySrt = "";
+		} else {
+			$assessorRroupQrySrt = "AND com.assessor_group_id = '{$request->assessor_group_id}'";
+		}
+
+		$items = DB::select("
+			SELECT DISTINCT com.item_id, ai.item_name, 
+				-- ai.formula_desc, 
+				ai.structure_id, aps.structure_name, aps.form_id, 
+				ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id, 
+				com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
+				CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
+				com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
+				air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
+				emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, 
+				-- g.weight_percent total_weight_percent, 
+				0 as total_weigh_score, air.structure_weight_percent
+			FROM competency_result com
+			LEFT OUTER JOIN appraisal_level le on com.level_id = le.level_id
+			LEFT OUTER JOIN appraisal_item ai on com.item_id = ai.item_id
+			LEFT OUTER JOIN	appraisal_structure aps on ai.structure_id = aps.structure_id
+			LEFT OUTER JOIN	form_type ft on aps.form_id = ft.form_id
+			LEFT OUTER JOIN	assessor_group gr on com.assessor_group_id = gr.assessor_group_id
+			LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
+			LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
+			LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
+			LEFT OUTER JOIN	structure_result f on emp.emp_result_id = f.emp_result_id
+			-- LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id AND air.level_id = g.appraisal_level_id AND g.assessor_group_id = com.assessor_group_id
+			WHERE aps.form_id = 2
+			AND emp.emp_result_id = '{$request->emp_result_id}'
+			".$assessorRroupQrySrt."
+			ORDER BY ai.structure_id ASC, com.assessor_group_id ASC, com.assessor_id ASC,  com.item_id ASC
+		");
+		$items = collect($items)->groupBy('structure_name');
+		
+		$items = $items->map(function($item, $key) use($request, $assessorRroupQrySrt, $config){
+			$itemTemp = $item;
+			unset($item);
+
+			$item['structure_id'] = $itemTemp[0]->structure_id;
+			$item['structure_name'] = $itemTemp[0]->structure_name;
+			$item['nof_target_score'] = $itemTemp[0]->nof_target_score;
+			$item['structure_weight_percent'] = $itemTemp[0]->structure_weight_percent;
+			$item['result_type'] = $config->result_type;
+			$item['hint'] = DB::select("
+				SELECT concat(a.target_score,' = ',a.threshold_name) hint
+				FROM threshold a
+				LEFT JOIN threshold_group b ON a.threshold_group_id = b.threshold_group_id
+				WHERE b.is_active = 1
+				AND a.structure_id = {$itemTemp[0]->structure_id}
+				ORDER BY target_score ASC
+			");
+			$item['data'] = $itemTemp;
+			$item['assessor_group'] = DB::select("
+				SELECT DISTINCT com.assessor_group_id, ag.assessor_group_name
+				FROM competency_result com
+				LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
+				INNER JOIN assessor_group ag ON ag.assessor_group_id = com.assessor_group_id
+				WHERE air.emp_result_id = '{$request->emp_result_id}'
+				".$assessorRroupQrySrt."
+			");
+			return $item;
+		});
+
+		return $items;
+
 	}
 
 }
