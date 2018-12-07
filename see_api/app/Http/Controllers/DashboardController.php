@@ -1955,6 +1955,8 @@ class DashboardController extends Controller
 						on a.org_id = d.org_id
 						left outer join employee e
 						on b.emp_id = e.emp_id
+						left outer join appraisal_period_month apm
+						on a.appraisal_month_no = apm.month_id and a.period_id = apm.period_id
 						where a.item_id = ?
 						and c.appraisal_type_id = ?
 						and b.emp_id = ?
@@ -1988,6 +1990,8 @@ class DashboardController extends Controller
 						on a.emp_result_id = c.emp_result_id
 						left outer join org d
 						on a.org_id = d.org_id
+						left outer join appraisal_period_month apm
+						on a.appraisal_month_no = apm.month_id and a.period_id = apm.period_id
 						where a.item_id = ?
 						and c.appraisal_type_id = ?
 						and a.org_id = ?
@@ -2000,7 +2004,7 @@ class DashboardController extends Controller
 
 				}
 
-				$qfooter = " order by a.org_id asc, a.appraisal_month_no asc ";
+				$qfooter = " order by a.org_id asc,apm.period_month_id asc, a.appraisal_month_no asc ";
 
 				$items = DB::select($query.$qfooter,$qinput);
 
