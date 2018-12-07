@@ -64,7 +64,7 @@
 	</style>
 	<subDataset name="chart" uuid="53f43788-b265-4adb-b89f-f7b50d505d3c">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-mpn"/>
 		<parameter name="period" class="java.lang.Integer"/>
 		<parameter name="org" class="java.lang.Integer"/>
 		<parameter name="item" class="java.lang.Integer"/>
@@ -87,7 +87,7 @@ INNER JOIN appraisal_item_result re ON
 	mon.item_result_id = re.item_result_id
 WHERE
 	mon.item_id = $P{item}
-	AND mon.year = 2018
+	-- AND mon.year = 2018
 	AND mon.period_id = $P{period}
 	AND mon.org_id = $P{org}
 	AND mon.emp_id = $P{emp}
@@ -115,7 +115,7 @@ INNER JOIN appraisal_item_result re ON
 	mon.item_result_id = re.item_result_id
 WHERE
 	mon.item_id = $P{item}
-	AND mon.year = 2018
+	-- AND mon.year = 2018
 	AND mon.period_id = $P{period}
 	AND mon.org_id = $P{org}
 	AND mon.emp_id = $P{emp}
@@ -218,9 +218,9 @@ INNER JOIN (SELECT org.org_id
 	FROM emp_result ER
 	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
 	INNER JOIN employee Emp ON ER.emp_id = Emp.emp_id
-	INNER JOIN org ON Emp.org_id = org.org_id
-	INNER JOIN position Po ON Emp.position_id = Po.position_id
-	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
+	INNER JOIN org ON ER.org_id = org.org_id
+	INNER JOIN position Po ON ER.position_id = Po.position_id
+	INNER JOIN appraisal_level AL ON ER.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 		AND ER.org_id IN ($P!{param_org})
@@ -424,9 +424,9 @@ INNER JOIN (SELECT org.org_id
 	FROM emp_result ER
 	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
 	INNER JOIN employee Emp ON ER.emp_id = Emp.emp_id
-	INNER JOIN org ON Emp.org_id = org.org_id
-	INNER JOIN position Po ON Emp.position_id = Po.position_id
-	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
+	INNER JOIN org ON ER.org_id = org.org_id
+	INNER JOIN position Po ON ER.position_id = Po.position_id
+	INNER JOIN appraisal_level AL ON ER.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 		AND (ER.org_id IN($P!{param_org})) 

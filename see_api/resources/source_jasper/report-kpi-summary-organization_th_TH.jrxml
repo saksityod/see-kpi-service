@@ -62,7 +62,7 @@
 	</style>
 	<subDataset name="chart" uuid="53f43788-b265-4adb-b89f-f7b50d505d3c">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-mpn"/>
 		<parameter name="period" class="java.lang.Integer"/>
 		<parameter name="org" class="java.lang.Integer"/>
 		<parameter name="item" class="java.lang.Integer"/>
@@ -72,7 +72,7 @@
 from monthly_appraisal_item_result mon
 inner join appraisal_item_result re on mon.item_result_id = re.item_result_id
 where mon.item_id = $P{item}
-and mon.year = 2018
+-- and mon.year = 2018
 and mon.period_id = $P{period}
 and mon.org_id = $P{org}
 group by mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id, re.target_value ,mon.appraisal_month_no
@@ -82,7 +82,7 @@ select "Target" as type_name,mon.period_id, mon.`year`, mon.item_id, mon.apprais
 from monthly_appraisal_item_result mon
 inner join appraisal_item_result re on mon.item_result_id = re.item_result_id
 where mon.item_id = $P{item}
-and mon.year = 2018
+-- and mon.year = 2018
 and mon.period_id = $P{period}
 and mon.org_id = $P{org}
 group by mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id, re.target_value ,mon.appraisal_month_no
