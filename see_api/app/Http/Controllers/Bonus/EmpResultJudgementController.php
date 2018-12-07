@@ -82,7 +82,7 @@ class EmpResultJudgementController extends Controller
                     ->first();
                 
                 // chech insert or update
-                if($empResultJudgement->count() == 0){
+                if(!$empResultJudgement){
                     $item = new EmpResultJudgement;
                     $item->emp_result_id = $d['emp_result_id'];
                     $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
