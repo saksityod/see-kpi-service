@@ -1033,7 +1033,7 @@ class AppraisalGroupController extends Controller
 	}
 
 
-	private function getAssessorGroup($searchEmpCode)
+	public function getAssessorGroup($searchEmpCode)
 	{
 		$loginEmpCode = Auth::id();
 		$assGroupId = 0; 
