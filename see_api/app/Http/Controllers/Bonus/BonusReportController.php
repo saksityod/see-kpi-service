@@ -201,8 +201,8 @@ class BonusReportController extends Controller
         AND pe.appraisal_year = ? ";
 
       $Before_After_Score = "
-        SELECT round(sum(em.b_amount)/sum(em.net_s_amount),2) as before_bonus
-        , round(sum(em.adjust_b_amount)/sum(em.net_s_amount),2) as after_bonus
+        SELECT round(sum(em.b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as before_bonus
+        , round(sum(em.adjust_b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as after_bonus
         FROM emp_result em
         INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
         WHERE FIND_IN_SET(em.org_id, ?) -- by org
@@ -211,8 +211,8 @@ class BonusReportController extends Controller
         AND em.appraisal_type_id = 2 ";
 
       $Total_Before_After = "
-          SELECT round(sum(em.b_amount)/sum(em.net_s_amount),2) as before_bonus
-          , round(sum(em.adjust_b_amount)/sum(em.net_s_amount),2) as after_bonus
+          SELECT round(sum(em.b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as before_bonus
+          , round(sum(em.adjust_b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as after_bonus
           FROM emp_result em
           INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
           WHERE pe.period_id = ?

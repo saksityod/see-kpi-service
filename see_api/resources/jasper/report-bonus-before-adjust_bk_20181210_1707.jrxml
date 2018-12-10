@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -90,20 +90,20 @@
     , (case when   $P{param_countemp} =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
     , (case when ( $P{param_countemp}  =2 or  $P{param_countemp} =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-    , FROM_BASE64(em.s_amount) as Basic_Salary
-    , FROM_BASE64(emp.net_s_amount) as Net_Salary
+    , em.s_amount as Basic_Salary
+    , emp.net_s_amount as Net_Salary
     , re.manager
     , re.bu as phck_bu
     , re.coo
     , re.Board
-    , (case when re.Board IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.Board
-      when re.coo IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.coo
-      when re.bu IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.bu
-      when re.manager IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.manager
-      ELSE FROM_BASE64(emp.net_s_amount) END) as  bonus_score
-    , FROM_BASE64(emp.b_amount) b_amount
+    , (case when re.Board IS NOT NULL THEN emp.net_s_amount*re.Board
+      when re.coo IS NOT NULL THEN emp.net_s_amount*re.coo
+      when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
+      when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
+      ELSE emp.net_s_amount END) as  bonus_score
+    , emp.b_amount
     , emp.b_rate
-    , FROM_BASE64(emp.adjust_b_amount) adjust_b_amount
+    , emp.adjust_b_amount
     , emp.adjust_b_rate
     from emp_result emp
     inner join employee em on emp.emp_id = em.emp_id
@@ -119,10 +119,11 @@
       , round(max(total.Board),2) as Board
       , total.emp_result_id
       FROM(
-        SELECT (case when result.RowNumber = 1 then result.adjust_result_score else null end) as manager
-        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as bu
-        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as coo
-        , (case when result.RowNumber = 4 then result.adjust_result_score else null end) as Board
+        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
+				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
+        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
+        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
+--         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
         , result.emp_result_id
         FROM(
           SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
@@ -131,8 +132,10 @@
               select emp.emp_result_id as num
               , emp.emp_result_judgement_id
               , emp.adjust_result_score
+							, em.result_score
               , emp.emp_result_id
               from emp_result_judgement emp
+							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
                -- where emp.emp_result_id = 46
               order by emp.emp_result_id asc, emp.created_dttm asc
           ) rows ,  (SELECT @row_num := 1) num_value,
@@ -172,13 +175,13 @@
 			<property name="com.jaspersoft.studio.field.label" value="working_start_date"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		</field>
-		<field name="BU" class="java.lang.Integer">
+		<field name="BU" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="BU"/>
 		</field>
-		<field name="MGR" class="java.lang.Integer">
+		<field name="MGR" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="MGR"/>
 		</field>
-		<field name="Staff" class="java.lang.Integer">
+		<field name="Staff" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="Staff"/>
 		</field>
 		<field name="Basic_Salary" class="java.math.BigDecimal">
@@ -248,7 +251,6 @@
       when AVG(phck_manager) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_manager)
       ELSE SUM(Net_Salary) END) as  bonus_score
     , SUM(b_amount) as b_amount
-    , SUM(adjust_b_amount) as adjust_b_amount
 FROM
  (select emp.emp_result_id
    , emp.emp_id
@@ -259,8 +261,8 @@ FROM
    , (case when  $P{param_countemp}  =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
    , (case when ( $P{param_countemp}  =2 or  $P{param_countemp}  =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
    , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-   , FROM_BASE64(em.s_amount) as Basic_Salary
-   , FROM_BASE64(emp.net_s_amount) as Net_Salary
+   , em.s_amount as Basic_Salary
+   , emp.net_s_amount as Net_Salary
    , re.manager as phck_manager
    , re.bu as phck_bu
    , re.coo
@@ -270,9 +272,8 @@ FROM
        when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
        when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
        ELSE emp.net_s_amount END) as  bonus_score*/
-   , FROM_BASE64(emp.b_amount) b_amount
+   , emp.b_amount
    , emp.b_rate
-   , FROM_BASE64(emp.adjust_b_amount) adjust_b_amount
    from emp_result emp
    inner join employee em on emp.emp_id = em.emp_id
    inner join position po on emp.position_id = po.position_id
@@ -282,32 +283,35 @@ FROM
    left join 
    (
     SELECT round(max(total.manager),2) as manager
-    , round(max(total.bu),2) as bu
-    , round(max(total.coo),2) as coo
-    , round(max(total.Board),2) as Board
-    , total.emp_result_id
-    FROM(
-     SELECT (case when result.RowNumber = 1 then result.adjust_result_score else null end) as manager
-     , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as bu
-     , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as coo
-     , (case when result.RowNumber = 4 then result.adjust_result_score else null end) as Board
-     , result.emp_result_id
-     FROM(
-      SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-      , @prev_value := rows.num
-       FROM (
-        select emp.emp_result_id as num
-        , emp.emp_result_judgement_id
-        , emp.adjust_result_score
-        , emp.emp_result_id
-        from emp_result_judgement emp
-         -- where emp.emp_result_id = 46
-        order by emp.emp_result_id asc, emp.created_dttm asc
-      ) rows ,  (SELECT @row_num := 1) num_value,
-      (SELECT @prev_value := '') set_value
-     ) result
-    ) total
-    group by total.emp_result_id
+      , round(max(total.bu),2) as bu
+      , round(max(total.coo),2) as coo
+      , round(max(total.Board),2) as Board
+      , total.emp_result_id
+      FROM(
+        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
+				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
+        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
+        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
+--         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
+        , result.emp_result_id
+        FROM(
+          SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
+          , @prev_value := rows.num
+            FROM (
+              select emp.emp_result_id as num
+              , emp.emp_result_judgement_id
+              , emp.adjust_result_score
+							, em.result_score
+              , emp.emp_result_id
+              from emp_result_judgement emp
+							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
+               -- where emp.emp_result_id = 46
+              order by emp.emp_result_id asc, emp.created_dttm asc
+          ) rows ,  (SELECT @row_num := 1) num_value,
+          (SELECT @prev_value := '') set_value
+        ) result
+      ) total
+      group by total.emp_result_id
    ) re on re.emp_result_id = emp.emp_result_id
 where emp.org_id in ($P!{param_org_id}) 
 				and emp.period_id =  $P{param_period} 
@@ -351,9 +355,6 @@ where emp.org_id in ($P!{param_org_id})
 		</field>
 		<field name="b_amount" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
-		</field>
-		<field name="adjust_b_amount" class="java.math.BigDecimal">
-			<property name="com.jaspersoft.studio.field.label" value="adjust_b_amount"/>
 		</field>
 	</subDataset>
 	<subDataset name="table_org_bu" uuid="178a6f41-4f35-4aeb-8e0d-f2951a129350">
@@ -373,17 +374,16 @@ where emp.org_id in ($P!{param_org_id})
     , (SUM(BU)+SUM(MGR)+SUM(Staff) ) as total_emp
     , SUM(Basic_Salary) as Basic_Salary
     , SUM(Net_Salary) as Net_Salary
-    , round(AVG(phck_manager),2) as manager
-    , round(AVG(phck_bu),2)  as phck_bu
-    , round(AVG(coo),2) as  coo
-    , round(AVG(Board),2)  as  Board
+    , AVG(phck_manager) as manager
+    , AVG(phck_bu)  as phck_bu
+    , AVG(coo) as  coo
+    , AVG(Board)  as  Board
      , (case when AVG(Board) IS NOT NULL THEN SUM(Net_Salary)*AVG(Board)
       when AVG(coo) IS NOT NULL THEN SUM(Net_Salary)*AVG(coo)
       when AVG(phck_bu) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_bu)
       when AVG(phck_manager) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_manager)
       ELSE SUM(Net_Salary) END) as  bonus_score
     , SUM(b_amount) as b_amount
-    , SUM(adjust_b_amount) as adjust_b_amount
 FROM
  (select emp.emp_result_id
    , emp.emp_id
@@ -395,8 +395,8 @@ FROM
   --  , (case when  emp.emp_result_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when (  emp.org_id != $P{param_org_bu} and $P{param_countemp}  =1 ) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
    , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-   , FROM_BASE64(em.s_amount) as Basic_Salary
-   , FROM_BASE64(emp.net_s_amount) as Net_Salary
+   , em.s_amount as Basic_Salary
+   , emp.net_s_amount as Net_Salary
    , re.manager as phck_manager
    , re.bu as phck_bu
    , re.coo
@@ -406,9 +406,8 @@ FROM
        when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
        when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
        ELSE emp.net_s_amount END) as  bonus_score*/
-   , FROM_BASE64(emp.b_amount) b_amount
+   , emp.b_amount
    , emp.b_rate
-   , FROM_BASE64(emp.adjust_b_amount) adjust_b_amount
    from emp_result emp
    inner join employee em on emp.emp_id = em.emp_id
    inner join position po on emp.position_id = po.position_id
@@ -418,32 +417,35 @@ FROM
    left join 
    (
     SELECT round(max(total.manager),2) as manager
-    , round(max(total.bu),2) as bu
-    , round(max(total.coo),2) as coo
-    , round(max(total.Board),2) as Board
-    , total.emp_result_id
-    FROM(
-     SELECT (case when result.RowNumber = 1 then result.adjust_result_score else null end) as manager
-     , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as bu
-     , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as coo
-     , (case when result.RowNumber = 4 then result.adjust_result_score else null end) as Board
-     , result.emp_result_id
-     FROM(
-      SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-      , @prev_value := rows.num
-       FROM (
-        select emp.emp_result_id as num
-        , emp.emp_result_judgement_id
-        , emp.adjust_result_score
-        , emp.emp_result_id
-        from emp_result_judgement emp
-         -- where emp.emp_result_id = 46
-        order by emp.emp_result_id asc, emp.created_dttm asc
-      ) rows ,  (SELECT @row_num := 1) num_value,
-      (SELECT @prev_value := '') set_value
-     ) result
-    ) total
-    group by total.emp_result_id
+      , round(max(total.bu),2) as bu
+      , round(max(total.coo),2) as coo
+      , round(max(total.Board),2) as Board
+      , total.emp_result_id
+      FROM(
+        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
+				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
+        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
+        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
+--         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
+        , result.emp_result_id
+        FROM(
+          SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
+          , @prev_value := rows.num
+            FROM (
+              select emp.emp_result_id as num
+              , emp.emp_result_judgement_id
+              , emp.adjust_result_score
+							, em.result_score
+              , emp.emp_result_id
+              from emp_result_judgement emp
+							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
+               -- where emp.emp_result_id = 46
+              order by emp.emp_result_id asc, emp.created_dttm asc
+          ) rows ,  (SELECT @row_num := 1) num_value,
+          (SELECT @prev_value := '') set_value
+        ) result
+      ) total
+      group by total.emp_result_id
    ) re on re.emp_result_id = emp.emp_result_id
 where emp.org_id in ($P!{param_org_id}) 
 				and emp.period_id =  $P{param_period} 
@@ -488,9 +490,6 @@ where emp.org_id in ($P!{param_org_id})
 		<field name="b_amount" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 		</field>
-		<field name="adjust_b_amount" class="java.math.BigDecimal">
-			<property name="com.jaspersoft.studio.field.label" value="adjust_b_amount"/>
-		</field>
 	</subDataset>
 	<subDataset name="grandtotal" uuid="0408dd33-e04b-4fc5-9912-01b2b68ffa92">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -500,10 +499,10 @@ where emp.org_id in ($P!{param_org_id})
 		<parameter name="param_form" class="java.lang.String"/>
 		<parameter name="param_year" class="java.lang.String"/>
 		<queryString language="SQL">
-			<![CDATA[SELECT sum(FROM_BASE64(em.s_amount)) as Basic_Salary
-, sum(FROM_BASE64(emp.net_s_amount)) as Net_Salary
-, sum( FROM_BASE64(emp.adjust_b_amount)) as b_amount
-, round(avg(emp.adjust_b_rate),2) as b_rate
+			<![CDATA[SELECT sum(em.s_amount) as Basic_Salary
+, sum(emp.net_s_amount) as Net_Salary
+, sum(emp.b_amount) as b_amount
+, round(avg(emp.b_rate),2) as b_rate
 from emp_result emp
 inner join employee em on emp.emp_id = em.emp_id
 inner join position po on emp.position_id = po.position_id
@@ -575,13 +574,13 @@ and emp.appraisal_type_id = 2]]>
   INNER JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id  
   INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id  
   WHERE sub_le.is_start_cal_bonus = 1  
-  and sub_oo.org_id in ($P!{param_org_id})
+and oo.org_id in ( $P!{param_org_id} )
 ) as all_bu_report
 , (SELECT appraisal_year FROM appraisal_period WHERE period_id = $P{param_period}  ) as appraisal_year
 , (SELECT o.org_name FROM org o
      INNER JOIN appraisal_level le ON o.level_id = le.level_id
      ORDER BY le.seq_no ASC, o.org_id ASC
-     LIMIT 1) as  namecom
+     LIMIT 1) as namecom
 FROM org oo
 LEFT JOIN org o ON o.parent_org_code = oo.org_code
 LEFT JOIN org ON org.parent_org_code = o.org_code
@@ -695,7 +694,7 @@ ORDER BY oo.org_code ASC
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="e35a649c-7157-4b85-a41c-55e766106f4c">
+						<datasetRun subDataset="table emp" uuid="8feda1d8-615c-4f61-b577-7691b253ae3b">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{parent_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -922,7 +921,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -935,7 +934,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -977,7 +976,7 @@ ORDER BY oo.org_code ASC
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_org_bu" uuid="fcdf2db3-bf00-4394-9b4c-26907648a9fa">
+						<datasetRun subDataset="table_org_bu" uuid="d198ec88-5917-45c7-9c57-b57fcf0dbd4b">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{parent}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1102,8 +1101,8 @@ ORDER BY oo.org_code ASC
 						<jr:column width="36" uuid="3cbd0e01-6b91-436c-9f69-f8c747c4480e">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
 							<jr:detailCell style="Table 1_TD" height="32">
-								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField pattern="#,##0.00#" isBlankWhenNull="true">
 									<reportElement mode="Opaque" x="0" y="0" width="36" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="68caf93b-f4cf-4821-8ed1-dcefdfa10cf1"/>
 									<box rightPadding="3"/>
@@ -1168,7 +1167,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1225,7 +1224,7 @@ ORDER BY oo.org_code ASC
 						<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="464b559b-84f6-4f83-beea-d29662db38ef">
+						<datasetRun subDataset="table emp" uuid="54dcd37b-fb91-41b2-85b4-e920e298f856">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{mid_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1452,7 +1451,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1465,7 +1464,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1499,7 +1498,7 @@ ORDER BY oo.org_code ASC
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="1617b03c-9c20-4ba8-9e5f-a92aacde7223">
+						<datasetRun subDataset="table_total_org_3" uuid="7055ac4d-3c86-424e-a4e5-007819842603">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{mid}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1687,7 +1686,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1739,7 +1738,7 @@ ORDER BY oo.org_code ASC
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="6ea0f4ea-15b5-41fc-b08a-b0f824e33414">
+						<datasetRun subDataset="table emp" uuid="a88ab6d9-f52e-4c37-b137-bb1a0e7288c6">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{child_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1964,7 +1963,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1977,7 +1976,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="13"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2011,7 +2010,7 @@ ORDER BY oo.org_code ASC
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="18215b18-f4df-4e82-be1a-1326a0ad44c8">
+						<datasetRun subDataset="table_total_org_3" uuid="929be98c-8504-491b-a15c-8587552e5983">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{child}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -2199,7 +2198,7 @@ ORDER BY oo.org_code ASC
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2228,7 +2227,7 @@ ORDER BY oo.org_code ASC
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["รายงานการจ่ายรางวัลพิเศษ ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["รายงานการจ่ายเงินรางวัลพิเศษ (ก่อนแก้ไข) ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="30" width="802" height="30" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994"/>
@@ -2292,7 +2291,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[เงินรางวัล]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="487" y="22" width="146" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a851e3a4-c759-4e59-b52f-3fe3336e4e05"/>
+				<reportElement mode="Opaque" x="498" y="22" width="160" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a851e3a4-c759-4e59-b52f-3fe3336e4e05"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2443,7 +2442,7 @@ ORDER BY oo.org_code ASC
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="grandtotal" uuid="7519f2d3-d50e-4450-858f-8e043b32d6a2">
+					<datasetRun subDataset="grandtotal" uuid="655183c4-8e20-4698-a11b-405664225613">
 						<datasetParameter name="param_form">
 							<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
 						</datasetParameter>

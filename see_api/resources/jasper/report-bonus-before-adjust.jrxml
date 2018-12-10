@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -90,20 +90,20 @@
     , (case when   $P{param_countemp} =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
     , (case when ( $P{param_countemp}  =2 or  $P{param_countemp} =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-    , em.s_amount as Basic_Salary
-    , emp.net_s_amount as Net_Salary
+    , FROM_BASE64(em.s_amount) as Basic_Salary
+    , FROM_BASE64(emp.net_s_amount) as Net_Salary
     , re.manager
     , re.bu as phck_bu
     , re.coo
     , re.Board
-    , (case when re.Board IS NOT NULL THEN emp.net_s_amount*re.Board
-      when re.coo IS NOT NULL THEN emp.net_s_amount*re.coo
-      when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
-      when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
-      ELSE emp.net_s_amount END) as  bonus_score
-    , emp.b_amount
+    , (case when re.Board IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.Board
+      when re.coo IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.coo
+      when re.bu IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.bu
+      when re.manager IS NOT NULL THEN FROM_BASE64(emp.net_s_amount)*re.manager
+      ELSE FROM_BASE64(emp.net_s_amount) END) as  bonus_score
+    , FROM_BASE64(emp.b_amount) b_amount
     , emp.b_rate
-    , emp.adjust_b_amount
+    , FROM_BASE64(emp.adjust_b_amount) adjust_b_amount
     , emp.adjust_b_rate
     from emp_result emp
     inner join employee em on emp.emp_id = em.emp_id
@@ -261,8 +261,8 @@ FROM
    , (case when  $P{param_countemp}  =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
    , (case when ( $P{param_countemp}  =2 or  $P{param_countemp}  =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
    , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-   , em.s_amount as Basic_Salary
-   , emp.net_s_amount as Net_Salary
+   , FROM_BASE64(em.s_amount) as Basic_Salary
+   , FROM_BASE64(emp.net_s_amount) as Net_Salary
    , re.manager as phck_manager
    , re.bu as phck_bu
    , re.coo
@@ -272,7 +272,7 @@ FROM
        when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
        when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
        ELSE emp.net_s_amount END) as  bonus_score*/
-   , emp.b_amount
+   , FROM_BASE64(emp.b_amount) b_amount
    , emp.b_rate
    from emp_result emp
    inner join employee em on emp.emp_id = em.emp_id
@@ -395,8 +395,8 @@ FROM
   --  , (case when  emp.emp_result_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when (  emp.org_id != $P{param_org_bu} and $P{param_countemp}  =1 ) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
    , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
-   , em.s_amount as Basic_Salary
-   , emp.net_s_amount as Net_Salary
+   , FROM_BASE64(em.s_amount) as Basic_Salary
+   , FROM_BASE64(emp.net_s_amount) as Net_Salary
    , re.manager as phck_manager
    , re.bu as phck_bu
    , re.coo
@@ -406,7 +406,7 @@ FROM
        when re.bu IS NOT NULL THEN emp.net_s_amount*re.bu
        when re.manager IS NOT NULL THEN emp.net_s_amount*re.manager
        ELSE emp.net_s_amount END) as  bonus_score*/
-   , emp.b_amount
+   , FROM_BASE64(emp.b_amount) b_amount
    , emp.b_rate
    from emp_result emp
    inner join employee em on emp.emp_id = em.emp_id
@@ -499,9 +499,9 @@ where emp.org_id in ($P!{param_org_id})
 		<parameter name="param_form" class="java.lang.String"/>
 		<parameter name="param_year" class="java.lang.String"/>
 		<queryString language="SQL">
-			<![CDATA[SELECT sum(em.s_amount) as Basic_Salary
-, sum(emp.net_s_amount) as Net_Salary
-, sum(emp.b_amount) as b_amount
+			<![CDATA[SELECT sum(FROM_BASE64(em.s_amount)) as Basic_Salary
+, sum(FROM_BASE64(emp.net_s_amount)) as Net_Salary
+, sum(FROM_BASE64(emp.b_amount)) as b_amount
 , round(avg(emp.b_rate),2) as b_rate
 from emp_result emp
 inner join employee em on emp.emp_id = em.emp_id
