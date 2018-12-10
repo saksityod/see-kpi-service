@@ -312,8 +312,7 @@ class EmpResultJudgementController extends Controller
             $underLineAllEmp = empty($gue) ? "" : " AND find_in_set(emp.emp_code, '{$gue}')";
         }
 
-        $res = DB::select("
-            SELECT 
+        $res_query = "SELECT 
                 IFNULL(erj.emp_result_judgement_id, 0) AS emp_result_judgement_id,
                 er.emp_result_id,
                 er.result_score AS emp_result_score,
@@ -322,7 +321,8 @@ class EmpResultJudgementController extends Controller
                 emp.emp_code,
                 emp.emp_name,
                 emp.emp_level_name AS appraisal_level_name,
-                emp.org_level_name AS org_name,
+                emp.org_level_name ,
+                emp.org_name ,
                 emp.position_name,
                 erj.judge_id AS judgement_id,
                 vel.appraisal_level_name AS judgement_name,
@@ -350,7 +350,10 @@ class EmpResultJudgementController extends Controller
                     el.appraisal_level_name AS emp_level_name,
                     ol.level_id AS org_level_id,
                     ol.appraisal_level_name AS org_level_name, 
-                    p.position_name
+                    p.position_name,
+                    org.org_code ,
+                    org.org_name ,
+                    el.seq_no           
                 FROM employee e 
                 INNER JOIN appraisal_level el ON el.level_id = e.level_id
                 INNER JOIN org ON org.org_id = e.org_id
@@ -371,8 +374,19 @@ class EmpResultJudgementController extends Controller
             ".$formIdQueryStr."
             ".$underLineAllEmp."
             GROUP BY er.emp_result_id
-            ORDER BY erj.created_dttm desc
-        ");
+            ORDER BY emp.org_code asc ,emp.emp_level_name desc ,emp.emp_code asc";
+
+        $res = DB::select($res_query);
+
+        
+         // Number of items per page
+         if($request->rpp == 'All'){
+            $perPage = count($res);
+        }
+        else{
+            empty($request->rpp) ? $perPage = count($res) : $perPage = $request->rpp;
+        }
+
         $res = collect($res);
         $res = $res->map(function($data) use($appraisalLevel){
  
@@ -405,10 +419,7 @@ class EmpResultJudgementController extends Controller
 
         // Get the current page from the url if it's not set default to 1
         empty($request->page) ? $page = 1 : $page = $request->page;
-
-        // Number of items per page
-        empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
-
+        
         $offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
 
         // Get only the items you need using array_slice (only get 10 items since that's what you need)
