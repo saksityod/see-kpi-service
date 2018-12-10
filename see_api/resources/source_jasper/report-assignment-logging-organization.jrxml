@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-assignment-logging-org" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryWithPageHeaderAndFooter="true" isFloatColumnFooter="true" uuid="6f77b5ba-4c28-4c60-b1dc-cc5402c78336">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="350"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="640"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
@@ -142,7 +142,7 @@
 	</style>
 	<subDataset name="table" uuid="66a54afb-52e9-49b1-973c-8e18b8360500">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_user" class="java.lang.String"/>
 		<parameter name="param_level_org" class="java.lang.String"/>
@@ -151,12 +151,13 @@
 			<![CDATA[SELECT 
 air.item_name
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.score0,0) as score0
-, COALESCE(air.score1,0) as score1
-, COALESCE(air.score2,0) as score2
-, COALESCE(air.score3,0) as score3
-, COALESCE(air.score4,0) as score4
-, COALESCE(air.score5,0) as score5
+, air.score0 as score0
+, air.score1 as score1
+, air.score2 as score2
+, air.score3 as score3
+, air.score4 as score4
+, air.score5 as score5
+, air.score6 as score6
 , (case when air.modify_type = "I" then 2
 	when air.modify_type = "U" then 1 
 	when air.modify_type = "D" then 0 
@@ -165,11 +166,14 @@ air.item_name
 , air.modify_by
 , sc.threshold
 , air.target_value
+, uom.uom_name
+, uom.is_date
 FROM appraisal_item_result_log air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 INNER JOIN org ON air.org_id = org.org_id	
+INNER JOIN uom ON uom.uom_id = api.uom_id
 CROSS JOIN system_config sc
 
 WHERE  (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
@@ -189,23 +193,33 @@ ORDER BY air.modify_date ASC]]>
 		</field>
 		<field name="score0" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score0"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
 		<field name="score1" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score1"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
 		<field name="score2" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score2"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
 		<field name="score3" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score3"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
 		<field name="score4" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score4"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
 		<field name="score5" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score5"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
-		<field name="modify_type" class="java.lang.Long">
+		<field name="score6" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score6"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
+		</field>
+		<field name="modify_type" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="modify_type"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
@@ -225,6 +239,14 @@ ORDER BY air.modify_date ASC]]>
 			<property name="com.jaspersoft.studio.field.label" value="target_value"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result_log"/>
 		</field>
+		<field name="uom_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="uom_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+		</field>
+		<field name="is_date" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+		</field>
 		<group name="item_name">
 			<groupExpression><![CDATA[$F{item_name}]]></groupExpression>
 		</group>
@@ -237,7 +259,7 @@ ORDER BY air.modify_date ASC]]>
 	</subDataset>
 	<subDataset name="threshold" uuid="8ed5f8d1-7cfd-49af-8a8d-c745ee6db419">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_user" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -249,12 +271,15 @@ ORDER BY air.modify_date ASC]]>
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.score0,0) as score0
-, COALESCE(air.score1,0) as score1
-, COALESCE(air.score2,0) as score2
-, COALESCE(air.score3,0) as score3
-, COALESCE(air.score4,0) as score4
-, COALESCE(air.score5,0) as score5
+, air.score0 as score0
+, air.score1 as score1
+, air.score2 as score2
+, air.score3 as score3
+, air.score4 as score4
+, air.score5 as score5
+, air.score6 as score6
+, uom.uom_name
+, uom.is_date
 , COALESCE(air.actual_value,0) as actual_value
 , (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
 , COALESCE(air.weigh_score,0) as weigh_score_item
@@ -274,6 +299,7 @@ LEFT JOIN structure_result str ON  str.period_id = air.period_id
 INNER JOIN appraisal_level alv ON  air.level_id = alv.level_id
 INNER JOIN org ON air.org_id = org.org_id	 
 INNER JOIN  emp_result emr ON emr.emp_result_id = air.emp_result_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 CROSS JOIN system_config sc
 WHERE    (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
 AND (air.org_id =  $P{param_org}   or '' =  $P{param_org}   or isnull(  $P{param_org}  ) = 1 or air.org_id= 'All')
@@ -293,9 +319,12 @@ GROUP BY aps.structure_name
 , COALESCE(air.score3,0) 
 , COALESCE(air.score4,0) 
 , COALESCE(air.score5,0) 
+, COALESCE(air.score6,0) 
 , COALESCE(air.actual_value,0) 
 , COALESCE(air.score,0) 
 , COALESCE(air.weigh_score,0)
+, uom.uom_name
+, uom.is_date
 , alv.appraisal_level_name
 , org.org_name
 , app.appraisal_year
@@ -326,21 +355,39 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 		</field>
 		<field name="score0" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score0"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
 		<field name="score1" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score1"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
 		<field name="score2" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score2"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
 		<field name="score3" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score3"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
 		<field name="score4" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score4"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
 		<field name="score5" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="score5"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+		</field>
+		<field name="score6" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="score6"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+		</field>
+		<field name="uom_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="uom_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+		</field>
+		<field name="is_date" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 		</field>
 		<field name="actual_value" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
@@ -363,7 +410,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 			<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 		</field>
-		<field name="COLUMN_19" class="java.lang.String">
+		<field name="COLUMN_22" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 		</field>
@@ -391,12 +438,15 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 , air.item_name
 , COALESCE(air.target_value,0) as target_value
 , COALESCE(air.weight_percent,0) as weight_percent
-, COALESCE(air.score0,0) as score0
-, COALESCE(air.score1,0) as score1
-, COALESCE(air.score2,0) as score2
-, COALESCE(air.score3,0) as score3
-, COALESCE(air.score4,0) as score4
-, COALESCE(air.score5,0) as score5
+, air.score0 as score0
+, air.score1 as score1
+, air.score2 as score2
+, air.score3 as score3
+, air.score4 as score4
+, air.score5 as score5
+, air.score6 as score6
+, uom.uom_name
+, uom.is_date
 , COALESCE(air.actual_value,0) as actual_value
 , (CASE WHEN sc.threshold = 1 THEN COALESCE(air.score,0) ELSE COALESCE(air.percent_achievement,0) END) as score
 , COALESCE(air.weigh_score,0) as weigh_score_item
@@ -416,6 +466,7 @@ LEFT JOIN structure_result str ON  str.period_id = air.period_id
 INNER JOIN appraisal_level alv ON  air.level_id = alv.level_id
 INNER JOIN org ON air.org_id = org.org_id	 
 INNER JOIN  emp_result emr ON emr.emp_result_id = air.emp_result_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 CROSS JOIN system_config sc
 WHERE    (org.level_id =   $P{param_level_org}    or '' =    $P{param_level_org} or isnull(  $P{param_level_org}   ) = 1 or air.level_id='All')
 AND (air.org_id =  $P{param_org}   or '' =  $P{param_org}   or isnull(  $P{param_org}  ) = 1 or air.org_id= 'All')
@@ -435,6 +486,7 @@ GROUP BY aps.structure_name
 , COALESCE(air.score3,0) 
 , COALESCE(air.score4,0) 
 , COALESCE(air.score5,0) 
+, COALESCE(air.score6,0) 
 , COALESCE(air.actual_value,0) 
 , COALESCE(air.score,0) 
 , COALESCE(air.weigh_score,0)
@@ -442,8 +494,7 @@ GROUP BY aps.structure_name
 , org.org_name
 , app.appraisal_year
 , appraisal_period_desc
-ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc
-]]>
+ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name asc]]>
 	</queryString>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
@@ -469,21 +520,39 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 	</field>
 	<field name="score0" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score0"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score1"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score2" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score2"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score3" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score3"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score4" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score4"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
 	<field name="score5" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="score5"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="score6" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score6"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="uom_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 	</field>
 	<field name="actual_value" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
@@ -506,7 +575,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 	</field>
-	<field name="COLUMN_19" class="java.lang.String">
+	<field name="COLUMN_22" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_period_desc"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 	</field>
@@ -935,7 +1004,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 		<groupHeader>
 			<band height="36">
 				<textField>
-					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="11" width="803" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e4f3bb4e-b168-4e55-9960-fb9398f5916c"/>
+					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="11" width="804" height="25" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e4f3bb4e-b168-4e55-9960-fb9398f5916c"/>
 					<textElement verticalAlignment="Middle">
 						<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 						<paragraph leftIndent="5"/>
@@ -1216,12 +1285,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="181" uuid="302a129d-9435-45a9-bee9-d5de180c5386">
+						<jr:column width="161" uuid="302a129d-9435-45a9-bee9-d5de180c5386">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="181" height="61" uuid="cefc9e75-e33b-4417-817a-e627dd89764c"/>
+									<reportElement x="0" y="0" width="161" height="61" uuid="cefc9e75-e33b-4417-817a-e627dd89764c"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1237,7 +1306,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							</jr:columnHeader>
 							<jr:detailCell style="Table 4_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="181" height="20" uuid="cded9f2c-6394-4584-9e39-f7ed36967c67"/>
+									<reportElement x="0" y="0" width="161" height="20" uuid="cded9f2c-6394-4584-9e39-f7ed36967c67"/>
 									<box leftPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1248,12 +1317,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="70" uuid="b907159d-45ee-44f6-ae84-f265e7db5553">
+						<jr:column width="50" uuid="b907159d-45ee-44f6-ae84-f265e7db5553">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="70" height="61" uuid="195f3a1d-240e-4bb5-917e-fba47f0a9f0f"/>
+									<reportElement x="0" y="0" width="50" height="61" uuid="195f3a1d-240e-4bb5-917e-fba47f0a9f0f"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1268,8 +1337,8 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 4_TD" height="20">
-								<textField pattern="#,##0.00">
-									<reportElement x="0" y="0" width="70" height="20" uuid="0f8f4119-8d06-45ea-8f1d-e3cfa190753b"/>
+								<textField>
+									<reportElement x="0" y="0" width="50" height="20" uuid="0f8f4119-8d06-45ea-8f1d-e3cfa190753b"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1277,6 +1346,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1314,13 +1384,13 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="313" uuid="2daa2609-ccd0-4e4e-8ce4-7e15fcecb0d4">
+						<jr:column width="350" uuid="2daa2609-ccd0-4e4e-8ce4-7e15fcecb0d4">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
 							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<staticText>
-									<reportElement x="0" y="20" width="53" height="41" uuid="727328f5-b9f0-4337-86e9-d2246bc7d9bf"/>
+									<reportElement x="0" y="20" width="50" height="41" uuid="727328f5-b9f0-4337-86e9-d2246bc7d9bf"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1334,7 +1404,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[0]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="105" y="20" width="52" height="41" uuid="9c1aad66-65b3-4ec5-b608-b73804c7d991"/>
+									<reportElement x="100" y="20" width="50" height="41" uuid="9c1aad66-65b3-4ec5-b608-b73804c7d991"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1348,7 +1418,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[2]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="157" y="20" width="52" height="41" uuid="cafdb844-05f7-4711-b235-6591d3eafa8b"/>
+									<reportElement x="150" y="20" width="50" height="41" uuid="cafdb844-05f7-4711-b235-6591d3eafa8b"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1362,7 +1432,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[3]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="261" y="20" width="52" height="41" uuid="ed4b6e36-5cdd-4430-a175-48b7f4369209"/>
+									<reportElement x="250" y="20" width="50" height="41" uuid="ed4b6e36-5cdd-4430-a175-48b7f4369209"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1376,7 +1446,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[5]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="0" width="313" height="20" uuid="61a85c85-0160-4ffc-a93f-11413edc8610"/>
+									<reportElement x="0" y="0" width="350" height="20" uuid="61a85c85-0160-4ffc-a93f-11413edc8610"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1390,7 +1460,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="53" y="20" width="52" height="41" uuid="0b554319-5c8a-42b1-9167-c981d86e20bc"/>
+									<reportElement x="50" y="20" width="50" height="41" uuid="0b554319-5c8a-42b1-9167-c981d86e20bc"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1404,7 +1474,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[1]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="209" y="20" width="52" height="41" uuid="fb9081cf-4e45-4854-bd5a-c422756114f4"/>
+									<reportElement x="200" y="20" width="50" height="41" uuid="fb9081cf-4e45-4854-bd5a-c422756114f4"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1417,11 +1487,25 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									</textElement>
 									<text><![CDATA[4]]></text>
 								</staticText>
+								<staticText>
+									<reportElement x="300" y="20" width="50" height="41" uuid="12d1a562-cb9c-445c-9855-a63b3226c807"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Top">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph spacingBefore="5"/>
+									</textElement>
+									<text><![CDATA[6]]></text>
+								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 4_TD" height="20">
-								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-								<textField pattern="#,##0.00">
-									<reportElement x="0" y="0" width="53" height="20" uuid="22b90671-54f0-4be0-9206-9be9282b935a"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="50" height="20" uuid="22b90671-54f0-4be0-9206-9be9282b935a"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1429,9 +1513,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField pattern="#,##0.00">
-									<reportElement x="53" y="0" width="52" height="20" uuid="e96fd7f2-649e-4a26-8552-708faa3a0d19"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="50" y="0" width="50" height="20" uuid="e96fd7f2-649e-4a26-8552-708faa3a0d19"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1439,9 +1524,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField pattern="#,##0.00">
-									<reportElement x="105" y="0" width="52" height="20" uuid="a09f2b05-dd76-4761-9fce-6741d1763194"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="100" y="0" width="50" height="20" uuid="a09f2b05-dd76-4761-9fce-6741d1763194"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1449,9 +1535,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField pattern="#,##0.00">
-									<reportElement x="157" y="0" width="52" height="20" uuid="27ee4f8b-7914-414e-a06d-c59f4f25007b"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="150" y="0" width="50" height="20" uuid="27ee4f8b-7914-414e-a06d-c59f4f25007b"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1459,9 +1546,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField pattern="#,##0.00">
-									<reportElement x="209" y="0" width="52" height="20" uuid="edd25e24-9c1f-4cf0-8231-cf6c7ff2eb1a"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="200" y="0" width="50" height="20" uuid="edd25e24-9c1f-4cf0-8231-cf6c7ff2eb1a"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1469,9 +1557,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField pattern="#,##0.00">
-									<reportElement x="261" y="0" width="52" height="20" uuid="aa093054-8457-428f-b5c6-d0cd24508d42"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="250" y="0" width="50" height="20" uuid="aa093054-8457-428f-b5c6-d0cd24508d42"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1479,16 +1568,28 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+								</textField>
+								<textField isBlankWhenNull="true">
+									<reportElement x="300" y="0" width="50" height="20" uuid="39a94251-38b0-48a1-bb1e-a508e6131720"/>
+									<box rightPadding="3">
+										<pen lineWidth="0.5"/>
+									</box>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score6}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="160" uuid="795fcca7-a3a8-43b1-ad9e-7aefa0da61d0">
+						<jr:column width="164" uuid="795fcca7-a3a8-43b1-ad9e-7aefa0da61d0">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
 							<jr:columnHeader style="Table 4_CH" height="61" rowSpan="1">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<staticText>
-									<reportElement x="0" y="0" width="160" height="20" uuid="028d4e7e-609a-4a67-9f37-602e315988bf"/>
+									<reportElement x="0" y="0" width="164" height="20" uuid="028d4e7e-609a-4a67-9f37-602e315988bf"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1502,7 +1603,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<text><![CDATA[ผลการประเมิน]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="54" y="20" width="53" height="41" uuid="d5a70bdf-dfc8-4cb7-87c3-21b60769e4bf"/>
+									<reportElement x="56" y="20" width="54" height="41" uuid="d5a70bdf-dfc8-4cb7-87c3-21b60769e4bf"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1517,7 +1618,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 (2)]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="107" y="20" width="53" height="41" uuid="91352bc3-9b00-441b-b8aa-be653bfd6f5a"/>
+									<reportElement x="110" y="20" width="54" height="41" uuid="91352bc3-9b00-441b-b8aa-be653bfd6f5a"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1532,7 +1633,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 (1)x(2)]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="20" width="54" height="41" uuid="4716556f-94f1-4fc8-ab86-78192548edaa"/>
+									<reportElement x="0" y="20" width="56" height="41" uuid="4716556f-94f1-4fc8-ab86-78192548edaa"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1547,9 +1648,9 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 4_TD" height="20">
-								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<textField pattern="#,##0.00">
-									<reportElement x="0" y="0" width="54" height="20" uuid="07efe60c-042d-49f7-b762-a19d3cbc0d7a"/>
+									<reportElement x="0" y="0" width="56" height="20" uuid="07efe60c-042d-49f7-b762-a19d3cbc0d7a"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1559,7 +1660,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
 								</textField>
 								<textField pattern="#,##0.00">
-									<reportElement x="54" y="0" width="53" height="20" uuid="86eecbbf-5480-4d26-b7f4-fa5036de0efc"/>
+									<reportElement x="56" y="0" width="54" height="20" uuid="86eecbbf-5480-4d26-b7f4-fa5036de0efc"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1569,7 +1670,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 									<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
 								</textField>
 								<textField pattern="#,##0.00">
-									<reportElement x="107" y="0" width="53" height="20" uuid="ca614f87-9445-446c-bc0c-e93c06fb7263"/>
+									<reportElement x="110" y="0" width="54" height="20" uuid="ca614f87-9445-446c-bc0c-e93c06fb7263"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
 									</box>
@@ -1610,12 +1711,13 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
-						<jr:column width="29" uuid="12bbed5f-3dea-4cd7-b8ce-654d67ce7222">
+						<jr:column width="30" uuid="12bbed5f-3dea-4cd7-b8ce-654d67ce7222">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="29" height="60" uuid="3d39f157-38bb-4a58-a0d4-b7c3ede4f1d4"/>
+									<reportElement x="0" y="0" width="30" height="60" uuid="3d39f157-38bb-4a58-a0d4-b7c3ede4f1d4"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1623,7 +1725,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[ลำดับ]]></text>
 								</staticText>
@@ -1631,7 +1733,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							<jr:detailCell style="Table 2_TD" height="20">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<textField>
-									<reportElement x="0" y="0" width="29" height="20" uuid="bd01d6e4-096c-4b39-ad8f-35142fb242e3"/>
+									<reportElement x="0" y="0" width="30" height="20" uuid="bd01d6e4-096c-4b39-ad8f-35142fb242e3"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1645,11 +1747,13 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="40" uuid="f8171b7c-915f-4dae-9855-304cd06ea6a5">
+						<jr:column width="50" uuid="f8171b7c-915f-4dae-9855-304cd06ea6a5">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<staticText>
-									<reportElement x="0" y="0" width="40" height="60" uuid="7d68a5d2-b105-44c0-8074-b194e746a6cc"/>
+									<reportElement x="0" y="0" width="50" height="60" uuid="7d68a5d2-b105-44c0-8074-b194e746a6cc"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1657,14 +1761,14 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[ประเภท]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="40" height="20" uuid="da169109-0172-45a7-ad8f-322fea90eb36"/>
+									<reportElement x="0" y="0" width="50" height="20" uuid="da169109-0172-45a7-ad8f-322fea90eb36"/>
 									<box leftPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1678,11 +1782,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="81" uuid="aea35a12-d72d-4058-8531-ff1ef596ed26">
+						<jr:column width="80" uuid="aea35a12-d72d-4058-8531-ff1ef596ed26">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="81" height="60" uuid="5b4209fe-b8a1-46bf-ba13-7ce96b116749"/>
+									<reportElement x="0" y="0" width="80" height="60" uuid="5b4209fe-b8a1-46bf-ba13-7ce96b116749"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1690,14 +1795,14 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[เวลาที่แก้ไข]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="81" height="20" uuid="0eee98ea-1c0d-433b-9a2f-e5edf93a6144"/>
+									<reportElement x="0" y="0" width="80" height="20" uuid="0eee98ea-1c0d-433b-9a2f-e5edf93a6144"/>
 									<box leftPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1711,11 +1816,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="92" uuid="298fec85-ef9b-4e7b-8b6a-22a7f75955e2">
+						<jr:column width="110" uuid="298fec85-ef9b-4e7b-8b6a-22a7f75955e2">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="92" height="60" uuid="45c2ab06-0a8d-45ad-9b09-7d022187e1fa"/>
+									<reportElement x="0" y="0" width="110" height="60" uuid="45c2ab06-0a8d-45ad-9b09-7d022187e1fa"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1723,14 +1829,15 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[แก้ไขโดย]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<textField>
-									<reportElement x="0" y="0" width="92" height="20" uuid="4b97c961-3e88-4f4c-9e92-69ccf0ff5ec1"/>
+									<reportElement x="0" y="0" width="110" height="20" uuid="4b97c961-3e88-4f4c-9e92-69ccf0ff5ec1"/>
 									<box leftPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1744,11 +1851,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="119" uuid="6f2242d5-0d78-4d79-8786-69d828ad6695">
+						<jr:column width="149" uuid="6f2242d5-0d78-4d79-8786-69d828ad6695">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="119" height="60" uuid="bcc528e7-ea4b-4cc2-bd35-f03d8779fe2a"/>
+									<reportElement x="0" y="0" width="149" height="60" uuid="bcc528e7-ea4b-4cc2-bd35-f03d8779fe2a"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1756,14 +1864,14 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[ตัวชี้วัดผลงานหลัก]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="119" height="20" uuid="1a17f717-d050-4ede-8489-9c1f2cb88014"/>
+									<reportElement x="0" y="0" width="149" height="20" uuid="1a17f717-d050-4ede-8489-9c1f2cb88014"/>
 									<box leftPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1777,11 +1885,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="50" uuid="0d0848d0-288b-49c6-a88e-a9608902a9bd">
+						<jr:column width="51" uuid="0d0848d0-288b-49c6-a88e-a9608902a9bd">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="50" height="60" uuid="5e3f3e22-a30a-41b8-9156-53860403f711"/>
+									<reportElement x="0" y="0" width="51" height="60" uuid="5e3f3e22-a30a-41b8-9156-53860403f711"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1789,14 +1898,14 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[เป้าหมาย]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="50" height="20" uuid="f5bad538-d34e-4d8d-9628-a8090ef5c2c5"/>
+									<reportElement x="0" y="0" width="51" height="20" uuid="f5bad538-d34e-4d8d-9628-a8090ef5c2c5"/>
 									<box leftPadding="0" rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1807,14 +1916,16 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="89" uuid="2f40266c-d2df-457e-83a1-4580a620eca9">
+						<jr:column width="49" uuid="2f40266c-d2df-457e-83a1-4580a620eca9">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="89" height="60" uuid="925061ea-b5f3-48be-939d-f02bebd9ec6f"/>
+									<reportElement x="0" y="0" width="49" height="60" uuid="925061ea-b5f3-48be-939d-f02bebd9ec6f"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1822,7 +1933,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[%น้ำหนัก 
 คะแนน]]></text>
@@ -1830,7 +1941,7 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
 								<textField>
-									<reportElement x="0" y="0" width="89" height="20" uuid="696e9ebd-bd86-470b-a251-529560b8d2bc"/>
+									<reportElement x="0" y="0" width="49" height="20" uuid="696e9ebd-bd86-470b-a251-529560b8d2bc"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1844,12 +1955,13 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="302" uuid="a3246209-ef18-4d1c-a36b-7057938fbf1f">
+						<jr:column width="283" uuid="a3246209-ef18-4d1c-a36b-7057938fbf1f">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
 							<jr:columnHeader style="Table 2_CH" height="60" rowSpan="1">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<staticText>
-									<reportElement x="0" y="0" width="302" height="30" uuid="0f876db8-a403-4060-9098-1539f51ea7d9"/>
+									<reportElement x="0" y="0" width="283" height="30" uuid="0f876db8-a403-4060-9098-1539f51ea7d9"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1857,12 +1969,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[เป้าหมายในแต่ละระดับผลงาน]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="0" y="30" width="52" height="30" uuid="461158fa-1e45-435e-a429-3b0a9a9a7c91"/>
+									<reportElement x="0" y="30" width="40" height="30" uuid="461158fa-1e45-435e-a429-3b0a9a9a7c91"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1870,12 +1982,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[0]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="52" y="30" width="50" height="30" uuid="c48c2781-9708-42fd-b097-036210d49f73"/>
+									<reportElement x="40" y="30" width="40" height="30" uuid="c48c2781-9708-42fd-b097-036210d49f73"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1883,12 +1995,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[1]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="102" y="30" width="50" height="30" uuid="e056cd8b-e862-4480-9e89-5bfa0ac9a602"/>
+									<reportElement x="80" y="30" width="40" height="30" uuid="e056cd8b-e862-4480-9e89-5bfa0ac9a602"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1896,12 +2008,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[2]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="152" y="30" width="50" height="30" uuid="d4e39490-eb75-40b0-bf91-4126eb3c2fbe"/>
+									<reportElement x="120" y="30" width="40" height="30" uuid="d4e39490-eb75-40b0-bf91-4126eb3c2fbe"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1909,12 +2021,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[3]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="202" y="30" width="50" height="30" uuid="c3421db3-0617-4823-b1b6-c25be16ce303"/>
+									<reportElement x="160" y="30" width="40" height="30" uuid="c3421db3-0617-4823-b1b6-c25be16ce303"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1922,12 +2034,12 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[4]]></text>
 								</staticText>
 								<staticText>
-									<reportElement x="252" y="30" width="50" height="30" uuid="f7fe106f-5df9-4b96-b181-12c654ba4cd4"/>
+									<reportElement x="200" y="30" width="40" height="30" uuid="f7fe106f-5df9-4b96-b181-12c654ba4cd4"/>
 									<box>
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1935,15 +2047,28 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 									</box>
 									<textElement textAlignment="Center" verticalAlignment="Middle">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 									</textElement>
 									<text><![CDATA[5]]></text>
 								</staticText>
+								<staticText>
+									<reportElement x="240" y="30" width="43" height="30" uuid="1e188ea7-acf5-4ac9-82b5-695601c20558"/>
+									<box>
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="12" isBold="true"/>
+									</textElement>
+									<text><![CDATA[6]]></text>
+								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 2_TD" height="20">
-								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-								<textField>
-									<reportElement x="0" y="0" width="52" height="20" uuid="3359934e-72fc-4989-864c-4e110b6270fb"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="40" height="20" uuid="3359934e-72fc-4989-864c-4e110b6270fb"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1954,9 +2079,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField>
-									<reportElement x="52" y="0" width="50" height="20" uuid="98c6f791-bf39-44b0-b65c-379f8bae1be6"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="40" y="0" width="40" height="20" uuid="98c6f791-bf39-44b0-b65c-379f8bae1be6"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1967,9 +2093,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField>
-									<reportElement x="102" y="0" width="50" height="20" uuid="194408ec-c625-44c8-bd83-e9fcb8fd0353"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="80" y="0" width="40" height="20" uuid="194408ec-c625-44c8-bd83-e9fcb8fd0353"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1980,9 +2107,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField>
-									<reportElement x="152" y="0" width="50" height="20" uuid="1c0194ed-77e1-4a3e-9072-e20f05664480"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="120" y="0" width="40" height="20" uuid="1c0194ed-77e1-4a3e-9072-e20f05664480"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -1993,9 +2121,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField>
-									<reportElement x="202" y="0" width="50" height="20" uuid="95b25bb9-6fce-4196-9368-28864bfb0ed8"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="160" y="0" width="40" height="20" uuid="95b25bb9-6fce-4196-9368-28864bfb0ed8"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -2006,9 +2135,10 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
-								<textField>
-									<reportElement x="252" y="0" width="50" height="20" uuid="8f8cb7b7-466f-4ac6-959a-228dc7ea79ff"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="200" y="0" width="40" height="20" uuid="8f8cb7b7-466f-4ac6-959a-228dc7ea79ff"/>
 									<box rightPadding="3">
 										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -2019,6 +2149,21 @@ ORDER BY air.org_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+								</textField>
+								<textField isBlankWhenNull="true">
+									<reportElement x="240" y="0" width="43" height="20" uuid="9788333f-deaf-4985-a206-938eb0cf4299"/>
+									<box rightPadding="3">
+										<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" markup="styled">
+										<font fontName="TH SarabunPSK" size="12"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{score6}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
