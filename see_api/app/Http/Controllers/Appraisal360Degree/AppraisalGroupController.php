@@ -1900,11 +1900,11 @@ class AppraisalGroupController extends Controller
 					AND cc.appraisal_level_id = air.level_id
 					AND cc.assessor_group_id = '{$assessorGroup->assessor_group_id}'
 				LEFT OUTER JOIN competency_result cr ON cr.item_result_id = air.item_result_id
-				LEFT OUTER JOIN structure_result sr on er.emp_result_id = sr.emp_result_id
+				LEFT OUTER JOIN structure_result sr on er.emp_result_id = sr.emp_result_id AND sr.structure_id = ai.structure_id
 				WHERE aps.form_id = 2
 				AND er.emp_result_id = '{$request->emp_result_id}'
 			";
-			
+
 			$orderbyQryStr = "ORDER BY structure_id ASC, assessor_group_id ASC, assessor_id ASC,  item_id ASC";
 		}
 
@@ -1929,7 +1929,7 @@ class AppraisalGroupController extends Controller
 			LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
 			LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
 			LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
-			LEFT OUTER JOIN structure_result sr on emp.emp_result_id = sr.emp_result_id
+			LEFT OUTER JOIN structure_result sr on emp.emp_result_id = sr.emp_result_id AND sr.structure_id = ai.structure_id
 			LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id AND air.level_id = g.appraisal_level_id AND g.assessor_group_id = com.assessor_group_id
 			WHERE aps.form_id = 2
 			AND emp.emp_result_id = '{$request->emp_result_id}'
