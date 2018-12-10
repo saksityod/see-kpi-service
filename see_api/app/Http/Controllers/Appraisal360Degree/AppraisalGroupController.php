@@ -32,8 +32,8 @@ class AppraisalGroupController extends Controller
 
 	public function __construct()
 	{
-		$this->middleware('jwt.auth', ['except' => ['GetCompetencyInfo']]);
-		// $this->middleware('jwt.auth');
+		// $this->middleware('jwt.auth', ['except' => ['GetCompetencyInfo']]);
+		$this->middleware('jwt.auth');
 	}
 
 
@@ -969,7 +969,7 @@ class AppraisalGroupController extends Controller
 						$competency->target_value = $da->target_value;
 						$competency->score = $da->score;
 						$competency->weight_percent = $da->weight_percent;
-						$competency->group_weight_percent = $da->group_weight_percent ;
+						$competency->group_weight_percent = $da->group_weight_percent;
 						// $competency->weigh_score = $da->weigh_score;
 
 						if($config->result_type == 1){
@@ -984,7 +984,7 @@ class AppraisalGroupController extends Controller
 					}
 					$competency->weight_percent = $da->weight_percent;
 					$competency->score = $da->score;
-					$competency->group_weight_percent = $da->group_weight_percent ;
+					$competency->group_weight_percent = $da->group_weight_percent;
 
 					if($config->result_type == 1){
 						$competency->weigh_score = $da->score * $da->weight_percent;
@@ -1819,24 +1819,82 @@ class AppraisalGroupController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		if(in_array($request->assessor_group_id, [1,5])){
-			$assessorRroupQrySrt = "";
+		if(in_array($request->assessor_group_id, [1,4,5])){
+			$assessorGroupDataQrySrt = "";
 		} else {
-			$assessorRroupQrySrt = "AND com.assessor_group_id = '{$request->assessor_group_id}'";
+			$assessorGroupDataQrySrt = "AND com.assessor_group_id = '{$request->assessor_group_id}'";
+		}
+		if(in_array($request->assessor_group_id, [1,5])){
+			$assessorGroupParamQrySrt = "";
+		} else {
+			$assessorGroupParamQrySrt = "AND com.assessor_group_id = '{$request->assessor_group_id}'";
+		}
+
+		// generate temp competency valeu if not exists
+		$auth = Auth::id();
+		$assessorGroup = AssessorGroup::find($request->assessor_group_id);
+		$competencyResult = DB::select("
+			SELECT com.*
+			FROM competency_result com
+			INNER JOIN appraisal_item_result air ON air.item_result_id = com.item_result_id
+			WHERE emp_result_id = '{$request->emp_result_id}'
+			AND com.assessor_group_id = '{$request->assessor_group_id}'
+		");
+		$orderbyQryStr = "ORDER BY ai.structure_id ASC, com.assessor_group_id ASC, com.assessor_id ASC,  com.item_id ASC";
+		if($competencyResult){
+			$unionTempDataSql = "";
+		} else {
+			if($request->assessor_group_id == 5){
+				$unionTempDataSql = "";
+			} else {
+				$unionTempDataSql = "
+					UNION
+					SELECT DISTINCT
+						0 competency_result_id, air.item_result_id, '{$assessorGroup->assessor_group_id}' assessor_group_id, '{$assessorGroup->assessor_group_name}' assessor_group_name,
+						ai.structure_id, aps.structure_name, air.item_id, ai.item_name, ai.formula_desc,
+						(
+							SELECT emp_id 
+							FROM employee 
+							WHERE emp_code = '{$auth}'
+						) AS assessor_id,
+						CONCAT('#', '{$assessorGroup->assessor_group_id}', er.emp_result_id, er.emp_id,' (','{$assessorGroup->assessor_group_name}',')') as emp_name,
+						air.structure_weight_percent, aps.nof_target_score, air.weight_percent,
+						cc.weight_percent AS group_weight_percent, air.target_value, 0 score, 0 weigh_score,
+						IFNULL(air.score, 0) AS item_result_score,
+						IFNULL(air.weight_percent, 0) AS item_result_weight_percent,
+						IFNULL(air.weigh_score, 0) AS item_result_weigh_score,
+						IFNULL(sr.weigh_score, 0) AS structure_result_weigh_score,
+						IFNULL(sr.nof_target_score, 0) AS structure_result_nof_target_score
+					FROM appraisal_item_result air
+					LEFT OUTER JOIN appraisal_item ai on air.item_id = ai.item_id
+					LEFT OUTER JOIN	appraisal_structure aps on ai.structure_id = aps.structure_id
+					LEFT OUTER JOIN	emp_result er on air.emp_result_id = er.emp_result_id
+					LEFT OUTER JOIN	competency_criteria cc
+						ON cc.structure_id = aps.structure_id
+						AND cc.appraisal_level_id = air.level_id
+						AND cc.assessor_group_id = '{$assessorGroup->assessor_group_id}'
+					LEFT OUTER JOIN competency_result cr ON cr.item_result_id = air.item_result_id
+					LEFT OUTER JOIN structure_result sr on er.emp_result_id = sr.emp_result_id
+					WHERE aps.form_id = 2
+					AND er.emp_result_id = '{$request->emp_result_id}'
+				";
+
+				$orderbyQryStr = "ORDER BY structure_id ASC, assessor_group_id ASC, assessor_id ASC,  item_id ASC";
+			}
 		}
 
 		$items = DB::select("
-			SELECT DISTINCT com.item_id, ai.item_name, 
-				-- ai.formula_desc, 
-				ai.structure_id, aps.structure_name, aps.form_id, 
-				ft.form_name, ft.app_url , com.competency_result_id, com.item_result_id, emp.emp_result_id, com.period_id, 
-				com.emp_id, em.emp_code, com.assessor_group_id, gr.assessor_group_name, com.assessor_id, aps.is_value_get_zero, 
-				CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name, 
-				com.org_id, com.position_id, com.level_id, com.chief_emp_id, com.target_value, com.score, com.threshold_group_id, 
-				air.weight_percent, com.group_weight_percent, com.weigh_score, air.percent_achievement, 
-				emp.result_threshold_group_id, aps.nof_target_score, le.no_weight, 
-				-- g.weight_percent total_weight_percent, 
-				0 as total_weigh_score, air.structure_weight_percent
+			SELECT DISTINCT
+				com.competency_result_id, com.item_result_id, com.assessor_group_id, gr.assessor_group_name,
+				ai.structure_id, aps.structure_name, com.item_id, ai.item_name, ai.formula_desc, com.assessor_id,
+				CONCAT('#',com.assessor_group_id,emp.emp_result_id,em.emp_id,' (',gr.assessor_group_name,')') as emp_name,
+				air.structure_weight_percent, aps.nof_target_score, air.weight_percent,
+				com.group_weight_percent, com.target_value, com.score, com.weigh_score,
+				IFNULL(air.score, 0) AS item_result_score,
+				IFNULL(air.weight_percent, 0) AS item_result_weight_percent,
+				IFNULL(air.weigh_score, 0) AS item_result_weigh_score,
+				IFNULL(sr.weigh_score, 0) AS structure_result_weigh_score,
+				IFNULL(sr.nof_target_score, 0) AS structure_result_nof_target_score
 			FROM competency_result com
 			LEFT OUTER JOIN appraisal_level le on com.level_id = le.level_id
 			LEFT OUTER JOIN appraisal_item ai on com.item_id = ai.item_id
@@ -1846,16 +1904,17 @@ class AppraisalGroupController extends Controller
 			LEFT OUTER JOIN	employee em on com.assessor_id = em.emp_id
 			LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
 			LEFT OUTER JOIN	emp_result emp on air.emp_result_id = emp.emp_result_id
-			LEFT OUTER JOIN	structure_result f on emp.emp_result_id = f.emp_result_id
-			-- LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id AND air.level_id = g.appraisal_level_id AND g.assessor_group_id = com.assessor_group_id
+			LEFT OUTER JOIN structure_result sr on emp.emp_result_id = sr.emp_result_id
+			LEFT OUTER JOIN	competency_criteria g on aps.structure_id = g.structure_id AND air.level_id = g.appraisal_level_id AND g.assessor_group_id = com.assessor_group_id
 			WHERE aps.form_id = 2
 			AND emp.emp_result_id = '{$request->emp_result_id}'
-			".$assessorRroupQrySrt."
-			ORDER BY ai.structure_id ASC, com.assessor_group_id ASC, com.assessor_id ASC,  com.item_id ASC
+			".$assessorGroupDataQrySrt."
+			".$unionTempDataSql."
+			".$orderbyQryStr."
 		");
 		$items = collect($items)->groupBy('structure_name');
 		
-		$items = $items->map(function($item, $key) use($request, $assessorRroupQrySrt, $config){
+		$items = $items->map(function($item, $key) use($request, $assessorGroupParamQrySrt, $config){
 			$itemTemp = $item;
 			unset($item);
 
@@ -1879,13 +1938,18 @@ class AppraisalGroupController extends Controller
 				LEFT OUTER JOIN	appraisal_item_result air on com.item_result_id = air.item_result_id
 				INNER JOIN assessor_group ag ON ag.assessor_group_id = com.assessor_group_id
 				WHERE air.emp_result_id = '{$request->emp_result_id}'
-				".$assessorRroupQrySrt."
+				AND com.assessor_group_id != 5
+				".$assessorGroupParamQrySrt."
+				UNION 
+				SELECT ass.assessor_group_id, ass.assessor_group_name
+				FROM assessor_group ass
+				WHERE ass.assessor_group_id = '{$request->assessor_group_id}'
+				AND ass.assessor_group_id != 5
 			");
 			return $item;
 		});
 
-		return $items;
-
+		return response()->json($items);
 	}
 
 }
