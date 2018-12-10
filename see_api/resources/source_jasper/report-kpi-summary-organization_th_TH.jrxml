@@ -62,34 +62,81 @@
 	</style>
 	<subDataset name="chart" uuid="53f43788-b265-4adb-b89f-f7b50d505d3c">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-mpn"/>
 		<parameter name="period" class="java.lang.Integer"/>
 		<parameter name="org" class="java.lang.Integer"/>
 		<parameter name="item" class="java.lang.Integer"/>
 		<queryString language="SQL">
-			<![CDATA[SELECT A.* FROM (select "Actual" as type_name,mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id
-, sum(mon.actual_value) as actual_target_value ,mon.appraisal_month_no
-from monthly_appraisal_item_result mon
-inner join appraisal_item_result re on mon.item_result_id = re.item_result_id
-where mon.item_id = $P{item}
-and mon.year = 2018
-and mon.period_id = $P{period}
-and mon.org_id = $P{org}
-group by mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id, re.target_value ,mon.appraisal_month_no
-UNION
-select "Target" as type_name,mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id
-, re.target_value ,mon.appraisal_month_no
-from monthly_appraisal_item_result mon
-inner join appraisal_item_result re on mon.item_result_id = re.item_result_id
-where mon.item_id = $P{item}
-and mon.year = 2018
-and mon.period_id = $P{period}
-and mon.org_id = $P{org}
-group by mon.period_id, mon.`year`, mon.item_id, mon.appraisal_month_name, mon.org_id, re.target_value ,mon.appraisal_month_no
- ) A
-WHERE A.type_name = "Actual"
+			<![CDATA[SELECT
+	A.* 
+FROM
+	(
+SELECT
+	"Actual" AS type_name,
+	mon.period_id,
+	mon.`year`,
+	mon.item_id,
+	mon.appraisal_month_name,
+	mon.org_id,
+	sum( mon.actual_value ) AS actual_target_value,
+	mon.appraisal_month_no,
+	apm.period_month_id 
+FROM
+	monthly_appraisal_item_result mon
+	INNER JOIN appraisal_item_result re ON mon.item_result_id = re.item_result_id
+	LEFT OUTER JOIN appraisal_period_month apm ON mon.appraisal_month_no = apm.month_id 
+	AND mon.period_id = apm.period_id 
+WHERE
+	mon.item_id = $P{item} 
+	
+	AND mon.period_id = $P{period} 
+	AND mon.org_id = $P{org} 
+GROUP BY
+	mon.period_id,
+	mon.`year`,
+	mon.item_id,
+	mon.appraisal_month_name,
+	mon.org_id,
+	re.target_value,
+	mon.appraisal_month_no,
+	apm.period_month_id UNION
+SELECT
+	"Target" AS type_name,
+	mon.period_id,
+	mon.`year`,
+	mon.item_id,
+	mon.appraisal_month_name,
+	mon.org_id,
+	re.target_value,
+	mon.appraisal_month_no,
+	apm.period_month_id 
+FROM
+	monthly_appraisal_item_result mon
+	INNER JOIN appraisal_item_result re ON mon.item_result_id = re.item_result_id
+	LEFT OUTER JOIN appraisal_period_month apm ON mon.appraisal_month_no = apm.month_id 
+	AND mon.period_id = apm.period_id 
+WHERE
+	mon.item_id = $P{item} 
+	
+	AND mon.period_id = $P{period} 
+	AND mon.org_id = $P{org} 
+GROUP BY
+	mon.period_id,
+	mon.`year`,
+	mon.item_id,
+	mon.appraisal_month_name,
+	mon.org_id,
+	re.target_value,
+	mon.appraisal_month_no,
+	apm.period_month_id 
+	) A 
+WHERE
+	A.type_name = "Actual" 
+
 ORDER BY
-	8]]>
+	A.org_id ASC,
+	A.period_month_id ASC,
+	A.appraisal_month_no ASC]]>
 		</queryString>
 		<field name="type_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="type_name"/>
@@ -119,6 +166,9 @@ ORDER BY
 		</field>
 		<field name="appraisal_month_no" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="appraisal_month_no"/>
+		</field>
+		<field name="period_month_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="period_month_id"/>
 		</field>
 	</subDataset>
 	<subDataset name="nothreshold" uuid="71d3bbb0-a0cd-4ace-a33d-dd069b790a2a">
@@ -761,7 +811,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 							<jr:detailCell style="Table 1_TD" height="81">
 								<barChart>
 									<chart isShowLegend="false">
-										<reportElement x="0" y="0" width="189" height="81" uuid="f3bfec46-601d-4cd5-b375-816339085fa6"/>
+										<reportElement x="0" y="0" width="189" height="81" uuid="45ddb07d-68fc-4966-a164-1aa455786292"/>
 										<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
 											<pen lineWidth="0.5"/>
 										</box>
@@ -771,7 +821,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 									</chart>
 									<categoryDataset>
 										<dataset>
-											<datasetRun subDataset="chart" uuid="c118f853-81dd-4695-8214-201f73c75c93">
+											<datasetRun subDataset="chart" uuid="166cd6be-70c5-4f60-888d-a9fad2e1f57d">
 												<datasetParameter name="period">
 													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 												</datasetParameter>

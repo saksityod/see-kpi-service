@@ -7,6 +7,7 @@ use App\EmpResult;
 use App\AppraisalItemResult;
 use App\EmpResultStage;
 use App\Employee;
+use App\SystemConfiguration;
 
 use Illuminate\Http\Request;
 use DB;

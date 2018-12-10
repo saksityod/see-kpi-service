@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_kpis" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="94831257-7074-486f-9577-a86a40622bf7">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-mpn"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -64,7 +64,7 @@
 	</style>
 	<subDataset name="chart" uuid="53f43788-b265-4adb-b89f-f7b50d505d3c">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-apus2"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-mpn"/>
 		<parameter name="period" class="java.lang.Integer"/>
 		<parameter name="org" class="java.lang.Integer"/>
 		<parameter name="item" class="java.lang.Integer"/>
@@ -80,14 +80,16 @@ SELECT
 	mon.appraisal_month_name,
 	mon.org_id ,
 	SUM( mon.actual_value ) AS actual_target_value ,
-	mon.appraisal_month_no
+	mon.appraisal_month_no ,
+	apm.period_month_id
 FROM
 	monthly_appraisal_item_result mon
 INNER JOIN appraisal_item_result re ON
 	mon.item_result_id = re.item_result_id
+LEFT OUTER JOIN appraisal_period_month apm ON
+	mon.appraisal_month_no = apm.month_id and mon.period_id = apm.period_id
 WHERE
 	mon.item_id = $P{item}
-	AND mon.year = 2018
 	AND mon.period_id = $P{period}
 	AND mon.org_id = $P{org}
 	AND mon.emp_id = $P{emp}
@@ -99,7 +101,8 @@ GROUP BY
 	mon.appraisal_month_name,
 	mon.org_id,
 	re.target_value ,
-	mon.appraisal_month_no
+	mon.appraisal_month_no,
+	apm.period_month_id
 UNION SELECT
 	"Target" AS type_name,
 	mon.period_id,
@@ -108,14 +111,16 @@ UNION SELECT
 	mon.appraisal_month_name,
 	mon.org_id ,
 	re.target_value ,
-	mon.appraisal_month_no
+	mon.appraisal_month_no ,
+	apm.period_month_id
 FROM
 	monthly_appraisal_item_result mon
 INNER JOIN appraisal_item_result re ON
 	mon.item_result_id = re.item_result_id
+LEFT OUTER JOIN appraisal_period_month apm ON
+	mon.appraisal_month_no = apm.month_id and mon.period_id = apm.period_id
 WHERE
 	mon.item_id = $P{item}
-	AND mon.year = 2018
 	AND mon.period_id = $P{period}
 	AND mon.org_id = $P{org}
 	AND mon.emp_id = $P{emp}
@@ -127,10 +132,11 @@ GROUP BY
 	mon.appraisal_month_name,
 	mon.org_id,
 	re.target_value ,
-	mon.appraisal_month_no
+	mon.appraisal_month_no,
+	apm.period_month_id
 ) A
 WHERE  A.type_name = "Actual"
-ORDER BY 8]]>
+ORDER BY A.org_id asc,A.period_month_id asc, A.appraisal_month_no asc]]>
 		</queryString>
 		<field name="type_name" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="type_name"/>
@@ -160,6 +166,9 @@ ORDER BY 8]]>
 		</field>
 		<field name="appraisal_month_no" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="appraisal_month_no"/>
+		</field>
+		<field name="period_month_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="period_month_id"/>
 		</field>
 	</subDataset>
 	<subDataset name="nothreshold" uuid="49edd47c-6a1c-4b0f-a62f-e3fa1859052a">
@@ -191,8 +200,6 @@ ORDER BY 8]]>
 , AIR.position_id
 , AIR.org_id
 , sc.threshold
-
-
 FROM appraisal_item_result AIR
 INNER JOIN appraisal_item AI ON AIR.item_id = AI.item_id
 INNER JOIN perspective Pe ON AI.perspective_id = Pe.perspective_id
@@ -218,9 +225,9 @@ INNER JOIN (SELECT org.org_id
 	FROM emp_result ER
 	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
 	INNER JOIN employee Emp ON ER.emp_id = Emp.emp_id
-	INNER JOIN org ON Emp.org_id = org.org_id
-	INNER JOIN position Po ON Emp.position_id = Po.position_id
-	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
+	INNER JOIN org ON ER.org_id = org.org_id
+	INNER JOIN position Po ON ER.position_id = Po.position_id
+	INNER JOIN appraisal_level AL ON ER.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 		AND ER.org_id IN ($P!{param_org})
@@ -424,9 +431,9 @@ INNER JOIN (SELECT org.org_id
 	FROM emp_result ER
 	INNER JOIN appraisal_period AP ON ER.period_id = AP.period_id
 	INNER JOIN employee Emp ON ER.emp_id = Emp.emp_id
-	INNER JOIN org ON Emp.org_id = org.org_id
-	INNER JOIN position Po ON Emp.position_id = Po.position_id
-	INNER JOIN appraisal_level AL ON Emp.level_id = AL.level_id 
+	INNER JOIN org ON ER.org_id = org.org_id
+	INNER JOIN position Po ON ER.position_id = Po.position_id
+	INNER JOIN appraisal_level AL ON ER.level_id = AL.level_id 
 	WHERE ER.appraisal_type_id = '2' 
 		AND (ER.period_id = $P{param_period} OR  ISNULL($P{param_period}) = 1 OR ""=$P{param_period})
 		AND (ER.org_id IN($P!{param_org})) 
@@ -950,7 +957,7 @@ SCORE]]></text>
 							<jr:detailCell style="Table 1_TD" height="80">
 								<barChart>
 									<chart isShowLegend="false">
-										<reportElement x="0" y="0" width="205" height="80" uuid="89825951-440f-4c42-9037-68a1d0a5282f"/>
+										<reportElement x="0" y="0" width="205" height="80" uuid="dad55f8c-b9ab-454b-bc3b-f13ca50376ef"/>
 										<box>
 											<pen lineWidth="0.5" lineColor="#000000"/>
 										</box>
@@ -966,7 +973,7 @@ SCORE]]></text>
 									</chart>
 									<categoryDataset>
 										<dataset>
-											<datasetRun subDataset="chart" uuid="1f93e373-b510-4140-a9f6-282d809bf3c7">
+											<datasetRun subDataset="chart" uuid="feebc3c5-ae3d-4839-8dfd-32c16f23f444">
 												<datasetParameter name="period">
 													<datasetParameterExpression><![CDATA[$F{period_id}]]></datasetParameterExpression>
 												</datasetParameter>

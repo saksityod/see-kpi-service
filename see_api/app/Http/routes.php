@@ -476,6 +476,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('appraisal360/edit_action_to','Appraisal360Degree\AppraisalGroupController@edit_action_to');
 	Route::get('appraisal360/parameter/org_level_individual', 'Appraisal360Degree\AppraisalGroupController@org_level_list_individual');
 	Route::get('appraisal360/parameter/org_individual', 'Appraisal360Degree\AppraisalGroupController@org_individual');
+	Route::get('appraisal360/check_permission_popup/{emp_result_id}', 'Appraisal360Degree\AppraisalGroupController@check_permission_popup');
 
 	
 	
