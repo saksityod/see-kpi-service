@@ -126,6 +126,159 @@ class AdvanceSearchController extends Controller
         return $globalEmpCodeSet;
     }
 
+    function GetallUnderOrg($paramEmp) {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
+
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $paramEmp.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT org_code
+                FROM org
+                WHERE find_in_set(parent_org_code, '{$LoopEmpCodeSet}')
+            ");
+            log::info($LoopEmpCodeSet);
+
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->org_code.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
+    }
+
+    function GetallUnderLevel($paramEmp) {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
+
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $paramEmp.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT level_id
+                FROM appraisal_level
+                WHERE find_in_set(parent_id, '{$LoopEmpCodeSet}')
+            ");
+            log::info($LoopEmpCodeSet);
+
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->level_id.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
+    }
+
+    function GetallUnderEmpByOrg($paramEmp) {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
+
+        $dataEmp = DB::table('org')
+        ->join('employee', 'employee.org_id', '=', 'org.org_id')
+        ->select('org.org_code')
+        ->where('employee.emp_id', $paramEmp)
+        ->first();
+
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $dataEmp->org_code.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT org_code
+                FROM org
+                WHERE find_in_set(parent_org_code, '{$LoopEmpCodeSet}')
+            ");
+            log::info($LoopEmpCodeSet);
+
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->org_code.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
+    }
+
+    function GetallUnderOrgByOrg($paramEmp) {
+        $globalEmpCodeSet = "";
+        $inLoop = true;
+        $loopCnt = 1;
+
+        $dataParam = DB::table('org')->select('org_code')->where('org_id', $paramEmp)->first();
+
+        while ($inLoop){
+            if($loopCnt == 1){
+                $LoopEmpCodeSet = $dataParam->org_code.",";
+            }
+            
+            // Check each under //
+            $eachUnder = DB::select("
+                SELECT org_code
+                FROM org
+                WHERE find_in_set(parent_org_code, '{$LoopEmpCodeSet}')
+            ");
+            log::info($LoopEmpCodeSet);
+
+            if(empty($eachUnder)){
+                $inLoop = false;
+            } else {
+                $LoopEmpCodeSet = "";
+                foreach ($eachUnder as $emp) {
+                    $LoopEmpCodeSet .= $emp->org_code.",";
+                }
+                $globalEmpCodeSet .= $LoopEmpCodeSet;
+            }
+            $loopCnt = $loopCnt + 1;
+        }
+        
+        return $globalEmpCodeSet;
+    }
+
+    function standard_deviation($aValues) {
+        $fMean = array_sum($aValues) / count($aValues);
+        //print_r($fMean);
+        $fVariance = 0.0;
+        foreach ($aValues as $i) {
+            $fVariance += pow($i - $fMean, 2);
+
+        }
+        
+        $size = empty(count($aValues) - 1) ? 1 : count($aValues) - 1;
+        return (float) sqrt($fVariance)/sqrt($size);
+    }
+
     function isAll() {
          $all_emp = DB::select("
             SELECT sum(b.is_all_employee) count_no

@@ -429,4 +429,265 @@ class EmpResultJudgementController extends Controller
 
         return response()->json($result);
     }
+
+    public function index3(Request $request)
+    {
+        $employee = Employee::find(Auth::id());
+        $appraisalLevel = AppraisalLevel::find($employee->level_id);
+
+        $empLevelQueryStr = empty($request->emp_level) ? "" : " AND emp.emp_level_id = '{$request->emp_level}'";
+        $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";
+        $orgIdQueryStr = empty($request->org_id) ? "" : " AND emp.org_id = '{$request->org_id}'";
+        $empIdQueryStr = empty($request->emp_id) ? "" : " AND emp.emp_id = '{$request->emp_id}'";
+
+        $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
+        $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
+        $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+
+        $res_query = "SELECT
+                emp.org_code,
+                emp.parent_org_code,
+                IFNULL(erj.emp_result_judgement_id, 0) AS emp_result_judgement_id,
+                er.emp_result_id,
+                er.result_score AS emp_result_score,
+                er.status,
+                er.result_score,
+                emp.emp_code,
+                emp.emp_name,
+                emp.emp_level_name AS appraisal_level_name,
+                emp.org_level_name ,
+                emp.org_name ,
+                emp.position_name,
+                erj.judge_id AS judgement_id,
+                vel.appraisal_level_name AS judgement_name,
+                erj.adjust_result_score AS judgement_score,
+                100.00 AS percent_adjust,
+                erj.created_dttm AS judgement_date,
+                (
+                    SELECT GROUP_CONCAT(j.adjust_result_score ORDER BY j.created_dttm DESC) 
+                    FROM emp_result_judgement j 
+                    WHERE j.emp_result_id = er.emp_result_id
+                ) AS perv_score,
+                (
+                    SELECT 
+                        GROUP_CONCAT(l.appraisal_level_name ORDER BY j.created_dttm DESC)
+                    FROM emp_result_judgement j 
+                    INNER JOIN employee e ON e.emp_id = j.judge_id
+                    INNER JOIN appraisal_level l ON l.level_id = e.level_id
+                    WHERE j.emp_result_id = er.emp_result_id
+                ) AS perv_jud_name,
+                ifnull(ast.edit_flag,0) edit_flag
+            FROM emp_result er
+            INNER JOIN (
+                SELECT e.emp_id, e.emp_code, e.emp_name, e.org_id,
+                    el.level_id AS emp_level_id,
+                    el.appraisal_level_name AS emp_level_name,
+                    ol.level_id AS org_level_id,
+                    ol.appraisal_level_name AS org_level_name, 
+                    p.position_name,
+                    org.org_code ,
+                    org.parent_org_code ,
+                    org.org_name ,
+                    el.seq_no           
+                FROM employee e 
+                INNER JOIN appraisal_level el ON el.level_id = e.level_id
+                INNER JOIN org ON org.org_id = e.org_id
+                INNER JOIN appraisal_level ol ON ol.level_id = org.level_id
+                INNER JOIN position p ON p.position_id = e.position_id
+            ) emp ON emp.emp_id = er.emp_id
+            LEFT OUTER JOIN emp_result_judgement erj ON erj.emp_result_id = er.emp_result_id
+            LEFT OUTER JOIN employee jud ON jud.emp_id = erj.judge_id
+            LEFT OUTER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+            LEFT OUTER JOIN appraisal_level vel ON vel.level_id = jud.level_id
+            WHERE er.period_id = '{$request->period_id}'
+            AND er.stage_id = '{$request->stage_id}'
+            ".$empLevelQueryStr."
+            ".$orgLevelQueryStr."
+            ".$orgIdQueryStr."
+            ".$empIdQueryStr."
+            ".$positionIdQueryStr."
+            ".$formIdQueryStr."
+            GROUP BY er.emp_result_id
+            ORDER BY emp.org_code asc ,emp.emp_level_name desc ,emp.emp_code asc
+        ";
+
+        $res = DB::select($res_query);
+
+        //หาค่า level, org, emp ที่อยู่ภายใต้
+        $gue_emp_level = empty($request->emp_level) ? $gue_emp_level = '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+        $gue_org_level = empty($request->org_level) ? $gue_org_level = '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+        $gueOrgCodeByOrgId = empty($request->org_id) ? $gueOrgCodeByOrgId = '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+        $gueOrgCodeByEmpId = empty($request->emp_id) ? $gueOrgCodeByEmpId = '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+        $empLevelQueryStr = empty($gue_emp_level) ? "" : " AND find_in_set(emp.emp_level_id, '{$gue_emp_level}')";
+        $orgLevelQueryStr = empty($gue_org_level) ? "" : " AND find_in_set(emp.org_level_id, '{$gue_org_level}')";
+        $orgIdQueryStr = empty($gueOrgCodeByOrgId) ? "" : " AND find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}')";
+        $empIdQueryStr = empty($gueOrgCodeByEmpId) ? "" : " AND find_in_set(emp.org_code, '{$gueOrgCodeByEmpId}')";
+        $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+
+        $resArr = [];
+        $empJudgeArr = [];
+        $resultArr = [];
+        $nOrg = 1;
+
+        $map = function($res) {return $res->org_code;};
+        $countOrgCode = array_count_values(array_map($map, $res));
+
+        foreach ($res as $key => $value) {
+            // หา org ที่อยู่ภายใต้
+            $gue_org = $this->advanSearch->GetallUnderOrg($value->org_code);
+
+            $res_query = "SELECT
+                    emp.org_code,
+                    emp.parent_org_code,
+                    IFNULL(erj.emp_result_judgement_id, 0) AS emp_result_judgement_id,
+                    er.emp_result_id,
+                    er.result_score AS emp_result_score,
+                    er.status,
+                    er.result_score,
+                    emp.emp_code,
+                    emp.emp_name,
+                    emp.emp_level_name AS appraisal_level_name,
+                    emp.org_level_name ,
+                    emp.org_name ,
+                    emp.position_name,
+                    erj.judge_id AS judgement_id,
+                    vel.appraisal_level_name AS judgement_name,
+                    erj.adjust_result_score AS judgement_score,
+                    100.00 AS percent_adjust,
+                    erj.created_dttm AS judgement_date,
+                    (
+                        SELECT GROUP_CONCAT(j.adjust_result_score ORDER BY j.created_dttm DESC) 
+                        FROM emp_result_judgement j 
+                        WHERE j.emp_result_id = er.emp_result_id
+                    ) AS perv_score,
+                    (
+                        SELECT 
+                            GROUP_CONCAT(l.appraisal_level_name ORDER BY j.created_dttm DESC)
+                        FROM emp_result_judgement j 
+                        INNER JOIN employee e ON e.emp_id = j.judge_id
+                        INNER JOIN appraisal_level l ON l.level_id = e.level_id
+                        WHERE j.emp_result_id = er.emp_result_id
+                    ) AS perv_jud_name,
+                    ifnull(ast.edit_flag,0) edit_flag
+                FROM emp_result er
+                INNER JOIN (
+                    SELECT e.emp_id, e.emp_code, e.emp_name, e.org_id,
+                        el.level_id AS emp_level_id,
+                        el.appraisal_level_name AS emp_level_name,
+                        ol.level_id AS org_level_id,
+                        ol.appraisal_level_name AS org_level_name, 
+                        p.position_name,
+                        org.org_code ,
+                        org.parent_org_code ,
+                        org.org_name ,
+                        el.seq_no           
+                    FROM employee e 
+                    INNER JOIN appraisal_level el ON el.level_id = e.level_id
+                    INNER JOIN org ON org.org_id = e.org_id
+                    INNER JOIN appraisal_level ol ON ol.level_id = org.level_id
+                    INNER JOIN position p ON p.position_id = e.position_id
+                ) emp ON emp.emp_id = er.emp_id
+                LEFT OUTER JOIN emp_result_judgement erj ON erj.emp_result_id = er.emp_result_id
+                LEFT OUTER JOIN employee jud ON jud.emp_id = erj.judge_id
+                LEFT OUTER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+                LEFT OUTER JOIN appraisal_level vel ON vel.level_id = jud.level_id
+                WHERE er.period_id = '{$request->period_id}'
+                AND er.stage_id = '{$request->stage_id}'
+                AND find_in_set(emp.org_code, '{$gue_org}')
+                ".$empLevelQueryStr."
+                ".$orgLevelQueryStr."
+                ".$orgIdQueryStr."
+                ".$empIdQueryStr."
+                ".$formIdQueryStr."
+                GROUP BY er.emp_result_id
+                ORDER BY emp.org_level_id, emp.parent_org_code, emp.org_code
+            ";
+
+            $resNew = DB::select($res_query);
+
+            if($countOrgCode[$value->org_code]==$nOrg) { // หา org_code นั้นๆ ว่าเป็นรอบสุดท้ายหรือไม่
+                foreach ($resNew as $key2 => $value2) {
+                    $resultArr[] = $resNew[$key2]; // เก็บค่า result2
+                    $empJudgeArr[] = $value2->emp_result_judgement_id; // เก็บค่า เพื่อนำไปเช็ค
+                }
+                $nOrg = 1; // เซทค่าเริ่มต้นใหม่
+            } else { // ยังไม่ใช่รอบสุดท้าย
+                $nOrg ++; // เพิ่มค่า $nOrg เพื่อหารอบถัดไป
+            }
+        }
+
+        foreach ($res as $key => $value) {
+            if(array_search($value->emp_result_judgement_id, $empJudgeArr)!==false) { //ถ้ามีค่าซ้ำกันให้ unset อออก
+                unset($res[$key]);
+            }
+        }
+
+        $res = collect($res)->merge($resultArr);
+
+        $res = collect($res);
+        $res = $res->map(function($data) use($appraisalLevel) {
+ 
+            $perv_score = explode(",", $data->perv_score);
+            $perv_jud_name = explode(",", $data->perv_jud_name);
+
+            if(empty($data->judgement_score)){
+                $data->judgement_score = $data->result_score;
+                $data->judgement_name = $appraisalLevel->appraisal_level_name;
+                $data->perv_score_1 = $data->result_score;
+                $data->perv_score_1_name = 'หัวหน้า';
+            } else {
+                $data->perv_score_1 = empty($perv_score[0]) ? null: $perv_score[0];
+                $data->perv_score_2 = empty($perv_score[1]) ? null: $perv_score[1];
+                $data->perv_score_3 = empty($perv_score[2]) ? null: $perv_score[2];
+                $data->perv_score_1_name = empty($perv_jud_name[0]) ? null: $perv_jud_name[0];
+                $data->perv_score_2_name = empty($perv_jud_name[1]) ? null: $perv_jud_name[1];
+                $data->perv_score_3_name = empty($perv_jud_name[2]) ? null: $perv_jud_name[2];
+                $data->judgement_name = $appraisalLevel->appraisal_level_name;
+            }
+
+            unset($data->perv_score);
+            unset($data->perv_jud_name);
+
+            return $data;
+        });
+
+        $judAVG = $res->avg('perv_score_1');
+        
+        $res = $res->toArray();
+
+        $data_dt = [];
+        foreach ($res as $key => $value) {
+            array_push($data_dt, $value->perv_score_1);
+        }
+
+        $dataSTD = empty($data_dt) ? 0 : $this->advanSearch->standard_deviation($data_dt);
+
+        foreach ($res as $key => $value) {
+            if($dataSTD==0) {
+                $res[$key]->z_score = 0;
+            } else {
+                $res[$key]->z_score = ($value->perv_score_1-$judAVG) / $dataSTD;
+            }
+        }
+
+        // Number of items per page
+        if($request->rpp == 'All') {
+            $perPage = count(empty($res) ? 10 : $res);
+        } else {
+            empty($request->rpp) ? $perPage = count(empty($res) ? 10 : $res) : $perPage = $request->rpp;
+        }
+
+        // Get the current page from the url if it's not set default to 1
+        empty($request->page) ? $page = 1 : $page = $request->page;
+        
+        $offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
+
+        // Get only the items you need using array_slice (only get 10 items since that's what you need)
+        $itemsForCurrentPage = array_slice($res, $offSet, $perPage, false);
+
+        // Return the paginator with only 10 items but with the count of all items and set the it on the correct page
+        $result = new LengthAwarePaginator($itemsForCurrentPage, count($res), $perPage, $page);
+
+        return response()->json(['result' => $result->toArray(), 'sd' => number_format($dataSTD, 2), 'avg' => number_format($judAVG, 2)]);
+    }
 }
