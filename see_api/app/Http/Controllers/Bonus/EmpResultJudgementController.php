@@ -379,12 +379,11 @@ class EmpResultJudgementController extends Controller
         $res = DB::select($res_query);
 
         
-         // Number of items per page
-         if($request->rpp == 'All'){
-            $perPage = count($res);
-        }
-        else{
-            empty($request->rpp) ? $perPage = count($res) : $perPage = $request->rpp;
+        // Number of items per page
+        if($request->rpp == 'All') {
+            $perPage = count(empty($res) ? 10 : $res);
+        } else {
+            empty($request->rpp) ? $perPage = count(empty($res) ? 10 : $res) : $perPage = $request->rpp;
         }
 
         $res = collect($res);

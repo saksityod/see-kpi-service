@@ -81,8 +81,14 @@ class BonusAdjustmentController extends Controller
             ".$qryStageId."
             ORDER BY er.org_id DESC, er.level_id DESC, e.emp_code ASC
         ");
+          // Number of items per page
+          if($request->rpp == 'All') {
+            $perPage = count(empty($dataInfo) ? 10 : $dataInfo);
+        } else {
+            empty($request->rpp) ? $perPage = count(empty($dataInfo) ? 10 : $dataInfo) : $perPage = $request->rpp;
+        }
 
-        $dataInfo = (new BonusAppraisalController)->SetPagination($request->page, $request->rpp, $dataInfo);
+        $dataInfo = (new BonusAppraisalController)->SetPagination($request->page, $perPage, $dataInfo);
         return response()->json($dataInfo);
     }
 

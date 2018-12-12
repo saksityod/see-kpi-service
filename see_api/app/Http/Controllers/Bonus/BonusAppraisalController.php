@@ -247,7 +247,15 @@ class BonusAppraisalController extends Controller
             unset($info->departments);
         }
         $buInfo = $buInfo->sortBy('seq')->values()->all();
-        $buInfo = $this->SetPagination($request->page, $request->rpp, $buInfo);
+
+            // Number of items per page
+            if($request->rpp == 'All') {
+                $perPage = count(empty($buInfo) ? 10 : $buInfo);
+            } else {
+                empty($request->rpp) ? $perPage = count(empty($buInfo) ? 10 : $buInfo) : $perPage = $request->rpp;
+            }
+            
+        $buInfo = $this->SetPagination($request->page, $perPage, $buInfo);
 
         return response()->json(['status'=> 200, 'edit_flag'=>$editFlag, 'message'=>$editMessage, 'datas'=> $buInfo->toArray()]);
     }
