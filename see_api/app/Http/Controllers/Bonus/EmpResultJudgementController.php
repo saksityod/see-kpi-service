@@ -38,88 +38,151 @@ class EmpResultJudgementController extends Controller
             ]);
         }
 
-        $validator = Validator::make([
-            'stage_id' => $request->stage_id
-        ], [
-            'stage_id' => 'required|integer'
-        ]);
+        if($request->cal_flag==0) {
 
-        if($validator->fails()) {
-            $errors_validator[] = $validator->errors();
-        }
+            $validator = Validator::make([
+                'stage_id' => $request->stage_id
+            ], [
+                'stage_id' => 'required|integer'
+            ]);
 
-        foreach ($request['detail'] as $d) {
-            if($d['edit_flag']==1) {
-                $validator_detail = Validator::make([
-                    'emp_result_id' => $d['emp_result_id'],
-                    'percent_adjust' => $d['percent_adjust'],
-                    'adjust_result_score' => $d['adjust_result_score'],
-                    'edit_flag' => $d['edit_flag']
-                ], [
-                    'emp_result_id' => 'required|integer',
-                    'percent_adjust' => 'required|between:0,100.00',
-                    'adjust_result_score' => 'required|between:0,100.00',
-                    'edit_flag' => 'required|integer'
-                ]);
-
-                if($validator_detail->fails()) {
-                    $errors_validator[] = $validator_detail->errors();
-                }
+            if($validator->fails()) {
+                $errors_validator[] = $validator->errors();
             }
-        }
 
-        if(!empty($errors_validator)) {
-            return response()->json(['status' => 400, 'data' => $errors_validator]);
-        }
+            foreach ($request['detail'] as $d) {
+                if($d['edit_flag']==1) {
+                    $validator_detail = Validator::make([
+                        'emp_result_id' => $d['emp_result_id'],
+                        'percent_adjust' => $d['percent_adjust'],
+                        'adjust_result_score' => $d['adjust_result_score'],
+                        'edit_flag' => $d['edit_flag']
+                    ], [
+                        'emp_result_id' => 'required|integer',
+                        'percent_adjust' => 'required|between:0,100.00',
+                        'adjust_result_score' => 'required|between:0,100.00',
+                        'edit_flag' => 'required|integer'
+                    ]);
 
-        $errors = [];
-        foreach ($request['detail'] as $d) {
-            if($d['edit_flag']==1) {
-
-                // get current value
-                $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
-                    ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
-                    ->first();
-                
-                // chech insert or update
-                if(!$empResultJudgement){
-                    $item = new EmpResultJudgement;
-                    $item->emp_result_id = $d['emp_result_id'];
-                    $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
-                    $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
-                    $item->percent_adjust = $d['percent_adjust'];
-                    $item->adjust_result_score = $d['adjust_result_score'];
-                    $item->is_bonus =  0;
-                    $item->created_by = Auth::id();
-
-                    try {
-                        $item->save();
-                    } catch (Exception $e) {
-                        $errors[] = substr($e, 254);
+                    if($validator_detail->fails()) {
+                        $errors_validator[] = $validator_detail->errors();
                     }
-                } else {
-                    DB::table('emp_result_judgement')
-                        ->where('emp_result_judgement_id', $empResultJudgement->emp_result_judgement_id)
-                        ->update(['percent_adjust'=>$d['percent_adjust'], 'adjust_result_score'=>$d['adjust_result_score']]);
                 }
             }
 
-            $emp = EmpResult::find($d['emp_result_id']);
-            $emp->stage_id = $request->stage_id;
-            $emp->status = AppraisalStage::find($request->stage_id)->status;
-            $emp->updated_by = Auth::id();
+            if(!empty($errors_validator)) {
+                return response()->json(['status' => 400, 'data' => $errors_validator]);
+            }
 
-            $emp_stage = new EmpResultStage;
-            $emp_stage->emp_result_id = $d['emp_result_id'];
-            $emp_stage->stage_id = $request->stage_id;
-            $emp_stage->created_by = Auth::id();
-            $emp_stage->updated_by = Auth::id();
+            $errors = [];
+            foreach ($request['detail'] as $d) {
+                if($d['edit_flag']==1) {
 
-            try {
-                $emp->save();
-                $emp_stage->save();
-            } catch (Exception $e) {
-                $errors[] = substr($e, 254);
+                    // get current value
+                    $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
+                        ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
+                        ->first();
+                    
+                    // chech insert or update
+                    if(!$empResultJudgement){
+                        $item = new EmpResultJudgement;
+                        $item->emp_result_id = $d['emp_result_id'];
+                        $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
+                        $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
+                        $item->percent_adjust = $d['percent_adjust'];
+                        $item->adjust_result_score = $d['adjust_result_score'];
+                        $item->is_bonus =  0;
+                        $item->created_by = Auth::id();
+
+                        try {
+                            $item->save();
+                        } catch (Exception $e) {
+                            $errors[] = substr($e, 254);
+                        }
+                    } else {
+                        DB::table('emp_result_judgement')
+                            ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
+                            ->update(['percent_adjust'=>$d['percent_adjust'], 'adjust_result_score'=>$d['adjust_result_score']]);
+                    }
+                }
+
+
+                $emp = EmpResult::find($d['emp_result_id']);
+                $emp->stage_id = $request->stage_id;
+                $emp->status = AppraisalStage::find($request->stage_id)->status;
+                $emp->updated_by = Auth::id();
+
+                $emp_stage = new EmpResultStage;
+                $emp_stage->emp_result_id = $d['emp_result_id'];
+                $emp_stage->stage_id = $request->stage_id;
+                $emp_stage->created_by = Auth::id();
+                $emp_stage->updated_by = Auth::id();
+
+                try {
+                    $emp->save();
+                    $emp_stage->save();
+                } catch (Exception $e) {
+                    $errors[] = substr($e, 254);
+                }
+            }
+
+        } else {
+
+            foreach ($request['detail'] as $d) {
+                if($d['edit_flag']==1) {
+                    $validator_detail = Validator::make([
+                        'emp_result_id' => $d['emp_result_id'],
+                        'percent_adjust' => $d['percent_adjust'],
+                        'adjust_result_score' => $d['adjust_result_score'],
+                        'edit_flag' => $d['edit_flag']
+                    ], [
+                        'emp_result_id' => 'required|integer',
+                        'percent_adjust' => 'required|between:0,100.00',
+                        'adjust_result_score' => 'required|between:0,100.00',
+                        'edit_flag' => 'required|integer'
+                    ]);
+
+                    if($validator_detail->fails()) {
+                        $errors_validator[] = $validator_detail->errors();
+                    }
+                }
+            }
+
+            if(!empty($errors_validator)) {
+                return response()->json(['status' => 400, 'data' => $errors_validator]);
+            }
+
+            $errors = [];
+            foreach ($request['detail'] as $d) {
+                if($d['edit_flag']==1) {
+
+                    // get current value
+                    $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
+                        ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
+                        ->first();
+                    
+                    // chech insert or update
+                    if(!$empResultJudgement) {
+                        $item = new EmpResultJudgement;
+                        $item->emp_result_id = $d['emp_result_id'];
+                        $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
+                        $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
+                        $item->percent_adjust = $d['percent_adjust'];
+                        $item->adjust_result_score = $d['adjust_result_score'];
+                        $item->is_bonus =  0;
+                        $item->created_by = Auth::id();
+
+                        try {
+                            $item->save();
+                        } catch (Exception $e) {
+                            $errors[] = substr($e, 254);
+                        }
+                    } else {
+                        DB::table('emp_result_judgement')
+                            ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
+                            ->update(['percent_adjust'=> $d['percent_adjust'], 'adjust_result_score'=> $d['adjust_result_score']]);
+                    }
+                }
             }
         }
 
