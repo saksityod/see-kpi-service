@@ -95,7 +95,7 @@ class EmpResultJudgementController extends Controller
 
                         // get current value
                         $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
-                            ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
+                            ->where('judge_id', $judge_id)
                             ->first();
 
                         
