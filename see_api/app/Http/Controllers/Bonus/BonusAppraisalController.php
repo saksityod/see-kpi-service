@@ -69,7 +69,6 @@ class BonusAppraisalController extends Controller
     function Index(Request $request)
     { 
         // เตรียมข้อมูลที่จำเป็นในการทำงาน
-        // $employee = Employee::where('emp_code', Auth::id())->first();
         $employee = DB::table('employee')
             ->join('org', 'org.org_id', '=', 'employee.org_id')
             ->select('org.*')
@@ -172,7 +171,7 @@ class BonusAppraisalController extends Controller
 
             $buData->bonus_percent = number_format((($buData->bonus_score * 100) / $buTotalBonusScore), 2);
             $buData->bonus_amount = number_format(($buData->bonus_percent / 100) * $buTotalBonusAmount, 2);
-            $buData->bonus_score = number_format($buData->bonus_score, 2);
+            $buData->bonus_score = number_format($buData->bonus_score, 4);
 
             return $buData;
         });
@@ -224,7 +223,7 @@ class BonusAppraisalController extends Controller
 
                 $depData->bonus_percent = number_format((($depData->bonus_score * 100) / $depTotalBonusScore), 2);
                 $depData->bonus_amount = number_format(($depData->bonus_percent / 100) * $depTotalBonusAmount,2);
-                $depData->bonus_score = number_format($depData->bonus_score, 2);
+                $depData->bonus_score = number_format($depData->bonus_score, 4);
                 return $depData;
             });
             
@@ -387,11 +386,12 @@ class BonusAppraisalController extends Controller
                 // 3.5.1.2 คำนวณเงินโบนัสของ bu mgr. และบันทึกผล
                 $bu->emp_bonus_amount = ($bu->emp_bonus_percent / 100) * $depTotalBonusAmount;
                 $empResult = EmpResult::find($empResultJudgement->emp_result_id);
+                $empResult->s_amount = base64_encode($bu->emp_salary);
                 $empResult->net_s_amount = base64_encode($bu->emp_net_salary);
                 $empResult->b_amount = base64_encode($bu->emp_bonus_amount);
                 $empResult->adjust_b_amount = base64_encode($bu->emp_bonus_amount);
-                $empResult->b_rate = $monthlyBonusRate;
-                $empResult->adjust_b_rate = $monthlyBonusRate;
+                $empResult->b_rate = ($bu->emp_bonus_amount / $bu->emp_net_salary);
+                $empResult->adjust_b_rate = ($bu->emp_bonus_amount / $bu->emp_net_salary);
                 $empResult->stage_id = $appraisalStage->to_stage_id;
                 $empResult->status = $appraisalStage->to_action;
                 $empResult->updated_by = Auth::id();
@@ -456,11 +456,12 @@ class BonusAppraisalController extends Controller
                     // 4.5.1.2 คำนวณเงินโบนัสของ dep manager และบันทึกผล
                     $dep->emp_bonus_amount = ($dep->emp_bonus_percent / 100) * $operTotalBonusAmount;
                     $empResult = EmpResult::find($empResultJudgement->emp_result_id);
+                    $empResult->s_amount = base64_encode($dep->emp_salary);
                     $empResult->net_s_amount = base64_encode($dep->emp_net_salary);
                     $empResult->b_amount = base64_encode($dep->emp_bonus_amount);
                     $empResult->adjust_b_amount = base64_encode($dep->emp_bonus_amount);
-                    $empResult->b_rate = $monthlyBonusRate;
-                    $empResult->adjust_b_rate = $monthlyBonusRate;
+                    $empResult->b_rate = ($dep->emp_bonus_amount / $dep->emp_net_salary);
+                    $empResult->adjust_b_rate = ($dep->emp_bonus_amount / $dep->emp_net_salary);
                     $empResult->stage_id = $appraisalStage->to_stage_id;
                     $empResult->status = $appraisalStage->to_action;
                     $empResult->updated_by = Auth::id();
@@ -483,11 +484,12 @@ class BonusAppraisalController extends Controller
                     $empResultJudgement->save();
                     
                     $empResult = EmpResult::find($empResultJudgement->emp_result_id);
+                    $empResult->s_amount = base64_encode($operData->emp_salary);
                     $empResult->net_s_amount = base64_encode($operData->emp_net_salary);
                     $empResult->b_amount = base64_encode($operData->emp_bonus_amount);
                     $empResult->adjust_b_amount = base64_encode($operData->emp_bonus_amount);
-                    $empResult->b_rate = $monthlyBonusRate;
-                    $empResult->adjust_b_rate = $monthlyBonusRate;
+                    $empResult->b_rate = ($operData->emp_bonus_amount / $operData->emp_net_salary);
+                    $empResult->adjust_b_rate = ($operData->emp_bonus_amount / $operData->emp_net_salary);
                     $empResult->stage_id = $appraisalStage->to_stage_id;
                     $empResult->status = $appraisalStage->to_action;
                     $empResult->updated_by = Auth::id();
@@ -546,11 +548,7 @@ class BonusAppraisalController extends Controller
                 FROM emp_result_judgement e
                 INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
                 INNER JOIN employee emp ON emp.emp_id = er.emp_id
-                WHERE e.created_dttm = (
-                    SELECT MAX(se.created_dttm)
-                    FROM emp_result_judgement se
-                    WHERE se.emp_result_id = e.emp_result_id
-                )
+                WHERE e.is_bonus = 1
                 AND emp.emp_id = (
                     SELECT se.emp_id
                     FROM employee se 
@@ -565,7 +563,7 @@ class BonusAppraisalController extends Controller
             ".$parentOrgQryStr."
         ");
 
-        return collect($items);
+        return $items;
     }
 
 
