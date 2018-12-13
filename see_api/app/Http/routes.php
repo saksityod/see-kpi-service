@@ -526,6 +526,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('bonus/advance_search/employee_name', 'Bonus\AdvanceSearchController@GetEmployeeName');
 	Route::get('bonus/advance_search/position_name', 'Bonus\AdvanceSearchController@GetPositionName');
 	Route::get('bonus/advance_search/status', 'Bonus\AdvanceSearchController@StatusList');
+	Route::get('bonus/advance_search/fake_adjust', 'Bonus\AdvanceSearchController@fakeAdjust');
 	// Bonus --> Bonus Appraisal //
 	Route::post('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@Index');
 	Route::patch('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@SavedAndCalculation');
