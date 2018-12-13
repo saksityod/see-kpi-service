@@ -437,9 +437,13 @@ class AdvanceSearchController extends Controller
                 WHERE find_in_set(org.level_id, '{$levelArr}')
                 ORDER BY org.org_code
             ");
+
         }
 
-        return response()->json(['data' => $items, 'edit_flag' => $stage->edit_flag]);
+        return response()->json([
+            'data' => empty($items) ? [] : $items, 
+            'edit_flag' => empty($stage->edit_flag) ? [] : $stage->edit_flag
+        ]);
     }
 
     public function YearList(Request $request)

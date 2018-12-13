@@ -28,7 +28,7 @@ class EmpResultJudgementController extends Controller
         $this->advanSearch = new AdvanceSearchController;
     }
 
-    public function store(Request $request) {
+    public function store2(Request $request) {
         $errors_validator = [];
 
         if(empty($request['detail'])) {
@@ -73,13 +73,13 @@ class EmpResultJudgementController extends Controller
             if(!empty($errors_validator)) {
                 return response()->json(['status' => 400, 'data' => $errors_validator]);
             }
-            
+
             /* $request->fake_flag
             1 คือ เป็นการประเมินแทน
             2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
             3 คือ การประเมินแบบปกติ
             */
-            
+
             if($request->fake_flag==1) {
                 $judge_id = $request['object_judge']['emp_id'];
                 $judge_level = $request['object_judge']['level_id'];
@@ -199,6 +199,130 @@ class EmpResultJudgementController extends Controller
                             ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
                             ->update(['percent_adjust'=> $d['percent_adjust'], 'adjust_result_score'=> $d['adjust_result_score']]);
                     }
+                }
+            }
+        }
+
+        return response()->json(['status' => 200, 'data' => $errors]);
+    }
+
+    public function store(Request $request) {
+        $errors_validator = [];
+
+        if(empty($request['detail'])) {
+            return response()->json([
+                'status' => 400, 
+                'data' => 'Please Select Employee for Adjust'
+            ]);
+        }
+
+        if($request->cal_flag==0) {
+            $validator = Validator::make([
+                'stage_id' => $request->stage_id
+            ], [
+                'stage_id' => 'required|integer'
+            ]);
+
+            if($validator->fails()) {
+                $errors_validator[] = $validator->errors();
+            }
+        }
+
+        foreach ($request['detail'] as $d) {
+            if($d['edit_flag']==1) {
+                $validator_detail = Validator::make([
+                    'emp_result_id' => $d['emp_result_id'],
+                    'percent_adjust' => $d['percent_adjust'],
+                    'adjust_result_score' => $d['adjust_result_score'],
+                    'edit_flag' => $d['edit_flag']
+                ], [
+                    'emp_result_id' => 'required|integer',
+                    'percent_adjust' => 'required|between:0,100.00',
+                    'adjust_result_score' => 'required|between:0,100.00',
+                    'edit_flag' => 'required|integer'
+                ]);
+
+                if($validator_detail->fails()) {
+                    $errors_validator[] = $validator_detail->errors();
+                }
+            }
+        }
+
+        if(!empty($errors_validator)) {
+            return response()->json(['status' => 400, 'data' => $errors_validator]);
+        }
+
+        /* $request->fake_flag
+            1 คือ เป็นการประเมินแทน
+            2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
+            3 คือ การประเมินแบบปกติ
+        */
+
+        if($request->fake_flag==1) {
+            $judge_id = $request['object_judge']['emp_id'];
+            $judge_level = $request['object_judge']['level_id'];
+        } else {
+            $judge_id = $this->advanSearch->orgAuth()->emp_id;
+            $judge_level = $this->advanSearch->orgAuth()->level_id;
+        }
+
+        $errors = [];
+        foreach ($request['detail'] as $d) {
+            if($request->fake_flag==1 OR $request->fake_flag==3) {
+                if($d['edit_flag']==1) {
+
+                    // get current value
+                    $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
+                    ->where('judge_id', $judge_id)
+                    ->first();
+                    
+                    $dataJudge = DB::table("employee")->where('emp_id', '=', $judge_id)->first();
+
+                    // chech insert or update
+                    if(!$empResultJudgement){
+                        $item = new EmpResultJudgement;
+                        $item->emp_result_id = $d['emp_result_id'];
+                        $item->judge_id = $judge_id;
+                        $item->org_level_id = $judge_level;
+                        $item->percent_adjust = $d['percent_adjust'];
+                        $item->adjust_result_score = $d['adjust_result_score'];
+                        $item->is_bonus =  0;
+                        $item->created_by = $dataJudge->emp_code;
+
+                        try {
+                            $item->save();
+                        } catch (Exception $e) {
+                            $errors[] = substr($e, 254);
+                        }
+                    } else {
+                        DB::table('emp_result_judgement')
+                        ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
+                        ->update([
+                            'percent_adjust' => $d['percent_adjust'], 
+                            'adjust_result_score' => $d['adjust_result_score'],
+                            'created_by' => $dataJudge->emp_code
+                        ]);
+                    }
+                }
+            }
+
+            if($request->cal_flag==0) {
+                $emp = EmpResult::find($d['emp_result_id']);
+                $emp->stage_id = $request->stage_id;
+                $emp->status = AppraisalStage::find($request->stage_id)->status;
+                $emp->updated_by = Auth::id();
+
+                $emp_stage = new EmpResultStage;
+                $emp_stage->emp_result_id = $d['emp_result_id'];
+                $emp_stage->stage_id = $request->stage_id;
+                $emp_stage->created_by = Auth::id();
+                $emp_stage->updated_by = Auth::id();
+
+                try {
+                    $emp->save();
+                    $emp_stage->save();
+                } catch (Exception $e) {
+                    $errors[] = substr($e, 254);
                 }
             }
         }
@@ -793,12 +917,30 @@ class EmpResultJudgementController extends Controller
         $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";
         $empIdQueryStr = empty($request->emp_id) ? "" : " AND emp.emp_id = '{$request->emp_id}'";
 
-        if(empty($request->org_id)){
-            $orgQueryStr = "";
+        $all_emp = $this->advanSearch->isAll();
+        if ($all_emp[0]->count_no > 0) {
+            if(empty($request->org_id)) {
+                $orgQueryStr = "";
+            } else {
+                $orgQueryStr = "AND (emp.org_id = '{$request->org_id}')";
+            }
         } else {
-            $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
-            $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
+            if(empty($request->org_id)) {
+                $orgId = Employee::find(Auth::id())->org_id;
+                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($orgId);
+                $orgQueryStr = "AND find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}')";
+            } else {
+                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+                $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
+            }
         }
+
+        // if(empty($request->org_id)){
+        //     $orgQueryStr = "";
+        // } else {
+        //     $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+        //     $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
+        // }
         
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
