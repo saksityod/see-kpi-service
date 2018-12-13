@@ -73,7 +73,13 @@ class EmpResultJudgementController extends Controller
             if(!empty($errors_validator)) {
                 return response()->json(['status' => 400, 'data' => $errors_validator]);
             }
-
+            
+            /* $request->fake_flag
+            1 คือ เป็นการประเมินแทน
+            2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
+            3 คือ การประเมินแบบปกติ
+            */
+            
             if($request->fake_flag==1) {
                 $judge_id = $request['object_judge']['emp_id'];
                 $judge_level = $request['object_judge']['level_id'];
