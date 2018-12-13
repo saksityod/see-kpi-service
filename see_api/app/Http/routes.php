@@ -76,6 +76,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('import_employee/{emp_code}/role', 'ImportEmployeeController@assign_role');
 	Route::patch('import_employee/role', 'ImportEmployeeController@batch_role');
 	Route::get('import_employee','ImportEmployeeController@index');
+	Route::post('import_employee/export','ImportEmployeeController@export');
 	Route::get('import_employee/{emp_id}', 'ImportEmployeeController@show');
 	Route::patch('import_employee/{emp_id}', 'ImportEmployeeController@update');
 	Route::delete('import_employee/{emp_id}', 'ImportEmployeeController@destroy');

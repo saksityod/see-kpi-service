@@ -171,6 +171,65 @@ class ImportEmployeeController extends Controller
 		return response()->json($result);
 	}
 
+	public function export(Request $request)
+	{
+		$qinput = array();
+		$query = "
+		SELECT
+			a.emp_code,
+			a.emp_name,
+			a.working_start_date,
+			a.probation_end_date,
+			a.acting_end_date,
+			c.org_code,
+			b.position_code,
+			a.chief_emp_code,
+			a.s_amount,
+			a.email ,
+			a.emp_type,
+			a.dotline_code,
+			a.has_second_line
+		FROM employee a
+			LEFT OUTER JOIN position b ON a.position_id = b.position_id
+			LEFT OUTER JOIN org c ON a.org_id = c.org_id
+			LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id 
+		WHERE 1 = 1 
+			AND a.is_active = 1 
+		";
+		empty($request->org_id) ?: ($query .= " AND a.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->position_id) ?: ($query .= " And a.position_id = ? " AND $qinput[] = $request->position_id);
+		empty($request->emp_code) ?: ($query .= " And a.emp_code = ? " AND $qinput[] = $request->emp_code);
+		$qfooter = " Order by a.emp_code ";
+
+		$items = DB::select($query . $qfooter, $qinput);
+		
+		$filename = "import_employee_template";  
+		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
+			$excel->sheet($filename, function($sheet) use($items, $request) {
+
+				$sheet->appendRow(array('Employee Code', 'Employee Name', 'Working Start Date (YYYY-MM-DD)', 'Probation End Date (YYYY-MM-DD)', 'Acting End Date (YYYY-MM-DD)', 'Organization Code', 'Position Code','Chief Employee Code', 'Salary Amount', 'Email', 'Employee Type', 'Dotline Code', 'Has Second Line'));
+
+				foreach ($items as $i) {						
+					$sheet->appendRow(array(
+						$i->emp_code,
+						$i->emp_name,
+						$i->working_start_date,
+						$i->probation_end_date,
+						$i->acting_end_date, 
+						$i->org_code, 
+						$i->position_code,
+						$i->chief_emp_code,
+						"", // $i->s_amount,
+						$i->email, 
+						$i->emp_type, 
+						$i->dotline_code,
+						$i->has_second_line,
+					));
+				}
+			});
+		})->export('xlsx');
+	}
+	
     public function role_list()
     {
 		$items = DB::select("
