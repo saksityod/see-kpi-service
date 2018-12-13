@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -86,7 +86,7 @@
     , em.emp_code
     , em.emp_name
     , po.position_name
-    , em.working_start_date
+    , DATE_FORMAT(em.working_start_date, "%d/%m/%Y") as working_start_date
     , (case when   $P{param_countemp} =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
     , (case when ( $P{param_countemp}  =2 or  $P{param_countemp} =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
@@ -171,7 +171,7 @@
 			<property name="com.jaspersoft.studio.field.label" value="position_name"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
 		</field>
-		<field name="working_start_date" class="java.sql.Date">
+		<field name="working_start_date" class="java.lang.String">
 			<property name="com.jaspersoft.studio.field.label" value="working_start_date"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		</field>
@@ -184,11 +184,11 @@
 		<field name="Staff" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="Staff"/>
 		</field>
-		<field name="Basic_Salary" class="java.math.BigDecimal">
+		<field name="Basic_Salary" class="java.lang.Object">
 			<property name="com.jaspersoft.studio.field.label" value="Basic_Salary"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		</field>
-		<field name="Net_Salary" class="java.math.BigDecimal">
+		<field name="Net_Salary" class="java.lang.Object">
 			<property name="com.jaspersoft.studio.field.label" value="Net_Salary"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -204,11 +204,11 @@
 		<field name="Board" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Board"/>
 		</field>
-		<field name="bonus_score" class="java.math.BigDecimal">
+		<field name="bonus_score" class="java.lang.Object">
 			<property name="com.jaspersoft.studio.field.label" value="bonus_score"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="org_result_judgement"/>
 		</field>
-		<field name="b_amount" class="java.math.BigDecimal">
+		<field name="b_amount" class="java.lang.Object">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -216,7 +216,7 @@
 			<property name="com.jaspersoft.studio.field.label" value="b_rate"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
-		<field name="adjust_b_amount" class="java.math.BigDecimal">
+		<field name="adjust_b_amount" class="java.lang.Object">
 			<property name="com.jaspersoft.studio.field.label" value="adjust_b_amount"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -755,7 +755,7 @@ ORDER BY oo.org_code ASC
 						<jr:column width="54" uuid="0678b4b1-adcf-4b96-bf92-861024b7413f">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								<textField isStretchWithOverflow="true" pattern="d/M/Y">
+								<textField isStretchWithOverflow="true">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="71693918-f990-496b-95ec-f6a41716bce6"/>
 									<textElement textAlignment="Center">
 										<font fontName="TH SarabunPSK" size="13"/>
@@ -1285,7 +1285,7 @@ ORDER BY oo.org_code ASC
 						<jr:column width="54" uuid="3679c1de-f303-41fc-80bb-43a4a4a3bd96">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								<textField isStretchWithOverflow="true" pattern="d/M/Y">
+								<textField isStretchWithOverflow="true">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="63252b9e-b9d7-412a-910f-70efdff41142"/>
 									<textElement textAlignment="Center">
 										<font fontName="TH SarabunPSK" size="13"/>
@@ -1797,7 +1797,7 @@ ORDER BY oo.org_code ASC
 						</jr:column>
 						<jr:column width="54" uuid="a3f052f4-531c-4ae8-88af-28f3b185c6df">
 							<jr:detailCell style="Table_TD" height="20">
-								<textField isStretchWithOverflow="true" pattern="d/M/Y">
+								<textField isStretchWithOverflow="true">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="f2e9ee6d-c004-458d-b23e-ced11aae72b3"/>
 									<textElement textAlignment="Center">
 										<font fontName="TH SarabunPSK" size="13"/>
