@@ -193,16 +193,16 @@ class BonusReportController extends Controller
         AND emp.appraisal_type_id = 2 ";
 
       $Org_Result_Score = "
-        SELECT round(avg(orj.adjust_result_score),2) as org_result_score
+        SELECT orj.adjust_result_score as org_result_score
         FROM org_result_judgement orj
         INNER JOIN appraisal_period pe ON orj.period_id = pe.period_id
-        WHERE FIND_IN_SET(orj.org_id , ?)
+        WHERE FIND_IN_SET(orj.org_id , ?)  -- by org
         AND pe.period_id = ?
         AND pe.appraisal_year = ? ";
 
       $Before_After_Score = "
-        SELECT round(sum(em.b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as before_bonus
-        , round(sum(em.adjust_b_amount)/sum(FROM_BASE64(em.net_s_amount)),2) as after_bonus
+        SELECT round(sum(FROM_BASE64(em.b_amount))/sum(FROM_BASE64(em.net_s_amount)),2) as before_bonus
+			, round(sum(FROM_BASE64(em.adjust_b_amount))/sum(FROM_BASE64(em.net_s_amount)),2) as after_bonus
         FROM emp_result em
         INNER JOIN appraisal_period pe ON em.period_id = pe.period_id
         WHERE FIND_IN_SET(em.org_id, ?) -- by org
@@ -268,7 +268,7 @@ class BonusReportController extends Controller
 
         // คำนวนค่า BU ตามลูกหลาน parent_org_id
         $CalculationBU = DB::select($Org_Result_Score
-          ,array($param_parent_org, $period_id, $appraisal_year));
+          ,array($org->parent_org_id, $period_id, $appraisal_year));
 
         foreach ($CalculationBU as $CalBU) {
             $org->CalBU = $CalBU->org_result_score;
@@ -324,7 +324,7 @@ class BonusReportController extends Controller
 
         // คำนวนค่า ฝ่าย ตามลูกหลาน org_id
         $CalculationDivision = DB::select($Org_Result_Score
-          ,array($param_org, $period_id, $appraisal_year));
+          ,array($org->org_id, $period_id, $appraisal_year));
 
         foreach ($CalculationDivision as $CalDivision) {
             $org->CalDivision = $CalDivision->org_result_score;
