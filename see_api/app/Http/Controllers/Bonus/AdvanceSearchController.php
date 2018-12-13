@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bonus;
 
+use App\AppraisalLevel;
 use App\Employee;
 
 use Auth;
@@ -190,6 +191,34 @@ class AdvanceSearchController extends Controller
         }
         
         return $globalEmpCodeSet;
+    }
+
+    function GetAllParentLevel($levelId, $itself)
+    {
+        $resData = collect();
+
+        // initial data
+        $data = AppraisalLevel::select('level_id', 'appraisal_level_name', 'parent_id')
+            ->where('level_id', $levelId)->where('is_org', 1)->first();
+        if($itself === true){
+            $resData = $resData->push($data);
+        }
+
+        $inLoop = true;
+        while ($inLoop) {
+            $data = AppraisalLevel::select('level_id', 'appraisal_level_name', 'parent_id')
+                ->where('level_id', $data->parent_id)->where('is_org', 1)->first();
+            if($data){
+                $resData = $resData->push($data);
+                if($data->parent_id == 0){
+                    $inLoop = false;
+                }
+            } else {
+                $inLoop = false;
+            }
+        }
+        
+        return $resData;
     }
 
     function GetallUnderEmpByOrg($paramEmp) {
