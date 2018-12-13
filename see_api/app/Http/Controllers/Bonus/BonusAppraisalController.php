@@ -275,7 +275,7 @@ class BonusAppraisalController extends Controller
 
 
         // update bonus adjust result score on org_result_judgement, emp_result_judgement.
-        foreach ($request->data as $data) {
+        foreach ($request->data as $data) {            
             $validator = Validator::make($data, [
                 'org_result_judgement_id' => 'required|integer',
                 'adjust_result_score' => 'numeric',
@@ -291,10 +291,39 @@ class BonusAppraisalController extends Controller
                 $orgResultJudgement->save();
 
                 try{
+                    $authCode = Auth::id();
+                    $employee = collect(DB::select("
+                        SELECT emp.emp_id, emp.emp_code, org.level_id AS org_level_id
+                        FROM employee emp 
+                        INNER JOIN org ON org.org_id = emp.org_id
+                        WHERE emp_code = '{$authCode}'
+                    "))->first();
+
                     $empResultJudgement = EmpResultJudgement::findOrFail($data['emp_result_judgement_id']);
-                    $empResultJudgement->adjust_result_score = $data['emp_adjust_result_score'];
-                    $empResultJudgement->created_by = Auth::id();
-                    $empResultJudgement->save();
+                    $judExists = EmpResultJudgement::where('emp_result_id', $empResultJudgement->emp_result_id)->where('is_bonus', 1)->first();
+                    
+                    if($judExists){
+                        DB::table('emp_result_judgement')
+                        ->where('emp_result_judgement_id', $judExists->emp_result_judgement_id)
+                        ->update([
+                            'adjust_result_score' => $data['emp_adjust_result_score'],
+                            'percent_adjust' => ($data['emp_adjust_result_score'] / $empResultJudgement->adjust_result_score) * 100.00,
+                            'created_by' => $authCode,
+                            'created_dttm' => date('Y-m-d H:i:s')
+                        ]);
+                    } else {
+                        $saveJudge = new EmpResultJudgement;
+                        $saveJudge->emp_result_id = $empResultJudgement->emp_result_id; 
+                        $saveJudge->judge_id = $employee->emp_id;
+                        $saveJudge->org_level_id = $employee->org_level_id;
+                        $saveJudge->percent_adjust = ($data['emp_adjust_result_score'] / $data['emp_result_score']) * 100;
+                        $saveJudge->adjust_result_score = $data['emp_adjust_result_score'];
+                        $saveJudge->is_bonus = 1; 
+                        $saveJudge->created_by = $authCode;
+                        $saveJudge->created_dttm = date('Y-m-d H:i:s');
+                        $saveJudge->save();
+                    }
+                    
                 } catch (ModelNotFoundException $e) {
                     // not thing
                 }
@@ -379,9 +408,9 @@ class BonusAppraisalController extends Controller
                 // 3.5.1.1 คำนวณหาเปอร์เซ็นของ bu mgr. และบันทึกผล 
                 $bu->emp_bonus_percent = (($bu->emp_bonus_score * 100) / $depTotalBonusScore);
                 $empResultJudgement = EmpResultJudgement::find($bu->emp_result_judgement_id);
-                $empResultJudgement->percent_adjust = $bu->emp_bonus_percent;
-                $empResultJudgement->is_bonus = 1;
-                $empResultJudgement->save();
+                // $empResultJudgement->percent_adjust = $bu->emp_bonus_percent;
+                // $empResultJudgement->is_bonus = 1;
+                // $empResultJudgement->save();
 
                 // 3.5.1.2 คำนวณเงินโบนัสของ bu mgr. และบันทึกผล
                 $bu->emp_bonus_amount = ($bu->emp_bonus_percent / 100) * $depTotalBonusAmount;
@@ -449,9 +478,9 @@ class BonusAppraisalController extends Controller
                     // 4.5.1.1 คำนวณหาเปอร์เซ็นของ dep manager และบันทึกผล 
                     $dep->emp_bonus_percent = (($dep->emp_bonus_score * 100) / $operTotalBonusScore);
                     $empResultJudgement = EmpResultJudgement::find($dep->emp_result_judgement_id);
-                    $empResultJudgement->percent_adjust = $dep->emp_bonus_percent;
-                    $empResultJudgement->is_bonus = 1;
-                    $empResultJudgement->save();
+                    // $empResultJudgement->percent_adjust = $dep->emp_bonus_percent;
+                    // $empResultJudgement->is_bonus = 1;
+                    // $empResultJudgement->save();
 
                     // 4.5.1.2 คำนวณเงินโบนัสของ dep manager และบันทึกผล
                     $dep->emp_bonus_amount = ($dep->emp_bonus_percent / 100) * $operTotalBonusAmount;
@@ -478,10 +507,10 @@ class BonusAppraisalController extends Controller
 
                     // 4.7 บันทึกผล oper ลงตาราง emp_result_judgement
                     $empResultJudgement = EmpResultJudgement::find($operData->emp_result_judgement_id);
-                    $empResultJudgement->percent_adjust = $operData->emp_bonus_percent;
-                    $empResultJudgement->adjust_result_score = $operData->emp_adjust_result_score;
-                    $empResultJudgement->is_bonus = 1;
-                    $empResultJudgement->save();
+                    // $empResultJudgement->percent_adjust = $operData->emp_bonus_percent;
+                    // $empResultJudgement->adjust_result_score = $operData->emp_adjust_result_score;
+                    // $empResultJudgement->is_bonus = 1;
+                    // $empResultJudgement->save();
                     
                     $empResult = EmpResult::find($empResultJudgement->emp_result_id);
                     $empResult->s_amount = base64_encode($operData->emp_salary);
@@ -528,12 +557,12 @@ class BonusAppraisalController extends Controller
                 IF(orj.adjust_result_score=0, orj.avg_result_score, orj.adjust_result_score) * orj.total_salary AS bonus_score,
                 0 AS bonus_percent,
                 0 AS bonus_amount,
-                erj.emp_result_judgement_id,
-                erj.emp_id, 
-                erj.emp_name,
-                erj.adjust_result_score AS emp_result_score,
-                erj.adjust_result_score AS emp_adjust_result_score,
-                erj.s_amount AS emp_salary,
+                IFNULL(bon.emp_result_judgement_id, erj.emp_result_judgement_id) AS emp_result_judgement_id,
+                IFNULL(bon.emp_id, erj.emp_id) AS emp_id,
+                IFNULL(bon.emp_name, erj.emp_name) AS emp_name,
+                IFNULL(bon.adjust_result_score, erj.adjust_result_score) AS emp_result_score,
+                IFNULL(bon.adjust_result_score, erj.adjust_result_score) AS emp_adjust_result_score,
+                IFNULL(bon.erj.s_amount, erj.s_amount) AS emp_salary,
                 0 AS emp_net_salary,
                 0 AS emp_bonus_score,
                 0 AS emp_bonus_percent,
@@ -541,6 +570,28 @@ class BonusAppraisalController extends Controller
             FROM org_result_judgement orj
             INNER JOIN org ON org.org_id = orj.org_id
             INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+            LEFT OUTER JOIN(
+                SELECT e.emp_result_judgement_id, e.org_level_id, er.org_id, 
+                    IF(e.adjust_result_score=0, er.result_score, e.adjust_result_score) adjust_result_score,
+                    emp.emp_id, emp.emp_name, CAST(FROM_BASE64(emp.s_amount) AS DECIMAL(10,2)) s_amount
+                FROM emp_result_judgement e
+                INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
+                INNER JOIN employee emp ON emp.emp_id = er.emp_id
+                WHERE e.created_dttm = (
+                    SELECT MAX(se.created_dttm)
+                    FROM emp_result_judgement se
+                    WHERE se.emp_result_id = e.emp_result_id
+                )
+                AND emp.emp_id = (
+                    SELECT se.emp_id
+                    FROM employee se 
+                    INNER JOIN appraisal_level vel ON vel.level_id = se.level_id
+                    WHERE se.org_id = er.org_id
+                    ORDER BY vel.seq_no
+                    LIMIT 1
+                )
+                GROUP BY e.emp_result_id
+            ) erj ON erj.org_id = orj.org_id
             LEFT OUTER JOIN(
                 SELECT e.emp_result_judgement_id, e.org_level_id, er.org_id, 
                     IF(e.adjust_result_score=0, er.result_score, e.adjust_result_score) adjust_result_score,
@@ -557,11 +608,51 @@ class BonusAppraisalController extends Controller
                     ORDER BY vel.seq_no
                     LIMIT 1
                 )
-            ) erj ON erj.org_id = orj.org_id
+                GROUP BY e.emp_result_id
+            ) bon ON bon.org_id = orj.org_id
             WHERE orj.period_id = '{$period}'
             ".$buLevelQryStr."
             ".$parentOrgQryStr."
         ");
+        $items = collect($items);
+        
+        // ใช้ Query แทน
+        // emp result judgement if not bonus flag
+        // $items = $items->map(function($item){
+        //     if( ! $item->emp_result_judgement_id){
+        //         $maxDate = DB::select("
+        //             SELECT e.emp_result_judgement_id, e.org_level_id, er.org_id, 
+        //                 IF(e.adjust_result_score=0, er.result_score, e.adjust_result_score) adjust_result_score,
+        //                 emp.emp_id, emp.emp_name, CAST(FROM_BASE64(emp.s_amount) AS DECIMAL(10,2)) s_amount
+        //             FROM emp_result_judgement e
+        //             INNER JOIN emp_result er ON er.emp_result_id = e.emp_result_id
+        //             INNER JOIN employee emp ON emp.emp_id = er.emp_id
+        //             WHERE e.created_dttm = (
+        //                 SELECT MAX(se.created_dttm)
+        //                 FROM emp_result_judgement se
+        //                 WHERE se.emp_result_id = e.emp_result_id
+        //             )
+        //             AND emp.emp_id = (
+        //                 SELECT se.emp_id
+        //                 FROM employee se 
+        //                 INNER JOIN appraisal_level vel ON vel.level_id = se.level_id
+        //                 WHERE se.org_id = er.org_id
+        //                 ORDER BY vel.seq_no
+        //                 LIMIT 1
+        //             )
+        //             AND er.org_id = '{$item->org_id}'
+        //         ");
+        //         if($maxDate){
+        //             $item->emp_result_judgement_id = $maxDate[0]->emp_result_judgement_id;
+        //             $item->emp_id = $maxDate[0]->emp_id;
+        //             $item->emp_name = $maxDate[0]->emp_name;
+        //             $item->emp_result_score = $maxDate[0]->adjust_result_score;
+        //             $item->emp_adjust_result_score = $maxDate[0]->adjust_result_score;
+        //             $item->emp_salary = $maxDate[0]->s_amount;
+        //         }
+        //     }            
+        //     return $item;
+        // });
 
         return $items;
     }
@@ -576,6 +667,7 @@ class BonusAppraisalController extends Controller
         
         $orgQryStr = empty($orgCode) ? "": " AND FIND_IN_SET(org.org_code, '{$this->GetAllUnderOrg($orgCode)}')";
 
+        /*
         $items = DB::select("
             SELECT e.emp_result_judgement_id, 
                 er.org_id, 
@@ -598,6 +690,41 @@ class BonusAppraisalController extends Controller
                 WHERE se.emp_result_id = e.emp_result_id
             )
             AND er.period_id = '{$period}'
+            ".$orgQryStr."
+        ");
+        */
+        $items = DB::select("
+            SELECT IFNULL(bon.emp_result_judgement_id, mac.emp_result_judgement_id) AS emp_result_judgement_id, 
+                er.org_id, 
+                er.level_id, 
+                IFNULL(IFNULL(bon.adjust_result_score, mac.adjust_result_score), er.result_score) AS emp_adjust_result_score,
+                emp.emp_id, 
+                emp.emp_name, 
+                CAST(FROM_BASE64(emp.s_amount) AS DECIMAL(10,2)) AS emp_salary,
+                0 AS emp_net_salary,
+                0 AS emp_bonus_score,
+                0 AS emp_bonus_percent,
+                0 AS emp_bonus_amount
+            FROM emp_result er
+            INNER JOIN employee emp ON emp.emp_id = er.emp_id
+            INNER JOIN org ON org.org_id = er.org_id
+            LEFT OUTER JOIN (
+                SELECT berj.emp_result_judgement_id, berj.emp_result_id, berj.adjust_result_score
+                FROM emp_result_judgement berj
+                WHERE berj.is_bonus = 1
+                GROUP BY berj.emp_result_id
+            ) bon ON bon.emp_result_id = er.emp_result_id
+            LEFT OUTER JOIN (
+                SELECT merj.emp_result_judgement_id, merj.emp_result_id, merj.adjust_result_score
+                FROM emp_result_judgement merj
+                WHERE merj.created_dttm = (
+                    SELECT MAX(se.created_dttm)
+                    FROM emp_result_judgement se
+                    WHERE se.emp_result_id = merj.emp_result_id
+                )
+                GROUP BY merj.emp_result_id
+            )mac ON mac.emp_result_id = er.emp_result_id
+            WHERE er.period_id = '{$period}'
             ".$orgQryStr."
         ");
 
