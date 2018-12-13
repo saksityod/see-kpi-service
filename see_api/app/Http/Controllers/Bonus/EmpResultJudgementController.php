@@ -75,8 +75,8 @@ class EmpResultJudgementController extends Controller
             }
 
             if($request->fake_flag==1) {
-                $judge_id = $request['object_judge']->emp_id;
-                $judge_level = $request['object_judge']->level_id;
+                $judge_id = $request['object_judge']['emp_id'];
+                $judge_level = $request['object_judge']['level_id'];
             } else {
                 $judge_id = $this->advanSearch->orgAuth()->emp_id;
                 $judge_level = $this->advanSearch->orgAuth()->level_id;
@@ -91,6 +91,7 @@ class EmpResultJudgementController extends Controller
                         $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
                             ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
                             ->first();
+
                         
                         // chech insert or update
                         if(!$empResultJudgement){
