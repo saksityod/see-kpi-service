@@ -406,6 +406,42 @@ class AdvanceSearchController extends Controller
         return ['org_id' => $parentOrgId, 'parent_org_code' => $parentOrgCode];
     }
 
+    public function fakeAdjust(Request $request) {
+        $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where('is_start_cal_bonus', 1)->where('is_org', 1)->first();
+        $levelList = $this->GetAllParentLevel($appraisalLevel->level_id, true); // true คือแสดง level ตัวเองด้วย
+
+        $levelArr = [];
+        foreach ($levelList as $key => $value) {
+            array_push($levelArr, $value->level_id);
+        }
+
+        $levelArr = implode(",", $levelArr);
+
+        $hr_emp = DB::select("
+            SELECT sum(b.is_hr) count_no
+            FROM employee a
+            LEFT OUTER JOIN appraisal_level b on a.level_id = b.level_id
+            WHERE emp_code = ?
+        ", array(Auth::id()));
+
+        if ($hr_emp[0]->count_no > 0) {
+            $stage = DB::table("appraisal_stage")
+            ->select('edit_flag')
+            ->where('stage_id', $request->stage_id)
+            ->first();
+
+            $items = DB::select("
+                SELECT e.emp_id, e.emp_name, org.level_id org_level_id
+                FROM employee e
+                INNER JOIN org ON org.org_id = e.org_id
+                WHERE find_in_set(org.level_id, '{$levelArr}')
+                ORDER BY org.org_code
+            ");
+        }
+
+        return response()->json(['data' => $items, 'edit_flag' => $stage->edit_flag]);
+    }
+
     public function YearList(Request $request)
     {
         $years = DB::select("

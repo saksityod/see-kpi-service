@@ -74,35 +74,45 @@ class EmpResultJudgementController extends Controller
                 return response()->json(['status' => 400, 'data' => $errors_validator]);
             }
 
+            if($request->fake_flag==1) {
+                $judge_id = $request['object_judge']->emp_id;
+                $judge_level = $request['object_judge']->level_id;
+            } else {
+                $judge_id = $this->advanSearch->orgAuth()->emp_id;
+                $judge_level = $this->advanSearch->orgAuth()->level_id;
+            }
+
             $errors = [];
             foreach ($request['detail'] as $d) {
-                if($d['edit_flag']==1) {
+                if($request->fake_flag==1 OR $request->fake_flag==3) {
+                    if($d['edit_flag']==1) {
 
-                    // get current value
-                    $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
-                        ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
-                        ->first();
-                    
-                    // chech insert or update
-                    if(!$empResultJudgement){
-                        $item = new EmpResultJudgement;
-                        $item->emp_result_id = $d['emp_result_id'];
-                        $item->judge_id = $this->advanSearch->orgAuth()->emp_id;
-                        $item->org_level_id = $this->advanSearch->orgAuth()->level_id;
-                        $item->percent_adjust = $d['percent_adjust'];
-                        $item->adjust_result_score = $d['adjust_result_score'];
-                        $item->is_bonus =  0;
-                        $item->created_by = Auth::id();
+                        // get current value
+                        $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
+                            ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
+                            ->first();
+                        
+                        // chech insert or update
+                        if(!$empResultJudgement){
+                            $item = new EmpResultJudgement;
+                            $item->emp_result_id = $d['emp_result_id'];
+                            $item->judge_id = $judge_id;
+                            $item->org_level_id = $judge_level;
+                            $item->percent_adjust = $d['percent_adjust'];
+                            $item->adjust_result_score = $d['adjust_result_score'];
+                            $item->is_bonus =  0;
+                            $item->created_by = Auth::id();
 
-                        try {
-                            $item->save();
-                        } catch (Exception $e) {
-                            $errors[] = substr($e, 254);
+                            try {
+                                $item->save();
+                            } catch (Exception $e) {
+                                $errors[] = substr($e, 254);
+                            }
+                        } else {
+                            DB::table('emp_result_judgement')
+                                ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
+                                ->update(['percent_adjust'=>$d['percent_adjust'], 'adjust_result_score'=>$d['adjust_result_score']]);
                         }
-                    } else {
-                        DB::table('emp_result_judgement')
-                            ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
-                            ->update(['percent_adjust'=>$d['percent_adjust'], 'adjust_result_score'=>$d['adjust_result_score']]);
                     }
                 }
 
@@ -790,7 +800,7 @@ class EmpResultJudgementController extends Controller
 
         // get data from emp result
         $empResult = DB::select("
-            SELECT	
+            SELECT  
                 emp.org_code, emp.parent_org_code, er.emp_result_id, er.status,
                 emp.emp_code, emp.emp_name, emp.emp_level_name AS appraisal_level_name,
                 emp.org_level_name, emp.org_name, emp.position_name, ifnull(ast.edit_flag,0) edit_flag,
