@@ -37,20 +37,22 @@ class BonusReportController extends Controller
       $bu_org_id = json_decode($request->org_id);
       $param_user = json_decode($request->param_user);
 
-      $AllOrg = DB::select("SELECT oo.org_id as parent_org_id
+      $Org = "SELECT oo.org_id as parent_org_id
         , oo.org_code as parent_org_code
         , oo.org_name as parent_org_name
+        , GetAllUnderOrg(oo.org_code) as all_parent
         , o.org_id, o.org_code, o.org_name
+        , GetAllUnderOrg(o.org_code) as all_org
         , (SELECT appraisal_year FROM appraisal_period WHERE period_id = ".$period_id.") as appraisal_year
         , name_office.org_name as name_company
         FROM org oo
-        -- LEFT JOIN org o ON o.parent_org_code = oo.org_code
-        LEFT JOIN (
+        LEFT JOIN org o ON o.parent_org_code = oo.org_code
+        /* LEFT JOIN (
 					 SELECT o.org_id, o.org_code, o.org_name, o.level_id, o.parent_org_code
 					 FROM org o
 					 INNER JOIN (SELECT org_id FROM emp_result WHERE period_id = ".$period_id." GROUP BY org_id) e_o
             ON e_o.org_id = o.org_id
-				) o ON o.parent_org_code = oo.org_code
+				) o ON o.parent_org_code = oo.org_code */
         INNER JOIN appraisal_level le ON oo.level_id = le.level_id
         CROSS JOIN (
             SELECT o.org_name FROM org o
@@ -60,8 +62,21 @@ class BonusReportController extends Controller
 				) name_office
         WHERE le.is_start_cal_bonus = 1
         AND FIND_IN_SET(oo.org_id, '".$bu_org_id."')
-        AND o.org_id IS NOT NULL
-        ORDER BY oo.org_code ASC, o.org_code ASC");
+        AND o.org_id IS NOT NULL";
+
+      $AllOrg = DB::select("SELECT *
+        FROM (
+          SELECT *
+          , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_parent)) as num_all_parent
+          , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_org)) as num_all_org
+          FROM (".$Org.")	result
+          ) total 
+          WHERE total.num_all_parent > 0
+          AND total.num_all_org > 0
+          ORDER BY total.parent_org_code ASC, total.org_code ASC
+      ");
+
+      // return response()->json($All_Org);
 
       $Query_Information_Score = "
         SELECT emp.result_score as adjust_result_score
@@ -279,7 +294,7 @@ class BonusReportController extends Controller
 
         // คำนวนค่าโบนัสก่อนแก้ไข และหลังแก้ไข ตาม parent_org_id
         $ParentBefore_After = DB::select($Before_After_Score
-          ,array($org->parent_org_id, $period_id, $appraisal_year));
+          ,array($param_parent_org, $period_id, $appraisal_year));
 
         foreach ($ParentBefore_After as $PBA) {
             $org->parent_before_bonus = $PBA->before_bonus;
@@ -335,7 +350,7 @@ class BonusReportController extends Controller
 
         // คำนวนค่าโบนัสก่อนแก้ไข และหลังแก้ไข ตาม org_id
         $Before_After = DB::select($Before_After_Score
-          ,array($org->org_id, $period_id, $appraisal_year));
+          ,array($param_org, $period_id, $appraisal_year));
 
         foreach ($Before_After as $BA) {
             $org->before_bonus = $BA->before_bonus;
@@ -386,7 +401,7 @@ class BonusReportController extends Controller
         $o->SumAllStaff = $groups[$o->parent_org_id]['sum_staff']+$o->CountStaffBU;
       }
 
-      // return ($AllOrg);
+      // return response()->json($AllOrg);
 
       $now = new DateTime();
       $date = $now->format('Y-m-d_H-i-s');
@@ -408,8 +423,8 @@ class BonusReportController extends Controller
       //   •	Staff (จำนวน) : จำนวนคนทั้งหมดที่ไม่ใช่ ผจก.ฝ่าย และผจก.BU
       //   •	ผจก.ฝ่าย (จำนวน) : นับจำนวนคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด
       //   •	ผจก.BU (จำนวน) : นับจำนวนคนที่มี appraisal_level.seq_no น้อยที่สุด และมี emp_id น้อยที่สุด
-      //   •	ก่อนแก้ไข (Bonus) : sum(b_amount)/sum(net_s_amount)
-      //   •	หลังแก้ไข (Bonus) : sum(adjust_b_amount)/sum(net_s_amount)
+      //   •	ฝ่าย (คำนวณ) : avg(org_result_judgement.adjust_result_score)
+      //   •	BU (คำนวณ) : avg(org_result_judgement.adjust_result_score)
       // คำนวณตาม org_id ของลูกหลานตามแต่ละ record
       //   •	Min
       //   •	Max
@@ -419,8 +434,8 @@ class BonusReportController extends Controller
       //   •	Median (ค่ากลาง) : [ตำแหน่ง : (จำนวนข้อมูลทั้งหมด+1)/2] : นำตำแหน่งไปหาข้อมูล ณ ตำแหน่งนั้น
       //      หากตำแหน่งเป็น 2.5 ให้นำข้อมูลตำแหน่ง 2 บวกข้อมูลตำแหน่ง 3 แล้วนำมาหาร 2
       //   •	Mode : ข้อมูลที่ซ้ำกันมากที่สุด หากไม่มีข้อมูลที่ซ้ำกันจะถือว่าไม่มีฐานนิยม
-      //   •	ฝ่าย (คำนวณ) : avg(org_result_judgement.adjust_result_score)
-      //   •	BU (คำนวณ) : avg(org_result_judgement.adjust_result_score)
+      //   •	ก่อนแก้ไข (Bonus) : sum(b_amount)/sum(net_s_amount)
+      //   •	หลังแก้ไข (Bonus) : sum(adjust_b_amount)/sum(net_s_amount)
 
     }
 
