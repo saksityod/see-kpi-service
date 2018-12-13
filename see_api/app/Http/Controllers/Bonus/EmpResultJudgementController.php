@@ -774,14 +774,20 @@ class EmpResultJudgementController extends Controller
 
         $empLevelQueryStr = empty($request->emp_level) ? "" : " AND emp.emp_level_id = '{$request->emp_level}'";
         $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";
-        $orgIdQueryStr = empty($request->org_id) ? "" : " AND emp.org_id = '{$request->org_id}'";
         $empIdQueryStr = empty($request->emp_id) ? "" : " AND emp.emp_id = '{$request->emp_id}'";
 
+        if(empty($request->org_id)){
+            $orgQueryStr = "";
+        } else {
+            $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+            $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
+        }
+        
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
-
         
+
         // get data from emp result
         $empResult = DB::select("
             SELECT	
@@ -802,8 +808,15 @@ class EmpResultJudgementController extends Controller
                 INNER JOIN position p ON p.position_id = e.position_id
             ) emp ON emp.emp_id = er.emp_id
             LEFT OUTER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-            
-            WHERE er.emp_result_id IN(98, 100, 112, 153, 808)
+            WHERE er.period_id = '{$request->period_id}'
+            AND er.stage_id = '{$request->stage_id}'
+            ".$empLevelQueryStr."
+            ".$orgLevelQueryStr."
+            ".$orgQueryStr."
+            ".$empIdQueryStr."
+            ".$positionIdQueryStr."
+            ".$formIdQueryStr."
+            ORDER BY emp.org_id
         ");
         $empResult = collect($empResult);
 
