@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report Analytical Statistics for Work" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8d3e516e-df28-4b6c-be56-0be69d7f5892">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Bonus Report"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -183,7 +183,7 @@
 		<groupExpression><![CDATA[$F{appraisal_year}]]></groupExpression>
 		<groupFooter>
 			<band height="25">
-				<textField>
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="757" y="0" width="45" height="25" forecolor="#000000" backcolor="#E6E6E6" uuid="44ed0594-8b47-4be6-876d-705a9881112a"/>
 					<box leftPadding="0" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -211,7 +211,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA["Grand Total : "]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="713" y="0" width="44" height="25" forecolor="#000000" backcolor="#E6E6E6" uuid="5add9e0a-0e43-44e2-a61c-5985943ba435"/>
 					<box leftPadding="0" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -243,7 +243,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="757" y="0" width="45" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="662389fb-9abb-4a55-8348-2c084a2ad6b6"/>
 					<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -265,7 +265,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{CountManagerBU}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="499" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="ec3a8925-6224-4c4c-955c-bbfdd009aadd"/>
 					<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -276,7 +276,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{CalBU} ==  null) ? "-" : $F{CalBU}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="266" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="74dacedf-0edd-42ec-88a8-76e5eae6fd15"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -286,7 +286,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{Parent_std} == null) ? "-" : $F{Parent_std}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="303" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="d90d3d29-7d6f-4013-a73b-e9ce96a96dba"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -296,7 +296,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{Parent_mean} == null) ? "-" : $F{Parent_mean}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="340" y="0" width="43" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="508d0233-71b4-4966-8657-d5396a8918b8"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -331,7 +331,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{SumAllManager}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="192" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="215360d7-eee9-4569-a303-23f25884f037"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -341,7 +341,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{Parent_max} == null) ? "-" : $F{Parent_max}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="536" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="1401f91f-ff11-4512-8c95-fdf71889179d"/>
 					<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -373,7 +373,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parent_org_name}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="713" y="0" width="44" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="8f664cff-6793-4d47-ac6e-de9a4ee085cb"/>
 					<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -395,7 +395,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{SumAllStaff}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="383" y="0" width="41" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="ebe5f3b9-2871-4259-9b94-1970737cab49"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="2">
 						<pen lineWidth="0.25"/>
@@ -405,7 +405,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{Parent_mode} == null) ? "-" : $F{Parent_mode}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="229" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="6546fdcb-75b1-4996-9fb4-2c10ad32004c"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -415,7 +415,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[($F{Parent_difference} == null) ? "-" : $F{Parent_difference}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###">
+				<textField pattern="#,##0.00">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="155" y="0" width="37" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="2d12c38d-10de-4fb1-9665-bceeef711c3e"/>
 					<box topPadding="1" bottomPadding="2" rightPadding="3">
 						<pen lineWidth="0.25"/>
@@ -720,7 +720,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="713" y="0" width="44" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="80e89e5e-38d8-4492-b7ca-3e6336cbabf2"/>
 				<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="0.25"/>
@@ -750,7 +750,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA["-"]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="757" y="0" width="45" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="7744fff3-f957-4dce-8942-f7c190f6a036"/>
 				<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="0.25"/>
@@ -780,7 +780,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{CountStaffDivision}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="461" y="0" width="38" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="0934dd5d-a8ea-42d3-97ea-0b1625380e4a"/>
 				<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="0.25"/>
@@ -790,7 +790,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{ValueManagerDivision} == null) ? "-" : $F{ValueManagerDivision}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="424" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="193d14fd-f9a6-426e-9bcf-c95998467afc"/>
 				<box topPadding="1" leftPadding="0" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="0.25"/>
@@ -810,7 +810,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[Integer.parseInt($F{CountManagerDivision})+Integer.parseInt($F{CountStaffDivision})]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="383" y="0" width="41" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="1d095a0f-1abb-4974-8f6b-e644071fc3ab"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="0.25"/>
@@ -820,7 +820,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{mode} == null) ? "-" : $F{mode}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="155" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="4f73deae-5224-4def-b930-806c02006e7b"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="3">
 					<pen lineWidth="0.25"/>
@@ -830,7 +830,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{min} == null) ? "-" : $F{min}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="229" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="09a8b57b-afb0-4390-bb86-55923d047c27"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="3">
 					<pen lineWidth="0.25"/>
@@ -840,7 +840,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{difference} == null) ? "-" : $F{difference}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="340" y="0" width="43" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="96d0bcb5-d471-4219-bf7d-ce0d74445902"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="3">
 					<pen lineWidth="0.25"/>
@@ -850,7 +850,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{median} == null) ? "-" : $F{median}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="303" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="49c206b3-264d-4a24-8344-87e99842b084"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="3">
 					<pen lineWidth="0.25"/>
@@ -860,7 +860,7 @@ BU]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{mean} == null) ? "-" : $F{mean}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###">
+			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="192" y="0" width="37" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="1ad9b6b2-2607-45b9-9f07-eb8279726c03"/>
 				<box topPadding="1" bottomPadding="2" rightPadding="3">
 					<pen lineWidth="0.25"/>
