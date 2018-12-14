@@ -2396,4 +2396,23 @@ class AppraisalController extends Controller
 		return response()->json($result);
 	}
 
+	public function org_individual_report(Request $request){
+		$empCode = Auth::id();
+		// $empLevInfo = $this->is_all_employee($empCode);
+		 $orgLevelStr = (empty($request->org_level)) ? " " : "AND level_id = {$request->org_level} " ;
+		 $empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
+		 $empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
+		 $periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
+	  
+		 $result = DB::select("
+		  SELECT org_id, org_name
+		 FROM org
+		 WHERE 1 = 1
+		 ".$orgLevelStr."
+		 ORDER BY org_id ASC");
+	  
+		 
+		return response()->json($result);
+		}
 }
+
