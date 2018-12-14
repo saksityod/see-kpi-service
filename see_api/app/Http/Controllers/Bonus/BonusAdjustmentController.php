@@ -11,9 +11,11 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Bonus\BonusAppraisalController;
 use App\Http\Controllers\Bonus\EmpResultJudgementController;
+use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 use App\EmpResult;
 use App\AppraisalStage;
+use App\Employee;
 
 use Auth;
 use DB;
@@ -27,6 +29,7 @@ class BonusAdjustmentController extends Controller
     public function __construct()
     {
        $this->middleware('jwt.auth');
+       $this->advanSearch = new AdvanceSearchController;
     }
 
 
@@ -34,11 +37,32 @@ class BonusAdjustmentController extends Controller
     {
         // set parameter for query 
         $request->period_id = empty($request->period_id) ? "": $request->period_id;
-        $qryEmpLevel = empty($request->emp_level) ? "": " AND er.level_id = '{$request->emp_level}'";
-        $qryOrgLevel = empty($request->org_level) ? "": " AND org.level_id = '{$request->org_level}'";
-        $qryOrgId = empty($request->org_id) ? "": " AND er.org_id = '{$request->org_id}'";
-        $qryEmpId = empty($request->emp_id) ? "": " AND er.emp_id = '{$request->emp_id}'";
-        // $qryPositionId = empty($request->position_id) ? "": " AND er.position_id = '{$request->position_id}'";
+        $gue_emp_level = empty($request->emp_level) ? $gue_emp_level = '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+        $gue_org_level = empty($request->org_level) ? $gue_org_level = '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+        $gueOrgCodeByEmpId = empty($request->emp_id) ? $gueOrgCodeByEmpId = '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+        $gueOrgCodeByOrgId = empty($request->org_id) ? $gueOrgCodeByOrgId = '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+
+        $qryEmpLevel = empty($gue_emp_level) ? "" : " AND (er.level_id = '{$request->emp_level}' OR find_in_set(er.level_id, '{$gue_emp_level}'))";
+        $qryOrgLevel = empty($gue_org_level) ? "" : " AND (org.level_id = '{$request->org_level}' OR find_in_set(org.level_id, '{$gue_org_level}'))";
+        $qryEmpId = empty($gueOrgCodeByEmpId) ? "" : " AND (er.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
+
+        $all_emp = $this->advanSearch->isAll();
+        $employee = Employee::find(Auth::id());
+        if ($all_emp[0]->count_no > 0) {
+            if(empty($request->org_id)) {
+                $qryOrgId = "";
+            } else {
+                $qryOrgId = "AND (er.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))";
+            }
+        } else {
+            if(empty($request->org_id)) {
+                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+                $qryOrgId = "AND find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')";
+            } else {
+                $qryOrgId = "AND (er.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))";
+            }
+        }
+        
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $qryPositionId = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";

@@ -913,24 +913,31 @@ class EmpResultJudgementController extends Controller
             WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
         "))->first();
 
-        $empLevelQueryStr = empty($request->emp_level) ? "" : " AND emp.emp_level_id = '{$request->emp_level}'";
-        $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";
-        $empIdQueryStr = empty($request->emp_id) ? "" : " AND emp.emp_id = '{$request->emp_id}'";
+        $gue_emp_level = empty($request->emp_level) ? $gue_emp_level = '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+        $gue_org_level = empty($request->org_level) ? $gue_org_level = '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+        $gueOrgCodeByEmpId = empty($request->emp_id) ? $gueOrgCodeByEmpId = '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+        $gueOrgCodeByOrgId = empty($request->org_id) ? $gueOrgCodeByOrgId = '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+
+        $empLevelQueryStr = empty($gue_emp_level) ? "" : " AND (emp.emp_level_id = '{$request->emp_level}' OR find_in_set(emp.emp_level_id, '{$gue_emp_level}'))";
+        $orgLevelQueryStr = empty($gue_org_level) ? "" : " AND (emp.org_level_id = '{$request->org_level}' OR find_in_set(emp.org_level_id, '{$gue_org_level}'))";
+        $empIdQueryStr = empty($gueOrgCodeByEmpId) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByEmpId}'))";
+
+        // $empLevelQueryStr = empty($request->emp_level) ? "" : " AND emp.emp_level_id = '{$request->emp_level}'";
+        // $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";
+        // $empIdQueryStr = empty($request->emp_id) ? "" : " AND emp.emp_id = '{$request->emp_id}'";
 
         $all_emp = $this->advanSearch->isAll();
         if ($all_emp[0]->count_no > 0) {
             if(empty($request->org_id)) {
                 $orgQueryStr = "";
             } else {
-                $orgQueryStr = "AND (emp.org_id = '{$request->org_id}')";
+                $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
             }
         } else {
             if(empty($request->org_id)) {
-                $orgId = Employee::find(Auth::id())->org_id;
-                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($orgId);
+                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
                 $orgQueryStr = "AND find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}')";
             } else {
-                $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
                 $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
             }
         }
@@ -949,7 +956,7 @@ class EmpResultJudgementController extends Controller
 
         // get data from emp result
         $empResult = DB::select("
-            SELECT  
+            SELECT
                 emp.org_code, emp.parent_org_code, er.emp_result_id, er.status,
                 emp.emp_code, emp.emp_name, emp.emp_level_name AS appraisal_level_name,
                 emp.org_level_name, emp.org_name, emp.position_name, ifnull(ast.edit_flag,0) edit_flag,
