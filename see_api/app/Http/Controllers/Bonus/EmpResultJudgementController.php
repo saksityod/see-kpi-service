@@ -913,14 +913,14 @@ class EmpResultJudgementController extends Controller
             WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
         "))->first();
 
-        $gue_emp_level = empty($request->emp_level) ? $gue_emp_level = '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
-        $gue_org_level = empty($request->org_level) ? $gue_org_level = '' : $this->advanSearch->GetallUnderLevel($request->org_level);
-        $gueOrgCodeByEmpId = empty($request->emp_id) ? $gueOrgCodeByEmpId = '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
-        $gueOrgCodeByOrgId = empty($request->org_id) ? $gueOrgCodeByOrgId = '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+        $gue_emp_level = empty($request->emp_level) ? '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+        $gue_org_level = empty($request->org_level) ? '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+        $gueOrgCodeByEmpId = empty($request->emp_id) ? '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+        $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
 
-        $empLevelQueryStr = empty($gue_emp_level) ? "" : " AND (emp.emp_level_id = '{$request->emp_level}' OR find_in_set(emp.emp_level_id, '{$gue_emp_level}'))";
-        $orgLevelQueryStr = empty($gue_org_level) ? "" : " AND (emp.org_level_id = '{$request->org_level}' OR find_in_set(emp.org_level_id, '{$gue_org_level}'))";
-        $empIdQueryStr = empty($gueOrgCodeByEmpId) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByEmpId}'))";
+        $empLevelQueryStr = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.emp_level_id = '{$request->emp_level}' OR find_in_set(emp.emp_level_id, '{$gue_emp_level}'))";
+        $orgLevelQueryStr = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (emp.org_level_id = '{$request->org_level}' OR find_in_set(emp.org_level_id, '{$gue_org_level}'))";
+        $empIdQueryStr = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByEmpId}'))";
 
         // $empLevelQueryStr = empty($request->emp_level) ? "" : " AND emp.emp_level_id = '{$request->emp_level}'";
         // $orgLevelQueryStr = empty($request->org_level) ? "" : " AND emp.org_level_id = '{$request->org_level}'";

@@ -37,14 +37,14 @@ class BonusAdjustmentController extends Controller
     {
         // set parameter for query 
         $request->period_id = empty($request->period_id) ? "": $request->period_id;
-        $gue_emp_level = empty($request->emp_level) ? $gue_emp_level = '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
-        $gue_org_level = empty($request->org_level) ? $gue_org_level = '' : $this->advanSearch->GetallUnderLevel($request->org_level);
-        $gueOrgCodeByEmpId = empty($request->emp_id) ? $gueOrgCodeByEmpId = '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
-        $gueOrgCodeByOrgId = empty($request->org_id) ? $gueOrgCodeByOrgId = '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+        $gue_emp_level = empty($request->emp_level) ? '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+        $gue_org_level = empty($request->org_level) ? '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+        $gueOrgCodeByEmpId = empty($request->emp_id) ? '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+        $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
 
-        $qryEmpLevel = empty($gue_emp_level) ? "" : " AND (er.level_id = '{$request->emp_level}' OR find_in_set(er.level_id, '{$gue_emp_level}'))";
-        $qryOrgLevel = empty($gue_org_level) ? "" : " AND (org.level_id = '{$request->org_level}' OR find_in_set(org.level_id, '{$gue_org_level}'))";
-        $qryEmpId = empty($gueOrgCodeByEmpId) ? "" : " AND (er.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
+        $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (er.level_id = '{$request->emp_level}' OR find_in_set(er.level_id, '{$gue_emp_level}'))";
+        $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (org.level_id = '{$request->org_level}' OR find_in_set(org.level_id, '{$gue_org_level}'))";
+        $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (er.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
 
         $all_emp = $this->advanSearch->isAll();
         $employee = Employee::find(Auth::id());
@@ -105,6 +105,17 @@ class BonusAdjustmentController extends Controller
             ".$qryStageId."
             ORDER BY er.org_id DESC, er.level_id DESC, e.emp_code ASC
         ");
+
+        // $dataResult = [];
+        // $a = [];
+        // foreach ($dataInfo as $kInfo => $vInfo) { // loop level_id desc
+        //     $a[] = $value->org_code;
+
+        //     foreach ($a as $kA => $vA) {
+                
+        //     }
+        //     unset($a[$value->org_code]);
+        // }
           // Number of items per page
           if($request->rpp == 'All') {
             $perPage = count(empty($dataInfo) ? 10 : $dataInfo);

@@ -494,6 +494,8 @@ class AdvanceSearchController extends Controller
                 ->orderBy('level_id', 'asc')
                 ->get();
         } else {
+            $employee = Employee::find(Auth::id());
+            $gue_emp_level = $this->GetallUnderLevel($employee->level_id);
             $underEmps = $this->GetallUnderEmp(Auth::id());
             $indLevels = DB::select("
                 SELECT l.level_id, l.appraisal_level_name
@@ -501,7 +503,7 @@ class AdvanceSearchController extends Controller
                 INNER JOIN employee e on e.level_id = l.level_id
                 WHERE l.is_active = 1
                 AND is_individual = 1
-                AND find_in_set(e.emp_code, '".$underEmps."')
+                AND find_in_set(e.level_id, '".$gue_emp_level."')
                 GROUP BY l.level_id
             ");
         }
@@ -530,7 +532,13 @@ class AdvanceSearchController extends Controller
                 GROUP BY org.level_id
             ");
         } else {
-            $underEmps = $this->GetallUnderEmp(Auth::id());
+            $dataOrg = DB::select("
+                SELECT org.level_id
+                FROM org
+                INNER JOIN employee e ON e.org_id = org.org_id
+                WHERE e.emp_code = '".Auth::id()."'
+            ");
+            $gue_org_level = $this->GetallUnderLevel($dataOrg[0]->level_id);
             $indLevelStr = empty($request->individual_level) ? "": " AND emp.level_id = ".$request->individual_level;
             $orgLevels = DB::select("
                 SELECT org.level_id, vel.appraisal_level_name
@@ -538,11 +546,11 @@ class AdvanceSearchController extends Controller
                 INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
                 WHERE org.is_active = 1
                 AND vel.is_org = 1
+                AND find_in_set(org.level_id, '{$gue_org_level}')
                 AND org.org_id IN(
                     SELECT DISTINCT emp.org_id
                     FROM employee emp 
-                    WHERE emp.is_active = 1 
-                    AND find_in_set(emp.emp_code, '".$underEmps."') 
+                    WHERE emp.is_active = 1
                     ".$indLevelStr."
                 )
                 GROUP BY org.level_id
@@ -577,18 +585,14 @@ class AdvanceSearchController extends Controller
                 ORDER BY org.org_code ASC
             ");
         } else {
-            $underEmps = $this->GetallUnderEmp(Auth::id());
+            $employee = Employee::find(Auth::id());
+            $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
             $orgs = DB::select("
                 SELECT org.org_id, org.org_name
                 FROM org
                 INNER JOIN employee emp ON emp.org_id = org.org_id
                 WHERE org.is_active = 1
-                AND org.org_id IN(
-                    SELECT DISTINCT emp.org_id
-                    FROM employee emp 
-                    WHERE emp.is_active = 1 
-                    AND find_in_set(emp.emp_code, '".$underEmps."')
-                )
+                AND find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')
                 ".$indLevelStr."
                 ".$orgLevelStr."
                 GROUP BY org.org_id
@@ -611,31 +615,33 @@ class AdvanceSearchController extends Controller
             ", array(Auth::id())
         );
 
-        $indLevelQryStr = empty($request->individual_level) ? "" : " AND level_id = ".$request->individual_level;
-        $orgIdQryStr = empty($request->organization_id) ? "" : " AND org_id = ".$request->organization_id;
+        $indLevelQryStr = empty($request->individual_level) ? "" : " AND e.level_id = ".$request->individual_level;
+        $orgIdQryStr = empty($request->organization_id) ? "" : " AND e.org_id = ".$request->organization_id;
         
         if($all_emp[0]->count_no > 0) {
             $items = DB::select("
-                Select emp_code, emp_name, emp_id
-                From employee
-                Where emp_name like '%{$request->employee_name}%'
-                and is_active = 1
+                Select e.emp_code, e.emp_name, e.emp_id
+                From employee e
+                Where e.emp_name like '%{$request->employee_name}%'
+                and e.is_active = 1
                 ".$indLevelQryStr."
                 ".$orgIdQryStr."
-                Order by emp_name
+                Order by e.emp_name
                 limit 15
             ");
         } else {
-            $underEmps = $this->GetallUnderEmp(Auth::id());
+            $employee = Employee::find(Auth::id());
+            $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
             $items = DB::select("
-                Select emp_code, emp_name, emp_id
-                From employee
-                Where find_in_set(emp_code, '".$underEmps."')
-                And emp_name like '%{$request->employee_name}%'
+                Select e.emp_code, e.emp_name, e.emp_id
+                From employee e
+                inner join org on org.org_id = e.org_id
+                Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
+                And e.emp_name like '%{$request->employee_name}%'
                 " . $indLevelQryStr . "
                 " . $orgIdQryStr . "
-                and is_active = 1
-                Order by emp_name
+                and e.is_active = 1
+                Order by e.emp_name
                 limit 15
             ");
         }
@@ -672,12 +678,14 @@ class AdvanceSearchController extends Controller
                 Order by position_name
             ");
         } else {
-            $underEmps = $this->GetallUnderEmp(Auth::id());
+            $employee = Employee::find(Auth::id());
+            $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
             $items = DB::select("
                 Select distinct b.position_id, b.position_name
                 From employee a 
                 left outer join position b on a.position_id = b.position_id
-                Where find_in_set(a.emp_code, '".$underEmps."')
+                left outer join org on org.org_id = a.org_id
+                Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
                 and a.is_active = 1
                 and b.is_active = 1
                 ".$orgIdQryStr."
