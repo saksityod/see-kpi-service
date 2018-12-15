@@ -681,8 +681,10 @@ BU]]></text>
 				</textElement>
 				<text><![CDATA[Bonus]]></text>
 			</staticText>
-			<textField>
-				<reportElement mode="Transparent" x="0" y="36" width="801" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="3cdafcc4-0b79-4a93-b927-8c578f5da122"/>
+			<textField isBlankWhenNull="true">
+				<reportElement mode="Transparent" x="0" y="36" width="801" height="30" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="3cdafcc4-0b79-4a93-b927-8c578f5da122">
+					<printWhenExpression><![CDATA[($F{name_company} != $F{name_company})? true : false]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
 				</textElement>

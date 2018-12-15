@@ -2879,8 +2879,10 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 				</textElement>
 				<textFieldExpression><![CDATA["รายงานการจ่ายรางวัลพิเศษ ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="30" width="802" height="30" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="30" width="802" height="30" isRemoveLineWhenBlank="true" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994">
+					<printWhenExpression><![CDATA[($F{namecom} != $F{namecom})? true : false]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
 				</textElement>

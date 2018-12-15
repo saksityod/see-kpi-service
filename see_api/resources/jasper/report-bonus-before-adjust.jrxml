@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -2848,8 +2848,10 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 				</textElement>
 				<textFieldExpression><![CDATA["รายงานการจ่ายรางวัลพิเศษ ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="0" y="30" width="802" height="30" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="30" width="802" height="30" isRemoveLineWhenBlank="true" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994">
+					<printWhenExpression><![CDATA[($F{namecom} != $F{namecom})? true : false]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
 				</textElement>
