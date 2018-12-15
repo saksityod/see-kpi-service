@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -72,9 +72,10 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
+	<style name="Style1" mode="Opaque" backcolor="#ECF6F8"/>
 	<subDataset name="table emp" uuid="3c3f2d31-666b-4df6-b310-bc03fb5f2ee5">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_countemp" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -88,7 +89,7 @@
     , po.position_name
     , DATE_FORMAT(em.working_start_date, "%d/%m/%Y") as working_start_date
     , (case when   $P{param_countemp} =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
-    , (case when ( $P{param_countemp}  =2 or  $P{param_countemp} =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
+    , (case when ( $P{param_countemp}  =2 or  $P{param_countemp} =3 or  $P{param_countemp} =4) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
     , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
     , FROM_BASE64(em.s_amount) as Basic_Salary
     , FROM_BASE64(emp.net_s_amount) as Net_Salary
@@ -104,47 +105,44 @@
     , FROM_BASE64(emp.b_amount) b_amount
     , emp.b_rate
     , FROM_BASE64(emp.adjust_b_amount) adjust_b_amount
-    , emp.adjust_b_rate
+   , ROUND(FROM_BASE64(emp.adjust_b_amount)/FROM_BASE64(emp.net_s_amount),2 ) as adjust_b_rate
     from emp_result emp
     inner join employee em on emp.emp_id = em.emp_id
     inner join position po on emp.position_id = po.position_id
     inner join appraisal_period pe on emp.period_id = pe.period_id
     left join org_result_judgement org_re on emp.period_id = org_re.period_id
      and emp.org_id = org_re.org_id
-    left join 
+   left join 
     (
-      SELECT round(max(total.manager),2) as manager
+       SELECT round(max(total.manager),2) as manager
       , round(max(total.bu),2) as bu
       , round(max(total.coo),2) as coo
       , round(max(total.Board),2) as Board
       , total.emp_result_id
       FROM(
-        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
-				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
-        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
-        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
---         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
-        , result.emp_result_id
-        FROM(
-          SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-          , @prev_value := rows.num
-            FROM (
-              select emp.emp_result_id as num
-              , emp.emp_result_judgement_id
-              , emp.adjust_result_score
-							, em.result_score
-              , emp.emp_result_id
-              from emp_result_judgement emp
-							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
-               -- where emp.emp_result_id = 46
-              order by emp.emp_result_id asc, emp.created_dttm asc
-          ) rows ,  (SELECT @row_num := 1) num_value,
-          (SELECT @prev_value := '') set_value
-        ) result
+        SELECT em.result_score as manager
+				, (CASE WHEN emp.org_level_id = ap_le.level_bu THEN emp.adjust_result_score ELSE NULL END) as bu
+				, (CASE WHEN emp.org_level_id = ap_le.level_coo THEN emp.adjust_result_score ELSE NULL END) as coo
+				, (CASE WHEN emp.org_level_id = ap_le.level_board THEN emp.adjust_result_score ELSE NULL END) as Board
+				, em.emp_result_id
+				, emp.adjust_result_score
+				, emp.org_level_id
+				FROM emp_result_judgement emp
+				INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
+				CROSS JOIN 
+				(
+				 SELECT lev.level_id as level_bu
+				 , le.level_id as level_coo
+				 , l.level_id as level_board
+				 FROM appraisal_level lev
+				 INNER JOIN appraisal_level le ON lev.parent_id = le.level_id
+				 INNER JOIN appraisal_level l ON le.parent_id = l.level_id
+				 WHERE lev.is_start_cal_bonus = 1
+				) ap_le
       ) total
       group by total.emp_result_id
     ) re on re.emp_result_id = emp.emp_result_id
-				where  emp.org_id =   $P{param_org_id} 
+				where  emp.org_id in   ($P!{param_org_id}) 
 				and emp.period_id =  $P{param_period} 
 				and pe.appraisal_year =  $P{param_year} 
 				and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
@@ -175,20 +173,20 @@
 			<property name="com.jaspersoft.studio.field.label" value="working_start_date"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		</field>
-		<field name="BU" class="java.lang.Long">
+		<field name="BU" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="BU"/>
 		</field>
-		<field name="MGR" class="java.lang.Long">
+		<field name="MGR" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="MGR"/>
 		</field>
-		<field name="Staff" class="java.lang.Long">
+		<field name="Staff" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="Staff"/>
 		</field>
-		<field name="Basic_Salary" class="java.lang.Object">
+		<field name="Basic_Salary" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Basic_Salary"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
 		</field>
-		<field name="Net_Salary" class="java.lang.Object">
+		<field name="Net_Salary" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Net_Salary"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -204,11 +202,11 @@
 		<field name="Board" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Board"/>
 		</field>
-		<field name="bonus_score" class="java.lang.Object">
+		<field name="bonus_score" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="bonus_score"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="org_result_judgement"/>
 		</field>
-		<field name="b_amount" class="java.lang.Object">
+		<field name="b_amount" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -216,23 +214,24 @@
 			<property name="com.jaspersoft.studio.field.label" value="b_rate"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
-		<field name="adjust_b_amount" class="java.lang.Object">
+		<field name="adjust_b_amount" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="adjust_b_amount"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
-		<field name="adjust_b_rate" class="java.math.BigDecimal">
+		<field name="adjust_b_rate" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="adjust_b_rate"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
 	</subDataset>
 	<subDataset name="table_total_org_3" uuid="20fd4f27-adf6-42ce-a7e3-f5f45560eca3">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_countemp" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_form" class="java.lang.String"/>
 		<parameter name="param_year" class="java.lang.String"/>
+		<parameter name="param_org_mid" class="java.lang.String"/>
 		<queryString language="SQL">
 			<![CDATA[select 
    SUM(BU) BU
@@ -259,7 +258,7 @@ FROM
    , po.position_name
    , em.working_start_date
    , (case when  $P{param_countemp}  =1 and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) BU
-   , (case when ( $P{param_countemp}  =2 or  $P{param_countemp}  =3) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
+   , (case when ( $P{param_countemp}  =2 or  $P{param_countemp}  =3 or  $P{param_countemp} = 4) and emp.emp_id=ManagerOfOrg(emp.org_id) then 1 else 0 end) MGR
    , (case when emp.emp_id != ManagerOfOrg(emp.org_id) then 1 else 0 end) Staff
    , FROM_BASE64(em.s_amount) as Basic_Salary
    , FROM_BASE64(emp.net_s_amount) as Net_Salary
@@ -282,37 +281,34 @@ FROM
     and emp.org_id = org_re.org_id
    left join 
    (
-    SELECT round(max(total.manager),2) as manager
+       SELECT round(max(total.manager),2) as manager
       , round(max(total.bu),2) as bu
       , round(max(total.coo),2) as coo
       , round(max(total.Board),2) as Board
       , total.emp_result_id
       FROM(
-        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
-				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
-        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
-        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
---         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
-        , result.emp_result_id
-        FROM(
-          SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-          , @prev_value := rows.num
-            FROM (
-              select emp.emp_result_id as num
-              , emp.emp_result_judgement_id
-              , emp.adjust_result_score
-							, em.result_score
-              , emp.emp_result_id
-              from emp_result_judgement emp
-							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
-               -- where emp.emp_result_id = 46
-              order by emp.emp_result_id asc, emp.created_dttm asc
-          ) rows ,  (SELECT @row_num := 1) num_value,
-          (SELECT @prev_value := '') set_value
-        ) result
+        SELECT em.result_score as manager
+				, (CASE WHEN emp.org_level_id = ap_le.level_bu THEN emp.adjust_result_score ELSE NULL END) as bu
+				, (CASE WHEN emp.org_level_id = ap_le.level_coo THEN emp.adjust_result_score ELSE NULL END) as coo
+				, (CASE WHEN emp.org_level_id = ap_le.level_board THEN emp.adjust_result_score ELSE NULL END) as Board
+				, em.emp_result_id
+				, emp.adjust_result_score
+				, emp.org_level_id
+				FROM emp_result_judgement emp
+				INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
+				CROSS JOIN 
+				(
+				 SELECT lev.level_id as level_bu
+				 , le.level_id as level_coo
+				 , l.level_id as level_board
+				 FROM appraisal_level lev
+				 INNER JOIN appraisal_level le ON lev.parent_id = le.level_id
+				 INNER JOIN appraisal_level l ON le.parent_id = l.level_id
+				 WHERE lev.is_start_cal_bonus = 1
+				) ap_le
       ) total
       group by total.emp_result_id
-   ) re on re.emp_result_id = emp.emp_result_id
+    ) re on re.emp_result_id = emp.emp_result_id
 where emp.org_id in ($P!{param_org_id}) 
 				and emp.period_id =  $P{param_period} 
 				and pe.appraisal_year =  $P{param_year} 
@@ -332,10 +328,10 @@ where emp.org_id in ($P!{param_org_id})
 		<field name="total_emp" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="total_emp"/>
 		</field>
-		<field name="Basic_Salary" class="java.math.BigDecimal">
+		<field name="Basic_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Basic_Salary"/>
 		</field>
-		<field name="Net_Salary" class="java.math.BigDecimal">
+		<field name="Net_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Net_Salary"/>
 		</field>
 		<field name="manager" class="java.math.BigDecimal">
@@ -350,16 +346,16 @@ where emp.org_id in ($P!{param_org_id})
 		<field name="Board" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Board"/>
 		</field>
-		<field name="bonus_score" class="java.math.BigDecimal">
+		<field name="bonus_score" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="bonus_score"/>
 		</field>
-		<field name="b_amount" class="java.math.BigDecimal">
+		<field name="b_amount" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 		</field>
 	</subDataset>
 	<subDataset name="table_org_bu" uuid="178a6f41-4f35-4aeb-8e0d-f2951a129350">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_countemp" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -383,7 +379,7 @@ where emp.org_id in ($P!{param_org_id})
       when AVG(phck_bu) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_bu)
       when AVG(phck_manager) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_manager)
       ELSE SUM(Net_Salary) END) as  bonus_score
-    , SUM(b_amount) as b_amount
+    , sum(b_amount) as b_amount
 FROM
  (select emp.emp_result_id
    , emp.emp_id
@@ -416,37 +412,34 @@ FROM
     and emp.org_id = org_re.org_id
    left join 
    (
-    SELECT round(max(total.manager),2) as manager
+       SELECT round(max(total.manager),2) as manager
       , round(max(total.bu),2) as bu
       , round(max(total.coo),2) as coo
       , round(max(total.Board),2) as Board
       , total.emp_result_id
       FROM(
-        SELECT (case when result.RowNumber = 1 then result.result_score else null end) as manager
-				, (case when result.RowNumber = 1 then result.adjust_result_score else null end) as bu
-        , (case when result.RowNumber = 2 then result.adjust_result_score else null end) as coo
-        , (case when result.RowNumber = 3 then result.adjust_result_score else null end) as Board
---         , (case when result.RowNumber = 4 then result.adjust_result_score else 0 end) as Board
-        , result.emp_result_id
-        FROM(
-          SELECT *,  @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-          , @prev_value := rows.num
-            FROM (
-              select emp.emp_result_id as num
-              , emp.emp_result_judgement_id
-              , emp.adjust_result_score
-							, em.result_score
-              , emp.emp_result_id
-              from emp_result_judgement emp
-							INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
-               -- where emp.emp_result_id = 46
-              order by emp.emp_result_id asc, emp.created_dttm asc
-          ) rows ,  (SELECT @row_num := 1) num_value,
-          (SELECT @prev_value := '') set_value
-        ) result
+        SELECT em.result_score as manager
+				, (CASE WHEN emp.org_level_id = ap_le.level_bu THEN emp.adjust_result_score ELSE NULL END) as bu
+				, (CASE WHEN emp.org_level_id = ap_le.level_coo THEN emp.adjust_result_score ELSE NULL END) as coo
+				, (CASE WHEN emp.org_level_id = ap_le.level_board THEN emp.adjust_result_score ELSE NULL END) as Board
+				, em.emp_result_id
+				, emp.adjust_result_score
+				, emp.org_level_id
+				FROM emp_result_judgement emp
+				INNER JOIN emp_result em ON emp.emp_result_id = em.emp_result_id
+				CROSS JOIN 
+				(
+				 SELECT lev.level_id as level_bu
+				 , le.level_id as level_coo
+				 , l.level_id as level_board
+				 FROM appraisal_level lev
+				 INNER JOIN appraisal_level le ON lev.parent_id = le.level_id
+				 INNER JOIN appraisal_level l ON le.parent_id = l.level_id
+				 WHERE lev.is_start_cal_bonus = 1
+				) ap_le
       ) total
       group by total.emp_result_id
-   ) re on re.emp_result_id = emp.emp_result_id
+    ) re on re.emp_result_id = emp.emp_result_id
 where emp.org_id in ($P!{param_org_id}) 
 				and emp.period_id =  $P{param_period} 
 				and pe.appraisal_year =  $P{param_year} 
@@ -466,10 +459,10 @@ where emp.org_id in ($P!{param_org_id})
 		<field name="total_emp" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="total_emp"/>
 		</field>
-		<field name="Basic_Salary" class="java.math.BigDecimal">
+		<field name="Basic_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Basic_Salary"/>
 		</field>
-		<field name="Net_Salary" class="java.math.BigDecimal">
+		<field name="Net_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Net_Salary"/>
 		</field>
 		<field name="manager" class="java.math.BigDecimal">
@@ -484,10 +477,10 @@ where emp.org_id in ($P!{param_org_id})
 		<field name="Board" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="Board"/>
 		</field>
-		<field name="bonus_score" class="java.math.BigDecimal">
+		<field name="bonus_score" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="bonus_score"/>
 		</field>
-		<field name="b_amount" class="java.math.BigDecimal">
+		<field name="b_amount" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 		</field>
 	</subDataset>
@@ -501,8 +494,8 @@ where emp.org_id in ($P!{param_org_id})
 		<queryString language="SQL">
 			<![CDATA[SELECT sum(FROM_BASE64(em.s_amount)) as Basic_Salary
 , sum(FROM_BASE64(emp.net_s_amount)) as Net_Salary
-, sum(FROM_BASE64(emp.b_amount)) as b_amount
-, round(avg(emp.b_rate),2) as b_rate
+, sum( FROM_BASE64(emp.adjust_b_amount)) as b_amount
+, round(avg(emp.adjust_b_rate),2) as b_rate
 from emp_result emp
 inner join employee em on emp.emp_id = em.emp_id
 inner join position po on emp.position_id = po.position_id
@@ -533,66 +526,123 @@ and emp.appraisal_type_id = 2]]>
 	<parameter name="param_level_org" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT DISTINCT oo.org_id as parent_org_id
-, oo.org_code as parent_org_code
-, oo.org_name as parent_org_name
-, o.org_id as mid_org_id
-, o.org_code as mid_org_code
-, o.org_name as mid_org_name
-, org.org_id as child_org_id
-, org.org_code as child_org_code
-, org.org_name as child_org_name
-, (case when oo.org_id is not null then 1 else null end) as parent
-, (case when o.org_id is not null then 2 else null end) as mid
-, (case when org.org_id is not null then 3 else null end) as child
-, (SELECT CONCAT(COALESCE(GROUP_CONCAT(distinct sub_oo.org_id),0),',',COALESCE(GROUP_CONCAT(distinct sub_o.org_id),0),',',COALESCE(GROUP_CONCAT(distinct sub_org. org_id),0)) as all_org_bu 
-	 FROM org sub_oo 
-	 LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code 
-	 LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code 
-	 INNER JOIN emp_result sub_emp ON sub_emp.org_id = sub_oo.org_id
-	 INNER JOIN emp_result sub_em ON sub_em.org_id = sub_o.org_id
-	 INNER JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id
-	 INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id 
-	 WHERE sub_le.is_start_cal_bonus = 1 
-	 AND sub_oo.org_id = oo.org_id ) as all_org_bu
-, (SELECT CONCAT(COALESCE(GROUP_CONCAT(distinct sub_o.org_id),0),',',COALESCE(GROUP_CONCAT(distinct sub_org. org_id),0)) as all_org_bu 
-	 FROM org sub_oo 
-	 LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code 
-	 LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code 
-	 INNER JOIN emp_result sub_emp ON sub_emp.org_id = sub_oo.org_id
-	 INNER JOIN emp_result sub_em ON sub_em.org_id = sub_o.org_id
-	 INNER JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id
-	 INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id 
-	 WHERE sub_le.is_start_cal_bonus = 1 
-	 AND sub_oo.org_id = oo.org_id ) as all_org_manager
-, (SELECT CONCAT(COALESCE(GROUP_CONCAT(distinct sub_oo.org_id),0),',',COALESCE(GROUP_CONCAT(distinct sub_o.org_id),0),',', COALESCE(GROUP_CONCAT(distinct sub_org. org_id),0)) as all_org_bu  
-  FROM org sub_oo  
-  LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code  
-  LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code  
-  INNER JOIN emp_result sub_emp ON sub_emp.org_id = sub_oo.org_id  
-  INNER JOIN emp_result sub_em ON sub_em.org_id = sub_o.org_id  
-  INNER JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id  
-  INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id  
-  WHERE sub_le.is_start_cal_bonus = 1  
-and oo.org_id in ( $P!{param_org_id} )
-) as all_bu_report
-, (SELECT appraisal_year FROM appraisal_period WHERE period_id = $P{param_period}  ) as appraisal_year
-, (SELECT o.org_name FROM org o
-     INNER JOIN appraisal_level le ON o.level_id = le.level_id
-     ORDER BY le.seq_no ASC, o.org_id ASC
-     LIMIT 1) as namecom
-FROM org oo
-LEFT JOIN org o ON o.parent_org_code = oo.org_code
-LEFT JOIN org ON org.parent_org_code = o.org_code
-INNER JOIN appraisal_level le ON oo.level_id = le.level_id
-INNER JOIN emp_result emp ON emp.org_id = oo.org_id
-INNER JOIN emp_result em ON em.org_id = o.org_id
-INNER JOIN emp_result e ON e.org_id = org.org_id
-WHERE le.is_start_cal_bonus = 1
-and oo.org_id in ( $P!{param_org_id} )
-ORDER BY oo.org_code ASC
-, o.org_code ASC
-, org.org_code ASC]]>
+		<![CDATA[SELECT *
+FROM (
+
+     SELECT *
+     , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_parent)) as num_all_parent
+     , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_mid)) as num_all_mid
+		 , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_child)) as num_all_child
+		 , (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_department)) as num_all_department
+     FROM (
+				
+					SELECT DISTINCT oo.org_id as parent_org_id
+					, oo.org_code as parent_org_code
+					, oo.org_name as parent_org_name
+					, GetAllUnderOrg(oo.org_code) as all_parent
+					, GetAllUnderOrg(o.org_code) as all_mid
+					, GetAllUnderOrg(org.org_code) as all_child
+					, COALESCE(GetAllUnderOrg(de_org.org_code),0) as all_department
+					, o.org_id as mid_org_id
+					, o.org_code as mid_org_code
+					, o.org_name as mid_org_name
+					, org.org_id as child_org_id
+					, org.org_code as child_org_code
+					, org.org_name as child_org_name
+					, COALESCE(de_org.org_id,org.org_id) as dep_org_id
+					, de_org.org_id as department_org_id
+     				, COALESCE(de_org.org_code,0) as department_org_code
+    				 , COALESCE(de_org.org_name,0) as department_org_name
+					, (case when oo.org_id is not null then 1 else 1 end) as parent
+					, (case when o.org_id is not null then 2 else 2 end) as mid
+					, (case when org.org_id is not null then 3 else 3 end) as child
+					, (case when de_org.org_id is not null then 4 else 4 end) as department
+					, (SELECT appraisal_year FROM appraisal_period WHERE period_id = $P{param_period}   ) as appraisal_year  -- parameter_period
+					, (SELECT o.org_name FROM org o
+							 INNER JOIN appraisal_level le ON o.level_id = le.level_id
+							 ORDER BY le.seq_no ASC, o.org_id ASC
+							 LIMIT 1) as namecom
+					FROM org oo
+					LEFT JOIN org o ON o.parent_org_code = oo.org_code
+					LEFT JOIN org ON org.parent_org_code = o.org_code
+					LEFT JOIN org de_org ON de_org.parent_org_code = org.org_code
+					INNER JOIN appraisal_level le ON oo.level_id = le.level_id
+					LEFT JOIN emp_result emp ON emp.org_id = oo.org_id
+					LEFT JOIN emp_result em ON em.org_id = o.org_id
+					LEFT JOIN emp_result e ON e.org_id = org.org_id
+					LEFT JOIN emp_result de_e ON de_e.org_id = de_org.org_id
+					WHERE le.is_start_cal_bonus = 1
+					and (oo.org_id in ( $P!{param_org_id} )
+				      or o.org_id in ( $P!{param_org_id} )
+				      or org.org_id in ( $P!{param_org_id} )
+				      or de_org.org_id in ( $P!{param_org_id} )
+				     )  -- parameter_org_id
+
+		)	result
+
+) total
+
+LEFT JOIN 
+(
+
+		SELECT total.parent_org_id
+		, CONCAT(COALESCE(GROUP_CONCAT(distinct total.parent_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.mid_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.child_org_id),0)) as all_org_bu
+		, CONCAT(COALESCE(GROUP_CONCAT(distinct total.mid_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.child_org_id),0)) as all_org_manager
+		FROM (
+
+				SELECT *
+				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_parent)) as num_all_parent
+				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_mid)) as num_all_mid
+				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_child)) as num_all_child
+				 FROM (
+				 
+							SELECT sub_oo.org_id as parent_org_id
+						 , sub_o.org_id as mid_org_id
+						 , sub_org. org_id as child_org_id
+						 , GetAllUnderOrg(sub_oo.org_code) as all_parent
+						 , GetAllUnderOrg(sub_o.org_code) as all_mid
+						 , GetAllUnderOrg(sub_org.org_code) as all_child
+						 FROM org sub_oo 
+						 LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code 
+						 LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code 
+						 LEFT JOIN emp_result sub_emp ON sub_emp.org_id = sub_oo.org_id
+						 LEFT JOIN emp_result sub_em ON sub_em.org_id = sub_o.org_id
+						 LEFT JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id
+						 INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id 
+						 WHERE sub_le.is_start_cal_bonus = 1 
+						 and sub_oo.org_id in ( $P!{param_org_id} )  -- parameter_org_id
+						 
+				)	result
+					
+		) total 
+		WHERE total.num_all_parent > 0
+		AND total.num_all_mid > 0
+		AND total.num_all_child > 0
+		GROUP BY total.parent_org_id
+		
+) bu_manager ON bu_manager.parent_org_id = total.parent_org_id
+CROSS JOIN 
+(
+
+	SELECT GROUP_CONCAT(distinct GetAllUnderOrg(sub_oo.org_code)) as all_bu_report
+	FROM org sub_oo 
+	LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code 
+	LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code 
+	LEFT JOIN org sub_de_org ON sub_de_org.parent_org_code = sub_org.org_code 
+	INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id 
+	WHERE sub_le.is_start_cal_bonus = 1 
+	and (sub_oo.org_id in ( $P!{param_org_id})
+	or sub_o.org_id in ( $P!{param_org_id})
+	or sub_org.org_id in ( $P!{param_org_id})
+	or sub_de_org.org_id in ( $P!{param_org_id})) 
+		
+) bu_report 
+
+WHERE total.num_all_parent > 0
+AND total.num_all_mid > 0
+AND total.num_all_child > 0
+-- AND total.num_all_department > 0
+ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code ASC, total.department_org_code ASC]]>
 	</queryString>
 	<field name="parent_org_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="parent_org_id"/>
@@ -605,6 +655,18 @@ ORDER BY oo.org_code ASC
 	<field name="parent_org_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="parent_org_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="all_parent" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="all_parent"/>
+	</field>
+	<field name="all_mid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="all_mid"/>
+	</field>
+	<field name="all_child" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="all_child"/>
+	</field>
+	<field name="all_department" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="all_department"/>
 	</field>
 	<field name="mid_org_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="mid_org_id"/>
@@ -630,14 +692,52 @@ ORDER BY oo.org_code ASC
 		<property name="com.jaspersoft.studio.field.label" value="child_org_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
 	</field>
-	<field name="parent" class="java.lang.Long">
+	<field name="dep_org_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="dep_org_id"/>
+	</field>
+	<field name="department_org_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="department_org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="department_org_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="department_org_code"/>
+	</field>
+	<field name="department_org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="department_org_name"/>
+	</field>
+	<field name="parent" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="parent"/>
 	</field>
-	<field name="mid" class="java.lang.Long">
+	<field name="mid" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="mid"/>
 	</field>
-	<field name="child" class="java.lang.Long">
+	<field name="child" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="child"/>
+	</field>
+	<field name="department" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="department"/>
+	</field>
+	<field name="appraisal_year" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
+	</field>
+	<field name="namecom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="namecom"/>
+	</field>
+	<field name="num_all_parent" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="num_all_parent"/>
+	</field>
+	<field name="num_all_mid" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="num_all_mid"/>
+	</field>
+	<field name="num_all_child" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="num_all_child"/>
+	</field>
+	<field name="num_all_department" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="num_all_department"/>
+	</field>
+	<field name="COLUMN_28" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="parent_org_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
 	</field>
 	<field name="all_org_bu" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="all_org_bu"/>
@@ -648,18 +748,12 @@ ORDER BY oo.org_code ASC
 	<field name="all_bu_report" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="all_bu_report"/>
 	</field>
-	<field name="appraisal_year" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
-	</field>
-	<field name="namecom" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="namecom"/>
-	</field>
 	<group name="Group parent" isStartNewPage="true">
 		<groupExpression><![CDATA[$F{parent_org_id}]]></groupExpression>
 		<groupHeader>
 			<band height="52">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="50" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="a4fbbedb-1ceb-437d-b07c-297294034b8f"/>
+					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="a4fbbedb-1ceb-437d-b07c-297294034b8f"/>
 					<box leftPadding="3">
 						<pen lineStyle="Dotted"/>
 						<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
@@ -673,7 +767,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{parent_org_code}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="50" y="0" width="111" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="5f40f3f2-534a-48b6-b06b-97c5784db539"/>
+					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="5f40f3f2-534a-48b6-b06b-97c5784db539"/>
 					<box leftPadding="3">
 						<pen lineStyle="Dotted"/>
 						<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
@@ -687,14 +781,14 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{parent_org_name}]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement stretchType="RelativeToBandHeight" x="0" y="32" width="802" height="20" uuid="66a4395e-72fe-4d45-b712-87eea747c0d5">
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="32" width="802" height="20" isRemoveLineWhenBlank="true" uuid="66a4395e-72fe-4d45-b712-87eea747c0d5">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="8feda1d8-615c-4f61-b577-7691b253ae3b">
+						<datasetRun subDataset="table emp" uuid="e35a649c-7157-4b85-a41c-55e766106f4c">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{parent_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -712,15 +806,16 @@ ORDER BY oo.org_code ASC
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
-						<jr:column width="50" uuid="2ea8e388-ccbd-450f-906a-2d640f3b920c">
+						<jr:column width="40" uuid="2ea8e388-ccbd-450f-906a-2d640f3b920c">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="20" uuid="c7fdbcaa-1dc5-4265-948d-7627517de1ee"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="40" height="20" uuid="c7fdbcaa-1dc5-4265-948d-7627517de1ee"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 								</textField>
@@ -733,7 +828,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="111" height="20" uuid="82da637f-bb3a-4c9a-823c-15092aa36763"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 								</textField>
@@ -746,7 +841,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="79" height="20" uuid="8203bef2-4044-4e5e-a562-b79ca0461cb4"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 								</textField>
@@ -755,10 +850,10 @@ ORDER BY oo.org_code ASC
 						<jr:column width="54" uuid="0678b4b1-adcf-4b96-bf92-861024b7413f">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								<textField isStretchWithOverflow="true">
+								<textField isStretchWithOverflow="true" pattern="d/M/Y">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="71693918-f990-496b-95ec-f6a41716bce6"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{working_start_date}]]></textFieldExpression>
 								</textField>
@@ -771,7 +866,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="ae1a31f6-6f7a-4c26-af86-9b287785795b"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Staff}]]></textFieldExpression>
 								</textField>
@@ -783,7 +878,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="ee6a80df-0466-410d-acc1-11c8c8dc371c"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{MGR}]]></textFieldExpression>
 								</textField>
@@ -795,7 +890,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="278dd920-5711-47bd-b3dc-be19679e4e43"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{BU}]]></textFieldExpression>
 								</textField>
@@ -809,7 +904,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="20" uuid="e95dca97-b769-4291-8865-a3c0b2f52144"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[""]]></textFieldExpression>
 								</textField>
@@ -823,7 +918,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="20" uuid="77de83d9-4c0e-479f-bb42-201facc54c6c"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Basic_Salary}]]></textFieldExpression>
 								</textField>
@@ -837,7 +932,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="03da49e3-f1d8-415b-a94d-1647eac437a1"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Net_Salary}]]></textFieldExpression>
 								</textField>
@@ -851,7 +946,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="38" height="20" uuid="ddfdf5c3-12a7-4430-8ddf-3c9604c0d9e7"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{manager}]]></textFieldExpression>
 								</textField>
@@ -865,7 +960,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="cf19f9e6-a402-4f44-8333-eb25193a726f"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{phck_bu}]]></textFieldExpression>
 								</textField>
@@ -878,7 +973,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="40099424-2e16-4ce8-ad6a-94090570c615"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{coo}]]></textFieldExpression>
 								</textField>
@@ -891,7 +986,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="7b3a2dca-bbb4-4143-93e1-7ea0ccd650e7"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Board}]]></textFieldExpression>
 								</textField>
@@ -905,23 +1000,23 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="75" height="20" uuid="a9e842c2-bbb6-42f2-b87e-726872dde48e"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{bonus_score}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="1b4b7db4-000c-4c99-8fe3-c48d70181b71">
+						<jr:column width="62" uuid="1b4b7db4-000c-4c99-8fe3-c48d70181b71">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="8eaf46e5-5dc0-4d13-9a51-97d7a1ad1274"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="62" height="20" uuid="8eaf46e5-5dc0-4d13-9a51-97d7a1ad1274"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -932,16 +1027,16 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="42" height="20" uuid="3a726e70-ac85-412b-b493-87242fb35967"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 					</jr:table>
 				</componentElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="161" y="0" width="79" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="7bde48f1-cbbf-4c5f-b777-872f864cc95e"/>
+					<reportElement mode="Opaque" x="151" y="0" width="79" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="7bde48f1-cbbf-4c5f-b777-872f864cc95e"/>
 					<box leftPadding="3">
 						<pen lineStyle="Dotted"/>
 						<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
@@ -955,7 +1050,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="240" y="0" width="54" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="2a26d52f-c18f-4354-8f14-553065fea839"/>
+					<reportElement mode="Opaque" x="230" y="0" width="54" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="2a26d52f-c18f-4354-8f14-553065fea839"/>
 					<box leftPadding="3">
 						<pen lineStyle="Dotted"/>
 						<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
@@ -969,19 +1064,19 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement x="294" y="0" width="466" height="32" uuid="8e91bb0c-672e-4a6f-8e0b-35a9589cc72a">
+					<reportElement x="284" y="0" width="476" height="32" uuid="8e91bb0c-672e-4a6f-8e0b-35a9589cc72a">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_org_bu" uuid="d198ec88-5917-45c7-9c57-b57fcf0dbd4b">
+						<datasetRun subDataset="table_org_bu" uuid="65d4b3e0-847e-41f5-9e37-1633cd572d08">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{parent}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_org_id">
-								<datasetParameterExpression><![CDATA[$F{all_org_bu}]]></datasetParameterExpression>
+								<datasetParameterExpression><![CDATA[$F{all_parent}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_form">
 								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
@@ -1101,8 +1196,8 @@ ORDER BY oo.org_code ASC
 						<jr:column width="36" uuid="3cbd0e01-6b91-436c-9f69-f8c747c4480e">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
 							<jr:detailCell style="Table 1_TD" height="32">
-								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<textField pattern="#,##0.00#" isBlankWhenNull="true">
 									<reportElement mode="Opaque" x="0" y="0" width="36" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="68caf93b-f4cf-4821-8ed1-dcefdfa10cf1"/>
 									<box rightPadding="3"/>
@@ -1156,13 +1251,13 @@ ORDER BY oo.org_code ASC
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="5f4523bc-847c-4cca-b79b-cf20a80ddedd">
+						<jr:column width="62" uuid="5f4523bc-847c-4cca-b79b-cf20a80ddedd">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column12"/>
 							<jr:detailCell style="Table 1_TD" height="32">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement mode="Opaque" x="0" y="0" width="52" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="c90dc07f-2dfc-4ef2-a2f1-f85d01bda888"/>
+									<reportElement mode="Opaque" x="0" y="0" width="62" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="c90dc07f-2dfc-4ef2-a2f1-f85d01bda888"/>
 									<box rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -1196,7 +1291,7 @@ ORDER BY oo.org_code ASC
 			<band height="52">
 				<printWhenExpression><![CDATA[$F{mid_org_id} == null ? false : true]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="50" height="32" backcolor="#A2BCF1" uuid="e0c23969-5b61-4e9b-a5ea-55a5e662ad5a"/>
+					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" backcolor="#A2BCF1" uuid="e0c23969-5b61-4e9b-a5ea-55a5e662ad5a"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1206,7 +1301,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{mid_org_code}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="50" y="0" width="111" height="32" backcolor="#A2BCF1" uuid="f057fcb5-00b2-4663-bdab-c8dfca2095a3"/>
+					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" backcolor="#A2BCF1" uuid="f057fcb5-00b2-4663-bdab-c8dfca2095a3"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1216,7 +1311,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{mid_org_name}]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement x="0" y="32" width="802" height="20" uuid="1d765461-9853-47f3-8814-ac6c772c5674">
+					<reportElement x="0" y="32" width="802" height="20" isRemoveLineWhenBlank="true" uuid="1d765461-9853-47f3-8814-ac6c772c5674">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
@@ -1224,7 +1319,7 @@ ORDER BY oo.org_code ASC
 						<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="54dcd37b-fb91-41b2-85b4-e920e298f856">
+						<datasetRun subDataset="table emp" uuid="464b559b-84f6-4f83-beea-d29662db38ef">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{mid_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1242,15 +1337,16 @@ ORDER BY oo.org_code ASC
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
-						<jr:column width="50" uuid="0e5afd7c-1f8e-4b93-b082-7e7fb0140178">
+						<jr:column width="40" uuid="0e5afd7c-1f8e-4b93-b082-7e7fb0140178">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="20" uuid="0112f089-e591-4648-821b-3d43697e7a48"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="40" height="20" uuid="0112f089-e591-4648-821b-3d43697e7a48"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 								</textField>
@@ -1263,7 +1359,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="111" height="20" uuid="65c02673-19a2-4223-b98b-144f465fc180"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 								</textField>
@@ -1276,7 +1372,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="79" height="20" uuid="2a9ff7bc-163d-4fd6-b79c-aae097470834"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 								</textField>
@@ -1285,10 +1381,10 @@ ORDER BY oo.org_code ASC
 						<jr:column width="54" uuid="3679c1de-f303-41fc-80bb-43a4a4a3bd96">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								<textField isStretchWithOverflow="true">
+								<textField isStretchWithOverflow="true" pattern="d/M/Y">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="63252b9e-b9d7-412a-910f-70efdff41142"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{working_start_date}]]></textFieldExpression>
 								</textField>
@@ -1301,7 +1397,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="a38110a4-cbb1-4857-8ee3-bdc871f73e28"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Staff}]]></textFieldExpression>
 								</textField>
@@ -1313,7 +1409,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="eaee0538-9fec-4cd8-b211-bb14cbe6396a"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{MGR}]]></textFieldExpression>
 								</textField>
@@ -1325,7 +1421,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="2cedd829-833e-48d1-98dd-ee8e9d38f377"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{BU}]]></textFieldExpression>
 								</textField>
@@ -1339,7 +1435,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="20" uuid="88d3625d-e4a7-4797-b49c-2c6f5d285e34"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[""]]></textFieldExpression>
 								</textField>
@@ -1353,7 +1449,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="20" uuid="9a0bc8d1-3476-4af8-b71e-e5c1f41c6118"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Basic_Salary}]]></textFieldExpression>
 								</textField>
@@ -1367,7 +1463,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="63c6adf7-8263-4e21-8e39-cc4401bb4785"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Net_Salary}]]></textFieldExpression>
 								</textField>
@@ -1381,7 +1477,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="38" height="20" uuid="59eca01a-54dc-4ef8-a5ea-83fdf49f39aa"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{manager}]]></textFieldExpression>
 								</textField>
@@ -1395,7 +1491,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="d963c03f-6603-443e-bc69-d8e41830c310"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{phck_bu}]]></textFieldExpression>
 								</textField>
@@ -1408,7 +1504,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="40280ebb-ab42-4490-8d55-9d1eaee5577e"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{coo}]]></textFieldExpression>
 								</textField>
@@ -1421,7 +1517,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="7f70b45b-7993-425f-a9f8-956821aefe91"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Board}]]></textFieldExpression>
 								</textField>
@@ -1435,23 +1531,23 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="75" height="20" uuid="a19a0b04-3d41-48e8-ba88-40e5990bd89e"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{bonus_score}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="f586084d-69df-462e-9e2a-97561b25e34e">
+						<jr:column width="62" uuid="f586084d-69df-462e-9e2a-97561b25e34e">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="8acae6ad-a981-407d-b9ce-12343881ec23"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="62" height="20" uuid="8acae6ad-a981-407d-b9ce-12343881ec23"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1462,16 +1558,16 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="42" height="20" uuid="f3b1c9ba-da7e-441f-9254-712d0815fc67"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 					</jr:table>
 				</componentElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="161" y="0" width="79" height="32" backcolor="#A2BCF1" uuid="91b91e99-d1ed-4361-ba71-506af2bbd628"/>
+					<reportElement mode="Opaque" x="151" y="0" width="79" height="32" backcolor="#A2BCF1" uuid="91b91e99-d1ed-4361-ba71-506af2bbd628"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1481,7 +1577,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="240" y="0" width="54" height="32" backcolor="#A2BCF1" uuid="6fbaad46-8f04-4b19-bcc8-526d10f7fa3b"/>
+					<reportElement mode="Opaque" x="230" y="0" width="54" height="32" backcolor="#A2BCF1" uuid="6fbaad46-8f04-4b19-bcc8-526d10f7fa3b"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1491,19 +1587,19 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement x="294" y="0" width="466" height="32" uuid="99a35d2e-fa26-4f1d-916a-4226837a6630">
+					<reportElement x="284" y="0" width="475" height="32" uuid="99a35d2e-fa26-4f1d-916a-4226837a6630">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="7055ac4d-3c86-424e-a4e5-007819842603">
+						<datasetRun subDataset="table_total_org_3" uuid="f2c4c61e-0efc-48d8-b1c1-41885f68fa21">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{mid}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_org_id">
-								<datasetParameterExpression><![CDATA[$F{all_org_manager}]]></datasetParameterExpression>
+								<datasetParameterExpression><![CDATA[$F{all_mid}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_form">
 								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
@@ -1513,6 +1609,9 @@ ORDER BY oo.org_code ASC
 							</datasetParameter>
 							<datasetParameter name="param_year">
 								<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org_mid">
+								<datasetParameterExpression><![CDATA[$F{mid_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
@@ -1675,13 +1774,13 @@ ORDER BY oo.org_code ASC
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="4a97f5f5-9461-4e0f-8064-4a8d75f65705">
+						<jr:column width="62" uuid="4a97f5f5-9461-4e0f-8064-4a8d75f65705">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column12"/>
 							<jr:detailCell style="Table 1_TD" height="32">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement mode="Opaque" x="0" y="0" width="52" height="32" backcolor="#A2BCF1" uuid="b31819c8-df6b-4b3d-954a-58f26c184fda"/>
+									<reportElement mode="Opaque" x="0" y="0" width="62" height="32" backcolor="#A2BCF1" uuid="b31819c8-df6b-4b3d-954a-58f26c184fda"/>
 									<box rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -1711,7 +1810,7 @@ ORDER BY oo.org_code ASC
 			<band height="52">
 				<printWhenExpression><![CDATA[$F{child_org_id} == null ? false : true]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="50" height="32" backcolor="#DCE6F1" uuid="ae332a1f-d93b-4e14-bb00-2deba32850ee"/>
+					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" backcolor="#DCE6F1" uuid="ae332a1f-d93b-4e14-bb00-2deba32850ee"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1721,7 +1820,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{child_org_code}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="50" y="0" width="111" height="32" backcolor="#DCE6F1" uuid="b170753c-5c0d-44f4-a19b-b4d62f5f4077"/>
+					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" backcolor="#DCE6F1" uuid="b170753c-5c0d-44f4-a19b-b4d62f5f4077"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1731,14 +1830,14 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[$F{child_org_name}]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement stretchType="RelativeToBandHeight" x="0" y="32" width="802" height="20" uuid="ac50376f-f1ec-4b46-9d7b-1cbfa04045ff">
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="32" width="802" height="20" isRemoveLineWhenBlank="true" uuid="ac50376f-f1ec-4b46-9d7b-1cbfa04045ff">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table emp" uuid="a88ab6d9-f52e-4c37-b137-bb1a0e7288c6">
+						<datasetRun subDataset="table emp" uuid="98646f4b-7ac7-478a-bad9-d1f3c0c0559b">
 							<datasetParameter name="param_org_id">
 								<datasetParameterExpression><![CDATA[$F{child_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -1756,15 +1855,16 @@ ORDER BY oo.org_code ASC
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
-						<jr:column width="50" uuid="df8f4afb-62ce-4de0-a1b6-901255a69c7d">
+						<jr:column width="40" uuid="df8f4afb-62ce-4de0-a1b6-901255a69c7d">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="20" uuid="74a4a715-e213-442e-b951-1580aef47b46"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="40" height="20" uuid="74a4a715-e213-442e-b951-1580aef47b46"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 								</textField>
@@ -1777,7 +1877,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="111" height="20" uuid="9d6b7d15-976f-4227-8ad6-d87ce1433a5d"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 								</textField>
@@ -1789,7 +1889,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="79" height="20" uuid="64963cb8-8661-41d1-82d2-2c04d5ac35a9"/>
 									<box leftPadding="3"/>
 									<textElement>
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 								</textField>
@@ -1797,10 +1897,10 @@ ORDER BY oo.org_code ASC
 						</jr:column>
 						<jr:column width="54" uuid="a3f052f4-531c-4ae8-88af-28f3b185c6df">
 							<jr:detailCell style="Table_TD" height="20">
-								<textField isStretchWithOverflow="true">
+								<textField isStretchWithOverflow="true" pattern="d/M/Y">
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="f2e9ee6d-c004-458d-b23e-ced11aae72b3"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{working_start_date}]]></textFieldExpression>
 								</textField>
@@ -1813,7 +1913,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="5cb40e57-56cb-4b48-b5dd-5d973ef298c4"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Staff}]]></textFieldExpression>
 								</textField>
@@ -1825,7 +1925,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="014ebdc3-63bc-4ff6-aae9-53c5909b4620"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{MGR}]]></textFieldExpression>
 								</textField>
@@ -1837,7 +1937,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="c94321c3-3500-4505-941c-3bcffe05b01c"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{BU}]]></textFieldExpression>
 								</textField>
@@ -1851,7 +1951,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="20" uuid="4dbac760-a589-4bff-abf7-f7e0de567c78"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[""]]></textFieldExpression>
 								</textField>
@@ -1865,7 +1965,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="20" uuid="abba2ee8-361f-49ff-9f98-7735e0ad0b00"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Basic_Salary}]]></textFieldExpression>
 								</textField>
@@ -1879,7 +1979,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="391f5ba8-67e7-404d-8655-9f3ed0dfc7c4"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Net_Salary}]]></textFieldExpression>
 								</textField>
@@ -1893,7 +1993,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="38" height="20" uuid="d2e18dba-c4f7-4be4-91e8-c8ed01a721a6"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{manager}]]></textFieldExpression>
 								</textField>
@@ -1907,7 +2007,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="7e4f26b2-82b8-45fc-9af4-c00439cb8e92"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{phck_bu}]]></textFieldExpression>
 								</textField>
@@ -1920,7 +2020,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="e8fb88cc-e357-414d-8dd0-92d61c5d59c6"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{coo}]]></textFieldExpression>
 								</textField>
@@ -1933,7 +2033,7 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="caed60d3-2395-4a0d-a472-80bea11b48e3"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{Board}]]></textFieldExpression>
 								</textField>
@@ -1947,23 +2047,23 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="75" height="20" uuid="22191560-b5e7-482e-9ba9-729334c0e4b0"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{bonus_score}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="0fe8a3f1-e9bd-4c29-82b1-aac10dd14257">
+						<jr:column width="62" uuid="0fe8a3f1-e9bd-4c29-82b1-aac10dd14257">
 							<jr:detailCell style="Table_TD" height="20">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="a6adf4f9-2b43-43d2-a869-2957f093902e"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="62" height="20" uuid="a6adf4f9-2b43-43d2-a869-2957f093902e"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1974,16 +2074,16 @@ ORDER BY oo.org_code ASC
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="42" height="20" uuid="566f67dc-6241-4548-9bb0-fc3e134fbac9"/>
 									<box rightPadding="2"/>
 									<textElement textAlignment="Right">
-										<font fontName="TH SarabunPSK" size="13"/>
+										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{b_rate}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
 					</jr:table>
 				</componentElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="161" y="0" width="79" height="32" backcolor="#DCE6F1" uuid="79aefea2-ccbd-454e-b8f3-b4582f706b09"/>
+					<reportElement mode="Opaque" x="151" y="0" width="79" height="32" backcolor="#DCE6F1" uuid="79aefea2-ccbd-454e-b8f3-b4582f706b09"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1993,7 +2093,7 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement mode="Opaque" x="240" y="0" width="54" height="32" backcolor="#DCE6F1" uuid="d719343d-a9dd-4c31-8364-2ac1f588da4c"/>
+					<reportElement mode="Opaque" x="230" y="0" width="54" height="32" backcolor="#DCE6F1" uuid="d719343d-a9dd-4c31-8364-2ac1f588da4c"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -2003,19 +2103,19 @@ ORDER BY oo.org_code ASC
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<componentElement>
-					<reportElement x="294" y="0" width="466" height="32" uuid="f8269945-c6ff-4602-876a-fb9b51e1bae3">
+					<reportElement x="284" y="0" width="475" height="32" uuid="f8269945-c6ff-4602-876a-fb9b51e1bae3">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="929be98c-8504-491b-a15c-8587552e5983">
+						<datasetRun subDataset="table_total_org_3" uuid="5c1649a3-a1d3-4bc9-9abc-cd5138352399">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{child}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_org_id">
-								<datasetParameterExpression><![CDATA[$F{child_org_id}]]></datasetParameterExpression>
+								<datasetParameterExpression><![CDATA[$F{all_child}]]></datasetParameterExpression>
 							</datasetParameter>
 							<datasetParameter name="param_form">
 								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
@@ -2025,6 +2125,9 @@ ORDER BY oo.org_code ASC
 							</datasetParameter>
 							<datasetParameter name="param_year">
 								<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org_mid">
+								<datasetParameterExpression><![CDATA[$F{mid_org_id}]]></datasetParameterExpression>
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
@@ -2187,13 +2290,13 @@ ORDER BY oo.org_code ASC
 								</textField>
 							</jr:detailCell>
 						</jr:column>
-						<jr:column width="52" uuid="e5670748-f957-46b6-90bd-0d626f4372be">
+						<jr:column width="62" uuid="e5670748-f957-46b6-90bd-0d626f4372be">
 							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column12"/>
 							<jr:detailCell style="Table 1_TD" height="32">
 								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 								<textField pattern="#,##0.00#" isBlankWhenNull="true">
-									<reportElement x="0" y="0" width="52" height="32" uuid="64e174b8-34c3-41ff-b001-12f38b2f837e"/>
+									<reportElement x="0" y="0" width="62" height="32" uuid="64e174b8-34c3-41ff-b001-12f38b2f837e"/>
 									<box rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -2217,6 +2320,522 @@ ORDER BY oo.org_code ASC
 			</band>
 		</groupHeader>
 	</group>
+	<group name="Group Department">
+		<groupExpression><![CDATA[$F{department_org_id}]]></groupExpression>
+		<groupHeader>
+			<band height="52">
+				<printWhenExpression><![CDATA[($F{department_org_id} != null)? (($F{num_all_department} != 0)? true : false) : false]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" backcolor="#ECF6F8" uuid="46f00d9d-c7ad-42e2-9133-faebc2c397a0"/>
+					<box leftPadding="3">
+						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+					</box>
+					<textElement>
+						<font fontName="TH SarabunPSK" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{department_org_name}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="230" y="0" width="54" height="32" backcolor="#ECF6F8" uuid="eed7cee6-ad7a-4d58-a4ed-a37758504c3d"/>
+					<box leftPadding="3">
+						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+					</box>
+					<textElement>
+						<font fontName="TH SarabunPSK" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="151" y="0" width="79" height="32" backcolor="#ECF6F8" uuid="010add91-fff7-41ce-9990-f0a4dc0f3b1c"/>
+					<box leftPadding="3">
+						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+					</box>
+					<textElement>
+						<font fontName="TH SarabunPSK" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" backcolor="#ECF6F8" uuid="3b364535-b5c5-4f4a-af50-fd1b873a392f"/>
+					<box leftPadding="3">
+						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+					</box>
+					<textElement>
+						<font fontName="TH SarabunPSK" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{department_org_code}]]></textFieldExpression>
+				</textField>
+				<componentElement>
+					<reportElement x="284" y="0" width="475" height="32" uuid="ff317fd1-a295-4af0-8565-503437a28f17">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="table_total_org_3" uuid="f36cfc40-5258-425a-b0b0-0230f45ef115">
+							<datasetParameter name="param_countemp">
+								<datasetParameterExpression><![CDATA[$F{department}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org_id">
+								<datasetParameterExpression><![CDATA[$F{all_department}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_year">
+								<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_org_mid">
+								<datasetParameterExpression><![CDATA[$F{mid_org_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="22" uuid="00d11d76-231a-4961-9a8c-e616bc28b871">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="22" height="32" uuid="d6482e32-9544-48e0-8f40-729de23f3424"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Staff}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="22" uuid="c9d789db-5ca9-429c-8fbf-d845684d8494">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+							<jr:detailCell style="Style1" height="32">
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="22" height="32" uuid="47b9444b-f9fb-43f9-8784-a37a428eb466"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{MGR}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="22" uuid="1500fc29-af9b-4d43-a5a0-d983be9714ef">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+							<jr:detailCell style="Style1" height="32">
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="22" height="32" uuid="36b58e34-b01e-4ff4-b58c-795f417fca34"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{BU}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="20" uuid="8251d7e8-ad95-4415-b074-16bce325dafe">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="20" height="32" uuid="c2fc9bec-288b-42b3-89c1-bbf5c4478511"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{total_emp}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="55" uuid="9c50a15a-51b7-4433-9906-80831fa54ec8">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="55" height="32" uuid="f1728ee2-e000-4916-b81b-8487a66a267c"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Basic_Salary}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="52" uuid="ba7a65f0-7f6c-4a61-9606-9110712e7768">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column6"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="52" height="32" uuid="648144dc-7748-48d1-a0f7-71183db36c4a"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Net_Salary}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="38" uuid="d097a5f0-9e8a-4ccf-99fc-fe5d9ef64778">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="38" height="32" uuid="97028ef8-f209-451a-b01c-7cc137958645"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{manager}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="d071e35f-7e49-4765-997c-f166a655b1c6">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="36" height="32" uuid="25900d0b-46a2-4c03-a778-f53ad68ebfae"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{phck_bu}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="29404bf2-a910-4f9e-aa57-c74329d6cc74">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="36" height="32" uuid="fe546236-0489-4568-a718-13e79466f883"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{coo}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="7470f9a2-862c-4e2b-b42a-18b21039e560">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column10"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="36" height="32" uuid="1d4ce3da-5f7d-40f2-b177-97a93833700a"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Board}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="75" uuid="65534bdf-5de8-45f4-a8b0-74e6ee8f9bbf">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column11"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.0000" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="75" height="32" uuid="c5d8ddbb-dd4b-4f47-acea-bdae903ffa38"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{bonus_score}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="62" uuid="62f826b1-bb0b-4d19-8064-4737a31fc3b8">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column12"/>
+							<jr:detailCell style="Style1" height="32">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement x="0" y="0" width="62" height="32" uuid="175e7f02-0816-438b-bea1-bd8359b9b1c3"/>
+									<box rightPadding="3"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+				<componentElement>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="32" width="802" height="20" isRemoveLineWhenBlank="true" uuid="8d7b8997-cb54-4f83-be1b-1ac7c3f42c12">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="table emp" uuid="46742ea8-8419-4c7b-981e-4d35d62969dd">
+							<datasetParameter name="param_org_id">
+								<datasetParameterExpression><![CDATA[$F{department_org_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_countemp">
+								<datasetParameterExpression><![CDATA[$F{department}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_period">
+								<datasetParameterExpression><![CDATA[$P{param_period}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_form">
+								<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_year">
+								<datasetParameterExpression><![CDATA[$P{param_year}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="40" uuid="2870d3c6-2306-482c-85a5-776ec5c305ec">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="40" height="20" uuid="0a0dd246-4000-4602-bd2a-1e4c25ffac41"/>
+									<box leftPadding="3"/>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="111" uuid="4db4a75f-d096-4ab1-ba8e-faf2512d92e4">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<textField isStretchWithOverflow="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="111" height="20" uuid="bcc68651-53ca-48af-8564-7eb7b1d23236"/>
+									<box leftPadding="3"/>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="79" uuid="ae47adcc-697a-4703-ab92-90cc044ae668">
+							<jr:detailCell style="Table_TD" height="20">
+								<textField isStretchWithOverflow="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="79" height="20" uuid="e4bf648e-1a07-4869-bc2c-4bb31f46ab07"/>
+									<box leftPadding="1" rightPadding="1"/>
+									<textElement>
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="54" uuid="a5bb99f9-5a4c-402c-9f08-1ad1f4cea7ba">
+							<jr:detailCell style="Table_TD" height="20">
+								<textField isStretchWithOverflow="true" pattern="d/M/Y">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="54" height="20" uuid="9b054b21-807d-46bc-a283-e730a7d6fef0"/>
+									<textElement textAlignment="Center">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{working_start_date}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="22" uuid="b852e203-1870-4e24-bc09-8e035b2b3c5f">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="b3d51271-07ba-4002-a62f-5f06796679d8"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Staff}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="22" uuid="3c253b54-d027-4f7a-8cd3-b6867aea4d35">
+							<jr:detailCell style="Table_TD" height="20">
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="ad8c8d62-f243-436c-811f-cbd55415aac0"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{MGR}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="22" uuid="b44cfe8b-3b43-4fe4-81c3-afe2e62a97f9">
+							<jr:detailCell style="Table_TD" height="20">
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="22" height="20" uuid="20dd6729-bfe6-490e-9b1c-334640c37cd9"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{BU}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="20" uuid="f37d139e-1d24-4322-a176-e52eae8fd365">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="20" uuid="05e5a07b-33a7-4936-bd8a-923ed6400769"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[""]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="55" uuid="dfc355a9-4fa6-4209-b818-3ceff4d4ef60">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="20" uuid="7400e362-9014-414f-8f5a-f6c77f9a2901"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Basic_Salary}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="52" uuid="fb321120-08d0-4850-b2b7-3d5a862ca04a">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="52" height="20" uuid="eafe3636-33cd-4a6b-b3e9-987c29e4065a"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Net_Salary}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="38" uuid="9e54489c-74f2-44bc-9279-abf7dedc7b06">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="38" height="20" uuid="1d562c0f-a83a-43d2-96a4-c1694dcad1a2"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{manager}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="0a498911-d3e6-4144-95a8-9b64e5213d46">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="a11d7c5d-c4f3-4b03-a542-89e29f703634"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{phck_bu}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="f32df60b-d828-4dad-81ff-f82efbcfe0ba">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="d62e640a-eb34-4aa7-a296-2d11fac2bb0f"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{coo}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="36" uuid="9907f583-12c7-4f36-8c72-c48469e70b93">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="36" height="20" uuid="840c3070-f51d-437e-8797-2d0fbd94ffb9"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{Board}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="75" uuid="1e3202ed-a37f-491d-aee8-c09e0acd384b">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.0000" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="75" height="20" uuid="6552f156-9e3b-4563-88cb-7cc943f66a4b"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{bonus_score}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="62" uuid="fbdf593d-340f-43dc-99eb-ede823ddb410">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+								<textField isStretchWithOverflow="true" pattern="#,##0.00#" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="62" height="20" uuid="35037eac-5b37-4dda-bc4c-7f99e9208343"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+						<jr:column width="42" uuid="5d104282-1984-4ad0-93bc-56aeefcfd555">
+							<jr:detailCell style="Table_TD" height="20">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="42" height="20" uuid="131e8375-a7da-4c92-aca9-5a07f41c82f0"/>
+									<box rightPadding="2"/>
+									<textElement textAlignment="Right">
+										<font fontName="TH SarabunPSK" size="14"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{adjust_b_rate}]]></textFieldExpression>
+								</textField>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement mode="Opaque" x="760" y="0" width="42" height="32" backcolor="#ECF6F8" uuid="68734075-43e1-4783-aadc-5bd58ea2b824"/>
+					<box leftPadding="3">
+						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+					</box>
+					<textElement>
+						<font fontName="TH SarabunPSK" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[""]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -2227,7 +2846,7 @@ ORDER BY oo.org_code ASC
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="21" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["รายงานการจ่ายเงินรางวัลพิเศษ (ก่อนแก้ไข) ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["รายงานการจ่ายรางวัลพิเศษ ประจำปี "+$F{appraisal_year}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="30" width="802" height="30" uuid="b48046ff-d8ac-46f1-b1b8-8ef4b12d6994"/>
@@ -2241,7 +2860,7 @@ ORDER BY oo.org_code ASC
 	<columnHeader>
 		<band height="62" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="338" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e942ad8b-7673-46ac-8cb1-ac23362696ce"/>
+				<reportElement mode="Opaque" x="328" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e942ad8b-7673-46ac-8cb1-ac23362696ce"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2251,7 +2870,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[BU]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="487" y="42" width="38" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="9536899b-f773-4edb-afd1-83a6ab410130"/>
+				<reportElement mode="Opaque" x="477" y="42" width="38" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="9536899b-f773-4edb-afd1-83a6ab410130"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2261,7 +2880,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[ผจก.ฝ่าย]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="240" y="42" width="54" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="84f5bd47-9d21-490d-9de9-a806754db56e"/>
+				<reportElement mode="Opaque" x="230" y="42" width="54" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="84f5bd47-9d21-490d-9de9-a806754db56e"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2271,7 +2890,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[วันที่เริ่มงาน]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="633" y="42" width="75" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="8b109879-93dc-4841-8cc5-68fc48f63f0f"/>
+				<reportElement mode="Opaque" x="623" y="42" width="75" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="8b109879-93dc-4841-8cc5-68fc48f63f0f"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2281,7 +2900,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[แต้มสิทธิ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="708" y="42" width="52" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="b5419393-d9c7-48c6-a8bd-9d577ea1b38a"/>
+				<reportElement mode="Opaque" x="698" y="42" width="62" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="b5419393-d9c7-48c6-a8bd-9d577ea1b38a"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2291,7 +2910,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[เงินรางวัล]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="498" y="22" width="160" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a851e3a4-c759-4e59-b52f-3fe3336e4e05"/>
+				<reportElement mode="Opaque" x="477" y="20" width="146" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a851e3a4-c759-4e59-b52f-3fe3336e4e05"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2301,7 +2920,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[ประเมินผลงาน]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="161" y="42" width="79" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="afe9bea7-23b5-4796-8690-b7919a394dd6"/>
+				<reportElement mode="Opaque" x="151" y="42" width="79" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="afe9bea7-23b5-4796-8690-b7919a394dd6"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2311,7 +2930,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[ตำแหน่ง]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="294" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1d0740a3-de98-4643-872e-b6d8ce485833"/>
+				<reportElement mode="Opaque" x="284" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1d0740a3-de98-4643-872e-b6d8ce485833"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2321,7 +2940,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[Staff]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="50" y="42" width="111" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="273eb112-1985-4be8-9419-784181b59244"/>
+				<reportElement mode="Opaque" x="40" y="42" width="111" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="273eb112-1985-4be8-9419-784181b59244"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2331,7 +2950,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[ชื่อ]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="597" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="a00eec33-037d-4ef9-b588-b1894e1db782"/>
+				<reportElement mode="Opaque" x="587" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="a00eec33-037d-4ef9-b588-b1894e1db782"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2341,7 +2960,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[Board]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="561" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="da6a9065-8988-4c05-a716-c25d49892c3d"/>
+				<reportElement mode="Opaque" x="551" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="da6a9065-8988-4c05-a716-c25d49892c3d"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2351,7 +2970,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[COO]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="316" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="45210bce-f2f0-4f3b-9a45-9a0c57d5c114"/>
+				<reportElement mode="Opaque" x="306" y="42" width="22" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="45210bce-f2f0-4f3b-9a45-9a0c57d5c114"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2361,7 +2980,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[MGR]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="380" y="42" width="55" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="5ee4b005-6b5f-4d04-a410-46f33787a9b2"/>
+				<reportElement mode="Opaque" x="370" y="42" width="55" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="5ee4b005-6b5f-4d04-a410-46f33787a9b2"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2381,7 +3000,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[จำนวนเท่า]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="360" y="42" width="20" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="da2f27c8-9a8a-468d-99b7-b0fac7204dc9"/>
+				<reportElement mode="Opaque" x="350" y="42" width="20" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="da2f27c8-9a8a-468d-99b7-b0fac7204dc9"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2391,17 +3010,17 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[รวม]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="42" width="50" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="42c09299-cdb1-4039-b87f-8998589bc745"/>
+				<reportElement mode="Opaque" x="0" y="42" width="40" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="42c09299-cdb1-4039-b87f-8998589bc745"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<text><![CDATA[รหัสพนักงาน]]></text>
+				<text><![CDATA[รหัส]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="525" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="b9516cd8-6961-443c-82fd-8b509e43d1dc"/>
+				<reportElement mode="Opaque" x="515" y="42" width="36" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="b9516cd8-6961-443c-82fd-8b509e43d1dc"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2411,7 +3030,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[ผจก.BU]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="435" y="42" width="52" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="24c0559a-2ccf-43f1-8a0a-e19b5e18456c"/>
+				<reportElement mode="Opaque" x="425" y="42" width="52" height="20" forecolor="#FFFFFF" backcolor="#3B5998" uuid="24c0559a-2ccf-43f1-8a0a-e19b5e18456c"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2421,7 +3040,7 @@ ORDER BY oo.org_code ASC
 				<text><![CDATA[Net Salary]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="294" y="22" width="86" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a8756446-5101-4644-b7d5-689e03f5b437"/>
+				<reportElement mode="Opaque" x="284" y="21" width="86" height="20" forecolor="#000000" backcolor="#CECCFF" uuid="a8756446-5101-4644-b7d5-689e03f5b437"/>
 				<box>
 					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 				</box>
@@ -2432,17 +3051,17 @@ ORDER BY oo.org_code ASC
 			</staticText>
 		</band>
 	</columnHeader>
-	<lastPageFooter>
-		<band height="20">
+	<summary>
+		<band height="32">
 			<componentElement>
-				<reportElement x="300" y="0" width="502" height="20" uuid="5d0cec85-42bd-4c1c-9bec-e5fad879652f">
+				<reportElement x="289" y="12" width="513" height="20" uuid="5d0cec85-42bd-4c1c-9bec-e5fad879652f">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.table.style.table_header" value="Table 2_TH"/>
 					<property name="com.jaspersoft.studio.table.style.column_header" value="Table 2_CH"/>
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="grandtotal" uuid="655183c4-8e20-4698-a11b-405664225613">
+					<datasetRun subDataset="grandtotal" uuid="26bb2657-ddda-4d8b-a345-32903595003e">
 						<datasetParameter name="param_form">
 							<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -2509,13 +3128,13 @@ ORDER BY oo.org_code ASC
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						</jr:detailCell>
 					</jr:column>
-					<jr:column width="50" uuid="5bd027f2-4d99-4c4b-b877-88543d1c99fd">
+					<jr:column width="62" uuid="5bd027f2-4d99-4c4b-b877-88543d1c99fd">
 						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column5"/>
 						<jr:detailCell style="Table 2_TD" height="20">
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 							<textField pattern="#,##0.00#">
-								<reportElement x="0" y="0" width="50" height="20" uuid="78dbf230-accd-413e-a25d-9d5b028c17f4"/>
+								<reportElement x="0" y="0" width="62" height="20" uuid="78dbf230-accd-413e-a25d-9d5b028c17f4"/>
 								<box leftPadding="3" rightPadding="3"/>
 								<textElement textAlignment="Right">
 									<font fontName="TH SarabunPSK" size="13"/>
@@ -2541,5 +3160,5 @@ ORDER BY oo.org_code ASC
 				</jr:table>
 			</componentElement>
 		</band>
-	</lastPageFooter>
+	</summary>
 </jasperReport>
