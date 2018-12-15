@@ -1016,7 +1016,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1547,7 +1547,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2063,7 +2063,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2804,7 +2804,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
-									<textFieldExpression><![CDATA[$F{adjust_b_amount}]]></textFieldExpression>
+									<textFieldExpression><![CDATA[$F{b_amount}]]></textFieldExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
