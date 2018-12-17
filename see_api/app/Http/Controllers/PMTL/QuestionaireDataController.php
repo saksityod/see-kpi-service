@@ -1905,6 +1905,7 @@ class QuestionaireDataController extends Controller
 					customer_name, 
 					customer_type, 
 					industry_class
+					ORDER BY qdh.created_dttm
             ");
         } else {
 
@@ -1982,6 +1983,7 @@ class QuestionaireDataController extends Controller
 					customer_name, 
 					customer_type, 
 					industry_class
+					ORDER BY qdh.created_dttm
             ");
         }
 
