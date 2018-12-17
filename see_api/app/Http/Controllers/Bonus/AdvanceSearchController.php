@@ -592,7 +592,7 @@ class AdvanceSearchController extends Controller
                 FROM org
                 INNER JOIN employee emp ON emp.org_id = org.org_id
                 WHERE org.is_active = 1
-                AND find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')
+                AND (org.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))
                 ".$indLevelStr."
                 ".$orgLevelStr."
                 GROUP BY org.org_id
@@ -616,30 +616,41 @@ class AdvanceSearchController extends Controller
         );
 
         $indLevelQryStr = empty($request->individual_level) ? "" : " AND e.level_id = ".$request->individual_level;
-        $orgIdQryStr = empty($request->organization_id) ? "" : " AND e.org_id = ".$request->organization_id;
-        
         if($all_emp[0]->count_no > 0) {
+            if(empty($request->organization_id)) {
+                $gueOrgCodeByOrgId = '';
+            } else {
+                $findIn = $this->GetallUnderOrgByOrg($request->organization_id);
+                $gueOrgCodeByOrgId = "and (e.org_id = '{$request->organization_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            }
+
             $items = DB::select("
                 Select e.emp_code, e.emp_name, e.emp_id
                 From employee e
+                inner join org on org.org_id = e.org_id
                 Where e.emp_name like '%{$request->employee_name}%'
+                " . $gueOrgCodeByOrgId . "
+                " . $indLevelQryStr . "
                 and e.is_active = 1
-                ".$indLevelQryStr."
-                ".$orgIdQryStr."
                 Order by e.emp_name
                 limit 15
             ");
         } else {
             $employee = Employee::find(Auth::id());
-            $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+            $findIn = $this->GetallUnderOrgByOrg($employee->org_id);
+            if(empty($request->organization_id)) {
+                $gueOrgCodeByOrgId = "and (e.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            } else {
+                $gueOrgCodeByOrgId = "and (e.org_id = '{$request->organization_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            }
+
             $items = DB::select("
                 Select e.emp_code, e.emp_name, e.emp_id
                 From employee e
                 inner join org on org.org_id = e.org_id
-                Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
-                And e.emp_name like '%{$request->employee_name}%'
+                Where e.emp_name like '%{$request->employee_name}%'
+                " . $gueOrgCodeByOrgId . "
                 " . $indLevelQryStr . "
-                " . $orgIdQryStr . "
                 and e.is_active = 1
                 Order by e.emp_name
                 limit 15
@@ -662,33 +673,45 @@ class AdvanceSearchController extends Controller
             ", array(Auth::id())
         );
 
-        $orgIdQryStr = empty($request->organization_id) ? "" : " and a.org_id = ".$request->organization_id;
         $empIdQryStr = empty($request->employee_id) ? "" : " and a.emp_id = ".$request->employee_id;
         
 
         if ($all_emp[0]->count_no > 0) {
-            $items = DB::select("
-                Select distinct b.position_id, b.position_name
-                From employee a 
-                left outer join position b on a.position_id = b.position_id
-                where a.is_active = 1
-                and b.is_active = 1
-                ".$orgIdQryStr."
-                ".$empIdQryStr."
-                Order by position_name
-            ");
-        } else {
-            $employee = Employee::find(Auth::id());
-            $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+            if(empty($request->organization_id)) {
+                $gueOrgCodeByOrgId = '';
+            } else {
+                $findIn = $this->GetallUnderOrgByOrg($request->organization_id);
+                $gueOrgCodeByOrgId = "and (a.org_id = '{$request->organization_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            }
+
             $items = DB::select("
                 Select distinct b.position_id, b.position_name
                 From employee a 
                 left outer join position b on a.position_id = b.position_id
                 left outer join org on org.org_id = a.org_id
-                Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
-                and a.is_active = 1
+                Where a.is_active = 1
                 and b.is_active = 1
-                ".$orgIdQryStr."
+                ".$gueOrgCodeByOrgId."
+                ".$empIdQryStr."
+                Order by position_name
+            ");
+        } else {
+            $employee = Employee::find(Auth::id());
+            $findIn = $this->GetallUnderOrgByOrg($employee->org_id);
+            if(empty($request->organization_id)) {
+                $gueOrgCodeByOrgId = "and (a.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            } else {
+                $gueOrgCodeByOrgId = "and (a.org_id = '{$request->organization_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+            }
+
+            $items = DB::select("
+                Select distinct b.position_id, b.position_name
+                From employee a 
+                left outer join position b on a.position_id = b.position_id
+                left outer join org on org.org_id = a.org_id
+                Where a.is_active = 1
+                and b.is_active = 1
+                ".$gueOrgCodeByOrgId."
                 ".$empIdQryStr."
                 Order by position_name
             ");
@@ -696,6 +719,142 @@ class AdvanceSearchController extends Controller
         
         return response()->json($items);
     }
+
+    // public function OrganizationList(Request $request)
+    // {
+    //     $all_emp = DB::select("
+    //         SELECT sum(l.is_all_employee) count_no
+    //         FROM appraisal_level l
+    //         INNER JOIN org o on o.level_id = l.level_id
+    //         INNER JOIN employee e on e.org_id = o.org_id
+    //         WHERE e.emp_code = ?
+    //     ", array(Auth::id()));
+
+    //     $indLevelStr = empty($request->individual_level) ? "": " AND emp.level_id = ".$request->individual_level;
+    //     $orgLevelStr = empty($request->organization_level) ? "": " AND org.level_id = ".$request->organization_level;
+    //     if ($all_emp[0]->count_no > 0) {
+    //         $orgs = DB::select("
+    //             SELECT org.org_id, org.org_name
+    //             FROM org
+    //             INNER JOIN employee emp ON emp.org_id = org.org_id
+    //             WHERE org.is_active = 1
+    //             ".$indLevelStr."
+    //             ".$orgLevelStr."
+    //             GROUP BY org.org_id
+    //             ORDER BY org.org_code ASC
+    //         ");
+    //     } else {
+    //         $employee = Employee::find(Auth::id());
+    //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+    //         $orgs = DB::select("
+    //             SELECT org.org_id, org.org_name
+    //             FROM org
+    //             INNER JOIN employee emp ON emp.org_id = org.org_id
+    //             WHERE org.is_active = 1
+    //             AND find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')
+    //             ".$indLevelStr."
+    //             ".$orgLevelStr."
+    //             GROUP BY org.org_id
+    //             ORDER BY org.org_code ASC
+    //         ");
+    //     }
+
+    //     return response()->json($orgs);
+    // }
+
+
+    // public function GetEmployeeName(Request $request)
+    // {
+    //     $emp = Employee::find(Auth::id());
+    //     $all_emp = DB::select("
+    //         SELECT sum(b.is_all_employee) count_no
+    //         FROM employee a
+    //         LEFT OUTER JOIN appraisal_level b ON a.level_id = b.level_id
+    //         WHERE emp_code = ?
+    //         ", array(Auth::id())
+    //     );
+
+    //     $indLevelQryStr = empty($request->individual_level) ? "" : " AND e.level_id = ".$request->individual_level;
+    //     $orgIdQryStr = empty($request->organization_id) ? "" : " AND e.org_id = ".$request->organization_id;
+        
+    //     if($all_emp[0]->count_no > 0) {
+    //         $items = DB::select("
+    //             Select e.emp_code, e.emp_name, e.emp_id
+    //             From employee e
+    //             Where e.emp_name like '%{$request->employee_name}%'
+    //             and e.is_active = 1
+    //             ".$indLevelQryStr."
+    //             ".$orgIdQryStr."
+    //             Order by e.emp_name
+    //             limit 15
+    //         ");
+    //     } else {
+    //         $employee = Employee::find(Auth::id());
+    //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+    //         $items = DB::select("
+    //             Select e.emp_code, e.emp_name, e.emp_id
+    //             From employee e
+    //             inner join org on org.org_id = e.org_id
+    //             Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
+    //             And e.emp_name like '%{$request->employee_name}%'
+    //             " . $indLevelQryStr . "
+    //             " . $orgIdQryStr . "
+    //             and e.is_active = 1
+    //             Order by e.emp_name
+    //             limit 15
+    //         ");
+    //     }
+        
+    //     return response()->json($items);
+    // }
+    
+
+    // public function GetPositionName(Request $request)
+    // {
+    //     $emp = Employee::find(Auth::id());
+    //     $all_emp = DB::select("
+    //         SELECT sum(b.is_all_employee) count_no
+    //         from employee a
+    //         left outer join appraisal_level b
+    //         on a.level_id = b.level_id
+    //         where emp_code = ?
+    //         ", array(Auth::id())
+    //     );
+
+    //     $orgIdQryStr = empty($request->organization_id) ? "" : " and a.org_id = ".$request->organization_id;
+    //     $empIdQryStr = empty($request->employee_id) ? "" : " and a.emp_id = ".$request->employee_id;
+        
+
+    //     if ($all_emp[0]->count_no > 0) {
+    //         $items = DB::select("
+    //             Select distinct b.position_id, b.position_name
+    //             From employee a 
+    //             left outer join position b on a.position_id = b.position_id
+    //             where a.is_active = 1
+    //             and b.is_active = 1
+    //             ".$orgIdQryStr."
+    //             ".$empIdQryStr."
+    //             Order by position_name
+    //         ");
+    //     } else {
+    //         $employee = Employee::find(Auth::id());
+    //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+    //         $items = DB::select("
+    //             Select distinct b.position_id, b.position_name
+    //             From employee a 
+    //             left outer join position b on a.position_id = b.position_id
+    //             left outer join org on org.org_id = a.org_id
+    //             Where find_in_set(org.org_code, '".$gueOrgCodeByOrgId."')
+    //             and a.is_active = 1
+    //             and b.is_active = 1
+    //             ".$orgIdQryStr."
+    //             ".$empIdQryStr."
+    //             Order by position_name
+    //         ");
+    //     }
+        
+    //     return response()->json($items);
+    // }
 
     public function StatusList(Request $request)
     {
