@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -602,56 +602,21 @@ FROM (
 					LEFT JOIN emp_result em ON em.org_id = o.org_id
 					LEFT JOIN emp_result e ON e.org_id = org.org_id
 					LEFT JOIN emp_result de_e ON de_e.org_id = de_org.org_id
+					INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
 					WHERE le.is_start_cal_bonus = 1
 					and (oo.org_id in ( $P!{param_org_id} )
 				      or o.org_id in ( $P!{param_org_id} )
 				      or org.org_id in ( $P!{param_org_id} )
 				      or de_org.org_id in ( $P!{param_org_id} )
 				     )  -- parameter_org_id
+				and emp.period_id =    $P{param_period} 
+				and pe.appraisal_year =  $P{param_year} 
+				and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
+				and emp.appraisal_type_id = 2
 
 		)	result
 
 ) total
-
-LEFT JOIN 
-(
-
-		SELECT total.parent_org_id
-		, CONCAT(COALESCE(GROUP_CONCAT(distinct total.parent_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.mid_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.child_org_id),0)) as all_org_bu
-		, CONCAT(COALESCE(GROUP_CONCAT(distinct total.mid_org_id),0),',',COALESCE(GROUP_CONCAT(distinct total.child_org_id),0)) as all_org_manager
-		FROM (
-
-				SELECT *
-				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_parent)) as num_all_parent
-				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_mid)) as num_all_mid
-				, (select count(org_id) from emp_result where FIND_IN_SET(org_id, result.all_child)) as num_all_child
-				 FROM (
-				 
-							SELECT sub_oo.org_id as parent_org_id
-						 , sub_o.org_id as mid_org_id
-						 , sub_org. org_id as child_org_id
-						 , GetAllUnderOrg(sub_oo.org_code) as all_parent
-						 , GetAllUnderOrg(sub_o.org_code) as all_mid
-						 , GetAllUnderOrg(sub_org.org_code) as all_child
-						 FROM org sub_oo 
-						 LEFT JOIN org sub_o ON sub_o.parent_org_code = sub_oo.org_code 
-						 LEFT JOIN org sub_org ON sub_org.parent_org_code = sub_o.org_code 
-						 LEFT JOIN emp_result sub_emp ON sub_emp.org_id = sub_oo.org_id
-						 LEFT JOIN emp_result sub_em ON sub_em.org_id = sub_o.org_id
-						 LEFT JOIN emp_result sub_e ON sub_e.org_id = sub_org.org_id
-						 INNER JOIN appraisal_level sub_le ON sub_oo.level_id = sub_le.level_id 
-						 WHERE sub_le.is_start_cal_bonus = 1 
-						 and sub_oo.org_id in ( $P!{param_org_id} )  -- parameter_org_id
-						 
-				)	result
-					
-		) total 
-		WHERE total.num_all_parent > 0
-		AND total.num_all_mid > 0
-		AND total.num_all_child > 0
-		GROUP BY total.parent_org_id
-		
-) bu_manager ON bu_manager.parent_org_id = total.parent_org_id
 CROSS JOIN 
 (
 
@@ -765,16 +730,6 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 	</field>
 	<field name="num_all_department" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="num_all_department"/>
-	</field>
-	<field name="COLUMN_28" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="parent_org_id"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
-	</field>
-	<field name="all_org_bu" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="all_org_bu"/>
-	</field>
-	<field name="all_org_manager" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="all_org_manager"/>
 	</field>
 	<field name="all_bu_report" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="all_bu_report"/>
@@ -1625,7 +1580,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="f2c4c61e-0efc-48d8-b1c1-41885f68fa21">
+						<datasetRun subDataset="table_total_org_3" uuid="d385d8b2-6629-4640-a05d-03969d4aa116">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{mid}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -2141,7 +2096,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="5c1649a3-a1d3-4bc9-9abc-cd5138352399">
+						<datasetRun subDataset="table_total_org_3" uuid="5e235be8-fa9a-43fb-9601-09dbcbcc89aa">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{child}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -2404,7 +2359,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 						<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 					</reportElement>
 					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="table_total_org_3" uuid="f36cfc40-5258-425a-b0b0-0230f45ef115">
+						<datasetRun subDataset="table_total_org_3" uuid="bedbea7b-ce96-4920-94ec-7cbf8f475b0b">
 							<datasetParameter name="param_countemp">
 								<datasetParameterExpression><![CDATA[$F{department}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -3094,7 +3049,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 2_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="grandtotal" uuid="26bb2657-ddda-4d8b-a345-32903595003e">
+					<datasetRun subDataset="grandtotal" uuid="e1c200a4-dfca-4ef6-b483-86ac6a2d7986">
 						<datasetParameter name="param_form">
 							<datasetParameterExpression><![CDATA[$P{param_form}]]></datasetParameterExpression>
 						</datasetParameter>
