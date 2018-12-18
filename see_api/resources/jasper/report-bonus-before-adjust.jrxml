@@ -571,15 +571,17 @@ FROM (
 					LEFT JOIN emp_result em ON em.org_id = o.org_id
 					LEFT JOIN emp_result e ON e.org_id = org.org_id
 					LEFT JOIN emp_result de_e ON de_e.org_id = de_org.org_id
-					INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+					LEFT JOIN appraisal_period pe ON (emp.period_id = pe.period_id
+						or em.period_id = pe.period_id
+						or e.period_id = pe.period_id
+						or de_e.period_id = pe.period_id)
 					WHERE le.is_start_cal_bonus = 1
 					and (oo.org_id in ( $P!{param_org_id} )
 				      or o.org_id in ( $P!{param_org_id} )
 				      or org.org_id in ( $P!{param_org_id} )
 				      or de_org.org_id in ( $P!{param_org_id} )
 				     )  -- parameter_org_id
-				     and emp.period_id =    $P{param_period} 
-					and pe.appraisal_year =  $P{param_year} 
+				     and pe.period_id =    $P{param_period} 
 					and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
 					-- and emp.appraisal_type_id = 2
 

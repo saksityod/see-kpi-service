@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-production"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -602,15 +602,17 @@ FROM (
 					LEFT JOIN emp_result em ON em.org_id = o.org_id
 					LEFT JOIN emp_result e ON e.org_id = org.org_id
 					LEFT JOIN emp_result de_e ON de_e.org_id = de_org.org_id
-					INNER JOIN appraisal_period pe ON emp.period_id = pe.period_id
+					LEFT JOIN appraisal_period pe ON (emp.period_id = pe.period_id
+						or em.period_id = pe.period_id
+						or e.period_id = pe.period_id
+						or de_e.period_id = pe.period_id)
 					WHERE le.is_start_cal_bonus = 1
 					and (oo.org_id in ( $P!{param_org_id} )
 				      or o.org_id in ( $P!{param_org_id} )
 				      or org.org_id in ( $P!{param_org_id} )
 				      or de_org.org_id in ( $P!{param_org_id} )
 				     )  -- parameter_org_id
-				and emp.period_id =    $P{param_period} 
-				and pe.appraisal_year =  $P{param_year} 
+				and pe.period_id =    $P{param_period} 
 				and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
 				-- and emp.appraisal_type_id = 2
 
