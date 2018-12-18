@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asm_by_tse_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" whenResourceMissingType="Key" isIgnorePagination="true" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl2"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
@@ -57,6 +57,7 @@
 		<parameter name="param_questionaire_type" class="java.lang.String"/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_assessor" class="java.lang.String"/>
+		<parameter name="param_job_function" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[SELECT qnt.questionaire_type_id
 , qnt.questionaire_type
@@ -72,6 +73,7 @@
 , rt.num_cus
 , rt.num_from
 , rt.know
+, IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0) percent_score
 , COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
 		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
 , total.percent AS percent_by_total
@@ -86,13 +88,14 @@
 
 FROM questionaire_data_header qdh
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
-INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
 INNER JOIN question q ON qdd.question_id = q.question_id
 INNER JOIN question pq ON q.parent_question_id = pq.question_id
 INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+INNER JOIN job_function jb ON jb.job_function_id = emp.job_function_id
 LEFT JOIN position po ON emp.position_id = po.position_id
 INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
@@ -114,7 +117,7 @@ LEFT JOIN (
 		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
 	FROM questionaire_data_header qdh
 	INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
-	INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+	-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 	INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
@@ -231,7 +234,7 @@ LEFT JOIN (
 		, COALESCE(ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2),0) AS percent
 		FROM questionaire_data_header qdh
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
-		INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+		-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
@@ -289,7 +292,7 @@ LEFT JOIN (
   , (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know 
   FROM questionaire_data_header qdh 
   INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-  INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+  -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
   INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
   INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
   INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
@@ -330,7 +333,7 @@ SELECT qnt.questionaire_type_id
 		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent_all
 FROM questionaire_data_header qdh 
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
 INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
 INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
@@ -366,6 +369,7 @@ AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m
 AND (qdh.assessor_id =   $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )  
 AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
 AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' =   $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
 -- , qdh.data_header_id
@@ -432,6 +436,9 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 		<field name="know" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="know"/>
 		</field>
+		<field name="percent_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_score"/>
+		</field>
 		<field name="percent" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="percent"/>
 		</field>
@@ -472,6 +479,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 	<parameter name="param_data_header_id" class="java.lang.String"/>
 	<parameter name="param_questionaire_date" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="param_job_function" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT qdh.assessor_id 
 , po.position_code 
@@ -767,6 +775,16 @@ ORDER BY qdh.assessor_id ASC]]>
 								</textElement>
 								<text><![CDATA[รับทราบแล้ว]]></text>
 							</staticText>
+							<staticText>
+								<reportElement x="105" y="0" width="35" height="140" uuid="1a73884f-0d0d-4356-8fc0-ab114ecf07a2"/>
+								<box bottomPadding="3">
+									<pen lineWidth="0.5"/>
+								</box>
+								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<text><![CDATA[คะแนนรวม]]></text>
+							</staticText>
 						</cellContents>
 					</crosstabTotalColumnHeader>
 				</columnGroup>
@@ -821,6 +839,9 @@ ORDER BY qdh.assessor_id ASC]]>
 				<measure name="percent_all" class="java.math.BigDecimal">
 					<measureExpression><![CDATA[$F{percent_all}]]></measureExpression>
 				</measure>
+				<measure name="percent_score" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{percent_score}]]></measureExpression>
+				</measure>
 				<crosstabCell width="40" height="20">
 					<cellContents mode="Opaque" style="Crosstab_CD">
 						<textField isBlankWhenNull="true">
@@ -833,7 +854,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						</textField>
 					</cellContents>
 				</crosstabCell>
-				<crosstabCell width="105" height="20" columnTotalGroup="parent_question_id">
+				<crosstabCell width="140" height="20" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CG">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<textField isBlankWhenNull="true">
@@ -866,6 +887,16 @@ ORDER BY qdh.assessor_id ASC]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{know}]]></textFieldExpression>
 						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="105" y="0" width="35" height="20" uuid="46618afe-f49f-4ad1-8d8f-448b957d6829"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{percent_score}]]></textFieldExpression>
+						</textField>
 					</cellContents>
 				</crosstabCell>
 				<crosstabCell width="0" height="20" columnTotalGroup="questionaire_type_id">
@@ -877,7 +908,7 @@ ORDER BY qdh.assessor_id ASC]]>
 				<crosstabCell width="0" height="0" rowTotalGroup="assessor_id" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="105" height="0" rowTotalGroup="assessor_id" columnTotalGroup="parent_question_id">
+				<crosstabCell width="140" height="0" rowTotalGroup="assessor_id" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
 				<crosstabCell width="40" height="0" rowTotalGroup="job_function_id">
@@ -886,7 +917,7 @@ ORDER BY qdh.assessor_id ASC]]>
 				<crosstabCell width="0" height="0" rowTotalGroup="job_function_id" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="105" height="0" rowTotalGroup="job_function_id" columnTotalGroup="parent_question_id">
+				<crosstabCell width="140" height="0" rowTotalGroup="job_function_id" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CG"/>
 				</crosstabCell>
 				<crosstabCell width="40" height="20" rowTotalGroup="position_employee">
@@ -904,7 +935,7 @@ ORDER BY qdh.assessor_id ASC]]>
 				<crosstabCell width="0" height="20" rowTotalGroup="position_employee" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="105" height="20" rowTotalGroup="position_employee" columnTotalGroup="parent_question_id">
+				<crosstabCell width="140" height="20" rowTotalGroup="position_employee" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CT">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<textField isBlankWhenNull="true">
@@ -937,6 +968,16 @@ ORDER BY qdh.assessor_id ASC]]>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{n_know}]]></textFieldExpression>
 						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="105" y="0" width="35" height="20" uuid="d833b06c-7537-42c4-91c3-2efdc0487657"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[""]]></textFieldExpression>
+						</textField>
 					</cellContents>
 				</crosstabCell>
 				<crosstabCell width="40" height="20" rowTotalGroup="questionaire_date">
@@ -954,7 +995,7 @@ ORDER BY qdh.assessor_id ASC]]>
 				<crosstabCell width="0" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="105" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
+				<crosstabCell width="140" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CG">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 						<textField isBlankWhenNull="true">
@@ -986,6 +1027,16 @@ ORDER BY qdh.assessor_id ASC]]>
 								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{sum_know}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="105" y="0" width="35" height="20" uuid="1f2c8ad0-a2ca-4b72-a507-890590495766"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[""]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>

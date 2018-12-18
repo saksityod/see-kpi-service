@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="crosstab-customer" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="2df5f42d-6090-41d7-ace7-26958cb6498a">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="PMTL2"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -120,20 +120,83 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
+	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#CCCCCC">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 3_CH" mode="Opaque" backcolor="#CCCCCC">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 3_CG" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 3_CT" mode="Opaque" backcolor="#CCCCCC">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab 3_CD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
 	<subDataset name="cosstab" uuid="b0818722-a87f-40a3-9a50-050600d40e64">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="322"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="667"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="610"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="376"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="346"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="640"/>
 		<parameter name="param_data_header_id" class="java.lang.Long"/>
 		<parameter name="param_section" class="java.lang.Integer"/>
 		<queryString language="SQL">
 			<![CDATA[SELECT DISTINCT qdd.section_id, qs.section_name
  , q.parent_question_id, q.parent_question_name , q.seq_no ,re.seq_no as parent_seq_no
  , q.question_id, q.question_name
- , c.customer_id, c.customer_name
+ , c.customer_id, CONCAT(c.customer_name," ","(",c.industry_class,")") as customer_name
  , IFNULL(q.pass_score, 0) pass_score 
   , (CASE WHEN IFNULL(q.pass_score, 0) = 0 THEN "#990000" ELSE "#005FB3" END) as color_pass
  , re.num_question
@@ -477,6 +540,48 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 			<property name="com.jaspersoft.studio.field.label" value="parent_question_all_cnt"/>
 		</field>
 	</subDataset>
+	<subDataset name="commentcust" uuid="3856e49f-000e-47bf-a36c-b2ee0b2db3e4">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="PMTL2"/>
+		<parameter name="param_data_header_id" class="java.lang.Long"/>
+		<parameter name="param_section_id" class="java.lang.Integer"/>
+		<queryString language="SQL">
+			<![CDATA[SELECT qtail.section_id, qsec.section_name,
+	que.question_name
+, (CASE WHEN qtail.desc_answer= ""  THEN  null ELSE qtail.desc_answer END)  as desc_answer
+, c.customer_name
+FROM questionaire_data_detail as qtail
+INNER JOIN question as que on que.question_id = qtail.question_id
+INNER JOIN customer as c ON qtail.customer_id = c.customer_id
+INNER JOIN questionaire_section qsec ON qsec.section_id = qtail.section_id
+INNER JOIN answer_type as qnt on qnt.answer_type_id = que.answer_type_id 
+INNER JOIN answer as an ON qtail.answer_id = an.answer_id
+WHERE qtail.data_header_id = $P{param_data_header_id} 
+and qtail.section_id =  $P{param_section_id} 
+and que.answer_type_id  = 7
+and desc_answer != ''
+ORDER BY c.customer_id]]>
+		</queryString>
+		<field name="section_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="section_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="section_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="section_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
+		</field>
+		<field name="question_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="question_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="desc_answer" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="desc_answer"/>
+		</field>
+		<field name="customer_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="customer_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="customer"/>
+		</field>
+	</subDataset>
 	<parameter name="param_data_header_id" class="java.lang.Long"/>
 	<parameter name="param_section_id" class="java.lang.Integer"/>
 	<queryString language="SQL">
@@ -486,6 +591,160 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 		<property name="com.jaspersoft.studio.field.label" value="1"/>
 	</field>
 	<group name="Group1">
+		<groupFooter>
+			<band height="68">
+				<componentElement>
+					<reportElement x="0" y="1" width="800" height="20" isRemoveLineWhenBlank="true" uuid="1d99a5f3-1c1e-485a-879a-73aaa2daafc9">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+					</reportElement>
+					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+						<datasetRun subDataset="commentcust" uuid="004506ef-2247-473e-9405-ecee340b4800">
+							<datasetParameter name="param_data_header_id">
+								<datasetParameterExpression><![CDATA[$P{param_data_header_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_section_id">
+								<datasetParameterExpression><![CDATA[$P{param_section_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+						<jr:column width="800" uuid="f22ad333-6313-490f-8469-9bb423f2b785">
+							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+							<jr:columnHeader style="Table_TD" height="20" rowSpan="1">
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<textField>
+									<reportElement x="0" y="0" width="800" height="20" isRemoveLineWhenBlank="true" uuid="f04aab77-87a7-4a96-a261-d6408b49ee80">
+										<printWhenExpression><![CDATA[($F{desc_answer}==null)?  false  :true]]></printWhenExpression>
+									</reportElement>
+									<box leftPadding="3">
+										<pen lineWidth="1.0"/>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Left" verticalAlignment="Middle">
+										<font fontName="BrowalliaUPC" size="16" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>
+								</textField>
+							</jr:columnHeader>
+							<jr:detailCell style="Table_TD" height="0">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							</jr:detailCell>
+						</jr:column>
+					</jr:table>
+				</componentElement>
+				<crosstab ignoreWidth="true">
+					<reportElement x="0" y="21" width="800" height="40" uuid="4b0edf1b-4eb8-4149-9d72-d8a16429a5a0">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 3_CH"/>
+						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab 3_CG"/>
+						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab 3_CT"/>
+						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab 3_CD"/>
+					</reportElement>
+					<crosstabDataset>
+						<dataset>
+							<datasetRun subDataset="commentcust" uuid="9e4b6c4c-8c2a-42fb-a251-9978ac75bbc4">
+								<datasetParameter name="param_data_header_id">
+									<datasetParameterExpression><![CDATA[$P{param_data_header_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<datasetParameter name="param_section_id">
+									<datasetParameterExpression><![CDATA[$P{param_section_id}]]></datasetParameterExpression>
+								</datasetParameter>
+								<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+							</datasetRun>
+						</dataset>
+					</crosstabDataset>
+					<crosstabHeaderCell>
+						<cellContents>
+							<staticText>
+								<reportElement mode="Opaque" x="0" y="0" width="260" height="20" backcolor="#F0F0F0" uuid="aa59b8b8-fa67-44b3-a58c-705d3520932a"/>
+								<box>
+									<pen lineWidth="0.5"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
+								</textElement>
+								<text><![CDATA[ชื่อร้านค้า]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabHeaderCell>
+					<rowGroup name="customer_name" width="260" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{customer_name}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 3_CG">
+								<textField isStretchWithOverflow="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="260" height="20" uuid="3ab6cf4d-8eb3-4aca-a073-d7b995657905"/>
+									<box leftPadding="3"/>
+									<textElement>
+										<font fontName="BrowalliaUPC" size="16"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{customer_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab 3_CT"/>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="question_name" height="20" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{question_name}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 3_CH">
+								<textField isStretchWithOverflow="true">
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="230" height="20" uuid="96da16e4-2d48-4626-8978-5f9231015198"/>
+									<box leftPadding="3"/>
+									<textElement>
+										<font fontName="BrowalliaUPC" size="16" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{question_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab 3_CT"/>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="desc_answer_MEASURE" class="java.lang.Integer">
+						<measureExpression><![CDATA[$F{desc_answer}]]></measureExpression>
+					</measure>
+					<measure name="desc_answer" class="java.lang.String">
+						<measureExpression><![CDATA[$F{desc_answer}]]></measureExpression>
+					</measure>
+					<crosstabCell width="230" height="20">
+						<cellContents mode="Opaque" style="Crosstab 3_CD">
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="230" height="20" uuid="295e19b0-3dfe-49af-8972-575858f80cd4"/>
+								<box leftPadding="3"/>
+								<textElement>
+									<font fontName="BrowalliaUPC" size="16"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{desc_answer}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="question_name">
+						<cellContents mode="Opaque" style="Crosstab 3_CT"/>
+					</crosstabCell>
+					<crosstabCell width="230" height="0" rowTotalGroup="customer_name">
+						<cellContents mode="Opaque" style="Crosstab 3_CT"/>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="customer_name" columnTotalGroup="question_name">
+						<cellContents mode="Opaque" style="Crosstab 3_CT"/>
+					</crosstabCell>
+				</crosstab>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Group2">
 		<groupFooter>
 			<band height="20">
 				<crosstab>

@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-summary-from" pageWidth="845" pageHeight="1500" orientation="Landscape" whenNoDataType="NoPages" columnWidth="805" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="9f5c47da-ce6f-4f38-9162-0d3b4d225bcf">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl2"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="173"/>
@@ -134,15 +134,15 @@ FROM(
 	<queryString language="SQL">
 		<![CDATA[SELECT qhead.data_header_id ,qtail.section_id,
 	IF(q.answer_type_id = 7, 'comment', 
-		IF(q.answer_type_id != 7 AND qsec.is_cust_search = 1, 'crosstab',
+		IF( qsec.is_cust_search = 1, 'crosstab',
 			IF(q.answer_type_id != 7 AND qsec.is_cust_search = 0, 'table', 'table')
  		)
- 	) display_type
+ )display_type
 FROM questionaire_data_detail qtail
 INNER JOIN questionaire_data_header qhead ON qhead.data_header_id = qtail.data_header_id
 INNER JOIN question q ON q.question_id = qtail.question_id AND q.section_id = qtail.section_id
 INNER JOIN questionaire_section as qsec on qsec.questionaire_id = qhead.questionaire_id AND qsec.section_id = qtail.section_id
-WHERE qhead.data_header_id = $P{param_data_header_id} 
+WHERE qhead.data_header_id = 7 
 GROUP BY qtail.section_id]]>
 	</queryString>
 	<field name="data_header_id" class="java.lang.Long">
