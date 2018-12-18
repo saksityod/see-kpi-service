@@ -34,7 +34,7 @@ class QuestionaireDataController extends Controller
 
     public function __construct()
     {
-        $this->middleware('jwt.auth');
+        $this->middleware('jwt.auth', ['except' => ['auto_update', 'workflow_stage']]);
     }
 
     function format_date($date) {
@@ -135,8 +135,8 @@ class QuestionaireDataController extends Controller
                     "edit_flag" => $emp_snap[0]->edit_flag
                 ];
 
-                // $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com'];
-                $to = ['thawatchai@goingjesse.com'/*, 'chokanan@goingjesse.com'*/];
+                $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com', 'thawatchai@goingjesse.com'];
+                // $to = ['thawatchai@goingjesse.com'/*, 'chokanan@goingjesse.com'*/];
 
                 Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
                 {
@@ -1581,6 +1581,102 @@ class QuestionaireDataController extends Controller
             'next_form' => $data_next_form, 
             'stage_id' => $request->stage['to_stage_id']
         ]);
+    }
+
+    public function auto_update() { //Auto Update Everyday
+        DB::beginTransaction();
+        $errors = [];
+        $dataEmails = [];
+
+        try {
+            $config = SystemConfiguration::firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            $errors[] = ['SystemConfiguration' => 'System Configuration not found in DB.'];
+            return response()->json(['status' => 404, 'errors' => $errors]);
+        }
+
+        $yesterD = date('Y-m-d',strtotime("-1 days"));
+
+        $items = DB::select("
+            SELECT *
+            FROM questionaire_data_header
+            WHERE DATE(created_dttm) = '{$yesterD}'
+            AND data_stage_id = 2
+        ");
+        
+        foreach ($items as $key => $h) {
+            $assessor_data = EmployeeSnapshot::where('emp_snapshot_id', $h->assessor_id)->first();
+            $workflow_stage = $this->workflow_stage($h->data_stage_id);
+            $s = new QuestionaireDataStage;
+            $s->data_header_id = $h->data_header_id;
+            $s->from_emp_snapshot_id = $h->assessor_id;
+            $s->from_stage_id = $h->data_stage_id;
+            $s->to_emp_snapshot_id = $h->emp_snapshot_id;
+            $s->to_stage_id = 3;
+            // $s->customer_name = $request->stage['customer_name'];
+            $s->status = Stage::find(3)->stage_name;
+            // $s->remark = $request->stage['remark'];
+            $s->created_by = 'Auto Update';
+            try {
+                $s->save();
+                QuestionaireDataHeader::where('data_header_id', $h->data_header_id)->update([
+                    'data_stage_id' => 3,
+                    'updated_by' => 'Auto Update'
+                ]);
+
+                $dataEmails[$key]['to_stage_id'] = $s->to_stage_id;
+                $dataEmails[$key]['data_header_id'] = $h->data_header_id;
+                $dataEmails[$key]['assessor_id'] = $h->assessor_id;
+                $dataEmails[$key]['status'] = $s->status;
+            } catch (Exception $e) {
+                $errors[] = ['QuestionaireDataStage or QuestionaireDataHeader' => substr($e, 0, 400)];
+            }
+        }
+
+        empty($errors) ? DB::commit() : DB::rollback();
+        empty($errors) ? $status = 200 : $status = 400;
+
+        if($status==200) {
+            Config::set('mail.driver',$config->mail_driver);
+            Config::set('mail.host',$config->mail_host);
+            Config::set('mail.port',$config->mail_port);
+            Config::set('mail.encryption',$config->mail_encryption);
+            Config::set('mail.username',$config->mail_username);
+            Config::set('mail.password',$config->mail_password);
+            $from = Config::get('mail.from');
+
+            foreach ($dataEmails as $key => $value) {
+                $stage_email = Stage::select("send_email_flag")->where("stage_id", $value['to_stage_id'])->first();
+                if($stage_email->send_email_flag==1) {
+                    try {
+                        $assessor = EmployeeSnapshot::find($value['assessor_id']);
+                        $emp_snap = $this->next_assess_form($assessor->level_id, $value['data_header_id']);
+                        $data = [
+                            "assessor_name" => $emp_snap[0]->assessor_name,
+                            "form_type" => $emp_snap[0]->questionaire_type,
+                            "emp_name" => $emp_snap[0]->emp_name, 
+                            "status" => $value['status'],
+                            "web_domain" => $config->web_domain,
+                            "data_header_id" => $emp_snap[0]->data_header_id,
+                            "edit_flag" => $emp_snap[0]->edit_flag
+                        ];
+
+                        $to = [$emp_snap[0]->email,$assessor->email,'chokanan@goingjesse.com', 'thawatchai@goingjesse.com'];
+                        // $to = ['thawatchai@goingjesse.com'/*, 'chokanan@goingjesse.com'*/];
+
+                        Mail::send('emails.status_snap', $data, function($message) use ($from, $to)
+                        {
+                            $message->from($from['address'], $from['name']);
+                            $message->to($to)->subject('WWWR ยืนยันผลการประเมิน');
+                        });
+                    } catch (Exception $ExceptionError) {
+                        $errors[] = ['mail error' => substr($ExceptionError, 0, 255)];
+                    }
+                }
+            }
+        }
+
+        return response()->json(['status' => $status, 'errors' => $errors, 'date_time' => date('Y-m-d H:i:s')]);
     }
 
     public function destroy($data_header_id) {

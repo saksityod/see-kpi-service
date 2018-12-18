@@ -518,7 +518,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@show');
 	Route::patch('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@update');
 
-
+	Route::get('auto_update', 'PMTL\QuestionaireDataController@auto_update');
+	
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
 	}]);
