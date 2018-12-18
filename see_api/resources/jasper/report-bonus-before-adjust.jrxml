@@ -581,7 +581,7 @@ FROM (
 				     and emp.period_id =    $P{param_period} 
 					and pe.appraisal_year =  $P{param_year} 
 					and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
-					and emp.appraisal_type_id = 2
+					-- and emp.appraisal_type_id = 2
 
 		)	result
 
@@ -603,9 +603,9 @@ CROSS JOIN
 		
 ) bu_report 
 
-WHERE total.num_all_parent > 0
-AND total.num_all_mid > 0
-AND total.num_all_child > 0
+-- WHERE total.num_all_parent > 0
+-- AND total.num_all_mid > 0
+-- AND total.num_all_child > 0
 -- AND total.num_all_department > 0
 ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code ASC, total.department_org_code ASC]]>
 	</queryString>
@@ -707,6 +707,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 		<groupExpression><![CDATA[$F{parent_org_id}]]></groupExpression>
 		<groupHeader>
 			<band height="52">
+				<printWhenExpression><![CDATA[($F{parent_org_id} != null)? (($F{num_all_parent} != 0)? true : false) : false]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="a4fbbedb-1ceb-437d-b07c-297294034b8f"/>
 					<box leftPadding="3">
@@ -1244,7 +1245,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 		<groupExpression><![CDATA[$F{mid_org_id}]]></groupExpression>
 		<groupHeader>
 			<band height="52">
-				<printWhenExpression><![CDATA[$F{mid_org_id} == null ? false : true]]></printWhenExpression>
+				<printWhenExpression><![CDATA[($F{mid_org_id} != null)? (($F{num_all_mid} != 0)? true : false) : false]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" backcolor="#A2BCF1" uuid="e0c23969-5b61-4e9b-a5ea-55a5e662ad5a"/>
 					<box leftPadding="3">
@@ -1763,7 +1764,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 		<groupExpression><![CDATA[$F{child_org_id}]]></groupExpression>
 		<groupHeader>
 			<band height="52">
-				<printWhenExpression><![CDATA[$F{child_org_id} == null ? false : true]]></printWhenExpression>
+				<printWhenExpression><![CDATA[($F{child_org_id} != null)? (($F{num_all_child} != 0)? true : false) : false]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="0" y="0" width="40" height="32" backcolor="#DCE6F1" uuid="ae332a1f-d93b-4e14-bb00-2deba32850ee"/>
 					<box leftPadding="3">
