@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -705,7 +705,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 	<field name="all_bu_report" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="all_bu_report"/>
 	</field>
-	<group name="Group parent" isStartNewPage="true">
+	<group name="Group parent">
 		<groupExpression><![CDATA[$F{parent_org_id}]]></groupExpression>
 		<groupHeader>
 			<band height="52">
