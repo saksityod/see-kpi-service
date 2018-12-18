@@ -771,6 +771,28 @@ class QuestionaireDataController extends Controller
             ");
         return response()->json($items);
     }
+        public function list_questionaire_type1(Request $request) {
+        $items = DB::select("
+            SELECT DISTINCT qt.questionaire_type_id, qt.questionaire_type
+            FROM questionaire_type qt
+            INNER JOIN questionaire_authorize qa ON qa.questionaire_type_id = qt.questionaire_type_id
+            ORDER BY questionaire_type_id
+            ");
+        return response()->json($items);
+    }
+
+    public function list_job_function(Request $request) {
+        $items = DB::select("
+            SELECT DISTINCT jf.job_function_id ,jf.job_function_name
+            FROM job_function jf
+            INNER JOIN questionaire_authorize qa ON qa.job_function_id = jf.job_function_id
+            where (qa.questionaire_type_id = '{$request->questionaire_type_id}' 
+                OR '' = '{$request->questionaire_type_id}' 
+                OR ISNULL('{$request->questionaire_type_id}')=1)
+            ORDER BY job_function_id
+            ");
+        return response()->json($items);
+    }
 
     public function evaluated_retailer_list(Request $request) {
         $request->date = $this->format_date($request->date);
@@ -1905,7 +1927,7 @@ class QuestionaireDataController extends Controller
 					customer_name, 
 					customer_type, 
 					industry_class
-					ORDER BY qdh.created_dttm
+                    ORDER BY qdh.created_dttm
             ");
         } else {
 
@@ -1983,7 +2005,7 @@ class QuestionaireDataController extends Controller
 					customer_name, 
 					customer_type, 
 					industry_class
-					ORDER BY qdh.created_dttm
+                    ORDER BY qdh.created_dttm
             ");
         }
 

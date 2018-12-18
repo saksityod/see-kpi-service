@@ -488,6 +488,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('questionaire_data/evaluated_retailer_list', 'PMTL\QuestionaireDataController@evaluated_retailer_list');
 	Route::get('questionaire_data/evaluated_retailer_list_edit', 'PMTL\QuestionaireDataController@evaluated_retailer_list_edit');
 	Route::get('questionaire_data/list_questionaire', 'PMTL\QuestionaireDataController@list_questionaire_type');
+	Route::get('questionaire_data/list_questionaire1', 'PMTL\QuestionaireDataController@list_questionaire_type1');
 	Route::get('questionaire_data', 'PMTL\QuestionaireDataController@index');
 	Route::get('questionaire_data/assign_template/{data_header_id}', 'PMTL\QuestionaireDataController@assign_template');
 	Route::get('questionaire_data/generate_template', 'PMTL\QuestionaireDataController@generate_template');
@@ -504,11 +505,12 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage');
 	Route::patch('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage_update');
 
-	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@auto_emp_report');
+	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@questionaire_data');
 	// Route::get('questionaire_report/auto_assessor_report', 'PMTL\QuestionaireDataController@auto_assessor_report');
 	Route::get('questionaire_report/list_assessor_report2', 'PMTL\QuestionaireDataController@list_assessor_report');
 	Route::get('questionaire_report/list_assessor_report', 'PMTL\QuestionaireDataController@list_assessor_transaction');
 	Route::get('questionaire_report/export_transaction', 'PMTL\QuestionaireDataController@export_transaction');
+	Route::get('questionaire_report/list_job_function', 'PMTL\QuestionaireDataController@list_job_function');
 
 	// Route::get('vsm_employee/auto_start_date', 'PMTL\VsmEmployeeController@auto_start_date');
 	Route::get('vsm_employee/auto_emp', 'PMTL\VsmEmployeeController@auto_emp');
