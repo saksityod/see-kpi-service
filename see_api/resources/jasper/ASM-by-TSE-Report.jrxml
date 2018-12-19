@@ -52,6 +52,8 @@
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="441"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="545"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
 		<parameter name="param_questionaire_type" class="java.lang.String"/>
@@ -95,9 +97,9 @@ INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_t
 INNER JOIN question q ON qdd.question_id = q.question_id
 INNER JOIN question pq ON q.parent_question_id = pq.question_id
 INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
-INNER JOIN job_function jb ON jb.job_function_id = emp.job_function_id
 LEFT JOIN position po ON emp.position_id = po.position_id
 INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 LEFT JOIN (
 	SELECT qnt.questionaire_type_id
@@ -126,6 +128,7 @@ LEFT JOIN (
 	INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 	LEFT JOIN position po ON emp.position_id = po.position_id
 	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+	INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 	WHERE q.answer_type_id != 7
 	-- AND pq.pass_score > 0
@@ -134,6 +137,7 @@ LEFT JOIN (
 	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}   ) = 1 ) 
 	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 	AND (qnt.questionaire_type_id = $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 	GROUP BY qnt.questionaire_type_id
 	, qnt.questionaire_type
 	, qdh.assessor_id
@@ -180,6 +184,7 @@ LEFT JOIN (
 			INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 			LEFT JOIN position po ON emp.position_id = po.position_id
 			INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+			INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 			LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 			WHERE q.answer_type_id != 7
 			-- AND pq.pass_score > 0
@@ -188,6 +193,7 @@ LEFT JOIN (
 			AND (qdh.assessor_id =  $P{param_assessor}   OR '' = $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
 			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' = $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+			AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 	group by qnt.questionaire_type_id
 			, qnt.questionaire_type
 			, qdh.data_header_id
@@ -243,6 +249,7 @@ LEFT JOIN (
 		INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 		LEFT JOIN position po ON emp.position_id = po.position_id
 		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+		INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 		WHERE q.answer_type_id != 7
 		-- AND pq.pass_score > 0
@@ -251,6 +258,7 @@ LEFT JOIN (
 		AND (qdh.assessor_id = $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   
 		AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 		AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+		AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 		GROUP BY qnt.questionaire_type_id
 		, qnt.questionaire_type
 		, qdh.data_header_id
@@ -301,6 +309,7 @@ LEFT JOIN (
   INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
   LEFT JOIN position po ON emp.position_id = po.position_id 
   INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
+  INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
   LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
   WHERE q.answer_type_id != 7 
  --  AND pq.pass_score > 0
@@ -309,6 +318,7 @@ AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m
 AND (qdh.assessor_id =   $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee} )
 AND (qnt.questionaire_type_id =  $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}   OR  ISNULL( $P{param_questionaire_type}   ) = 1 )
+AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
   GROUP BY qnt.questionaire_type_id 
   , qdh.data_header_id
   , qnt.questionaire_type 
@@ -545,7 +555,7 @@ ORDER BY qdh.assessor_id ASC]]>
 				</reportElement>
 				<crosstabDataset>
 					<dataset>
-						<datasetRun subDataset="test " uuid="c8a80f23-5109-4292-98b3-744d6eb9b4dc">
+						<datasetRun subDataset="test " uuid="9dcbbd3a-19bf-410e-b0e8-bb77ce5a15ff">
 							<datasetParameter name="param_assessor">
 								<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -560,6 +570,9 @@ ORDER BY qdh.assessor_id ASC]]>
 							</datasetParameter>
 							<datasetParameter name="param_questionaire_type">
 								<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_job_function">
+								<datasetParameterExpression><![CDATA[$P{param_job_function}]]></datasetParameterExpression>
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
