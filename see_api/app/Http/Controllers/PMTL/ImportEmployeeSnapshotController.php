@@ -446,7 +446,6 @@ class ImportEmployeeSnapshotController extends Controller
 			SELECT level_id, appraisal_level_name
 			FROM appraisal_level
 			WHERE is_active = 1
-			AND is_all_employee = 0
 			ORDER BY level_id
 		");
 
