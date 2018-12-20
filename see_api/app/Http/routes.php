@@ -10,13 +10,13 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-	header('Access-Control-Allow-Credentials: true');
-	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
-	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
-	header('Keep-Alive: off');
-}
+// if (isset($_SERVER['HTTP_ORIGIN'])) {
+// 	header('Access-Control-Allow-Credentials: true');
+// 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+// 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+// 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
+// 	header('Keep-Alive: off');
+// }
 // Route::get('/', function () {
     // return Response::json(array('hello' => 'hehe'));
 // });
@@ -481,7 +481,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Appraisal 360 Degree --> Appraisal emp_result //
 	Route::get('appraisal/show/index','Appraisal360Degree\AppraisalGroupController@index');
 	Route::get('appraisal/show/emp_result','Appraisal360Degree\AppraisalGroupController@show');
-	Route::get('appraisal/show/emp_result/type_2','Appraisal360Degree\AppraisalGroupController@show_type2');
+	Route::get('appraisal/show/emp_result/type_2','Appraisal360Degree\AppraisalGroupController@GetCompetencyInfo');
 	Route::patch('appraisal/update/type_2','Appraisal360Degree\AppraisalGroupController@update');
 	Route::get('appraisal360/parameter/emp_level','Appraisal360Degree\AppraisalGroupController@emp_level_list');
 	Route::post('appraisal360/edit_action_to','Appraisal360Degree\AppraisalGroupController@edit_action_to');
