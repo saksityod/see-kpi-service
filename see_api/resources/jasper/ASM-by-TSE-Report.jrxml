@@ -52,8 +52,8 @@
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="441"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="545"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="800"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="186"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
 		<parameter name="param_questionaire_type" class="java.lang.String"/>
@@ -128,7 +128,6 @@ LEFT JOIN (
 	INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 	LEFT JOIN position po ON emp.position_id = po.position_id
 	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
-	INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 	WHERE q.answer_type_id != 7
 	-- AND pq.pass_score > 0
@@ -137,7 +136,6 @@ LEFT JOIN (
 	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}   ) = 1 ) 
 	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 	AND (qnt.questionaire_type_id = $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
-	AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 	GROUP BY qnt.questionaire_type_id
 	, qnt.questionaire_type
 	, qdh.assessor_id
@@ -184,7 +182,6 @@ LEFT JOIN (
 			INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 			LEFT JOIN position po ON emp.position_id = po.position_id
 			INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
-			INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 			LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 			WHERE q.answer_type_id != 7
 			-- AND pq.pass_score > 0
@@ -193,7 +190,6 @@ LEFT JOIN (
 			AND (qdh.assessor_id =  $P{param_assessor}   OR '' = $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
 			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' = $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
-			AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 	group by qnt.questionaire_type_id
 			, qnt.questionaire_type
 			, qdh.data_header_id
@@ -249,7 +245,6 @@ LEFT JOIN (
 		INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 		LEFT JOIN position po ON emp.position_id = po.position_id
 		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
-		INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 		WHERE q.answer_type_id != 7
 		-- AND pq.pass_score > 0
@@ -258,7 +253,6 @@ LEFT JOIN (
 		AND (qdh.assessor_id = $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   
 		AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
 		AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
-		AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
 		GROUP BY qnt.questionaire_type_id
 		, qnt.questionaire_type
 		, qdh.data_header_id
@@ -309,8 +303,7 @@ LEFT JOIN (
   INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
   LEFT JOIN position po ON emp.position_id = po.position_id 
   INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
-  INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
-  LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
+ LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
   WHERE q.answer_type_id != 7 
  --  AND pq.pass_score > 0
   	AND qdh.data_stage_id >=3
@@ -318,7 +311,6 @@ AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m
 AND (qdh.assessor_id =   $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
 AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee} )
 AND (qnt.questionaire_type_id =  $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}   OR  ISNULL( $P{param_questionaire_type}   ) = 1 )
-AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
   GROUP BY qnt.questionaire_type_id 
   , qdh.data_header_id
   , qnt.questionaire_type 
