@@ -103,7 +103,7 @@ class BonusAdjustmentController extends Controller
             ".$qryEmpId."
             ".$qryPositionId."
             ".$qryStageId."
-            ORDER BY er.org_id DESC, er.level_id DESC, e.emp_code ASC
+            ORDER BY e.org_id, er.level_id, e.emp_code
         ");
 
         // $dataResult = [];
