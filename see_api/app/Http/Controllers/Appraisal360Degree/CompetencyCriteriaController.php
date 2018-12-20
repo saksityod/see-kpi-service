@@ -29,11 +29,12 @@ class CompetencyCriteriaController extends Controller
 	public function show(Request $request) 
 	{
 		$items = DB::select("
-			select ag.*, cc.appraisal_level_id, cc.structure_id, ifnull(cc.weight_percent,0) weight_percent, if(cc.appraisal_level_id is null,0,1) checkbox
+			select ag.*, cc.appraisal_level_id, cc.structure_id, ifnull(cc.weight_percent,0) weight_percent, if(cc.appraisal_level_id is null,0,1) checkbox ,cc.appraisal_form_id
 			from assessor_group ag
 			left outer join competency_criteria cc on cc.assessor_group_id = ag.assessor_group_id
 			and cc.appraisal_level_id ={$request->appraisal_level_id}
 			and cc.structure_id = {$request->structure_id}
+			and cc.appraisal_form_id = {$request->appraisal_form_id}
 		");
 
 		return response()->json($items);
@@ -91,11 +92,13 @@ class CompetencyCriteriaController extends Controller
 		// Insert - Update - Delete item inactive //
 		foreach ($request->set_weight as $c) {
 			if ($c['checkbox'] == 1) {
-				$competency = CompetencyCriteria::where('appraisal_level_id', $appraisal_level_id)
+				$competency = CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id )
+				->where('appraisal_level_id', $appraisal_level_id)
 					->where('structure_id', $c['structure_id'])
 					->where('assessor_group_id',$c['assessor_group_id']);
 				if ($competency->count() > 0) {
-					CompetencyCriteria::where('appraisal_level_id',$appraisal_level_id)
+					CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id )
+						->where('appraisal_level_id',$appraisal_level_id)
 						->where('structure_id', $c['structure_id'])
 						->where('assessor_group_id', $c['assessor_group_id'])
 						->update(
