@@ -1636,28 +1636,24 @@ class AppraisalAssignmentController extends Controller
 
 			if(empty($findDerive)) {
 				// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
-					$items[$key]->assigned = 1;
-			    	$items[$key]->assigned_msg = '';
+				$items[$key]->assigned = 1;
+			    $items[$key]->assigned_msg = '';
 			}
 
 			foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
 			    if($findDerives->is_individual==1) {
 			    	//หา chief emp code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->advanSearch->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
-			    	if($findChiefEmp['emp_id']==0) { // กรณีไม่มี chief_emp_code
-			    		$items[$key]->assigned = 1;
-		    			$items[$key]->assigned_msg = '';
-			    	} else {
-				    	// $findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-				    	// ->where("period_id", $period_id)
-				    	// ->where("emp_id", $findChiefEmp['emp_id'])
-				    	// ->where("status", "Accepted")->first();
-
+			    	// if($findChiefEmp['emp_id']==0) { // กรณีไม่มี chief_emp_code
+			    	// 	$items[$key]->assigned = 1;
+		    		// 	$items[$key]->assigned_msg = '';
+			    	// } else {
 				    	$findEmpResult = DB::table('emp_result')
 				        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
 				        ->where('emp_result.period_id', $period_id)
 				        ->where('emp_result.appraisal_form_id', $appraisal_form)
 				        ->where('emp_result.emp_id', $findChiefEmp['emp_id'])
+				        ->orWhere('emp_result.emp_id', $item->emp_id)
 				        ->where('appraisal_stage.assignment_flag', 1)
 				        ->where('appraisal_stage.edit_flag', 0)
 				        ->first();
@@ -1674,26 +1670,22 @@ class AppraisalAssignmentController extends Controller
 						    $items[$key]->chief_id_array[] = $findEmpResult->emp_id;
 						    $items[$key]->is_derive_check[] = 'emp';
 						}
-					}
+					// }
 
 			    } else if($findDerives->is_org==1) {
 			    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
 			    	$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
 			    	// exit(json_encode(['data' => $findChiefEmp]));
-			    	if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
-			    		$items[$key]->assigned = 1;
-		    			$items[$key]->assigned_msg = '';
-			    	} else {
-				    	// $findEmpResult = EmpResult::where("appraisal_form_id", $appraisal_form)
-				    	// ->where("period_id", $period_id)
-				    	// ->where("org_id", $findChiefEmp['org_id'])
-				    	// ->where("status", "Accepted")->first();
-
+			    	// if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
+			    	// 	$items[$key]->assigned = 1;
+		    		// 	$items[$key]->assigned_msg = '';
+			    	// } else {
 				    	$findEmpResult = DB::table('emp_result')
 				        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
 				        ->where('emp_result.period_id', $period_id)
 				        ->where('emp_result.appraisal_form_id', $appraisal_form)
 				        ->where('emp_result.org_id', $findChiefEmp['org_id'])
+				        ->orWhere('emp_result.org_id', $item->org_id)
 				        ->where('emp_result.emp_id', null)
 				        ->where('appraisal_stage.assignment_flag', 1)
 				        ->where('appraisal_stage.edit_flag', 0)
@@ -1711,7 +1703,7 @@ class AppraisalAssignmentController extends Controller
 				    		$items[$key]->org_id_array[] = $findEmpResult->org_id;
 				    		$items[$key]->is_derive_check[] = 'org';
 				    	}
-					}
+					// }
 			    }
 			}
 
@@ -3617,7 +3609,7 @@ class AppraisalAssignmentController extends Controller
 				DB::table('emp_result_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 				DB::table('emp_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 				DB::table('assessment_opinion')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-				DB::table('emp_result_log')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				// DB::table('emp_result_log')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 
 				$air = DB::select("
 					select emp_id, level_id, position_id, org_id, period_id, item_result_id

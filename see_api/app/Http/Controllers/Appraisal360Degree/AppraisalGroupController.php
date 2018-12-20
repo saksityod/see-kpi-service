@@ -370,7 +370,7 @@ class AppraisalGroupController extends Controller
 
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
-				select DISTINCT b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
+				select b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
 					if(ifnull(a.target_value,0) = 0,0,(ifnull(a.actual_value,0)/a.target_value)*100) achievement, a.percent_achievement, h.result_threshold_group_id, c.is_value_get_zero, (select count(1) from appraisal_item_result_doc where a.item_result_id = item_result_id) files_amount,
 					-- ((a.score*a.weight_percent*a.contribute_percent)/100) weigh_score_swc,
 					-- ((a.percent_achievement*a.weight_percent*a.contribute_percent)/100) weigh_score_awc
@@ -401,6 +401,7 @@ class AppraisalGroupController extends Controller
 				and ags.assessor_group_id = ?
 				where a.emp_result_id = ?
 				-- and d.form_id != 2
+				GROUP BY a.item_result_id
 				order by c.seq_no, b.item_id
 				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
@@ -430,6 +431,7 @@ class AppraisalGroupController extends Controller
 				LEFT OUTER JOIN uom ON b.uom_id= uom.uom_id
 				INNER JOIN assessor_group_structure ags ON ags.structure_id = b.structure_id AND ags.assessor_group_id = ?
 				WHERE a.emp_result_id = ?
+				GROUP BY a.item_result_id
 				ORDER BY c.seq_no asc, b.item_id
 			", array($request->assessor_group_id, $request->emp_result_id));
 		}
