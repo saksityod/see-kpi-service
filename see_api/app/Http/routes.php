@@ -502,7 +502,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('judgement/assign_judgement', 'Salary\JudgementController@assign_judgement');
 	Route::post('judgement', 'Salary\JudgementController@store');
 
-
+	Route::get('shared/stage/to_action', 'Shared\StageController@to_action');
+	
 	Route::get('404', ['as' => 'notfound', function () {
 		return response()->json(['status' => '404']);
 	}]);
