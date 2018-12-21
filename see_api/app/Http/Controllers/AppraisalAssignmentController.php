@@ -936,7 +936,7 @@ class AppraisalAssignmentController extends Controller
 	    	$items = DB::select("
 	    		Select frequency_id, frequency_name, frequency_month_value
 	    		From  appraisal_frequency
-	    		Order by frequency_month_value asc
+	    		Order by frequency_month_value desc
 	    		");
 	    	return response()->json($items);
 	    }
