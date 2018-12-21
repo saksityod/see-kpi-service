@@ -147,7 +147,7 @@
 			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="Crosstab 3_CH" mode="Opaque" backcolor="#CCCCCC">
+	<style name="Crosstab 3_CH" mode="Opaque" forecolor="#FFFFFF" backcolor="#005FB3">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -700,7 +700,7 @@ ORDER BY c.customer_id]]>
 						<crosstabColumnHeader>
 							<cellContents mode="Opaque" style="Crosstab 3_CH">
 								<textField isStretchWithOverflow="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="230" height="20" uuid="96da16e4-2d48-4626-8978-5f9231015198"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="230" height="20" forecolor="#FFFFFF" uuid="96da16e4-2d48-4626-8978-5f9231015198"/>
 									<box leftPadding="3"/>
 									<textElement>
 										<font fontName="BrowalliaUPC" size="16" isBold="true"/>
