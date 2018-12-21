@@ -20,6 +20,8 @@ use App\ActionPlan;
 use App\AppraisalStructure;
 use App\AppraisalLevel;
 
+use App\Http\Controllers\Shared\StageController;
+
 use Auth;
 use DB;
 use File;
@@ -39,8 +41,8 @@ class AppraisalAssignmentController extends Controller
 
 	public function __construct()
 	{
-
 		$this->middleware('jwt.auth');
+		$this->sharedStage = new StageController;
 	}
 
 	public function email_link_assignment(Request $request) {
@@ -1196,7 +1198,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, al.is_group_action, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, al.is_group_action, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, 0 edit_flag, 0 delete_flag
 	    				From employee e
 	    				left outer join org o
 	    				on e.org_id = o.org_id
@@ -1260,7 +1262,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, ast.edit_flag, ast.delete_flag
 	    				From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al, appraisal_stage ast
 	    				Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
@@ -1288,7 +1290,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, 0 edit_flag, 0 delete_flag
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
@@ -1342,7 +1344,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, ast.edit_flag, ast.delete_flag
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 						Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
@@ -1370,7 +1372,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, al.is_group_action, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, al.is_group_action, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, 0 edit_flag, 0 delete_flag
 	    				From employee e left outer join	org o
 	    				on e.org_id = o.org_id
 	    				left outer join position p
@@ -1442,7 +1444,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.level_id, er.stage_id, e.emp_id, al.is_group_action, e.emp_code, e.emp_name, o.org_id, o.org_code, o.org_name, er.position_id, po.position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, ast.edit_flag, ast.delete_flag
 	    				From emp_result er, employee e, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, org o, position po, appraisal_level al, appraisal_stage ast
 	    				Where er.emp_id = e.emp_id and er.appraisal_type_id = t.appraisal_type_id
 	    				And er.emp_result_id = ir.emp_result_id
@@ -1475,7 +1477,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign = "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, 0 edit_flag, 0 delete_flag
 	    				From org o
 	    				left outer join appraisal_level al
 	    				on o.level_id = al.level_id
@@ -1529,7 +1531,7 @@ class AppraisalAssignmentController extends Controller
 	    			} else {
 
 	    				$query_unassign .= "
-	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id
+	    				select distinct er.emp_result_id, er.status, er.stage_id, null emp_id, al.is_group_action, null emp_code,  null emp_name, o.org_id, o.org_code, o.org_name, null position_name, t.appraisal_type_name, t.appraisal_type_id, p.period_id, concat(p.appraisal_period_desc,' Start Date: ',p.start_date,' End Date: ',p.end_date) appraisal_period_desc, al.default_stage_id, ast.edit_flag, ast.delete_flag
 	    				From emp_result er, org o, appraisal_type t, appraisal_item_result ir, appraisal_item I, appraisal_period p, appraisal_level al, appraisal_stage ast
 						Where er.org_id = o.org_id and er.appraisal_type_id = t.appraisal_type_id
 						and (o.org_code = '{$co->org_code}' or o.parent_org_code = '{$co->org_code}')
@@ -1818,7 +1820,8 @@ class AppraisalAssignmentController extends Controller
 		}
 	//	$resultT = $items->toArray();
 	//	$items['group'] = $groups
-		return response()->json(['data' => $items, 'group' => $groups, 'result_type' => $config->result_type]);
+		$to_action = $this->sharedStage->to_action_call((object)$request->obj_stage);
+		return response()->json(['data' => $items, 'group' => $groups, 'result_type' => $config->result_type, 'to_action' => $to_action]);
 
 	}
 
@@ -3383,13 +3386,20 @@ class AppraisalAssignmentController extends Controller
 		}
 
 		try {
-			if ($item->status == 'Assigned' || strpos(strtolower($item->status),'reject') !== false || $item->status == 'Draft' || strpos(strtolower($item->status),'review') !== false) {
+			// if ($item->status == 'Assigned' || strpos(strtolower($item->status),'reject') !== false || $item->status == 'Draft' || strpos(strtolower($item->status),'review') !== false) {
+
+				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
+				AppraisalItemResultLog::where('emp_result_id',$item->emp_result_id)->delete();
+				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('emp_judgement')->where('emp_result_id', '=', $item->emp_result_id)->delete();
+				DB::table('assessment_opinion')->where('emp_result_id', '=', $item->emp_result_id)->delete();
 
 				$air = DB::select("
 					select emp_id, level_id, position_id, org_id, period_id, item_result_id
 					from appraisal_item_result
 					where emp_result_id = {$item->emp_result_id}
-					");
+				");
 
 				if(!empty($air)) {
 					$cds = DB::select("
@@ -3400,33 +3410,27 @@ class AppraisalAssignmentController extends Controller
 						and position_id = '".$air[0]->position_id."'
 						and org_id = '".$air[0]->org_id."'
 						and period_id = '".$air[0]->period_id."'
-						");
+					");
+
+					foreach ($cds as $key => $value) {
+						DB::table('cds_result')->where('cds_result_id', '=', $value->cds_result_id)->delete();
+						DB::table('cds_result_doc')->where('cds_result_id', '=', $value->cds_result_id)->delete();
+					}
+
+					foreach ($air as $key => $value) {
+						DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('competency_result')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('action_plan')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('phase')->where('item_result_id', '=', $value->item_result_id)->delete();
+						DB::table('reason')->where('item_result_id', '=', $value->item_result_id)->delete();
+					}
 				}
 
-				EmpResultStage::where('emp_result_id',$item->emp_result_id)->delete();
 				AppraisalItemResult::where('emp_result_id',$item->emp_result_id)->delete();
-				AppraisalItemResultLog::where('emp_result_id',$item->emp_result_id)->delete();
-				DB::table('structure_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-				DB::table('monthly_appraisal_item_result')->where('emp_result_id', '=', $item->emp_result_id)->delete();
-
-				if(!empty($air)) {
-					DB::table('cds_result')
-					->where('emp_id', '=', $air[0]->emp_id)
-					->where('level_id', '=', $air[0]->level_id)
-					->where('position_id', '=', $air[0]->position_id)
-					->where('org_id', '=', $air[0]->org_id)
-					->where('period_id', '=', $air[0]->period_id)->delete();
-					DB::table('appraisal_item_result_doc')->where('item_result_id', '=', $air[0]->item_result_id)->delete();
-				}
-
-				if(!empty($cds)) {
-					DB::table('cds_result_doc')->where('cds_result_id', '=', $cds[0]->cds_result_id)->delete();
-				}
-
 				$item->delete();
-			} else {
-				return response()->json(['status' => 400, 'data' => 'Cannot delete Appraisal Assignment at this stage.']);
-			}
+			// } else {
+			// 	return response()->json(['status' => 400, 'data' => 'Cannot delete Appraisal Assignment at this stage.']);
+			// }
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
 				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Appraisal Assignment is in use.']);
