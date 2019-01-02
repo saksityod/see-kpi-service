@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shared;
 
 use App\AppraisalLevel;
 use App\Employee;
+use App\AssessorGroup;
 
 use Auth;
 use DB;
@@ -86,11 +87,13 @@ class StageController extends Controller
         $empAuth = $this->empAuth();
         $orgAuth = $this->orgAuth();
 
-        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
-        if($empAuth->is_hr==1) {
-            $in = 5; //คือ hr
+        $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
+
+        if($assGroup != null) {
+            $in = $assGroup->assessor_group_id;
         } else {
-            $in = 1; //หัวหน้าของพนักงาน
+            $assGroup = AssessorGroup::find(4);
+            $in = $assGroup->assessor_group_id;
         }
 
         $stage = DB::table("appraisal_stage")
@@ -124,11 +127,13 @@ class StageController extends Controller
         $empAuth = $this->empAuth();
         $orgAuth = $this->orgAuth();
 
-        //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
-        if($empAuth->is_hr==1) {
-            $in = 5; //คือ hr
+        $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
+
+        if($assGroup != null) {
+            $in = $assGroup->assessor_group_id;
         } else {
-            $in = 1; //หัวหน้าของพนักงาน
+            $assGroup = AssessorGroup::find(4);
+            $in = $assGroup->assessor_group_id;
         }
 
         $stage = DB::table("appraisal_stage")
