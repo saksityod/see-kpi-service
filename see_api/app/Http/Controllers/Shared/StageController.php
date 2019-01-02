@@ -48,6 +48,16 @@ class StageController extends Controller
         return $orgAuth;
     }
 
+    function isAll() {
+        $all_emp = DB::select("
+            SELECT sum(b.is_all_employee) count_no
+            FROM employee a
+            LEFT OUTER JOIN appraisal_level b on a.level_id = b.level_id
+            WHERE emp_code = ?
+            ", array(Auth::id()));
+         return $all_emp;
+    }
+
     // public function StatusList(Request $request) {
     //     if(empty($request->flag)) {
     //         return response()->json(['status' => 400, 'data' => 'Parameter flag is required']);
@@ -87,13 +97,17 @@ class StageController extends Controller
         $empAuth = $this->empAuth();
         $orgAuth = $this->orgAuth();
 
-        $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
-
-        if($assGroup != null) {
-            $in = $assGroup->assessor_group_id;
+        $all_emp = $this->isAll();
+        if ($all_emp[0]->count_no > 0) {
+            $in = 5;
         } else {
-            $assGroup = AssessorGroup::find(4);
-            $in = $assGroup->assessor_group_id;
+            $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
+            if($assGroup != null) {
+                $in = $assGroup->assessor_group_id;
+            } else {
+                $assGroup = AssessorGroup::find(4);
+                $in = $assGroup->assessor_group_id;
+            }
         }
 
         $stage = DB::table("appraisal_stage")
@@ -127,13 +141,17 @@ class StageController extends Controller
         $empAuth = $this->empAuth();
         $orgAuth = $this->orgAuth();
 
-        $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
-
-        if($assGroup != null) {
-            $in = $assGroup->assessor_group_id;
+        $all_emp = $this->isAll();
+        if ($all_emp[0]->count_no > 0) {
+            $in = 5;
         } else {
-            $assGroup = AssessorGroup::find(4);
-            $in = $assGroup->assessor_group_id;
+            $assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup(Auth::id());
+            if($assGroup != null) {
+                $in = $assGroup->assessor_group_id;
+            } else {
+                $assGroup = AssessorGroup::find(4);
+                $in = $assGroup->assessor_group_id;
+            }
         }
 
         $stage = DB::table("appraisal_stage")
