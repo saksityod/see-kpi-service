@@ -47,7 +47,7 @@ class ImportEmployeeController extends Controller
 					'probation_end_date_yyyy_mm_dd' => 'date|date_format:Y-m-d',
 					'acting_end_date_yyyy_mm_dd' => 'date|date_format:Y-m-d',
 					'organization_code' => 'required',
-					'position_code' => 'required',
+					// 'position_code' => 'required',
 					'chief_employee_code' => 'max:255',
 					//'salary_amount' => 'numeric|digits_between:1,10',
 					'email' => 'required|email|max:100',
@@ -87,11 +87,11 @@ class ImportEmployeeController extends Controller
 						$emp->dotline_code = $i->dotline_code;
 						$emp->has_second_line = $i->has_second_line;
 						$emp->is_active = 1;
-						$emp->pqpi_amount = $i->pqpi_amount;
-						$emp->fix_other_amount = $i->fix_other_amount;
-						$emp->pmi_amount = $i->pmi_amount;
-						$emp->pi_amount = $i->pi_amount;
-						$emp->var_other_amount = $i->var_other_amount;
+						$emp->pqpi_amount = base64_encode($i->pqpi_amount);
+						$emp->fix_other_amount = base64_encode($i->fix_other_amount);
+						$emp->pmi_amount = base64_encode($i->pmi_amount);
+						$emp->pi_amount = base64_encode($i->pi_amount);
+						$emp->var_other_amount = base64_encode($i->var_other_amount);
 						$emp->level_id = $i->level_id;
 						$emp->created_by = Auth::id();
 						$emp->updated_by = Auth::id();
@@ -116,11 +116,11 @@ class ImportEmployeeController extends Controller
 						$emp->dotline_code = $i->dotline_code;
 						$emp->has_second_line = $i->has_second_line;
 						$emp->is_active = 1;
-						$emp->pqpi_amount = $i->pqpi_amount;
-						$emp->fix_other_amount = $i->fix_other_amount;
-						$emp->pmi_amount = $i->pmi_amount;
-						$emp->pi_amount = $i->pi_amount;
-						$emp->var_other_amount = $i->var_other_amount;
+						$emp->pqpi_amount = base64_encode($i->pqpi_amount);
+						$emp->fix_other_amount = base64_encode($i->fix_other_amount);
+						$emp->pmi_amount = base64_encode($i->pmi_amount);
+						$emp->pi_amount = base64_encode($i->pi_amount);
+						$emp->var_other_amount = base64_encode($i->var_other_amount);
 						$emp->level_id = $i->level_id;
 						$emp->updated_by = Auth::id();
 						try {
@@ -192,36 +192,37 @@ class ImportEmployeeController extends Controller
 	{
 		$qinput = array();
 		$query = "
-				SELECT a.emp_code
-				, a.emp_name
-				, a.working_start_date
-				, a.probation_end_date
-				, a.acting_end_date
-				, c.org_code
-				, b.position_code
-				, a.chief_emp_code
-				, a.s_amount
-				, a.email
-				, a.emp_type
-				, a.dotline_code
-				, a.has_second_line
-				, a.pqpi_amount
-				, a.fix_other_amount
-				, a.pmi_amount
-				, a.pi_amount
-				, a.var_other_amount
-				, a.level_id
-				FROM employee a
-				LEFT OUTER JOIN position b ON a.position_id = b.position_id
-				LEFT OUTER JOIN org c ON a.org_id = c.org_id
-				LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id
-				WHERE 1 = 1
-				AND a.is_active = 1";
+			SELECT em.emp_code
+			, em.emp_name
+			, em.working_start_date
+			, em.probation_end_date
+			, em.acting_end_date
+			, org.org_code
+			, po.position_code
+			, em.chief_emp_code
+			, from_base64(em.s_amount) as s_amount
+			, em.email
+			, em.emp_type
+			, em.dotline_code
+			, em.has_second_line
+			, from_base64(em.pqpi_amount) as pqpi_amount
+			, from_base64(em.fix_other_amount) as fix_other_amount
+			, from_base64(em.pmi_amount) as pmi_amount
+			, from_base64(em.pi_amount) as pi_amount
+			, from_base64(em.var_other_amount) as var_other_amount
+			, em.level_id
+			FROM employee em
+			LEFT OUTER JOIN position po ON em.position_id = po.position_id
+			LEFT OUTER JOIN org ON em.org_id = org.org_id
+			LEFT OUTER JOIN appraisal_level le ON em.level_id = le.level_id
+			WHERE 1 = 1
+			AND em.is_active = 1
+			AND le.is_hr != 1";
 
-		empty($request->org_id) ?: ($query .= " AND a.org_id = ? " AND $qinput[] = $request->org_id);
-		empty($request->position_id) ?: ($query .= " And a.position_id = ? " AND $qinput[] = $request->position_id);
-		empty($request->emp_code) ?: ($query .= " And a.emp_code = ? " AND $qinput[] = $request->emp_code);
-		$qfooter = " Order by a.emp_code ASC";
+		empty($request->org_id) ?: ($query .= " AND org.org_id = ? " AND $qinput[] = $request->org_id);
+		empty($request->position_id) ?: ($query .= " And po.position_id = ? " AND $qinput[] = $request->position_id);
+		empty($request->emp_code) ?: ($query .= " And em.emp_code = ? " AND $qinput[] = $request->emp_code);
+		$qfooter = " Order by em.emp_code ASC";
 
 		$items = DB::select($query . $qfooter, $qinput);
 
@@ -358,9 +359,16 @@ class ImportEmployeeController extends Controller
 	{
 		try {
 			$item = Employee::findOrFail($emp_id);
+			$item->pqpi_amount = base64_decode($item->pqpi_amount);
+			$item->fix_other_amount = base64_decode($item->fix_other_amount);
+			$item->pmi_amount = base64_decode($item->pmi_amount);
+			$item->pi_amount = base64_decode($item->pi_amount);
+			$item->var_other_amount = base64_decode($item->var_other_amount);
+
 			$position= Position::find($item->position_id);
 			empty($position) ? $position_name = null : $position_name = $position->position_name;
 			$item->position_name = $position_name;
+
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Employee not found.']);
 		}
@@ -427,11 +435,11 @@ class ImportEmployeeController extends Controller
 			$item->dotline_code = $request->dotline_code;
 			$item->has_second_line = $request->has_second_line;
 			$item->is_active = $request->is_active;
-			$item->pqpi_amount = $request->pqpi_amount;
-			$item->fix_other_amount = $request->fix_other_amount;
-			$item->pmi_amount = $request->pmi_amount;
-			$item->pi_amount = $request->pi_amount;
-			$item->var_other_amount = $request->var_other_amount;
+			$item->pqpi_amount = base64_encode($request->pqpi_amount);
+			$item->fix_other_amount = base64_encode($request->fix_other_amount);
+			$item->pmi_amount = base64_encode($request->pmi_amount);
+			$item->pi_amount = base64_encode($request->pi_amount);
+			$item->var_other_amount = base64_encode($request->var_other_amount);
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
