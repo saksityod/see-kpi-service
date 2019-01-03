@@ -274,7 +274,7 @@ class AppraisalAssignmentController extends Controller
 		return response()->json($items);
 	}
 
-	public function edit_action_to(Request $request)
+	public function edit_action_to($request)
 	{
 		// $emp = DB::select("
 			// select is_hr
@@ -498,7 +498,7 @@ class AppraisalAssignmentController extends Controller
 			}
 		}
 		//return response()->json(['items'=>$items,'hr_see'=>$hr_see,'self_see'=>$self_see,'first_see'=>$first_see,'second_see'=>$second_see,'chief_emp_code'=>$chief_emp_code,'auth_id'=>Auth::id()]);
-		return response()->json($items);
+		return $items;
 	}
 
 	public function auto_position_name2(Request $request)
@@ -770,8 +770,8 @@ class AppraisalAssignmentController extends Controller
 	    			AND al.is_active = 1
 	    			AND emp.is_active = 1
 	    			AND org.is_active = 1
-					LIMIT 1
-					Order by al.seq_no ASC ");
+	    			Order by al.seq_no ASC 
+					LIMIT 1");
 	    		if (!empty($userlevelDb)) {
 	    			foreach ($userlevelDb as $value) {
 	    				$userlevelId = $value->level_id;
@@ -1820,7 +1820,12 @@ class AppraisalAssignmentController extends Controller
 		}
 	//	$resultT = $items->toArray();
 	//	$items['group'] = $groups
-		$to_action = $this->sharedStage->to_action_call((object)$request->obj_stage);
+		if($request['obj_stage']['appraisal_type_id']==1) {
+			$to_action = $this->edit_action_to((object)$request->obj_stage);
+		} else {
+			$to_action = $this->sharedStage->to_action_call((object)$request->obj_stage);
+		}
+
 		return response()->json(['data' => $items, 'group' => $groups, 'result_type' => $config->result_type, 'to_action' => $to_action]);
 
 	}
