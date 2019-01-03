@@ -37,7 +37,7 @@ class ImportEmployeeController extends Controller
 		$errors = array();
 		$newEmp = array();
 		foreach ($request->file() as $f) {
-			$items = Excel::load($f, function($reader){})->get();
+			$items = Excel::selectSheets('import_employee_template')->load($f, function($reader){})->get();
 			foreach ($items as $i) {
 
 				$validator = Validator::make($i->toArray(), [
@@ -53,7 +53,12 @@ class ImportEmployeeController extends Controller
 					'email' => 'required|email|max:100',
 					'employee_type' => 'max:50',
 					'dotline_code' => 'max:255',
-					'has_second_line' => 'max:255'
+					'has_second_line' => 'max:255',
+					'pqpi_amount' => 'max:100',
+					'fix_other_amount' => 'max:100',
+					'pmi_amount' => 'max:100',
+					'pi_amount' => 'max:100',
+					'var_other_amount' => 'max:100'
 				]);
 
 				$org = Org::where('org_code',$i->organization_code)->first();
@@ -82,6 +87,12 @@ class ImportEmployeeController extends Controller
 						$emp->dotline_code = $i->dotline_code;
 						$emp->has_second_line = $i->has_second_line;
 						$emp->is_active = 1;
+						$emp->pqpi_amount = $i->pqpi_amount;
+						$emp->fix_other_amount = $i->fix_other_amount;
+						$emp->pmi_amount = $i->pmi_amount;
+						$emp->pi_amount = $i->pi_amount;
+						$emp->var_other_amount = $i->var_other_amount;
+						$emp->level_id = $i->level_id;
 						$emp->created_by = Auth::id();
 						$emp->updated_by = Auth::id();
 						try {
@@ -105,6 +116,12 @@ class ImportEmployeeController extends Controller
 						$emp->dotline_code = $i->dotline_code;
 						$emp->has_second_line = $i->has_second_line;
 						$emp->is_active = 1;
+						$emp->pqpi_amount = $i->pqpi_amount;
+						$emp->fix_other_amount = $i->fix_other_amount;
+						$emp->pmi_amount = $i->pmi_amount;
+						$emp->pi_amount = $i->pi_amount;
+						$emp->var_other_amount = $i->var_other_amount;
+						$emp->level_id = $i->level_id;
 						$emp->updated_by = Auth::id();
 						try {
 							$emp->save();
@@ -175,61 +192,92 @@ class ImportEmployeeController extends Controller
 	{
 		$qinput = array();
 		$query = "
-		SELECT
-			a.emp_code,
-			a.emp_name,
-			a.working_start_date,
-			a.probation_end_date,
-			a.acting_end_date,
-			c.org_code,
-			b.position_code,
-			a.chief_emp_code,
-			a.s_amount,
-			a.email ,
-			a.emp_type,
-			a.dotline_code,
-			a.has_second_line
-		FROM employee a
-			LEFT OUTER JOIN position b ON a.position_id = b.position_id
-			LEFT OUTER JOIN org c ON a.org_id = c.org_id
-			LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id 
-		WHERE 1 = 1 
-			AND a.is_active = 1 
-		";
+				SELECT a.emp_code
+				, a.emp_name
+				, a.working_start_date
+				, a.probation_end_date
+				, a.acting_end_date
+				, c.org_code
+				, b.position_code
+				, a.chief_emp_code
+				, a.s_amount
+				, a.email
+				, a.emp_type
+				, a.dotline_code
+				, a.has_second_line
+				, a.pqpi_amount
+				, a.fix_other_amount
+				, a.pmi_amount
+				, a.pi_amount
+				, a.var_other_amount
+				, a.level_id
+				FROM employee a
+				LEFT OUTER JOIN position b ON a.position_id = b.position_id
+				LEFT OUTER JOIN org c ON a.org_id = c.org_id
+				LEFT OUTER JOIN appraisal_level d ON a.level_id = d.level_id
+				WHERE 1 = 1
+				AND a.is_active = 1";
+
 		empty($request->org_id) ?: ($query .= " AND a.org_id = ? " AND $qinput[] = $request->org_id);
 		empty($request->position_id) ?: ($query .= " And a.position_id = ? " AND $qinput[] = $request->position_id);
 		empty($request->emp_code) ?: ($query .= " And a.emp_code = ? " AND $qinput[] = $request->emp_code);
-		$qfooter = " Order by a.emp_code ";
+		$qfooter = " Order by a.emp_code ASC";
 
 		$items = DB::select($query . $qfooter, $qinput);
-		
-		$filename = "import_employee_template";  
-		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
+
+		$level = DB::select("
+				SELECT level_id
+				, appraisal_level_name
+				FROM appraisal_level
+				WHERE is_active = 1
+				AND is_individual = 1
+				ORDER BY level_id ASC");
+
+		$filename = "import_employee_template";
+		$sheet_level = "level";
+		$x = Excel::create($filename, function($excel) use($items, $level, $filename, $sheet_level, $request) {
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 
-				$sheet->appendRow(array('Employee Code', 'Employee Name', 'Working Start Date (YYYY-MM-DD)', 'Probation End Date (YYYY-MM-DD)', 'Acting End Date (YYYY-MM-DD)', 'Organization Code', 'Position Code','Chief Employee Code', 'Salary Amount', 'Email', 'Employee Type', 'Dotline Code', 'Has Second Line'));
+				$sheet->appendRow(array('Employee Code', 'Employee Name', 'Working Start Date (YYYY-MM-DD)', 'Probation End Date (YYYY-MM-DD)', 'Acting End Date (YYYY-MM-DD)', 'Organization Code', 'Position Code','Chief Employee Code', 'Salary Amount', 'Email', 'Employee Type', 'Dotline Code', 'Has Second Line', 'PQPI Amount', 'Fix Other Amount', 'PMI Amount', 'PI Amount', 'Var Other Amount', 'Level ID'));
 
-				foreach ($items as $i) {						
+				foreach ($items as $i) {
 					$sheet->appendRow(array(
 						$i->emp_code,
 						$i->emp_name,
 						$i->working_start_date,
 						$i->probation_end_date,
-						$i->acting_end_date, 
-						$i->org_code, 
+						$i->acting_end_date,
+						$i->org_code,
 						$i->position_code,
 						$i->chief_emp_code,
 						"", // $i->s_amount,
-						$i->email, 
-						$i->emp_type, 
+						$i->email,
+						$i->emp_type,
 						$i->dotline_code,
 						$i->has_second_line,
+						$i->pqpi_amount,
+						$i->fix_other_amount,
+						$i->pmi_amount,
+						$i->pi_amount,
+						$i->var_other_amount,
+						$i->level_id,
+					));
+				}
+			});
+			$excel->sheet($sheet_level, function($sheet) use($level, $request) {
+
+				$sheet->appendRow(array('Level ID', 'Appraisal Level Name'));
+
+				foreach ($level as $l) {
+					$sheet->appendRow(array(
+						$l->level_id,
+						$l->appraisal_level_name,
 					));
 				}
 			});
 		})->export('xlsx');
 	}
-	
+
     public function role_list()
     {
 		$items = DB::select("
@@ -328,22 +376,27 @@ class ImportEmployeeController extends Controller
 		}
 
         $validator = Validator::make($request->all(), [
-			'emp_code' => 'required|max:255|unique:employee,emp_code,'. $emp_id . ',emp_code',
-			'emp_name' => 'required|max:255',
-			'working_start_date' => 'date|date_format:Y-m-d',
-			'probation_end_date' => 'date|date_format:Y-m-d',
-			'acting_end_date' => 'date|date_format:Y-m-d',
-			'org_id' => 'integer',
-			'position_id' => 'integer',
-			'chief_emp_code' => 'max:255',
-			'level_id' => 'integer',
-			//'s_amount' => 'required|numeric|digits_between:1,10',
-			'email' => 'required|email|max:100',
-			'emp_type' => 'max:50',
-			'dotline_code' => 'max:255',
-			'has_second_line' => 'max:255',
-			'is_active' => 'required|boolean',
-			'step' => 'numeric|between:0,199.99'
+						'emp_code' => 'required|max:255|unique:employee,emp_code,'. $emp_id . ',emp_code',
+						'emp_name' => 'required|max:255',
+						'working_start_date' => 'date|date_format:Y-m-d',
+						'probation_end_date' => 'date|date_format:Y-m-d',
+						'acting_end_date' => 'date|date_format:Y-m-d',
+						'org_id' => 'integer',
+						'position_id' => 'integer',
+						'chief_emp_code' => 'max:255',
+						'level_id' => 'integer',
+						'pqpi_amount' => 'max:100',
+						'fix_other_amount' => 'max:100',
+						'pmi_amount' => 'max:100',
+						'pi_amount' => 'max:100',
+						'var_other_amount' => 'max:100',
+						//'s_amount' => 'required|numeric|digits_between:1,10',
+						'email' => 'required|email|max:100',
+						'emp_type' => 'max:50',
+						'dotline_code' => 'max:255',
+						'has_second_line' => 'max:255',
+						'is_active' => 'required|boolean',
+						'step' => 'numeric|between:0,199.99'
         ]);
 
         if ($validator->fails()) {
@@ -357,7 +410,7 @@ class ImportEmployeeController extends Controller
 			if ( ! (base64_encode(base64_decode($request->s_amount)) === $request->s_amount) ){
 				$item->s_amount = base64_encode($request->s_amount);
 			}
-			
+
 			$item->emp_code = $request->emp_code;
 			$item->emp_name = $request->emp_name;
 			$item->working_start_date = $request->working_start_date;
@@ -374,6 +427,11 @@ class ImportEmployeeController extends Controller
 			$item->dotline_code = $request->dotline_code;
 			$item->has_second_line = $request->has_second_line;
 			$item->is_active = $request->is_active;
+			$item->pqpi_amount = $request->pqpi_amount;
+			$item->fix_other_amount = $request->fix_other_amount;
+			$item->pmi_amount = $request->pmi_amount;
+			$item->pi_amount = $request->pi_amount;
+			$item->var_other_amount = $request->var_other_amount;
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
@@ -448,7 +506,7 @@ class ImportEmployeeController extends Controller
 				$liferayUserId = $user->userId;
 			} catch (ModelNotFoundException $e) {
 				$liferayUserId = null;
-			}		
+			}
 
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
