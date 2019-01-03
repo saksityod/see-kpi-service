@@ -39,7 +39,7 @@ class PositionController extends Controller
 	public function index(Request $request)
 	{		
 		$items = DB::select("
-			select position_id, position_name, position_code, is_active
+			select position_id, position_name, position_code, job_code, is_active
 			from position
 			where position_name like ?
 			order by position_code asc
@@ -56,21 +56,25 @@ class PositionController extends Controller
 				
 				$validator = Validator::make($i->toArray(), [
 					'position_name' => 'required|max:255',
-					'position_code' => 'required'
+					'position_code' => 'required',
+					'job_code' => 'max:10'
+
 				]);
 
 				if ($validator->fails()) {
 					$errors[] = ['position_name' => $i->position_name, 'errors' => $validator->errors()];
 				} else {
-					$position = DB::select("
+					/*$position = DB::select("
 						select position_id
 						from position
 						where position_code = ?
-					",array($i->position_code));
+					",array($i->position_code));*/
+					$position = position::where('position_code', $i->position_code)->first();
 					if (empty($position)) {
 						$position = new Position;	
 						$position->position_name = $i->position_name;
 						$position->position_code = $i->position_code;
+						$position->job_code = $i->job_code;
 						$position->is_active = 1;
 						$position->created_by = Auth::id();
 						$position->updated_by = Auth::id();
@@ -80,6 +84,16 @@ class PositionController extends Controller
 							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
 						}
 					} else {
+						$position->position_name = $i->position_name;
+						$position->position_code = $i->position_code;
+						$position->job_code = $i->job_code;
+						$position->is_active = 1;
+						$position->updated_by = Auth::id();
+						try {
+							$position->save();
+						} catch (Exception $e) {
+							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
+						}
 
 					}
 				}					
@@ -94,6 +108,7 @@ class PositionController extends Controller
 		$validator = Validator::make($request->all(), [
 			'position_code' => 'required|unique:position',
 			'position_name' => 'required|max:255',
+			'job_code' => 'required|max:10',
 			'is_active' => 'required|integer',
 		]);
 
@@ -131,6 +146,7 @@ class PositionController extends Controller
 		$validator = Validator::make($request->all(), [
 			'position_code' => 'required|unique:position,position_name,' . $position_id . ',position_id',
 			'position_name' => 'required|max:255',
+			'job_code' => 'required|max:10',
 			'is_active' => 'required|integer',
 		]);
 
@@ -167,4 +183,39 @@ class PositionController extends Controller
 		return response()->json(['status' => 200]);
 		
 	}	
+
+	public function export(Request $request)
+	{
+		$qinput = array();
+		$query = "
+		SELECT
+			position_id, position_code , position_name , job_code
+		FROM position
+		WHERE 1 = 1 
+			AND is_active = 1 
+		";
+		empty($request->position_code) ?: ($query .= " AND position_code = ? " AND $qinput[] = $request->position_code);
+		empty($request->position_name) ?: ($query .= " And position_name = ? " AND $qinput[] = $request->position_name);
+		empty($request->job_code) ?: ($query .= " And job_code = ? " AND $qinput[] = $request->job_code);
+		$qfooter = " Order by position_code ";
+
+		$items = DB::select($query . $qfooter, $qinput);
+		
+		$filename = "appraisal_position_template";  
+		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
+			$excel->sheet($filename, function($sheet) use($items, $request) {
+
+				$sheet->appendRow(array('Position Code', 'Position Name', 'Job Code' ));
+
+				foreach ($items as $i) {						
+					$sheet->appendRow(array(
+						$i->position_code,
+						$i->position_name,
+						$i->job_code
+						
+					));
+				}
+			});
+		})->export('xlsx');
+	}
 }

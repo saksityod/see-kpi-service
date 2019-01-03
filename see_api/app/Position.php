@@ -20,6 +20,6 @@ class Position extends Model
 	//public $timestamps = false;
 	//protected $guarded = array();
 	
-	protected $fillable = array('position_name','position_code','is_active');
+	protected $fillable = array('position_name','position_code','job_code','is_active');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }

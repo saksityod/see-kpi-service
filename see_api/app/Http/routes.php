@@ -214,6 +214,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('position/auto', 'PositionController@auto');
 	Route::post('position', 'PositionController@store');
 	Route::post('position/import', 'PositionController@import');
+	Route::post('position/export', 'PositionController@export');
 	Route::get('position/{position_id}', 'PositionController@show');
 	Route::patch('position/{position_id}', 'PositionController@update');
 	Route::delete('position/{position_id}', 'PositionController@destroy');
