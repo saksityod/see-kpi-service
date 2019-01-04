@@ -82,6 +82,13 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('import_employee/{emp_id}', 'ImportEmployeeController@destroy');
 	Route::post('import_employee', 'ImportEmployeeController@import');
 
+	// Import Job Code //
+	Route::get('import_job_code','ImportJobCodeController@index');
+	Route::post('import_job_code/export','ImportJobCodeController@export');
+	Route::post('import_job_code', 'ImportJobCodeController@import');
+	Route::delete('import_job_code/delete/{job_code}', 'ImportJobCodeController@destroy');
+	Route::patch('import_job_code/update/{job_code}', 'ImportJobCodeController@update');
+
 	// CDS Result //
 	Route::get('cds_result/al_list','CDSResultController@al_list');
 	Route::get('cds_result/year_list', 'CDSResultController@year_list');
