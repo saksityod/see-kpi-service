@@ -102,7 +102,7 @@ class CalculateSalaryStructureController extends Controller
         // 1. คำนวณเกรดให้กับ emp //
         $calgrade = $this->GradeCalculate($periodInfo);
         if ($calgrade->status == 404) {
-            return response()->json(["status"=>$gradeResult->status, "data"=>$gradeResult->data]);
+            return response()->json(["status"=>$calgrade->status, "data"=>$calgrade->data]);
         }
         
         // 2. ทำการปรับเงินเดือน //

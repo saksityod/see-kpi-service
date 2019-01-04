@@ -515,7 +515,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('judgement', 'Salary\JudgementController@index');
 	Route::get('judgement/assign_judgement', 'Salary\JudgementController@assign_judgement');
 	Route::post('judgement', 'Salary\JudgementController@store');
-
+	// Salary -> Calculate Salary AppraisalForm //
+	Route::get('salary_raise/appraisal_form', 'Salary\CalculateSalaryAppraisalFormController@SalaryCalculator');
 
 
 	// Bonus //
