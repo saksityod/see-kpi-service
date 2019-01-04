@@ -388,7 +388,28 @@ class AppraisalService
                                         */
                                         ->update(['created_by' => $created_by,'created_dttm' => $now]);
                                 }else{
-                                    DB::insert('insert into kpi_cds_mapping (item_id, cds_id,created_by,created_dttm) values (?, ?, ?, ?)', [$item_id, $cds_id, $created_by, $now]);
+                                  $loop_formula_cds_id = str_split($appraisalItem->formula_cds_id);
+                                  $concat_formula_cds_id = "";
+                                  $appraisalItem->formula_cds_id = "";
+                                  foreach ($loop_formula_cds_id as $key => $value) {
+                                      if('['==$value) {
+                                          $concat_formula_cds_id = "";
+                                      }
+
+                                      $concat_formula_cds_id .= $value;
+
+                                      if(']'==$value) {
+                                          $appraisalItem->formula_cds_id .= $concat_formula_cds_id;
+                                          $concat_formula_cds_id = "";
+                                      }
+                                  }
+
+                                  $appraisalItem->formula_cds_id = array_unique(array_filter(explode("]",str_replace('[', '', $appraisalItem->formula_cds_id))));
+
+                                  foreach ($appraisalItem->formula_cds_id as $c) {
+                                      $c = explode(":",str_replace('cds', '', $c));
+                                      DB::insert('insert into kpi_cds_mapping (item_id, cds_id, function_type,created_by,created_dttm) values (?, ?, ?, ?)', [$item_id, $c[1], $c[0], $created_by, $now]);
+                                  }
                                 }
                             }
                         }else{
