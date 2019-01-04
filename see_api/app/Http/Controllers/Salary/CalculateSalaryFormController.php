@@ -18,12 +18,12 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 
-class CalculateSalaryAppraisalFormController extends Controller
+class CalculateSalaryFormController extends Controller
 {
 
     public function __construct()
 	{
-	   //$this->middleware('jwt.auth');
+	   $this->middleware('jwt.auth');
     }
 
 
@@ -53,49 +53,49 @@ class CalculateSalaryAppraisalFormController extends Controller
 
         // get Raise Type : 1="Fix Amount", 2="Percentage", 3="Salary Structure Table"
         $raiseType = SystemConfiguration::first()->raise_type;
-
+        // return response()->json(["status"=>404, "data"=>$raiseType]);
         // update salary by Raise Type
         if ($raiseType == 1) {
             try{
-                DB::update("
-                    UPDATE emp_result er 
-                    INNER JOIN (
-                        SELECT 
-                            emp.emp_id, er.salary_grade_id,
-                            emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.pmi_amount, emp.pi_amount, emp.var_other_amount,
-                            TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
-                            ag.salary_raise_amount AS raise_amount,
-                            0 AS raise_pqpi_amount,
-                            0 AS new_pqpi_amount
-                        FROM employee emp
-                        INNER JOIN emp_result er ON er.emp_id = emp.emp_id
-                        INNER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id
-                        WHERE emp.is_active = 1
-                        AND ag.is_active = 1
-                        AND er.period_id = '{$request->period_id}'
-                    )emp
-                    SET 
-                        er.new_s_amount = emp.new_s_amount,
-                        er.raise_amount = emp.raise_amount,
-                        er.pqpi_amount = emp.pqpi_amount,
-                        er.fix_other_amount = emp.fix_other_amount,
-                        er.pmi_amount = emp.pmi_amount,
-                        er.pi_amount = emp.pi_amount,
-                        er.var_other_amount = emp.var_other_amount,
-                        er.raise_pqpi_amount = emp.raise_pqpi_amount,
-                        er.new_pqpi_amount = emp.new_pqpi_amount,
-                        er.updated_by = '{$authId}',
-	                    er.updated_dttm = '{$curDateTime}'
+                $salaryUpdate = DB::update("
+                UPDATE emp_result er 
+                INNER JOIN (
+                    SELECT er.emp_result_id,
+                        emp.emp_id, er.salary_grade_id,
+                        emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.pmi_amount, emp.pi_amount, emp.var_other_amount,
+                        TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
+                        ag.salary_raise_amount AS raise_amount,
+                        0 AS raise_pqpi_amount,
+                        0 AS new_pqpi_amount
+                    FROM employee emp
+                    INNER JOIN emp_result er ON er.emp_id = emp.emp_id
+                    INNER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id
+                    WHERE emp.is_active = 1
+                    AND ag.is_active = 1
+                    AND er.period_id = '{$request->period_id}'
+                )emp ON emp.emp_result_id = er.emp_result_id
+                SET 
+                    er.new_s_amount = emp.new_s_amount,
+                    er.raise_amount = emp.raise_amount,
+                    er.pqpi_amount = emp.pqpi_amount,
+                    er.fix_other_amount = emp.fix_other_amount,
+                    er.pmi_amount = emp.pmi_amount,
+                    er.pi_amount = emp.pi_amount,
+                    er.var_other_amount = emp.var_other_amount,
+                    er.raise_pqpi_amount = emp.raise_pqpi_amount,
+                    er.new_pqpi_amount = emp.new_pqpi_amount,
+                    er.updated_by = '{$authId}',
+                    er.updated_dttm = '{$curDateTime}'
                 ");
             } catch(QueryException $qx) {
                 return response()->json(["status"=>404, "data"=>$qx->getMessage()]);
             }
         } elseif($raiseType == 2) {
             try {
-                DB::update("
+                $salaryUpdate = DB::update("
                     UPDATE emp_result er 
                     INNER JOIN (
-                        SELECT 
+                        SELECT er.emp_result_id,
                             emp.emp_id, er.salary_grade_id,
                             emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.pmi_amount, emp.pi_amount, emp.var_other_amount,
                             TO_BASE64(FROM_BASE64(emp.s_amount) + (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100))) AS new_s_amount,
@@ -108,7 +108,7 @@ class CalculateSalaryAppraisalFormController extends Controller
                         WHERE emp.is_active = 1
                         AND ag.is_active = 1
                         AND er.period_id = '{$request->period_id}'
-                    )emp
+                    )emp ON emp.emp_result_id = er.emp_result_id
                     SET 
                         er.new_s_amount = emp.new_s_amount,
                         er.raise_amount = emp.raise_amount,
@@ -129,7 +129,7 @@ class CalculateSalaryAppraisalFormController extends Controller
             return response()->json(["status"=>404, "data"=>"The function is not working in Raise Type Salary Structure Table({$raiseType})"]);
         }
 
-        return response()->json(["status"=>200, "data"=>"Calculate salary successful."]);
+        return response()->json(["status"=>200, "data"=>"Calculate salary successful ({$salaryUpdate} row)."]);
     }
 
 
