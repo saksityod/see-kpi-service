@@ -141,7 +141,7 @@ class StageController extends Controller
                 WHERE stage_id IN ({$stage})
                  AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
                 AND (find_in_set('{$request->appraisal_type_id}', appraisal_type_id) OR appraisal_type_id = 'all')
-                AND {$request->flag} = 1
+                AND appraisal_flag = 1
                 AND find_in_set('{$request->appraisal_group_id}', assessor_see)
                 ORDER BY stage_id
             ");

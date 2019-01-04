@@ -408,7 +408,7 @@ class AppraisalService
 
                                   foreach ($appraisalItem->formula_cds_id as $c) {
                                       $c = explode(":",str_replace('cds', '', $c));
-                                      DB::insert('insert into kpi_cds_mapping (item_id, cds_id, function_type,created_by,created_dttm) values (?, ?, ?, ?)', [$item_id, $c[1], $c[0], $created_by, $now]);
+                                      DB::insert('insert into kpi_cds_mapping (item_id, cds_id, function_type,created_by,created_dttm) values (?, ?, ?, ?, ?)', [$item_id, $c[1], $c[0], $created_by, $now]);
                                   }
                                 }
                             }
