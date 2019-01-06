@@ -67,8 +67,6 @@ class ImportJobCodeController extends Controller
 		return response()->json($result);
     }
 
-    
-    
     public function export(Request $request)
 	{
 		$qinput = array();
@@ -118,10 +116,10 @@ class ImportJobCodeController extends Controller
 			foreach ($items as $i) {
 				$validator = Validator::make($i->toArray(), [
 					'job_code' => 'required|max:10',
-                    'knowledge_point' => 'required|integer',
-                    'capability_point' => 'required|integer',
-                    'total_point' => 'required|integer',
-                    'baht_per_point' => 'required|integer',					
+					'knowledge_point' => 'integer|required|max:32767|min:0',
+					'capability_point' => 'integer|required|max:32767|min:0',
+					'total_point' => 'integer|required|max:32767|min:0',
+					'baht_per_point' => 'integer|required|max:32767|min:0',				
 				]);
 
 				if ($validator->fails()) {
@@ -163,7 +161,6 @@ class ImportJobCodeController extends Controller
 				}
 			}
 		}
-		// License Verification //
 		return response()->json(['status' => 200, 'errors' => $errors, "emp"=>$newEmp]);
     }
 
@@ -180,7 +177,7 @@ class ImportJobCodeController extends Controller
 
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
-				return response()->json(['status' => 400, 'data' => 'Cannot delete because this job_code is in use.']);
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this job code is in use.']);
 			} else {
 				return response()->json($e->errorInfo);
 			}
@@ -199,10 +196,10 @@ class ImportJobCodeController extends Controller
 		}
 
         $validator = Validator::make($request->all(), [
-            'knowledge_point' => 'required|integer',
-            'capability_point' => 'required|integer',
-            'total_point' => 'required|integer',
-            'baht_per_point' => 'required|integer',	
+			'knowledge_point' => 'integer|required|max:32767|min:0',
+			'capability_point' => 'integer|required|max:32767|min:0',
+			'total_point' => 'integer|required|max:32767|min:0',
+			'baht_per_point' => 'integer|required|max:32767|min:0',
         ]);
 
         if ($validator->fails()) {
