@@ -194,10 +194,10 @@ class AppraisalPeriodController extends Controller
 			'start_year' => 'required|integer',
 			'appraisal_frequency_id' => 'required|integer',
 			'appraisal_period_desc' => 'required|max:250',
-			'bonus_frequency_id' => 'required|integer',
-			'bonus_period_desc' => 'required|max:250',
-			'salary_raise_frequency_id' => 'required|integer',
-			'salary_period_desc' => 'required|max:250'				
+			'bonus_frequency_id' => 'integer',
+			'bonus_period_desc' => 'max:250',
+			'salary_raise_frequency_id' => 'integer',
+			'salary_period_desc' => 'max:250'				
 		]);
 
 		if ($validator->fails()) {
