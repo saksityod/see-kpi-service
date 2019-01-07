@@ -35,6 +35,7 @@ class AppraisalFormController extends Controller
 			'appraisal_form_name' => 'required|max:100|unique:appraisal_form,appraisal_form_name',
 			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
+			'is_salary' => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {
@@ -74,6 +75,7 @@ class AppraisalFormController extends Controller
 			'appraisal_form_name' => 'required|max:100|unique:appraisal_form,appraisal_form_name,' . $form_id . ',appraisal_form_id',
 			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
+			'is_salary' => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {
