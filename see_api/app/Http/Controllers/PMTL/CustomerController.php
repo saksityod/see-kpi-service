@@ -105,29 +105,33 @@ class CustomerController extends Controller
 
 	public function import(Request $request)
 	{
+		$errors = array();
 		if(empty($_FILES)) {
-			return response()->json(['status' => 404, 'errors' => 'File empty']);
+			$errors[] = ['errors' => ['validate' => 'File empty']];
+			return response()->json(['status' => 404, 'errors' => $errors]);
 		}
 
 		$mimes = array('application/vnd.ms-excel','text/csv');
 		if(!in_array($_FILES[0]['type'],$mimes)) { //ต้องเป็น CSV เท่านั้น
-			return response()->json(['status' => 404, 'errors' => 'Sorry, mime type not allowed']);
+			$errors[] = ['errors' => ['validate' => 'Sorry, mime type not allowed']];
+			return response()->json(['status' => 404, 'errors' => $errors]);
 		}
 
 		$csv_file = $_FILES[0]['tmp_name'];
 
 		if (!is_file($csv_file)) {
-			return response()->json(['status' => 404, 'errors' => 'File not found']);
+			$errors[] = ['errors' => ['validate' => 'File not found']];
+			return response()->json(['status' => 404, 'errors' => $errors]);
 		}
 
 		if (!mb_check_encoding(file_get_contents($csv_file), 'UTF-8')) { //ใน CSV ต้องเป็ฯ Type UTF-8 เท่านั้น
-			return response()->json(['status' => 404, 'errors' => 'Template Errors, Please set CSV file is type UTF8']);
+			$errors[] = ['errors' => ['validate' => 'Template Errors, Please set CSV file is type UTF8']];
+			return response()->json(['status' => 404, 'errors' => $errors]);
 		}
 
 		if (($handle = fopen( $csv_file, "r")) !== FALSE) {
 			set_time_limit(0);
 			ini_set('memory_limit', '5012M');
-			$errors = array();
 			$errors_validator = array();
 
 			$di = 0;
