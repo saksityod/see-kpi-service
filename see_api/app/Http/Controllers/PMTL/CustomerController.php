@@ -109,10 +109,19 @@ class CustomerController extends Controller
 			return response()->json(['status' => 404, 'errors' => 'File empty']);
 		}
 
+		$mimes = array('application/vnd.ms-excel','text/csv');
+		if(!in_array($_FILES[0]['type'],$mimes)) { //ต้องเป็น CSV เท่านั้น
+			return response()->json(['status' => 404, 'errors' => 'Sorry, mime type not allowed']);
+		}
+
 		$csv_file = $_FILES[0]['tmp_name'];
 
 		if (!is_file($csv_file)) {
 			return response()->json(['status' => 404, 'errors' => 'File not found']);
+		}
+
+		if (!mb_check_encoding(file_get_contents($csv_file), 'UTF-8')) { //ใน CSV ต้องเป็ฯ Type UTF-8 เท่านั้น
+			return response()->json(['status' => 404, 'errors' => 'Template Errors, Please set CSV file is type UTF8']);
 		}
 
 		if (($handle = fopen( $csv_file, "r")) !== FALSE) {
@@ -204,25 +213,19 @@ class CustomerController extends Controller
 								$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
 							}
 
-	 						$cp_customer_id = DB::table('customer_position')->select("customer_position_id")->where('customer_id', $cus[0]->customer_id)->first();
+	 						DB::table('customer_position')->where('customer_id', $cus[0]->customer_id)->delete();
 
 	 						if(!empty($pc)) {
 	 							foreach ($pc as $key => $value) {
 	 								if(!empty($value)) {
-	 									if(empty($cp_customer_id)) {
-	 										$cp = new CustomerPosition;
-			 								$cp->customer_id = $cus[0]->customer_id;
-			 								$cp->position_code = $this->qdc_service->trim_text($value);
-	 									} else {
-	 										$cp = CustomerPosition::find($cp_customer_id->customer_position_id);
-			 								$cp->position_code = $this->qdc_service->trim_text($value);
+	 									$cp = new CustomerPosition;
+	 									$cp->customer_id = $cus[0]->customer_id;
+	 									$cp->position_code = $this->qdc_service->trim_text($value);
+	 									try {
+	 										$cp->save();
+	 									} catch (Exception $e) {
+	 										$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
 	 									}
-
-		 								try {
-		 									$cp->save();
-		 								} catch (Exception $e) {
-		 									$errors[] = ['customer_code' => $i['customer_code'], 'errors' => ['validate' => substr($e,0,254)]];
-		 								}
 	 								}
 	 							}
 	 						}
