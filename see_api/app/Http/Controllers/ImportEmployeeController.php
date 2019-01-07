@@ -429,7 +429,8 @@ class ImportEmployeeController extends Controller
 			$item->chief_emp_code = $request->chief_emp_code;
 			$item->level_id = $request->level_id;
 			$item->step = $request->step;
-			$item->s_amount = $item->s_amount;
+			// $item->s_amount = $item->s_amount;
+			$item->s_amount = $request->s_amount;
 			$item->email = $request->email;
 			$item->emp_type = $request->emp_type;
 			$item->dotline_code = $request->dotline_code;
