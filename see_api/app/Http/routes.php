@@ -10,16 +10,16 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-// if (isset($_SERVER['HTTP_ORIGIN'])) {
-// 	header('Access-Control-Allow-Credentials: true');
-// 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
-// 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-// 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
-// 	header('Keep-Alive: off');
-// }
-// Route::get('/', function () {
-    // return Response::json(array('hello' => 'hehe'));
-// });
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+	header('Access-Control-Allow-Credentials: true');
+	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
+	header('Keep-Alive: off');
+}
+Route::get('/', function () {
+    return Response::json(array('hello' => 'hehe'));
+});
 
 //Route::resource('authenticate', 'AuthenticateController', ['only' => ['index']]);
 Route::group(['middleware' => 'cors'], function()
@@ -531,6 +531,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('bonus/advance_search/year', 'Bonus\AdvanceSearchController@YearList');
 	Route::get('bonus/advance_search/period', 'Bonus\AdvanceSearchController@PeriodList');
 	Route::get('bonus/advance_search/form', 'Bonus\AdvanceSearchController@FormList');
+	Route::get('bonus/advance_search/form_hr', 'Bonus\AdvanceSearchController@FormListhr');
+
 	Route::get('bonus/advance_search/individual_level', 'Bonus\AdvanceSearchController@IndividualLevelList');
 	Route::get('bonus/advance_search/organization_level', 'Bonus\AdvanceSearchController@OrganizationLevelList');
 	Route::get('bonus/advance_search/organization', 'Bonus\AdvanceSearchController@OrganizationList');
