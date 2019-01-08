@@ -457,6 +457,17 @@ class AdvanceSearchController extends Controller
         return response()->json($years);
     }
 
+    public function YearSalaryList(Request $request)
+    {
+        $years = DB::select("
+            SELECT DISTINCT appraisal_year appraisal_year_id,
+            appraisal_year
+            from appraisal_period
+            LEFT OUTER JOIN system_config on system_config.current_appraisal_year = appraisal_period.appraisal_year
+            where is_raise = 1
+        ");
+        return response()->json($years);
+    }
 
     public function PeriodList(Request $request)
     {
@@ -467,6 +478,14 @@ class AdvanceSearchController extends Controller
         return response()->json($periods);
     }
 
+    public function PeriodSalaryList(Request $request)
+    {
+        $periods = DB::table("appraisal_period")->select('period_id', 'appraisal_period_desc')
+            ->where('is_raise', 1)
+            ->where('appraisal_year', $request->appraisal_year)
+            ->get();
+        return response()->json($periods);
+    }
 
     public function FormList(Request $request)
     {
@@ -481,6 +500,15 @@ class AdvanceSearchController extends Controller
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
             ->where('is_active', 1)
             ->where('is_bonus', 1)
+            ->where('is_raise', 1)
+            ->get();
+        return response()->json($forms);
+    }
+
+    public function FormSalaryList(Request $request)
+    {
+        $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
+            ->where('is_active', 1)
             ->where('is_raise', 1)
             ->get();
         return response()->json($forms);
