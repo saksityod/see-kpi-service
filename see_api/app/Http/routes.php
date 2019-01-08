@@ -524,7 +524,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('judgement', 'Salary\JudgementController@store');
 	// Salary -> Calculate Salary AppraisalForm //
 	Route::post('salary_raise/form', 'Salary\CalculateSalaryFormController@SalaryCalculator');
-
+	// Salary -> Import PQIP
+	Route::post('import_pqpi/export','Salary\ImportPQPIController@export');
 
 	// Bonus //
 	// Bonus --> Advance Search //
