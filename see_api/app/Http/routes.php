@@ -526,6 +526,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('salary_raise/form', 'Salary\CalculateSalaryFormController@SalaryCalculator');
 	// Salary -> Import PQIP
 	Route::post('import_pqpi/export','Salary\ImportPQPIController@export');
+	// Salary -> Import Salary
+	Route::post('import_salary/export','Salary\ImportSalaryController@export');
 
 	// Bonus //
 	// Bonus --> Advance Search //
