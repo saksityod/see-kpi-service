@@ -56,7 +56,7 @@ class ImportEmployeeController extends Controller
 					'has_second_line' => 'max:255',
 					'pqpi_amount' => 'max:100',
 					'fix_other_amount' => 'max:100',
-					'pmi_amount' => 'max:100',
+					'mpi_amount' => 'max:100',
 					'pi_amount' => 'max:100',
 					'var_other_amount' => 'max:100'
 				]);
@@ -89,7 +89,7 @@ class ImportEmployeeController extends Controller
 						$emp->is_active = 1;
 						$emp->pqpi_amount = base64_encode($i->pqpi_amount);
 						$emp->fix_other_amount = base64_encode($i->fix_other_amount);
-						$emp->pmi_amount = base64_encode($i->pmi_amount);
+						$emp->mpi_amount = base64_encode($i->mpi_amount);
 						$emp->pi_amount = base64_encode($i->pi_amount);
 						$emp->var_other_amount = base64_encode($i->var_other_amount);
 						$emp->level_id = $i->level_id;
@@ -118,7 +118,7 @@ class ImportEmployeeController extends Controller
 						$emp->is_active = 1;
 						$emp->pqpi_amount = base64_encode($i->pqpi_amount);
 						$emp->fix_other_amount = base64_encode($i->fix_other_amount);
-						$emp->pmi_amount = base64_encode($i->pmi_amount);
+						$emp->mpi_amount = base64_encode($i->mpi_amount);
 						$emp->pi_amount = base64_encode($i->pi_amount);
 						$emp->var_other_amount = base64_encode($i->var_other_amount);
 						$emp->level_id = $i->level_id;
@@ -207,7 +207,7 @@ class ImportEmployeeController extends Controller
 			, em.has_second_line
 			, from_base64(em.pqpi_amount) as pqpi_amount
 			, from_base64(em.fix_other_amount) as fix_other_amount
-			, from_base64(em.pmi_amount) as pmi_amount
+			, from_base64(em.mpi_amount) as mpi_amount
 			, from_base64(em.pi_amount) as pi_amount
 			, from_base64(em.var_other_amount) as var_other_amount
 			, em.level_id
@@ -239,7 +239,7 @@ class ImportEmployeeController extends Controller
 		$x = Excel::create($filename, function($excel) use($items, $level, $filename, $sheet_level, $request) {
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 
-				$sheet->appendRow(array('Employee Code', 'Employee Name', 'Working Start Date (YYYY-MM-DD)', 'Probation End Date (YYYY-MM-DD)', 'Acting End Date (YYYY-MM-DD)', 'Organization Code', 'Position Code','Chief Employee Code', 'Salary Amount', 'Email', 'Employee Type', 'Dotline Code', 'Has Second Line', 'PQPI Amount', 'Fix Other Amount', 'PMI Amount', 'PI Amount', 'Var Other Amount', 'Level ID'));
+				$sheet->appendRow(array('Employee Code', 'Employee Name', 'Working Start Date (YYYY-MM-DD)', 'Probation End Date (YYYY-MM-DD)', 'Acting End Date (YYYY-MM-DD)', 'Organization Code', 'Position Code','Chief Employee Code', 'Salary Amount', 'Email', 'Employee Type', 'Dotline Code', 'Has Second Line', 'PQPI Amount', 'Fix Other Amount', 'MPI Amount', 'PI Amount', 'Var Other Amount', 'Level ID'));
 
 				foreach ($items as $i) {
 					$sheet->appendRow(array(
@@ -258,7 +258,7 @@ class ImportEmployeeController extends Controller
 						$i->has_second_line,
 						$i->pqpi_amount,
 						$i->fix_other_amount,
-						$i->pmi_amount,
+						$i->mpi_amount,
 						$i->pi_amount,
 						$i->var_other_amount,
 						$i->level_id,
@@ -361,7 +361,7 @@ class ImportEmployeeController extends Controller
 			$item = Employee::findOrFail($emp_id);
 			$item->pqpi_amount = base64_decode($item->pqpi_amount);
 			$item->fix_other_amount = base64_decode($item->fix_other_amount);
-			$item->pmi_amount = base64_decode($item->pmi_amount);
+			$item->mpi_amount = base64_decode($item->mpi_amount);
 			$item->pi_amount = base64_decode($item->pi_amount);
 			$item->var_other_amount = base64_decode($item->var_other_amount);
 
@@ -395,7 +395,7 @@ class ImportEmployeeController extends Controller
 						'level_id' => 'integer',
 						'pqpi_amount' => 'max:100',
 						'fix_other_amount' => 'max:100',
-						'pmi_amount' => 'max:100',
+						'mpi_amount' => 'max:100',
 						'pi_amount' => 'max:100',
 						'var_other_amount' => 'max:100',
 						//'s_amount' => 'required|numeric|digits_between:1,10',
@@ -438,7 +438,7 @@ class ImportEmployeeController extends Controller
 			$item->is_active = $request->is_active;
 			$item->pqpi_amount = base64_encode($request->pqpi_amount);
 			$item->fix_other_amount = base64_encode($request->fix_other_amount);
-			$item->pmi_amount = base64_encode($request->pmi_amount);
+			$item->mpi_amount = base64_encode($request->mpi_amount);
 			$item->pi_amount = base64_encode($request->pi_amount);
 			$item->var_other_amount = base64_encode($request->var_other_amount);
 			$item->updated_by = Auth::id();
