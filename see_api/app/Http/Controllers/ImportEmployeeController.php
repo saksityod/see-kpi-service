@@ -251,7 +251,7 @@ class ImportEmployeeController extends Controller
 						$i->org_code,
 						$i->position_code,
 						$i->chief_emp_code,
-						"", // $i->s_amount,
+						$i->s_amount,
 						$i->email,
 						$i->emp_type,
 						$i->dotline_code,
@@ -359,11 +359,12 @@ class ImportEmployeeController extends Controller
 	{
 		try {
 			$item = Employee::findOrFail($emp_id);
-			$item->pqpi_amount = base64_decode($item->pqpi_amount);
-			$item->fix_other_amount = base64_decode($item->fix_other_amount);
-			$item->mpi_amount = base64_decode($item->mpi_amount);
-			$item->pi_amount = base64_decode($item->pi_amount);
-			$item->var_other_amount = base64_decode($item->var_other_amount);
+			$item->s_amount = ($item->s_amount == null) ? 0.00 : base64_decode($item->s_amount);
+			$item->pqpi_amount = ($item->pqpi_amount == null) ? 0.00 : base64_decode($item->pqpi_amount);
+			$item->fix_other_amount = ($item->fix_other_amount == null) ? 0.00 : base64_decode($item->fix_other_amount);
+			$item->mpi_amount = ($item->mpi_amount == null) ? 0.00 : base64_decode($item->mpi_amount);
+			$item->pi_amount = ($item->pi_amount == null) ? 0.00 : base64_decode($item->pi_amount);
+			$item->var_other_amount = ($item->var_other_amount == null) ? 0.00 : base64_decode($item->var_other_amount);
 
 			$position= Position::find($item->position_id);
 			empty($position) ? $position_name = null : $position_name = $position->position_name;
@@ -398,7 +399,6 @@ class ImportEmployeeController extends Controller
 						'mpi_amount' => 'max:100',
 						'pi_amount' => 'max:100',
 						'var_other_amount' => 'max:100',
-						//'s_amount' => 'required|numeric|digits_between:1,10',
 						'email' => 'required|email|max:100',
 						'emp_type' => 'max:50',
 						'dotline_code' => 'max:255',
@@ -429,18 +429,19 @@ class ImportEmployeeController extends Controller
 			$item->chief_emp_code = $request->chief_emp_code;
 			$item->level_id = $request->level_id;
 			$item->step = $request->step;
-			// $item->s_amount = $item->s_amount;
-			$item->s_amount = $request->s_amount;
 			$item->email = $request->email;
 			$item->emp_type = $request->emp_type;
 			$item->dotline_code = $request->dotline_code;
 			$item->has_second_line = $request->has_second_line;
 			$item->is_active = $request->is_active;
+
+			$item->s_amount = base64_encode($request->s_amount);
 			$item->pqpi_amount = base64_encode($request->pqpi_amount);
 			$item->fix_other_amount = base64_encode($request->fix_other_amount);
 			$item->mpi_amount = base64_encode($request->mpi_amount);
 			$item->pi_amount = base64_encode($request->pi_amount);
 			$item->var_other_amount = base64_encode($request->var_other_amount);
+
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
