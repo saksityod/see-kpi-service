@@ -64,8 +64,11 @@ class CompetencyCriteriaController extends Controller
 	public function update(Request $request, $appraisal_level_id, $structure_id)
 	{
 		// Insert appraisal_criteria if not exists //
-		$appCriteria = AppraisalCriteria::where('appraisal_level_id', $appraisal_level_id)->where('structure_id', $structure_id);
-		if ($appCriteria->count() == 0) {
+		$appCriteriaCnt = AppraisalCriteria::where('appraisal_form_id', $request->appraisal_form_id)
+			->where('appraisal_level_id', $appraisal_level_id)
+			->where('structure_id', $structure_id)
+			->count();
+		if ($appCriteriaCnt == 0) {
 			$criteria = new AppraisalCriteria();
 			$criteria->appraisal_form_id = $request->appraisal_form_id;
 			$criteria->appraisal_level_id = $appraisal_level_id;
@@ -92,11 +95,12 @@ class CompetencyCriteriaController extends Controller
 		// Insert - Update - Delete item inactive //
 		foreach ($request->set_weight as $c) {
 			if ($c['checkbox'] == 1) {
-				$competency = CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id )
-				->where('appraisal_level_id', $appraisal_level_id)
+				$competencyCnt = CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id )
+					->where('appraisal_level_id', $appraisal_level_id)
 					->where('structure_id', $c['structure_id'])
-					->where('assessor_group_id',$c['assessor_group_id']);
-				if ($competency->count() > 0) {
+					->where('assessor_group_id',$c['assessor_group_id'])
+					->count();
+				if ($competencyCnt > 0) {
 					CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id )
 						->where('appraisal_level_id',$appraisal_level_id)
 						->where('structure_id', $c['structure_id'])
@@ -116,6 +120,19 @@ class CompetencyCriteriaController extends Controller
 					$item->created_by = Auth::id();
 					$item->updated_by = Auth::id();
 					$item->save();
+				}
+
+				// insert assessor_group_structure if not existing
+				$assessorGroupStrucCnt = DB::table('assessor_group_structure')->where('appraisal_form_id', $request->appraisal_form_id)
+					->where('structure_id', $c['structure_id'])
+					->where('assessor_group_id', $c['assessor_group_id'])
+					->count();
+				if($assessorGroupStrucCnt == 0){
+					DB::table('assessor_group_structure')->insert([
+						'appraisal_form_id' => $request->appraisal_form_id, 
+						'structure_id' => $c['structure_id'],
+						'assessor_group_id' => $c['assessor_group_id']
+					]);
 				}
 			} else {
 				CompetencyCriteria::where('appraisal_form_id',$request->appraisal_form_id)
