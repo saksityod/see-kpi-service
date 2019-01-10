@@ -474,7 +474,7 @@ class DashboardController extends Controller
 
 			$chartQry = DB::select("
 				#SELECT DISTINCT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name
-				SELECT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.etl_dttm, max(air.item_result_id) item_result_id
+				SELECT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, u.is_date, air.etl_dttm, max(air.item_result_id) item_result_id
 				FROM appraisal_item_result air
 				INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
 				INNER JOIN perspective p ON p.perspective_id = ai.perspective_id
@@ -551,7 +551,7 @@ class DashboardController extends Controller
 
 			$chartQry = DB::select("
 				#SELECT DISTINCT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name
-				SELECT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.etl_dttm, max(air.item_result_id) item_result_id
+				SELECT p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name , u.is_date, air.etl_dttm, max(air.item_result_id) item_result_id
 				FROM appraisal_item_result air
 				INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
 				INNER JOIN perspective p ON p.perspective_id = ai.perspective_id
@@ -598,6 +598,7 @@ class DashboardController extends Controller
 				"perspective"=> $chartObj->perspective_name,
 				"item"=> $chartObj->item_name,
 				"uom"=> $chartObj->uom_name,
+				"is_date"=> $chartObj->is_date,
 				"item_id" => $chartObj->item_id,
 				"etl_dttm" => $chartObj->etl_dttm
 			);
@@ -649,7 +650,7 @@ class DashboardController extends Controller
 
 			if ($request->appraisal_type_id == 2) { //emp
 				$dataListQry = DB::select("
-					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, e.emp_id org_id, e.emp_code org_code, e.emp_name org_name, air.etl_dttm,
+					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, u.is_date, e.emp_id org_id, e.emp_code org_code, e.emp_name org_name, air.etl_dttm,
 						air.target_value, air.forecast_value, air.actual_value,
 						air.percent_achievement percent_target,
 						air.percent_forecast percent_forecast
@@ -673,7 +674,7 @@ class DashboardController extends Controller
 				", array($request->appraisal_type_id, $request->year_id, $request->period_id, $emp->emp_code, $emp->emp_code, $chartObj->item_id));
 			} else { //org
 				$dataListQry = DB::select("
-					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, org.org_code, o.org_name, air.etl_dttm,
+					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, u.is_date, air.org_id, org.org_code, o.org_name, air.etl_dttm,
 						air.target_value, air.forecast_value, air.actual_value,
 						air.percent_achievement percent_target,
 						air.percent_forecast percent_forecast
@@ -2867,7 +2868,7 @@ class DashboardController extends Controller
 			foreach ($org_list as $o) {
 				$qinput = array();
 				$query = "
-					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
+					SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, u.is_date, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
 						air.target_value, air.forecast_value, air.actual_value,
 						#ifnull(if(air.target_value = 0, 0, (air.actual_value/air.target_value)*100), 0) percent_target,
 						air.percent_achievement percent_target,
@@ -2930,6 +2931,7 @@ class DashboardController extends Controller
 						"perspective_name" => $i->perspective_name,
 						"item_name" => $i->item_name,
 						"uom_name" => $i->uom_name,
+						"u.is_date" => $i->is_date,
 						"rangeColor" => $colors,
 						"target"=> $i->target_value,
 						"forecast" => $i->forecast_value,
@@ -3051,7 +3053,7 @@ class DashboardController extends Controller
 		foreach ($org_list as $o) {
 			$qinput = array();
 			$query = "
-				SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
+				SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name , u.is_date, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
 					air.target_value, air.forecast_value, air.actual_value,
 					#ifnull(if(air.target_value = 0, 0, (air.actual_value/air.target_value)*100), 0) percent_target,
 					air.percent_achievement percent_target,
@@ -3102,6 +3104,7 @@ class DashboardController extends Controller
 					"perspective_name" => $i->perspective_name,
 					"item_name" => $i->item_name,
 					"uom_name" => $i->uom_name,
+					"is_date" => $i->is_date,
 					"rangeColor" => $colors,
 					"target"=> $i->target_value,
 					"forecast" => $i->forecast_value,
@@ -3183,7 +3186,7 @@ class DashboardController extends Controller
 			if ($request->appraisal_type_id == 2) {//emp
 
 					$query = "
-							SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, o.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
+							SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name,u.is_date, air.org_id, o.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
 								air.target_value, air.forecast_value, air.actual_value,
 								#ifnull(if(air.target_value = 0, 0, (air.actual_value/air.target_value)*100), 0) percent_target,
 								air.percent_achievement percent_target,
@@ -3216,7 +3219,7 @@ class DashboardController extends Controller
 
 
 			$query = "
-				SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
+				SELECT air.item_result_id, p.perspective_id, p.perspective_name, air.item_id, air.item_name, u.uom_name,u.is_date, air.org_id, org.org_code, o.org_name, er.result_threshold_group_id, air.etl_dttm,
 					air.target_value, air.forecast_value, ifnull(air.actual_value, 0) actual_value,
 					#ifnull(if(air.target_value = 0, 0, (air.actual_value/air.target_value)*100), 0) percent_target,
 					air.percent_achievement percent_target,
@@ -3272,6 +3275,7 @@ class DashboardController extends Controller
 					"perspective_name" => $i->perspective_name,
 					"item_name" => $i->item_name,
 					"uom_name" => $i->uom_name,
+					"is_date" => $i->is_date,
 					"rangeColor" => $colors,
 					"target"=> $i->target_value,
 					"forecast" => $i->forecast_value,
