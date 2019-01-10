@@ -61,7 +61,6 @@ class AppraisalGradeController extends Controller
 
 	public function index(Request $request)
 	{
-
 		try {
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
@@ -78,6 +77,7 @@ class AppraisalGradeController extends Controller
 			FROM appraisal_grade a
 			LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
 			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
+			WHERE 1=1
 			";
 		} else if($config->raise_type == 2) {
 			$query = "
@@ -87,6 +87,7 @@ class AppraisalGradeController extends Controller
 			FROM appraisal_grade a
 			LEFT OUTER JOIN appraisal_level b on a.appraisal_level_id = b.level_id
 			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
+			WHERE 1=1
 			";
 		} else if($config->raise_type == 3) {
 			$query = "
@@ -96,11 +97,12 @@ class AppraisalGradeController extends Controller
 				FROM appraisal_grade a
 				LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
 				LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
+				WHERE 1=1
 			";
 		}
 
-		empty($request->appraisal_form_id) ?: ($query .= " WHERE a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+		empty($request->appraisal_form_id) ?: ($query .= " AND a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id in(?) " AND $qinput[] = $request->appraisal_level_id);
 
 		$qfooter = " ORDER BY a.appraisal_form_id, a.appraisal_level_id, a.begin_score";
 
