@@ -36,6 +36,7 @@ class AppraisalFormController extends Controller
 			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
 			'is_raise' => 'required|boolean',
+			'is_mpi' => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {
@@ -76,6 +77,7 @@ class AppraisalFormController extends Controller
 			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
 			'is_raise' => 'required|boolean',
+			'is_mpi' => 'required|boolean',
 		]);
 
 		if ($validator->fails()) {

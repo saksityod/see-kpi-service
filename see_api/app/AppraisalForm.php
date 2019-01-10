@@ -18,6 +18,6 @@ class AppraisalForm extends Model
 	protected $primaryKey = 'appraisal_form_id';
 	public $incrementing = true;
 
-	protected $fillable = array('appraisal_form_name', 'is_bonus', 'is_active', 'is_raise');
+	protected $fillable = array('appraisal_form_name', 'is_bonus', 'is_active', 'is_raise', 'is_mpi');
 	protected $hidden = ['created_by', 'update_by', 'created_dttm', 'update_dttm'];
 }
