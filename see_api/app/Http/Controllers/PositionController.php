@@ -188,18 +188,14 @@ class PositionController extends Controller
 	{
 		$qinput = array();
 		$query = "
-		SELECT
-			position_id, position_code , position_name , job_code
-		FROM position
-		WHERE 1 = 1 
-			AND is_active = 1 
+			SELECT
+				position_id, position_code , position_name , job_code
+			FROM position
+			WHERE is_active = 1
+			AND position_name LIKE '%{$request->position_name}%'
+			Order by position_code
 		";
-		empty($request->position_code) ?: ($query .= " AND position_code = ? " AND $qinput[] = $request->position_code);
-		empty($request->position_name) ?: ($query .= " And position_name = ? " AND $qinput[] = $request->position_name);
-		empty($request->job_code) ?: ($query .= " And job_code = ? " AND $qinput[] = $request->job_code);
-		$qfooter = " Order by position_code ";
-
-		$items = DB::select($query . $qfooter, $qinput);
+		$items = DB::select($query);
 		
 		$filename = "appraisal_position_template";  
 		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
