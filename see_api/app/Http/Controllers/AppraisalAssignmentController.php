@@ -1510,7 +1510,7 @@ class AppraisalAssignmentController extends Controller
 	    		}
 	    	}
 
-	    	$items = DB::select($query_unassign . " order by period_id,emp_code,org_code asc ", $qinput);
+	    	$items = DB::select($query_unassign . " order by org_code asc,emp_code asc", $qinput);
 
 	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id);
 
