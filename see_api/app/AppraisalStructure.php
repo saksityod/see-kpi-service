@@ -20,6 +20,6 @@ class AppraisalStructure extends Model
 	//public $timestamps = false;
 	//protected $guarded = array();
 	
-	protected $fillable = array('seq_no','structure_name','nof_target_score','form_id','is_unlimited_reward','is_unlimited_deduction','is_value_get_zero','is_active', 'is_no_raise_value');
+	protected $fillable = array('seq_no','structure_name','nof_target_score','form_id','is_unlimited_reward','is_unlimited_deduction','is_value_get_zero','is_active', 'is_no_raise_value' , 'is_self_assign');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }

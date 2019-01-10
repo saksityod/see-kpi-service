@@ -73,6 +73,7 @@ class AppraisalStructureController extends Controller
 			'is_unlimited_reward' => 'boolean',
 			'is_unlimited_deduction' => 'boolean',
 			'is_value_get_zero' => 'boolean',
+			'is_self_assign' => 'required|boolean',
 			'is_active' => 'required|boolean',
 			'is_no_raise_value' => 'boolean'
 		]);
@@ -149,6 +150,7 @@ class AppraisalStructureController extends Controller
 			'form_id' => 'required|integer',
 			'is_unlimited_reward' => 'boolean',
 			'is_unlimited_deduction' => 'boolean',
+			'is_self_assign' => 'required|boolean',
 			'is_active' => 'required|boolean',
 			'is_no_raise_value' => 'boolean'
 		]);
