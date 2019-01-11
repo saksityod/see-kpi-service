@@ -10,13 +10,13 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-	header('Access-Control-Allow-Credentials: true');
-	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
-	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
-	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
-	header('Keep-Alive: off');
-}
+// if (isset($_SERVER['HTTP_ORIGIN'])) {
+// 	header('Access-Control-Allow-Credentials: true');
+// 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+// 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
+// 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
+// 	header('Keep-Alive: off');
+// }
 Route::get('/', function () {
     return Response::json(array('hello' => 'hehe'));
 });
@@ -550,7 +550,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@Index');
 	Route::patch('bonus/bonus_appraisal', 'Bonus\BonusAppraisalController@SavedAndCalculation');
 	// Bonus --> Emp Result Judgement //
-	Route::get('emp/adjustment', 'Bonus\EmpResultJudgementController@index4');
+	Route::get('emp/adjustment', 'Bonus\EmpResultJudgementController@index5');
 	Route::post('emp/adjustment', 'Bonus\EmpResultJudgementController@store');
 	Route::get('emp/adjustment/to_action', 'Bonus\AdvanceSearchController@to_action');
 	// Bonus --> Bonus Adjustment //
