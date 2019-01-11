@@ -463,7 +463,7 @@ ORDER BY 2 asc
 				</textElement>
 				<textFieldExpression><![CDATA[$V{Group2_COUNT}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="334" y="0" width="116" height="25" uuid="4432c9bb-27e2-4b0d-8c1f-3a6d3d409e5d"/>
 				<box>
 					<pen lineWidth="0.5"/>

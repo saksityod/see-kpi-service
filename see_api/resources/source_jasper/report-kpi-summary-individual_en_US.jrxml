@@ -800,7 +800,7 @@ ACHIEVE]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="80">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.0000" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="80" uuid="47bc30fb-f979-48b2-8537-720eae2400a7"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -852,7 +852,7 @@ ACHIEVE]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="80">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.0000" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="80" uuid="25930cd0-2742-4229-93a8-5070a92b06c8"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -878,7 +878,7 @@ ACHIEVE]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="80">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="55" height="80" uuid="54983280-750a-412b-b918-2edad779e16e"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -904,7 +904,7 @@ WEIGHT]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="80">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="60" height="80" uuid="c979754b-8195-48ca-8ac6-063df23c27e2"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -930,7 +930,7 @@ SCORE]]></text>
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="80">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="60" height="80" uuid="2813d6ce-e1f9-4779-a494-c69dbf14d0a0"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -1234,7 +1234,7 @@ SCORE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="220" y="0" width="70" height="80" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="451d1086-cc89-4f20-a16b-8c7f738dc9f7"/>
 				</reportElement>
@@ -1260,7 +1260,7 @@ SCORE]]></text>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="350" y="0" width="73" height="80" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9fcbc774-04b4-4bc6-a6db-b707e819b54b"/>
 				</reportElement>

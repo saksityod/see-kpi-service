@@ -654,7 +654,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.0000" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="81" uuid="a4268c82-fa59-42da-8493-03e7feb80c50"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -706,7 +706,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.0000" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="81" uuid="54949f85-ef40-492e-bfe0-da82c1d6c7af"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -732,7 +732,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="60" height="81" uuid="13dafbdd-dc45-489e-a3a9-b33e1f4a0afa"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -758,7 +758,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="51" height="81" uuid="ae0f5fc9-9f3e-44b1-ac03-f81631ea9aaa"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -784,7 +784,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField isBlankWhenNull="true">
+								<textField pattern="#,##0.00" isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="81" uuid="05e574ce-836b-4401-81e1-5efdceaa908c"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
@@ -1012,7 +1012,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="230" y="0" width="70" height="80" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="451d1086-cc89-4f20-a16b-8c7f738dc9f7"/>
 				</reportElement>
@@ -1037,7 +1037,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="360" y="0" width="70" height="80" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9fcbc774-04b4-4bc6-a6db-b707e819b54b"/>
 				</reportElement>

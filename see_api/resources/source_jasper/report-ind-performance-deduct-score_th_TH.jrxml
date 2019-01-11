@@ -375,7 +375,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_value}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="true">
+			<textField pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement x="420" y="0" width="65" height="25" uuid="c9883f0b-6722-4592-8e69-45366e2f7123"/>
 				<box>
 					<pen lineWidth="0.5"/>

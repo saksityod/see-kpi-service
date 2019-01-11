@@ -356,7 +356,7 @@ ORDER BY aps.structure_id ASC
 	</group>
 	<detail>
 		<band height="20" splitType="Stretch">
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="350" y="0" width="90" height="20" uuid="21ba68c0-105f-4c28-ae4e-45897acf5057"/>
 				<box>
 					<pen lineWidth="0.5"/>
@@ -378,7 +378,7 @@ ORDER BY aps.structure_id ASC
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight_percent}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.0000" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="560" y="0" width="82" height="20" uuid="fde2c6a9-006a-4f2c-a27d-18614507b682"/>
 				<box>
 					<pen lineWidth="0.5"/>
