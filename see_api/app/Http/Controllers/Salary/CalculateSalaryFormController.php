@@ -58,11 +58,11 @@ class CalculateSalaryFormController extends Controller
         if ($raiseType == 1) {
             try{
                 $salaryUpdate = DB::update("
-                UPDATE emp_result er 
+                UPDATE emp_result er
                 INNER JOIN (
                     SELECT er.emp_result_id,
                         emp.emp_id, er.salary_grade_id,
-                        emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.pmi_amount, emp.pi_amount, emp.var_other_amount,
+                        emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
                         TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
                         ag.salary_raise_amount AS raise_amount,
                         0 AS raise_pqpi_amount,
@@ -79,7 +79,7 @@ class CalculateSalaryFormController extends Controller
                     er.raise_amount = emp.raise_amount,
                     er.pqpi_amount = emp.pqpi_amount,
                     er.fix_other_amount = emp.fix_other_amount,
-                    er.pmi_amount = emp.pmi_amount,
+                    er.mpi_amount = emp.mpi_amount,
                     er.pi_amount = emp.pi_amount,
                     er.var_other_amount = emp.var_other_amount,
                     er.raise_pqpi_amount = emp.raise_pqpi_amount,
@@ -97,7 +97,7 @@ class CalculateSalaryFormController extends Controller
                     INNER JOIN (
                         SELECT er.emp_result_id,
                             emp.emp_id, er.salary_grade_id,
-                            emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.pmi_amount, emp.pi_amount, emp.var_other_amount,
+                            emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
                             TO_BASE64(FROM_BASE64(emp.s_amount) + (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100))) AS new_s_amount,
                             (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100)) AS raise_amount,
                             0 AS raise_pqpi_amount,
@@ -114,7 +114,7 @@ class CalculateSalaryFormController extends Controller
                         er.raise_amount = emp.raise_amount,
                         er.pqpi_amount = emp.pqpi_amount,
                         er.fix_other_amount = emp.fix_other_amount,
-                        er.pmi_amount = emp.pmi_amount,
+                        er.mpi_amount = emp.mpi_amount,
                         er.pi_amount = emp.pi_amount,
                         er.var_other_amount = emp.var_other_amount,
                         er.raise_pqpi_amount = emp.raise_pqpi_amount,
@@ -145,7 +145,7 @@ class CalculateSalaryFormController extends Controller
         $curDateTime = date('Y-m-d H:i:s');
         $gradeResult = array();
 
-        $appraisalStage = AppraisalStage::where('salary_calculation_flag', 1)->first();
+        $appraisalStage = AppraisalStage::where('grade_calculation_flag', 1)->first();
 
         try {
             $gradeEmp = DB::update("
