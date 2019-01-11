@@ -2660,8 +2660,26 @@ class AppraisalAssignmentController extends Controller
 						$position_id = null;
 						$emp_id = null;
 					}
-
-					$emp_result = new EmpResult;
+					
+					// เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
+					$job_code_data = DB::select("
+					SELECT
+						emp.emp_id
+						, pos.position_code
+						, CASE WHEN app.is_raise = 1 THEN job.knowledge_point ELSE 0 END AS knowledge_point
+						, CASE WHEN app.is_raise = 1 THEN job.capability_point ELSE 0 END AS capability_point
+						, CASE WHEN app.is_raise = 1 THEN job.total_point ELSE 0 END AS total_point
+						, CASE WHEN app.is_raise = 1 THEN job.baht_per_point ELSE 0 END AS baht_per_point
+					FROM
+						employee emp
+						INNER JOIN position pos ON emp.position_id = pos.position_id
+						INNER JOIN job_code job ON pos.job_code = job.job_code
+						CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = 12 ) app 
+					WHERE
+						emp.emp_id = ".$emp_id."
+					");
+					
+					$emp_result = new EmpResult; 
 					// $emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
 					// $emp_result->period_id = $period_id;
 					// $emp_result->emp_code = $e['emp_code'];
@@ -2683,7 +2701,7 @@ class AppraisalAssignmentController extends Controller
 					// $emp_result->created_by = Auth::id();
 					// $emp_result->updated_by = Auth::id();
 					// $emp_result->save();
-
+					
 					$emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
 					$emp_result->appraisal_form_id = $request->head_params['appraisal_form_id'];
 					$emp_result->period_id = $period_id;
@@ -2700,6 +2718,10 @@ class AppraisalAssignmentController extends Controller
 					$emp_result->raise_amount = 0;
 					$emp_result->new_s_amount = 0;
 					$emp_result->status = $stage->status;
+					$emp_result->knowledge_point = $job_code_data[0]->knowledge_point;
+					$emp_result->capability_point = $job_code_data[0]->capability_point;
+					$emp_result->total_point = $job_code_data[0]->total_point;
+					$emp_result->baht_per_point = $job_code_data[0]->baht_per_point;
 					$emp_result->stage_id = $stage->stage_id;
 					$emp_result->created_by = Auth::id();
 					$emp_result->updated_by = Auth::id();

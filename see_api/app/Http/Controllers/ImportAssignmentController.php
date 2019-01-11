@@ -1108,6 +1108,25 @@ class ImportAssignmentController extends Controller
 
               //-- Checking if record exists in emp_result.
               if (empty($empResultExist)) {
+
+              // เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
+              $job_code_data = DB::select("
+              SELECT
+                emp.emp_id
+                , pos.position_code
+                , CASE WHEN app.is_raise = 1 THEN job.knowledge_point ELSE 0 END AS knowledge_point
+                , CASE WHEN app.is_raise = 1 THEN job.capability_point ELSE 0 END AS capability_point
+                , CASE WHEN app.is_raise = 1 THEN job.total_point ELSE 0 END AS total_point
+                , CASE WHEN app.is_raise = 1 THEN job.baht_per_point ELSE 0 END AS baht_per_point
+              FROM
+                employee emp
+                INNER JOIN position pos ON emp.position_id = pos.position_id
+                INNER JOIN job_code job ON pos.job_code = job.job_code
+                CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = 12 ) app 
+              WHERE
+                emp.emp_id = ".$row->emp_id."
+              ");
+					
                 //---- Insert @emp_result
                 $empResult = new EmpResult;
                 $empResult->appraisal_form_id = $row->appraisal_form_id;
@@ -1124,6 +1143,10 @@ class ImportAssignmentController extends Controller
                 $empResult->new_s_amount = "0";
                 $empResult->b_rate = "0";
                 $empResult->b_amount = "0";
+                $empResult->knowledge_point = $job_code_data[0]->knowledge_point;
+                $empResult->capability_point = $job_code_data[0]->capability_point;
+                $empResult->total_point = $job_code_data[0]->total_point;
+                $empResult->baht_per_point = $job_code_data[0]->baht_per_point;
                 $empResult->stage_id = $row->stage_id;
                 $empResult->status = $row->status;
                 $empResult->created_by = Auth::id();
