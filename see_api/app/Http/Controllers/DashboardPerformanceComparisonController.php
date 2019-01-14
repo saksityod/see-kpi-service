@@ -52,6 +52,8 @@ class DashboardPerformanceComparisonController extends Controller
 
 	public function bar_chart(Request $request)
 	{
+		$Auth_emp_code = Auth::id();
+
 		try {
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
@@ -95,6 +97,17 @@ class DashboardPerformanceComparisonController extends Controller
 
 		if(($request->appraisal_type_id) == 2){
 			//Individual
+
+			$check_auth = DB::select("select emp_code , emp_id from employee 
+			where emp_id = ".$request->emp_id."");
+			
+			if($Auth_emp_code == $check_auth[0]->emp_code ){
+				$query_emp_id = "AND result.emp_id = ".$check_auth[0]->emp_id."";
+			}
+			else{
+				$query_emp_id ="";
+			}
+			
 
 			$value_old = "
 				select em.emp_id
@@ -152,6 +165,7 @@ class DashboardPerformanceComparisonController extends Controller
 					and lev.appraisal_type_id = ? -- appraisal_type_id
 					group by em.emp_id
 				)result
+				WHERE 1=1 ".$query_emp_id."
 				ORDER BY result.result_score DESC"
 			,array($request->emp_id, $request->emp_id, $request->appraisal_year, $request->level_id, $request->org_id
 			, $request->position_id, $request->appraisal_type_id, $request->appraisal_year, $request->level_id
@@ -227,6 +241,9 @@ class DashboardPerformanceComparisonController extends Controller
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
+
+		// $check_auth = DB::select("select emp_code , emp_id from employee 
+		// where emp_id = ".$request->emp_id."");
 
 		//check data in table
 		$query_check = "select count(structure_result_id) as num
