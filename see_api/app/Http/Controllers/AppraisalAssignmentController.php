@@ -2895,8 +2895,9 @@ class AppraisalAssignmentController extends Controller
 
 		$tg_id = ThresholdGroup::where('is_active',1)->first();
 		empty($tg_id) ? $tg_id = null : $tg_id = $tg_id->threshold_group_id;
-
+		
 		foreach ($request->appraisal_items as $i) {
+			
 			if ($i['select_flag'] == 1) {
 				if ($i['form_id'] == 1) {
 					$aitem = AppraisalItemResult::find($i['item_result_id']);
@@ -3070,6 +3071,7 @@ class AppraisalAssignmentController extends Controller
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
 					//$aitem->weigh_score = 0;
+					$aitem->weight_percent = $i['weight_percent'];
 					$aitem->threshold_group_id = $tg_id;
 					$aitem->updated_by = Auth::id();
 					$aitem->save();
