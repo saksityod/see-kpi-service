@@ -1612,7 +1612,7 @@ class AppraisalAssignmentController extends Controller
 		, a.no_raise_value, b.is_no_raise_value
 		from appraisal_item a 
 		".( 
-			empty($request->emp_result_id) ?
+			(empty($request->emp_result_id) && ($request->obj_stage['appraisal_type_id'] == '2')) ?
 			"
 			INNER JOIN (
 				SELECT DISTINCT aip.item_id
@@ -1647,11 +1647,7 @@ class AppraisalAssignmentController extends Controller
 		where e.is_active = 1
 		and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
-
-
-		
-
-		//return response()->json(["test" => $comma_separated]);
+	
 		$qinput[] = $request->appraisal_level_id;
 		$qinput[] = $request->org_id;
 		$qinput[] = $request->emp_result_id;
