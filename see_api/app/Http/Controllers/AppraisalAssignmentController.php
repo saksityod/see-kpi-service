@@ -1600,15 +1600,32 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
+		
 	//	$org_join = (empty($request->org_id)) ? " " : "left outer join appraisal_item_org o on a.item_id = o.item_id";
+		$comma_separated = implode(",", $request->emp_code_list);
 
 		$qinput = array();
 		$query = "
-		select a.item_id, a.item_name, uom.uom_name, uom.is_date,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
+		select DISTINCT a.item_id, a.item_name, uom.uom_name, uom.is_date,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
 		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
 		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
 		, a.no_raise_value, b.is_no_raise_value
-		from appraisal_item a
+		from appraisal_item a 
+		".( 
+			empty($request->emp_result_id) ?
+			"
+			INNER JOIN (
+				SELECT DISTINCT aip.item_id
+				FROM appraisal_item_position aip
+				WHERE aip.position_id in(
+							SELECT DISTINCT e.position_id
+							FROM employee AS e
+							WHERE FIND_IN_SET(e.emp_code,"."'" .$comma_separated."'" .")
+							and e.is_active = 1))
+				api on a.item_id = api.item_id 
+			":""
+
+		)."
 		left outer join appraisal_structure b
 		on a.structure_id = b.structure_id
 		left outer join form_type f
@@ -1630,6 +1647,11 @@ class AppraisalAssignmentController extends Controller
 		where e.is_active = 1
 		and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
+
+
+		
+
+		//return response()->json(["test" => $comma_separated]);
 		$qinput[] = $request->appraisal_level_id;
 		$qinput[] = $request->org_id;
 		$qinput[] = $request->emp_result_id;
