@@ -478,6 +478,15 @@ class AdvanceSearchController extends Controller
         return response()->json($periods);
     }
 
+      public function PeriodListhr(Request $request)
+    {
+        $periods = DB::table("appraisal_period")->select('period_id', 'appraisal_period_desc')
+            ->where('is_raise', 1)
+            ->where('appraisal_year', $request->appraisal_year)
+            ->get();
+        return response()->json($periods);
+    }
+
     public function PeriodSalaryList(Request $request)
     {
         $periods = DB::table("appraisal_period")->select('period_id', 'appraisal_period_desc')
@@ -499,8 +508,8 @@ class AdvanceSearchController extends Controller
     public function FormListhr(Request $request)
     {
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
-            ->where('is_active', 1)
-            ->where('is_bonus', 1)
+            /*->where('is_active', 1)
+            ->where('is_bonus', 1)*/
             ->where('is_raise', 1)
             ->get();
         return response()->json($forms);

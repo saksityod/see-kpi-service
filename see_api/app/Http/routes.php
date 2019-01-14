@@ -534,6 +534,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('bonus/advance_search/year', 'Bonus\AdvanceSearchController@YearList');
 	Route::get('bonus/advance_search/year_salary', 'Bonus\AdvanceSearchController@YearSalaryList');
 	Route::get('bonus/advance_search/period', 'Bonus\AdvanceSearchController@PeriodList');
+	Route::get('bonus/advance_search/period_hr', 'Bonus\AdvanceSearchController@PeriodListhr');
 	Route::get('bonus/advance_search/period_salary', 'Bonus\AdvanceSearchController@PeriodSalaryList');
 	Route::get('bonus/advance_search/form', 'Bonus\AdvanceSearchController@FormList');
 	Route::get('bonus/advance_search/form_hr', 'Bonus\AdvanceSearchController@FormListhr');
