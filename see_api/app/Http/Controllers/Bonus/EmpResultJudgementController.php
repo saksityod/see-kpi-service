@@ -10,11 +10,15 @@ use App\Employee;
 use App\EmpResult;
 use App\AppraisalStage;
 use App\EmpResultStage;
+use App\AppraisalForm;
+use App\AppraisalPeriod;
+use App\SystemConfiguration;
 
 use Auth;
 use DB;
 use Validator;
 use Exception;
+use Log;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -28,7 +32,9 @@ class EmpResultJudgementController extends Controller
         $this->advanSearch = new AdvanceSearchController;
     }
 
-    public function store2(Request $request) {
+    public function store2(Request $request) 
+    {
+    /*
         $errors_validator = [];
 
         if(empty($request['detail'])) {
@@ -74,12 +80,11 @@ class EmpResultJudgementController extends Controller
                 return response()->json(['status' => 400, 'data' => $errors_validator]);
             }
 
-            /* $request->fake_flag
-            1 คือ เป็นการประเมินแทน
-            2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
-            3 คือ การประเมินแบบปกติ
-            */
-
+            // $request->fake_flag
+            // 1 คือ เป็นการประเมินแทน
+            // 2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
+            // 3 คือ การประเมินแบบปกติ
+            
             if($request->fake_flag==1) {
                 $judge_id = $request['object_judge']['emp_id'];
                 $judge_level = $request['object_judge']['level_id'];
@@ -204,9 +209,12 @@ class EmpResultJudgementController extends Controller
         }
 
         return response()->json(['status' => 200, 'data' => $errors]);
+    */
     }
 
-    public function store(Request $request) {
+
+    public function store(Request $request) 
+    {
         $errors_validator = [];
 
         if(empty($request['detail'])) {
@@ -303,6 +311,10 @@ class EmpResultJudgementController extends Controller
                             'created_by' => $dataJudge->emp_code
                         ]);
                     }
+                }
+                // grade calculation
+                if($request->grade_cal_flag == 1){
+                    $salaryCalStatus = $this->SalaryCalculator($request->period_id, $d['emp_result_id']);
                 }
             }
 
@@ -667,5 +679,186 @@ class EmpResultJudgementController extends Controller
         $result = new LengthAwarePaginator($itemsForCurrentPage, count($empResult), $perPage, $page);
 
         return response()->json(['result' => $result->toArray(), 'sd' => number_format($dataSTD, 2), 'avg' => number_format($judAVG, 2)]);
+    }
+
+
+    /**
+     * Salary calculator 
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function SalaryCalculator($periodId, $empResulId)
+    {
+        $authId = Auth::id();
+        $curDateTime = date('Y-m-d H:i:s');
+
+        // get period infomation
+        try {
+			$periodInfo = AppraisalPeriod::FindOrFail($periodId);
+		} catch(ModelNotFoundException $e) {
+			return response()->json(["status"=>404, "data"=>"Salary Appraisal Period not found."]);
+        }
+
+        // คำนวณเกรดให้กับ emp
+        $calgrade = $this->GradeCalculateWithAppraisalForm($periodInfo, $empResulId);
+        if ($calgrade->status == 404) {
+            return response()->json(["status"=>$calgrade->status, "data"=>$calgrade->data]);
+        }
+
+        // get Raise Type : 1="Fix Amount", 2="Percentage", 3="Salary Structure Table"
+        $raiseType = SystemConfiguration::first()->raise_type;
+        // return response()->json(["status"=>404, "data"=>$raiseType]);
+        // update salary by Raise Type
+        if ($raiseType == 1) {
+            try{
+                $salaryUpdate = DB::update("
+                UPDATE emp_result er 
+                INNER JOIN (
+                    SELECT ser.emp_result_id,
+                        emp.emp_id, ser.salary_grade_id,
+                        emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
+                        TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
+                        ag.salary_raise_amount AS raise_amount,
+                        0 AS raise_pqpi_amount,
+                        0 AS new_pqpi_amount
+                    FROM employee emp
+                    INNER JOIN emp_result ser ON ser.emp_id = emp.emp_id
+                    INNER JOIN appraisal_grade ag ON ag.grade_id = ser.salary_grade_id
+                    WHERE emp.is_active = 1
+                    AND ag.is_active = 1
+                    AND ser.period_id = '{$periodId}'
+                    AND ser.emp_result_id = '{$empResulId}'
+                )emp ON emp.emp_result_id = er.emp_result_id
+                SET 
+                    er.new_s_amount = emp.new_s_amount,
+                    er.raise_amount = emp.raise_amount,
+                    er.pqpi_amount = emp.pqpi_amount,
+                    er.fix_other_amount = emp.fix_other_amount,
+                    er.mpi_amount = emp.mpi_amount,
+                    er.pi_amount = emp.pi_amount,
+                    er.var_other_amount = emp.var_other_amount,
+                    er.raise_pqpi_amount = emp.raise_pqpi_amount,
+                    er.new_pqpi_amount = emp.new_pqpi_amount,
+                    er.updated_by = '{$authId}',
+                    er.updated_dttm = '{$curDateTime}'
+                WHERE er.emp_result_id = '{$empResulId}'
+                ");
+            } catch(QueryException $qx) {
+                return response()->json(["status"=>404, "data"=>$qx->getMessage()]);
+            }
+        } elseif($raiseType == 2) {
+            try {
+                $salaryUpdate = DB::update("
+                    UPDATE emp_result er 
+                    INNER JOIN (
+                        SELECT er.emp_result_id,
+                            emp.emp_id, er.salary_grade_id,
+                            emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
+                            TO_BASE64(FROM_BASE64(emp.s_amount) + (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100))) AS new_s_amount,
+                            (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100)) AS raise_amount,
+                            0 AS raise_pqpi_amount,
+                            0 AS new_pqpi_amount
+                        FROM employee emp
+                        INNER JOIN emp_result er ON er.emp_id = emp.emp_id
+                        INNER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id
+                        WHERE emp.is_active = 1
+                        AND ag.is_active = 1
+                        AND er.period_id = '{$periodId}'
+                    )emp ON emp.emp_result_id = er.emp_result_id
+                    SET 
+                        er.new_s_amount = emp.new_s_amount,
+                        er.raise_amount = emp.raise_amount,
+                        er.pqpi_amount = emp.pqpi_amount,
+                        er.fix_other_amount = emp.fix_other_amount,
+                        er.mpi_amount = emp.mpi_amount,
+                        er.pi_amount = emp.pi_amount,
+                        er.var_other_amount = emp.var_other_amount,
+                        er.raise_pqpi_amount = emp.raise_pqpi_amount,
+                        er.new_pqpi_amount = emp.new_pqpi_amount,
+                        er.updated_by = '{$authId}',
+	                    er.updated_dttm = '{$curDateTime}'
+                ");
+            } catch (QueryException $qx) {
+                return response()->json(["status"=>404, "data"=>$qx->getMessage()]);
+            }
+        }else {
+            return response()->json(["status"=>404, "data"=>"The function is not working in Raise Type Salary Structure Table({$raiseType})"]);
+        }
+
+        return response()->json(["status"=>200, "data"=>"Calculate salary successful ({$salaryUpdate} row)."]);
+    }
+
+
+    /**
+     * Calculate grades for employees.
+     * 
+     * @param  \App\AppraisalPeriod  $periodInfo
+     * @return object
+     */
+    private function GradeCalculateWithAppraisalForm($periodInfo, $empResulId)
+    {
+        $authId = Auth::id();
+        $curDateTime = date('Y-m-d H:i:s');
+        $gradeResult = array();
+
+        $appraisalStage = AppraisalStage::where('grade_calculation_flag', 1)->first();
+
+        try {
+            $updateStr = "
+            UPDATE emp_result empr
+                INNER JOIN (
+                    SELECT er.appraisal_form_id, er.emp_id, er.org_id, er.position_id, er.level_id,
+                        (
+                            SELECT erj.adjust_result_score
+                            FROM emp_result_judgement erj
+                            WHERE erj.emp_result_id = er.emp_result_id
+                            LIMIT 1
+                        ) AS result_score,
+                        (
+                            SELECT ag.grade_id
+                            FROM appraisal_grade ag
+                            WHERE ag.appraisal_form_id = er.appraisal_form_id
+                            AND ag.appraisal_level_id = er.level_id
+                            AND result_score BETWEEN ag.begin_score AND ag.end_score
+                            LIMIT 1
+                        ) result_grade
+                    FROM emp_result er
+                    INNER JOIN employee emp 
+                        ON emp.emp_id = er.emp_id 
+                        AND er.org_id = er.org_id
+                        AND er.position_id = er.position_id
+                        AND er.level_id = er.level_id
+                    WHERE er.period_id in(
+                        SELECT period_id FROM appraisal_period
+                        WHERE appraisal_frequency_id = {$periodInfo->appraisal_frequency_id}
+                        AND end_date <= '{$periodInfo->end_date}'
+                    )
+                    AND er.appraisal_type_id = 2
+                    AND er.emp_result_id = '{$empResulId}'
+                    GROUP BY er.appraisal_form_id, er.emp_id, er.org_id, er.position_id, er.level_id
+                )grade
+                    ON '{$periodInfo->period_id}' = empr.period_id
+                    AND grade.appraisal_form_id = empr.appraisal_form_id
+                    AND grade.emp_id = empr.emp_id
+                    AND grade.org_id = empr.org_id
+                    AND grade.position_id = empr.position_id
+                    AND grade.level_id = empr.level_id
+                LEFT OUTER JOIN appraisal_grade ag ON ag.grade_id = grade.result_grade
+                SET
+                    empr.salary_grade_id = grade.result_grade,
+                    empr.grade = ag.grade,
+                    empr.updated_by = '{$authId}',
+                    empr.updated_dttm = '{$curDateTime}'
+                WHERE empr.emp_result_id = '{$empResulId}'
+            ";
+            // Log::info($updateStr);
+            $gradeEmp = DB::update($updateStr);
+            $gradeResult = ["status"=>200, "data"=>"Grade Calculate Success"];
+
+        } catch(QueryException $qx) {
+            $gradeResult = ["status"=>404, "data"=>$qx->getMessage()];
+        }
+        return (object) $gradeResult;
     }
 }
