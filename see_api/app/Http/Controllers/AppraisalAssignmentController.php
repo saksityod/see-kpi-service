@@ -1606,7 +1606,7 @@ class AppraisalAssignmentController extends Controller
 
 		$qinput = array();
 		$query = "
-		select DISTINCT a.item_id, a.item_name, uom.uom_name, uom.is_date,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name, f.app_url,
+		select DISTINCT a.item_id, a.item_name, uom.uom_name, uom.is_date,a.structure_id, b.structure_name, b.nof_target_score, f.form_id, f.form_name,ar.item_desc, f.app_url,
 		if(ar.structure_weight_percent is null,c.weight_percent,ar.structure_weight_percent) weight_percent,
 		a.max_value, a.value_get_zero, a.unit_deduct_score, a.unit_reward_score, e.no_weight, a.kpi_type_id, ar.structure_weight_percent, b.is_value_get_zero
 		, a.no_raise_value, b.is_no_raise_value
