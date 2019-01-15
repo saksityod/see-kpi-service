@@ -1602,7 +1602,7 @@ class AppraisalAssignmentController extends Controller
 
 		
 	//	$org_join = (empty($request->org_id)) ? " " : "left outer join appraisal_item_org o on a.item_id = o.item_id";
-		$comma_separated = implode(",", $request->emp_code_list);
+		
 
 		$qinput = array();
 		$query = "
@@ -1620,7 +1620,7 @@ class AppraisalAssignmentController extends Controller
 				WHERE aip.position_id in(
 							SELECT DISTINCT e.position_id
 							FROM employee AS e
-							WHERE FIND_IN_SET(e.emp_code,"."'" .$comma_separated."'" .")
+							WHERE FIND_IN_SET(e.emp_code,"."'" . implode(",", $request->emp_code_list) ."'" .")
 							and e.is_active = 1))
 				api on a.item_id = api.item_id 
 			":""
