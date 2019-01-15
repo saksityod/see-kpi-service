@@ -658,12 +658,13 @@ class AppraisalController extends Controller
 			empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 			empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+			empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
 			
 			/*
 			echo $query. " order by period_id,emp_code,org_code  asc ";
 			print_r($qinput);
 			*/
-			$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
+			$items = DB::select($query. " order by o.org_code ASC, a.level_id DESC , b.emp_code ASC ", $qinput); //period_id,emp_code,org_code  asc
 
 		} else {
 

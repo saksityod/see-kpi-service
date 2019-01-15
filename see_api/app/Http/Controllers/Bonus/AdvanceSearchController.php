@@ -919,29 +919,32 @@ class AdvanceSearchController extends Controller
 
         $flag = "ast.".$request->flag." = 1";
 
-        // $status = DB::select("
-        //     SELECT ast.stage_id, ast.status
-        //     FROM appraisal_stage ast
-        //     INNER JOIN emp_result er ON er.stage_id = ast.stage_id
-        //     WHERE {$flag}
-        //     AND (ast.assessor_see LIKE '%{$in}%' OR ast.assessor_see = 'all')
-        //     AND (ast.appraisal_form_id = '{$request->appraisal_form_id}' OR ast.appraisal_form_id = 'all')
-        //     AND (ast.appraisal_type_id = '{$request->appraisal_type_id}' OR ast.appraisal_type_id = 'all')
-        //     GROUP BY ast.stage_id
-        //     ORDER BY ast.stage_id
-        // ");
-
-        $status = DB::select("
-            SELECT ast.stage_id, ast.status
-            FROM appraisal_stage ast
-            INNER JOIN emp_result er ON er.stage_id = ast.stage_id
-            WHERE {$flag}
-            AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
-            AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')
-            AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')
-            GROUP BY ast.stage_id
-            ORDER BY ast.stage_id
-        ");
+        if($request->flag=='appraisal_flag') {
+        	$appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')";
+	        $status = DB::select("
+	            SELECT ast.stage_id, ast.status
+	            FROM appraisal_stage ast
+	            INNER JOIN emp_result er ON er.stage_id = ast.stage_id
+	            WHERE {$flag}
+	            AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all') 
+	            {$appraisal_form_id}
+	            AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')
+	            GROUP BY ast.stage_id
+	            ORDER BY ast.stage_id
+	        ");
+        } else {
+        	$status = DB::select("
+	            SELECT ast.stage_id, ast.status
+	            FROM appraisal_stage ast
+	            INNER JOIN emp_result er ON er.stage_id = ast.stage_id
+	            WHERE {$flag}
+	            AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
+	            AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')
+	            AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')
+	            GROUP BY ast.stage_id
+	            ORDER BY ast.stage_id
+	        ");
+        }
         
         return response()->json($status);
     }
