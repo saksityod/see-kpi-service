@@ -32,36 +32,36 @@
 , af.appraisal_form_name
 , p.job_code
 , FORMAT(FROM_BASE64(emr.s_amount) ,2)as salary
-, FORMAT((SELECT SUM(FROM_BASE64(emr.s_amount)) FROM emp_result emr),2) as sum_salary
+, FORMAT((SELECT SUM(FROM_BASE64(emr.s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_salary
 , FORMAT(emr.pqpi_amount,2) as pqpi_amount
-, FORMAT((SELECT SUM(emr.pqpi_amount) FROM emp_result emr),2) as sum_pqpi
+, FORMAT((SELECT SUM(emr.pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pqpi
 , FORMAT(emr.mpi_amount,2) as pmi_amount
-, FORMAT((SELECT SUM(emr.mpi_amount) FROM emp_result emr),2) as sum_pmi
+, FORMAT((SELECT SUM(emr.mpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pmi
 , FORMAT(emr.pi_amount,2) as pi_amount
-, FORMAT((SELECT SUM(emr.pi_amount) FROM emp_result emr),2) as sum_pi
+, FORMAT((SELECT SUM(emr.pi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pi
 , FORMAT((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as total
-, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr),2) as sum_total
+, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_total
 , FORMAT(FROM_BASE64(emr.new_s_amount),2) as  new_s_amount
-, FORMAT((SELECT SUM(FROM_BASE64(emr.new_s_amount)) FROM emp_result emr ),2) as sum_new_s_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}) ),2) as sum_new_s_amount
 , FORMAT(emr.new_pqpi_amount,2) as new_pqpi_amount
 -- , FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
 , FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr)/(SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr),2) as sum_diff
-, FORMAT((SELECT SUM(emr.new_pqpi_amount) FROM emp_result emr),2) as sum_new_pqpi_amount
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}))/(SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_diff
+, FORMAT((SELECT SUM(emr.new_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
 , FORMAT((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as newtotal
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr),2) as sum_newtotal
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_newtotal
 , FORMAT((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)),2) as raise_salary
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)) ) FROM emp_result emr),2) as sum_raise_salary
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)) ) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_raise_salary
 -- , emr.raise_amount
 -- , (SELECT SUM(emr.raise_amount ) FROM emp_result emr
 -- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise
 , FORMAT((emr.new_pqpi_amount-emr.pqpi_amount),2) as raise_pqpi
-, FORMAT((SELECT SUM((emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr),2) as sum_raise_pqpi
+, FORMAT((SELECT SUM((emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_raise_pqpi
 -- , emr.raise_pqpi_amount
 -- , (SELECT SUM(emr.raise_pqpi_amount) FROM emp_result emr
 -- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise_pqpi_amount
 , FORMAT(((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)),2) as total_raise
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr),2) as sum_total_raise
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_total_raise
 
 
 FROM emp_result emr
