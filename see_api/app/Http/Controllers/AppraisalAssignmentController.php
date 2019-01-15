@@ -2256,6 +2256,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
+								$aitem->item_desc = $i['item_desc'];
 								$aitem->target_value = $i['target_value'];
 								$aitem->weight_percent = $i['weight_percent'];
 
@@ -2289,6 +2290,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
+								$aitem->item_desc = $i['item_desc'];
 								$aitem->target_value = $i['target_value'];
 								$aitem->weight_percent = $i['weight_percent'];
 								$aitem->over_value = 0;
@@ -2311,6 +2313,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
+								$aitem->item_desc = $i['item_desc'];
 								$aitem->no_raise_value = (empty($i['no_raise_value'])) ? null : $i['no_raise_value'];
 								$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 								$aitem->deduct_score_unit = (empty($i['deduct_score_unit'])) ? null : $i['deduct_score_unit'];
@@ -2335,6 +2338,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
+								$aitem->item_desc = $i['item_desc'];
 								$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 								$aitem->reward_score_unit = $i['reward_score_unit'];
 								$aitem->weight_percent = 0;
@@ -2535,6 +2539,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
+							$aitem->item_desc = $i['item_desc'];
 							$aitem->target_value = $i['target_value'];
 							$aitem->weight_percent = $i['weight_percent'];
 
@@ -2568,6 +2573,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
+							$aitem->item_desc = $i['item_desc'];
 							$aitem->target_value = $i['target_value'];
 							$aitem->weight_percent = $i['weight_percent'];
 							$aitem->over_value = 0;
@@ -2590,6 +2596,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
+							$aitem->item_desc = $i['item_desc'];
 							$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 							$aitem->deduct_score_unit = (empty($i['deduct_score_unit'])) ? null : $i['deduct_score_unit'];
 							$aitem->no_raise_value =  (empty($i['no_raise_value'])) ? null : $i['no_raise_value'];
@@ -2614,6 +2621,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
+							$aitem->item_desc = $i['item_desc'];
 							$aitem->max_value = (empty($i['max_value'])) ? null : $i['max_value'];
 							$aitem->reward_score_unit = $i['reward_score_unit'];
 							$aitem->weight_percent = 0;
@@ -2947,6 +2955,7 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->emp_id = $emp_result->emp_id;
 							$aitemlog->item_id = $i['item_id'];
 							$aitemlog->item_name = $i['item_name'];
+							$aitemlog->item_desc = $i['item_desc'];
 							$aitemlog->target_value = $i['target_value'];
 							$aitemlog->weight_percent = $i['weight_percent'];
 							//ดั้งเดิมเมื่อหน้าจอส่งข้อมูลมาเป็น null -> Service บันทึกข้อมูลเป็น 0 ดังนั้นจึงเปลี่ยนให้เป็นบันทึกข้อมูลเป็นค่า null
@@ -3005,6 +3014,7 @@ class AppraisalAssignmentController extends Controller
 									$aitemlog->emp_id = $aitem->emp_id;
 									$aitemlog->item_id = $aitem->item_id;
 									$aitemlog->item_name = $aitem->item_name;
+									$aitemlog->item_desc = $aitem->item_desc;
 									$aitemlog->target_value = $aitem->target_value;
 									$aitemlog->weight_percent = $aitem->weight_percent;
 									$aitemlog->score0 = $aitem->score0;
@@ -3077,6 +3087,7 @@ class AppraisalAssignmentController extends Controller
 					$aitem->emp_id = $emp_result->emp_id;
 					$aitem->item_id = $i['item_id'];
 					$aitem->item_name = $i['item_name'];
+					$aitem->item_desc = $i['item_desc'];
 					$aitem->target_value = $i['target_value'];
 					//ดั้งเดิมเมื่อหน้าจอส่งข้อมูลมาเป็น null -> Service บันทึกข้อมูลเป็น 0 ดังนั้นจึงเปลี่ยนให้เป็นบันทึกข้อมูลเป็นค่า null
 					array_key_exists('score0', $i)? (($i['score0'] == 'null')? $aitem->score0 = null : $aitem->score0 = $i['score0'])  : null;
@@ -3330,6 +3341,7 @@ class AppraisalAssignmentController extends Controller
 						$aitemlog->emp_id = $aitem->emp_id;
 						$aitemlog->item_id = $aitem->item_id;
 						$aitemlog->item_name = $aitem->item_name;
+						$aitemlog->item_desc = $aitem->item_desc;
 						$aitemlog->target_value = $aitem->target_value;
 						$aitemlog->weight_percent = $aitem->weight_percent;
 						$aitemlog->score0 = $aitem->score0;
