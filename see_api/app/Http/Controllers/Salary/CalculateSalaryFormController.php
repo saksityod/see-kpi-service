@@ -78,6 +78,8 @@ class CalculateSalaryFormController extends Controller
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
+                        er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
+                        er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
                         er.updated_by = '{$authId}',
                         er.updated_dttm = '{$curDateTime}'
                 ");
@@ -107,6 +109,8 @@ class CalculateSalaryFormController extends Controller
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
+                        er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
+                        er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
                         er.updated_by = '{$authId}',
                         er.updated_dttm = '{$curDateTime}'
                 ");
@@ -144,6 +148,7 @@ class CalculateSalaryFormController extends Controller
                             SELECT erj.adjust_result_score
                             FROM emp_result_judgement erj
                             WHERE erj.emp_result_id = er.emp_result_id
+                            ORDER BY erj.created_dttm DESC
                             LIMIT 1
                         ) AS result_score,
                         (
