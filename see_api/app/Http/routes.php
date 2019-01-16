@@ -474,6 +474,11 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
 	
+	// MPI Judgement //
+	Route::get('mpi/parameter/form', 'MPIJudgementController@form_list');
+	Route::get('mpi/mpi_judgement', 'MPIJudgementController@index');
+	Route::patch('mpi/mpi_judgement', 'MPIJudgementController@update');
+	
 	
 
 	// Appraisal 360 Degree //
