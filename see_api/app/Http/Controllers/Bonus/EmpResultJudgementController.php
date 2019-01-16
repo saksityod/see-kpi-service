@@ -810,18 +810,17 @@ class EmpResultJudgementController extends Controller
                 INNER JOIN (
                     SELECT er.appraisal_form_id, er.emp_id, er.org_id, er.position_id, er.level_id,
                         (
-                            SELECT erj.adjust_result_score
-                            FROM emp_result_judgement erj
-                            WHERE erj.emp_result_id = er.emp_result_id
-                            ORDER BY erj.created_dttm DESC
-                            LIMIT 1
-                        ) AS result_score,
-                        (
                             SELECT ag.grade_id
                             FROM appraisal_grade ag
                             WHERE ag.appraisal_form_id = er.appraisal_form_id
                             AND ag.appraisal_level_id = er.level_id
-                            AND result_score BETWEEN ag.begin_score AND ag.end_score
+                            AND (
+                                SELECT erj.adjust_result_score
+                                FROM emp_result_judgement erj
+                                WHERE erj.emp_result_id = er.emp_result_id
+                                ORDER BY erj.created_dttm DESC
+                                LIMIT 1
+                            ) BETWEEN ag.begin_score AND ag.end_score
                             LIMIT 1
                         ) result_grade
                     FROM emp_result er
