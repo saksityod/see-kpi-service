@@ -1600,7 +1600,7 @@ class AppraisalAssignmentController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		
+		//return Auth::id();
 	//	$org_join = (empty($request->org_id)) ? " " : "left outer join appraisal_item_org o on a.item_id = o.item_id";
 		
 
@@ -1648,6 +1648,10 @@ class AppraisalAssignmentController extends Controller
 		and if(ar.item_id is not null,1=1,a.is_active = 1)
 		";
 	
+
+		
+		
+
 		$qinput[] = $request->appraisal_level_id;
 		$qinput[] = $request->org_id;
 		$qinput[] = $request->emp_result_id;
@@ -1662,7 +1666,7 @@ class AppraisalAssignmentController extends Controller
 		// print_r($qinput);
 
 		$items = DB::select($query . $qfooter, $qinput);
-
+		
 		$groups = array();
 		foreach ($items as $item) {
 			$key = $item->structure_name;
@@ -1798,6 +1802,13 @@ class AppraisalAssignmentController extends Controller
 					}
 				}
 
+				$self_assign = DB::select("
+					SELECT DISTINCT a.structure_id,s.is_self_assign from employee e
+					INNER JOIN appraisal_criteria a on a.appraisal_level_id = e.level_id 
+					INNER JOIN appraisal_structure s on a.structure_id = s.structure_id
+					WHERE e.emp_code = ?
+					",array(Auth::id()));
+				
 				// $check = DB::select("
 					// select ifnull(max(a.end_threshold),0) max_no
 					// from result_threshold a left outer join result_threshold_group b
@@ -1844,7 +1855,7 @@ class AppraisalAssignmentController extends Controller
 			$to_action = $this->sharedStage->to_action_call((object)$request->obj_stage);
 		}
 
-		return response()->json(['data' => $items, 'group' => $groups, 'result_type' => $config->result_type, 'to_action' => $to_action]);
+		return response()->json(['data' => $items, 'group' => $groups, 'result_type' => $config->result_type, 'to_action' => $to_action,'self_assign' => $self_assign]);
 
 	}
 
@@ -2691,8 +2702,13 @@ class AppraisalAssignmentController extends Controller
 			where a.emp_result_id = ?
 			order by a.created_dttm asc
 			", array($emp_result_id));
-
-		return response()->json(['head' => $head, 'data' => $items, 'stage' => $stage, 'threshold' => $config->threshold]);
+		$self_assign = DB::select("
+			SELECT DISTINCT a.structure_id,s.is_self_assign from employee e
+			INNER JOIN appraisal_criteria a on a.appraisal_level_id = e.level_id 
+			INNER JOIN appraisal_structure s on a.structure_id = s.structure_id
+			WHERE e.emp_code = ?
+		",array(Auth::id()));
+		return response()->json(['head' => $head, 'data' => $items, 'stage' => $stage,'self_assign'=>$self_assign, 'threshold' => $config->threshold]);
 	}
 
 	public function update(Request $request, $emp_result_id)
