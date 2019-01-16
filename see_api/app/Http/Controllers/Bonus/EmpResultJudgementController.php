@@ -713,33 +713,35 @@ class EmpResultJudgementController extends Controller
         if ($raiseType == 1) {
             try{
                 $salaryUpdate = DB::update("
-                UPDATE emp_result er 
-                INNER JOIN (
-                    SELECT ser.emp_result_id, af.is_raise, af.is_mpi,
-                        emp.emp_id, ser.salary_grade_id,
-                        emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
-                        TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
-                        ag.salary_raise_amount AS raise_amount,
-                        0 AS raise_pqpi_amount,
-                        0 AS new_pqpi_amount
-                    FROM employee emp
-                    INNER JOIN emp_result ser ON ser.emp_id = emp.emp_id
-                    INNER JOIN appraisal_grade ag ON ag.grade_id = ser.salary_grade_id
-                    INNER JOIN appraisal_form af ON af.appraisal_form_id = ser.appraisal_form_id
-                    WHERE emp.is_active = 1
-                    AND ag.is_active = 1
-                    AND ser.period_id = '{$periodId}'
-                    AND ser.emp_result_id = '{$empResulId}'
-                )emp ON emp.emp_result_id = er.emp_result_id
-                SET 
-                    er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
-                    er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
-                    er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
-                    er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
-                    er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
-                    er.updated_by = '{$authId}',
-                    er.updated_dttm = '{$curDateTime}'
-                WHERE er.emp_result_id = '{$empResulId}'
+                    UPDATE emp_result er 
+                    INNER JOIN (
+                        SELECT ser.emp_result_id, af.is_raise, af.is_mpi,
+                            emp.emp_id, ser.salary_grade_id,
+                            emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
+                            TO_BASE64(FROM_BASE64(emp.s_amount) + ag.salary_raise_amount) AS new_s_amount,
+                            ag.salary_raise_amount AS raise_amount,
+                            0 AS raise_pqpi_amount,
+                            0 AS new_pqpi_amount
+                        FROM employee emp
+                        INNER JOIN emp_result ser ON ser.emp_id = emp.emp_id
+                        INNER JOIN appraisal_grade ag ON ag.grade_id = ser.salary_grade_id
+                        INNER JOIN appraisal_form af ON af.appraisal_form_id = ser.appraisal_form_id
+                        WHERE emp.is_active = 1
+                        AND ag.is_active = 1
+                        AND ser.period_id = '{$periodId}'
+                        AND ser.emp_result_id = '{$empResulId}'
+                    )emp ON emp.emp_result_id = er.emp_result_id
+                    SET 
+                        er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
+                        er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
+                        er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
+                        er.adjust_raise_s_amount = IF(emp.is_raise=1,emp.raise_amount,er.raise_amount),
+                        er.adjust_raise_pqpi_amount = 0,
+                        er.adjust_new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
+                        er.adjust_new_pqpi_amount = er.pqpi_amount,
+                        er.updated_by = '{$authId}',
+                        er.updated_dttm = '{$curDateTime}'
+                    WHERE er.emp_result_id = '{$empResulId}'
                 ");
             } catch(QueryException $qx) {
                 return response()->json(["status"=>404, "data"=>$qx->getMessage()]);
@@ -749,28 +751,30 @@ class EmpResultJudgementController extends Controller
                 $salaryUpdate = DB::update("
                     UPDATE emp_result er 
                     INNER JOIN (
-                        SELECT er.emp_result_id, af.is_raise, af.is_mpi,
-                            emp.emp_id, er.salary_grade_id,
+                        SELECT ser.emp_result_id, af.is_raise, af.is_mpi,
+                            emp.emp_id, ser.salary_grade_id,
                             emp.s_amount, emp.pqpi_amount, emp.fix_other_amount, emp.mpi_amount, emp.pi_amount, emp.var_other_amount,
                             TO_BASE64(FROM_BASE64(emp.s_amount) + (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100))) AS new_s_amount,
                             (FROM_BASE64(emp.s_amount) * (ag.salary_raise_percent / 100)) AS raise_amount,
                             0 AS raise_pqpi_amount,
                             0 AS new_pqpi_amount
                         FROM employee emp
-                        INNER JOIN emp_result er ON er.emp_id = emp.emp_id
-                        INNER JOIN appraisal_grade ag ON ag.grade_id = er.salary_grade_id
+                        INNER JOIN emp_result ser ON ser.emp_id = emp.emp_id
+                        INNER JOIN appraisal_grade ag ON ag.grade_id = ser.salary_grade_id
                         INNER JOIN appraisal_form af ON af.appraisal_form_id = ser.appraisal_form_id
                         WHERE emp.is_active = 1
                         AND ag.is_active = 1
-                        AND er.period_id = '{$periodId}'
+                        AND ser.period_id = '{$periodId}'
                         AND ser.emp_result_id = '{$empResulId}'
                     )emp ON emp.emp_result_id = er.emp_result_id
                     SET 
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
-                        er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
-                        er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
+                        er.adjust_raise_s_amount = IF(emp.is_raise=1,emp.raise_amount,er.raise_amount),
+                        er.adjust_raise_pqpi_amount = 0,
+                        er.adjust_new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
+                        er.adjust_new_pqpi_amount = er.pqpi_amount,
                         er.updated_by = '{$authId}',
                         er.updated_dttm = '{$curDateTime}'
                     WHERE er.emp_result_id = '{$empResulId}'

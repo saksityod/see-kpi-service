@@ -78,8 +78,10 @@ class CalculateSalaryFormController extends Controller
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
-                        er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
-                        er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
+                        er.adjust_raise_s_amount = IF(emp.is_raise=1,emp.raise_amount,er.raise_amount),
+                        er.adjust_raise_pqpi_amount = 0,
+                        er.adjust_new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
+                        er.adjust_new_pqpi_amount = er.pqpi_amount,
                         er.updated_by = '{$authId}',
                         er.updated_dttm = '{$curDateTime}'
                 ");
@@ -107,10 +109,12 @@ class CalculateSalaryFormController extends Controller
                     )emp ON emp.emp_result_id = er.emp_result_id
                     SET
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
-                        er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
-                        er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
-                        er.adjust_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.adjust_s_amount),
-                        er.adjust_pqpi_amount = IF(emp.is_raise=1,TO_BASE64('0'),er.new_s_amount),
+                        er.raise_amount = IF(emp.is_raise=1,emp.raise_amount,er.raise_amount),
+                        er.mpi_amount = IF(emp.is_mpi=1,emp.mpi_amount,er.mpi_amount),
+                        er.adjust_raise_s_amount = IF(emp.is_raise=1,emp.raise_amount,er.raise_amount),
+                        er.adjust_raise_pqpi_amount = 0,
+                        er.adjust_new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
+                        er.adjust_new_pqpi_amount = er.pqpi_amount,
                         er.updated_by = '{$authId}',
                         er.updated_dttm = '{$curDateTime}'
                 ");
