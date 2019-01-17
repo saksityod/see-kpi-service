@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-hr-summary-consider" pageWidth="1460" pageHeight="595" orientation="Landscape" columnWidth="1420" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-hr-summary-consider" pageWidth="1460" pageHeight="595" orientation="Landscape" columnWidth="1420" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas2"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -32,36 +32,96 @@
 , af.appraisal_form_name
 , p.job_code
 , FORMAT(FROM_BASE64(emr.s_amount) ,2)as salary
-, FORMAT((SELECT SUM(FROM_BASE64(emr.s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_salary
+, FORMAT((SELECT SUM(FROM_BASE64(emr.s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}) AND emr.period_id =  $P{param_period}    
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_salary
 , FORMAT(emr.pqpi_amount,2) as pqpi_amount
-, FORMAT((SELECT SUM(emr.pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pqpi
+, FORMAT((SELECT SUM(emr.pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pqpi
 , FORMAT(emr.mpi_amount,2) as pmi_amount
-, FORMAT((SELECT SUM(emr.mpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pmi
+, FORMAT((SELECT SUM(emr.mpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pmi
 , FORMAT(emr.pi_amount,2) as pi_amount
-, FORMAT((SELECT SUM(emr.pi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_pi
+, FORMAT((SELECT SUM(emr.pi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pi
 , FORMAT((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as total
-, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_total
+, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total
 , FORMAT(FROM_BASE64(emr.new_s_amount),2) as  new_s_amount
-, FORMAT((SELECT SUM(FROM_BASE64(emr.new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}) ),2) as sum_new_s_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1) ),2) as sum_new_s_amount
 , FORMAT(emr.new_pqpi_amount,2) as new_pqpi_amount
 -- , FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
 , FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}))/(SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_diff
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1))/(SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_diff
 , FORMAT((SELECT SUM(emr.new_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
 , FORMAT((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as newtotal
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_newtotal
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_newtotal
 , FORMAT((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)),2) as raise_salary
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)) ) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_raise_salary
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)) ) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_salary
 -- , emr.raise_amount
 -- , (SELECT SUM(emr.raise_amount ) FROM emp_result emr
 -- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise
 , FORMAT((emr.new_pqpi_amount-emr.pqpi_amount),2) as raise_pqpi
-, FORMAT((SELECT SUM((emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_raise_pqpi
+, FORMAT((SELECT SUM((emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_pqpi
 -- , emr.raise_pqpi_amount
 -- , (SELECT SUM(emr.raise_pqpi_amount) FROM emp_result emr
 -- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise_pqpi_amount
 , FORMAT(((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)),2) as total_raise
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_total_raise
+, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total_raise
 
 
 FROM emp_result emr
@@ -195,6 +255,192 @@ ORDER BY o.org_code ASC, emr.level_id DESC, e.emp_code ASC]]>
 	<field name="sum_total_raise" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sum_total_raise"/>
 	</field>
+	<group name="Group1">
+		<groupFooter>
+			<band height="30">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1260" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="a7b674a4-7796-4a4b-870e-c1c0bb1890f3">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_new_pqpi_amount}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1200" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="190d1c33-4f24-46ae-90c0-77e22ce5d613">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_new_s_amount}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="900" y="0" width="66" height="30" backcolor="#7AB8FF" uuid="930d0b7c-0125-425f-958b-c69612c3a3d4">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_total_raise}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="840" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="1b89374d-ac35-476c-8f16-da4b39680175">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_pi}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="590" y="0" width="70" height="30" backcolor="#7AB8FF" uuid="8f5cae80-57a0-4af5-ad10-8acf3b39f72e">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_total}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="966" y="0" width="64" height="30" backcolor="#7AB8FF" uuid="39430d13-e1dc-40ec-b2db-86ec559b668a">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_raise_salary}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="780" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="10c47c6c-3aa9-49a5-b865-c06766bfb4d6">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_pmi}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1030" y="0" width="55" height="30" backcolor="#7AB8FF" uuid="733807ee-37f0-4b2b-b74a-7d8dbace9c73">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_raise_pqpi}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1130" y="0" width="70" height="30" backcolor="#7AB8FF" uuid="0c675796-2181-468a-8dff-431a128218da">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_newtotal}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="720" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="c6563ac6-65c4-4eaa-ba97-4dd5d89fdbab">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_pqpi}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="660" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="3a353777-78fc-46f6-8193-ab4827cf8841">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_salary}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="520" y="0" width="70" height="30" backcolor="#7AB8FF" uuid="b52bcb16-29d0-42bf-a7ef-a414671ebe27">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Grand Total"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1320" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="689b2b47-05c0-447a-841f-10b68a3ba3b0">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_pmi}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1085" y="0" width="45" height="30" backcolor="#7AB8FF" uuid="76c74b67-ee68-40ba-b531-f6117c5987bf">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_diff}+"%"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1380" y="0" width="60" height="30" backcolor="#7AB8FF" uuid="0bd97912-f88d-4a22-bc09-13dc8fb982b1">
+						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+					</reportElement>
+					<box leftPadding="0" rightPadding="3">
+						<pen lineWidth="0.5" lineStyle="Dashed"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{sum_pi}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -485,7 +731,7 @@ ORDER BY o.org_code ASC, emr.level_id DESC, e.emp_code ASC]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="30" splitType="Stretch">
+		<band height="30" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="-20" y="0" width="50" height="30" uuid="9e2b189d-fa45-404c-845c-5eb0c9f7c818">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
@@ -510,7 +756,7 @@ ORDER BY o.org_code ASC, emr.level_id DESC, e.emp_code ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="30" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
@@ -740,187 +986,31 @@ ORDER BY o.org_code ASC, emr.level_id DESC, e.emp_code ASC]]>
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band height="64" splitType="Stretch">
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1085" y="0" width="45" height="30" backcolor="#DCE6F1" uuid="a19a98f4-ca0c-48fa-84e1-02ec870bf900">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_diff}+"%"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="900" y="0" width="66" height="30" backcolor="#DCE6F1" uuid="7fa6b357-c4ba-4ebb-acab-28567db82652">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_total_raise}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="660" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="0a3500c1-6363-4233-8ef3-24b04fee8c0c">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_salary}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1260" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="2a38918d-7ed1-4cb2-99e8-1fe97d8de595">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_new_pqpi_amount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1130" y="0" width="70" height="30" backcolor="#DCE6F1" uuid="cfd41ef8-ce8f-47df-973f-d0e07a642867">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_newtotal}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="966" y="0" width="64" height="30" backcolor="#DCE6F1" uuid="95302d6d-41cf-42ac-be86-8f7e1bf0ac74">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_raise_salary}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="590" y="0" width="70" height="30" backcolor="#DCE6F1" uuid="0efbefbe-345b-45cd-bf80-d280d3a619a9">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_total}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1200" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="0558e7df-10dd-47aa-904d-0102dcdd2be5">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_new_s_amount}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="780" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="40ed445c-b1ff-466a-af45-19bb7830f072">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_pmi}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="840" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="27ac472e-64af-4d6c-9525-b884e0eb41c5">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_pi}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1030" y="0" width="55" height="30" backcolor="#DCE6F1" uuid="bfe90ae4-aa8e-4e4d-8203-91c9e1209f35">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_raise_pqpi}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="720" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="3787d57f-2689-4781-86f3-cf692a1d5bc3">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_pqpi}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1320" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="5e45233e-cd57-425b-8f25-c71c7601efc9">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_pmi}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="1380" y="0" width="60" height="30" backcolor="#DCE6F1" uuid="75f6d1c2-3220-4e1a-897f-486482f24369">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
-					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{sum_pi}]]></textFieldExpression>
-			</textField>
-		</band>
-	</columnFooter>
 	<pageFooter>
-		<band height="24">
+		<band height="100">
 			<staticText>
-				<reportElement x="970" y="0" width="430" height="24" uuid="dc3738c1-33a4-42d4-a34e-3aef08e19ab6"/>
-				<textElement>
+				<reportElement x="930" y="46" width="489" height="24" uuid="dc3738c1-33a4-42d4-a34e-3aef08e19ab6"/>
+				<textElement textAlignment="Center">
 					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
 				</textElement>
-				<text><![CDATA[อนุมัติโดย ……….…..........................…................ Managing Director   …..../......./............]]></text>
+				<text><![CDATA[Approved By .....................................................       Date ....../....../.........]]></text>
 			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="-20" y="70" width="1460" height="30" uuid="5f41bccb-ffbc-4f53-94e4-65582ca2b7dc">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="0" rightPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(Page "+$V{PAGE_NUMBER}+")"]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageFooter>
 </jasperReport>
