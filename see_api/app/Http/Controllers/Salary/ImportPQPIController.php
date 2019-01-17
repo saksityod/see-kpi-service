@@ -30,7 +30,7 @@ class ImportPQPIController extends Controller
 		$query = "
 		SELECT 
 			e.emp_code,
-			er.new_pqpi_amount
+			er.adjust_new_pqpi_amount
 			from emp_result er
 			INNER JOIN appraisal_form af on er.appraisal_form_id = af.appraisal_form_id
 			INNER JOIN employee e on er.emp_id = e.emp_id
@@ -56,7 +56,7 @@ class ImportPQPIController extends Controller
 						$i->emp_code,
 						100,
 						133,
-						empty($i->new_pqpi_amount) ? "" : number_format((float)(base64_decode($i->new_pqpi_amount)), 2, '.', ''),
+						empty($i->adjust_new_pqpi_amount) ? "" : number_format((float)(base64_decode($i->adjust_new_pqpi_amount)), 2, '.', ''),
 						$request->effective_date,
 						$request->expired_date, 
 					));
