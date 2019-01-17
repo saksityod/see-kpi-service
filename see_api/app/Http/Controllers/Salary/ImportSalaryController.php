@@ -30,7 +30,7 @@ class ImportSalaryController extends Controller
 		$query = "
 		SELECT 
 			e.emp_code,
-			er.new_s_amount salary,
+			er.adjust_new_s_amount salary,
 			er.s_amount old_salary
 			from emp_result er
 			INNER JOIN appraisal_form af on er.appraisal_form_id = af.appraisal_form_id
