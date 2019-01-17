@@ -1750,7 +1750,7 @@ class AppraisalAssignmentController extends Controller
 		}
 
 			$query = "
-				SELECT a.item_id, 
+				SELECT a.item_id, ar.item_result_id,
 						a.item_name, 
 						uom.uom_name,
 						a.structure_id, 
@@ -2509,6 +2509,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->structure_weight_percent = $i['total_weight'];
 								$aitem->threshold_group_id = $tg_id;
 								$aitem->contribute_percent = 100;
+								$aitem->derive_item_result_id = $i['item_result_id_derive'];
 								$aitem->created_by = Auth::id();
 								$aitem->updated_by = Auth::id();
 								$aitem->save();
@@ -2814,6 +2815,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->threshold_group_id = $tg_id;
 							$aitem->structure_weight_percent = $i['total_weight'];
 							$aitem->contribute_percent = 100;
+							$aitem->derive_item_result_id = $i['item_result_id_derive'];
 							$aitem->created_by = Auth::id();
 							$aitem->updated_by = Auth::id();
 							$aitem->save();
