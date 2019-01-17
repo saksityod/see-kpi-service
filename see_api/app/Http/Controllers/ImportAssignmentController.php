@@ -1108,9 +1108,9 @@ class ImportAssignmentController extends Controller
 
               //-- Checking if record exists in emp_result.
               if (empty($empResultExist)) {
-
-              // เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
-              $job_code_data = DB::select("
+              
+                // เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
+              $job_code_query = "
               SELECT
                 emp.emp_id
                 , pos.position_code
@@ -1118,14 +1118,20 @@ class ImportAssignmentController extends Controller
                 , CASE WHEN app.is_raise = 1 THEN job.capability_point ELSE 0 END AS capability_point
                 , CASE WHEN app.is_raise = 1 THEN job.total_point ELSE 0 END AS total_point
                 , CASE WHEN app.is_raise = 1 THEN job.baht_per_point ELSE 0 END AS baht_per_point
+                , CASE WHEN app.is_raise = 1 THEN emp.pqpi_amount ELSE 0 END AS pqpi_amount
+                , CASE WHEN app.is_raise = 1 THEN emp.fix_other_amount ELSE 0 END AS fix_other_amount
+                , CASE WHEN app.is_raise = 1 THEN emp.mpi_amount ELSE 0 END AS mpi_amount
+                , CASE WHEN app.is_raise = 1 THEN emp.pi_amount ELSE 0 END AS pi_amount
+                , CASE WHEN app.is_raise = 1 THEN emp.var_other_amount ELSE 0 END AS var_other_amount
               FROM
                 employee emp
                 INNER JOIN position pos ON emp.position_id = pos.position_id
                 INNER JOIN job_code job ON pos.job_code = job.job_code
-                CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = 12 ) app 
+                CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = ? ) app 
               WHERE
-                emp.emp_id = ".$row->emp_id."
-              ");
+                emp.emp_id = ? ";
+
+              	$job_code_data = DB::select($job_code_query, array($row->appraisal_form_id, $row->emp_id));
 					
                 //---- Insert @emp_result
                 $empResult = new EmpResult;
@@ -1147,6 +1153,11 @@ class ImportAssignmentController extends Controller
                 $empResult->capability_point = $job_code_data[0]->capability_point;
                 $empResult->total_point = $job_code_data[0]->total_point;
                 $empResult->baht_per_point = $job_code_data[0]->baht_per_point;
+                $empResult->pqpi_amount = $job_code_data[0]->pqpi_amount;
+                $empResult->fix_other_amount = $job_code_data[0]->fix_other_amount;
+                $empResult->mpi_amount = $job_code_data[0]->mpi_amount;
+                $empResult->pi_amount = $job_code_data[0]->pi_amount;
+                $empResult->var_other_amount = $job_code_data[0]->var_other_amount;
                 $empResult->stage_id = $row->stage_id;
                 $empResult->status = $row->status;
                 $empResult->created_by = Auth::id();

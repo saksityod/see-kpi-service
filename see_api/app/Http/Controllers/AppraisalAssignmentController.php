@@ -2131,6 +2131,29 @@ class AppraisalAssignmentController extends Controller
 			// // }
 		// }
 
+		// เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
+		$job_code_query = "
+			SELECT
+				emp.emp_id
+				, pos.position_code
+				, CASE WHEN app.is_raise = 1 THEN job.knowledge_point ELSE 0 END AS knowledge_point
+				, CASE WHEN app.is_raise = 1 THEN job.capability_point ELSE 0 END AS capability_point
+				, CASE WHEN app.is_raise = 1 THEN job.total_point ELSE 0 END AS total_point
+				, CASE WHEN app.is_raise = 1 THEN job.baht_per_point ELSE 0 END AS baht_per_point
+				, CASE WHEN app.is_raise = 1 THEN emp.pqpi_amount ELSE 0 END AS pqpi_amount
+				, CASE WHEN app.is_raise = 1 THEN emp.fix_other_amount ELSE 0 END AS fix_other_amount
+				, CASE WHEN app.is_raise = 1 THEN emp.mpi_amount ELSE 0 END AS mpi_amount
+				, CASE WHEN app.is_raise = 1 THEN emp.pi_amount ELSE 0 END AS pi_amount
+				, CASE WHEN app.is_raise = 1 THEN emp.var_other_amount ELSE 0 END AS var_other_amount
+			FROM
+				employee emp
+				INNER JOIN position pos ON emp.position_id = pos.position_id
+				INNER JOIN job_code job ON pos.job_code = job.job_code
+				CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = ? ) app 
+			WHERE
+				emp.emp_id = ? ";
+
+				
 		$validator = Validator::make($request->head_params, [
 			'appraisal_type_id' => 'required',
 			'appraisal_year' => 'required',
@@ -2406,6 +2429,9 @@ class AppraisalAssignmentController extends Controller
 							$position_id = null;
 							$emp_id = null;
 						}
+						
+						$job_code_data = DB::select($job_code_query, array($request->head_params['appraisal_form_id'], $emp_id));
+						
 						$emp_result = new EmpResult;
 						$emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
 						$emp_result->appraisal_form_id = $request->head_params['appraisal_form_id'];
@@ -2420,6 +2446,15 @@ class AppraisalAssignmentController extends Controller
 						$emp_result->b_rate = 0;
 						$emp_result->b_amount = 0;
 						$emp_result->grade = null;
+						$emp_result->knowledge_point = $job_code_data[0]->knowledge_point;
+						$emp_result->capability_point = $job_code_data[0]->capability_point;
+						$emp_result->total_point = $job_code_data[0]->total_point;
+						$emp_result->baht_per_point = $job_code_data[0]->baht_per_point;
+						$emp_result->pqpi_amount = $job_code_data[0]->pqpi_amount;
+						$emp_result->fix_other_amount = $job_code_data[0]->fix_other_amount;
+						$emp_result->mpi_amount = $job_code_data[0]->mpi_amount;
+						$emp_result->pi_amount = $job_code_data[0]->pi_amount;
+						$emp_result->var_other_amount = $job_code_data[0]->var_other_amount;
 						$emp_result->raise_amount = 0;
 						$emp_result->new_s_amount = 0;
 						$emp_result->status = $stage->status;
@@ -2662,24 +2697,8 @@ class AppraisalAssignmentController extends Controller
 						$emp_id = null;
 					}
 					
-					// เอาข้อมูล จาก job_code ลง table emp_result โดย appraisal_form_id นั้นจะต้องมี is_raise เท่ากับ 1
-					$job_code_data = DB::select("
-					SELECT
-						emp.emp_id
-						, pos.position_code
-						, CASE WHEN app.is_raise = 1 THEN job.knowledge_point ELSE 0 END AS knowledge_point
-						, CASE WHEN app.is_raise = 1 THEN job.capability_point ELSE 0 END AS capability_point
-						, CASE WHEN app.is_raise = 1 THEN job.total_point ELSE 0 END AS total_point
-						, CASE WHEN app.is_raise = 1 THEN job.baht_per_point ELSE 0 END AS baht_per_point
-					FROM
-						employee emp
-						INNER JOIN position pos ON emp.position_id = pos.position_id
-						INNER JOIN job_code job ON pos.job_code = job.job_code
-						CROSS JOIN ( SELECT appraisal_form_id, is_raise FROM appraisal_form WHERE appraisal_form_id = 12 ) app 
-					WHERE
-						emp.emp_id = ".$emp_id."
-					");
-					
+					$job_code_data = DB::select($job_code_query, array($request->head_params['appraisal_form_id'], $emp_id));
+
 					$emp_result = new EmpResult; 
 					// $emp_result->appraisal_type_id = $request->head_params['appraisal_type_id'];
 					// $emp_result->period_id = $period_id;
@@ -2723,6 +2742,11 @@ class AppraisalAssignmentController extends Controller
 					$emp_result->capability_point = $job_code_data[0]->capability_point;
 					$emp_result->total_point = $job_code_data[0]->total_point;
 					$emp_result->baht_per_point = $job_code_data[0]->baht_per_point;
+					$emp_result->pqpi_amount = $job_code_data[0]->pqpi_amount;
+					$emp_result->fix_other_amount = $job_code_data[0]->fix_other_amount;
+					$emp_result->mpi_amount = $job_code_data[0]->mpi_amount;
+					$emp_result->pi_amount = $job_code_data[0]->pi_amount;
+					$emp_result->var_other_amount = $job_code_data[0]->var_other_amount;
 					$emp_result->stage_id = $stage->stage_id;
 					$emp_result->created_by = Auth::id();
 					$emp_result->updated_by = Auth::id();
