@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_kpis" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="94831257-7074-486f-9577-a86a40622bf7">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
@@ -173,7 +173,7 @@ ORDER BY
 	</subDataset>
 	<subDataset name="nothreshold" uuid="71d3bbb0-a0cd-4ace-a33d-dd069b790a2a">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_level_org" class="java.lang.String"/>
@@ -185,6 +185,7 @@ ORDER BY
 , AIR.item_name
 , AIR.target_value
 , Uo.uom_name
+, Uo.is_date
 , AIR.actual_value
 , AIR.score
 , AIR.weight_percent
@@ -280,6 +281,10 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 			<property name="com.jaspersoft.studio.field.label" value="uom_name"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 		</field>
+		<field name="is_date" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+		</field>
 		<field name="actual_value" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
@@ -296,7 +301,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 			<property name="com.jaspersoft.studio.field.label" value="weigh_score"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 		</field>
-		<field name="COLUMN_20" class="java.math.BigDecimal">
+		<field name="COLUMN_21" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="result_score"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 		</field>
@@ -322,6 +327,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 , AIR.item_name
 , AIR.target_value
 , Uo.uom_name
+, Uo.is_date
 , AIR.actual_value
 , AIR.score
 , AIR.weight_percent
@@ -417,6 +423,10 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 		<property name="com.jaspersoft.studio.field.label" value="uom_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
+	</field>
 	<field name="actual_value" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="actual_value"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
@@ -433,7 +443,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 		<property name="com.jaspersoft.studio.field.label" value="weigh_score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
 	</field>
-	<field name="COLUMN_20" class="java.math.BigDecimal">
+	<field name="COLUMN_21" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="result_score"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result"/>
 	</field>
@@ -654,13 +664,14 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField pattern="#,##0.0000" isBlankWhenNull="true">
+								<textField isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="81" uuid="a4268c82-fa59-42da-8493-03e7feb80c50"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -706,13 +717,14 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table 1_TD" height="81">
-								<textField pattern="#,##0.0000" isBlankWhenNull="true">
+								<textField isBlankWhenNull="true">
 									<reportElement x="0" y="0" width="70" height="81" uuid="54949f85-ef40-492e-bfe0-da82c1d6c7af"/>
 									<box leftPadding="3" rightPadding="3"/>
 									<textElement textAlignment="Right">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1012,7 +1024,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 				</textElement>
 				<textFieldExpression><![CDATA[$F{item_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.0000" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement x="230" y="0" width="70" height="80" uuid="c45e2d3e-bf0a-4b97-bf5d-3b91b35bc74c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="451d1086-cc89-4f20-a16b-8c7f738dc9f7"/>
 				</reportElement>
@@ -1024,6 +1036,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="300" y="0" width="60" height="80" uuid="e33a0cc3-4b15-41b4-b59c-fa43608a01e4">
@@ -1037,7 +1050,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom_name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.0000" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement x="360" y="0" width="70" height="80" uuid="4c863d08-2ed6-4f7a-82e0-73ef5f7b5117">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9fcbc774-04b4-4bc6-a6db-b707e819b54b"/>
 				</reportElement>
@@ -1049,6 +1062,7 @@ ORDER BY  AIR.org_id ASC , AI.perspective_id asc ,AI.kpi_id asc ,AI.item_name as
 					<paragraph rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="430" y="0" width="40" height="80" uuid="1c50ab28-0ec3-4ad5-a780-b907c991c028">

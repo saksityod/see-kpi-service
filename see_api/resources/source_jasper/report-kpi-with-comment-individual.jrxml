@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="0.751314800901585"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="302"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="687"/>
@@ -126,7 +126,7 @@
 	</style>
 	<subDataset name="table" uuid="9e6e2b35-deee-4496-8dc2-c9bcde0bcaf8">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 		<parameter name="param_org" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_item" class="java.lang.String"/>
@@ -139,6 +139,7 @@ d.appraisal_month_no,
 d.month_name,
 d.target_value,
 d.cds_value,
+d.is_date,
 d.percent_achievement,
 CASE WHEN d.kpi_type_id=2 THEN"#e6e6e6" ELSE "#ffffff" END as color_status,
 (CASE WHEN d.percent_achievement >= 100 THEN '#0033cc' ELSE '#ff0000' END) as color_percent_achievement,
@@ -166,6 +167,7 @@ FROM
 ( SELECT 
 cr.appraisal_month_no,
 air.kpi_type_id,
+uom.is_date,
 MONTHNAME(CONCAT(cr.`year`,'-',cr.appraisal_month_no,'-01')) AS month_name,
 100 as target_value,
 -- (CASE WHEN ai.function_type = 3 THEN air.target_value ELSE mon.target_value  END) AS target, 
@@ -195,6 +197,7 @@ cds_result AS cr
 INNER JOIN kpi_cds_mapping AS kcm ON kcm.cds_id = cr.cds_id AND kcm.item_id =  $P{param_item}
 INNER JOIN appraisal_item_result AS air ON air.period_id = cr.period_id AND air.org_id = cr.org_id AND air.item_id = kcm.item_id AND air.level_id = cr.level_id
 INNER JOIN appraisal_item AS ai ON kcm.item_id = ai.item_id
+INNER JOIN uom ON uom.uom_id = ai.uom_id
 INNER JOIN monthly_appraisal_item_result AS mon ON mon.item_result_id = air.item_result_id AND mon.item_id = ai.item_id 
 	AND mon.appraisal_month_no = cr.appraisal_month_no
 INNER JOIN (select cr.appraisal_month_no,
@@ -240,6 +243,10 @@ ORDER BY d.appraisal_month_no]]>
 			<property name="com.jaspersoft.studio.field.label" value="cds_value"/>
 			<property name="com.jaspersoft.studio.field.tree.path" value="monthly_appraisal_item_result"/>
 			<fieldDescription><![CDATA[]]></fieldDescription>
+		</field>
+		<field name="is_date" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 		</field>
 		<field name="percent_achievement" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="percent_achievement"/>
@@ -423,7 +430,7 @@ air.org_id,
 CASE WHEN air.kpi_type_id=2 THEN"#e6e6e6" ELSE "#ffffff" END as color_status,
 CASE WHEN ai.value_type_id = 1 THEN ">/=" ELSE "</=" end as value_type_id,
 (CASE WHEN air.percent_achievement >= 100 THEN '#0033cc' ELSE '#ff0000' END) as color_percent_achievement,
-air.actual_value,
+round(air.actual_value,4) as actual_value, 
 u.uom_name,
 air.target_value,
 air.percent_achievement,
@@ -1087,7 +1094,7 @@ ORDER BY air.emp_id ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc]]>
 							<box>
 								<pen lineWidth="0.5"/>
 							</box>
-							<textField pattern="#,##0.00#;#,##0.00#-">
+							<textField>
 								<reportElement mode="Opaque" x="0" y="0" width="60" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="c6104213-82c1-4604-af41-f94906a5ec68">
 									<propertyExpression name="net.sf.jasperreports.style.backcolor"><![CDATA[$F{color_status}]]></propertyExpression>
 								</reportElement>
@@ -1101,6 +1108,7 @@ ORDER BY air.emp_id ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc]]>
 									<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$F{cds_value}]]></textFieldExpression>
+								<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -1165,7 +1173,7 @@ ORDER BY air.emp_id ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc]]>
 				<textElement textAlignment="Right" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{percent_achievement}+" %"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{percent_achievement}==null)?"":($F{percent_achievement}+" %")]]></textFieldExpression>
 			</textField>
 			<lineChart>
 				<chart isShowLegend="false">
@@ -1330,7 +1338,7 @@ ORDER BY air.emp_id ,ai.perspective_id asc ,ai.kpi_id asc ,ai.item_name asc]]>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{actual_value}+"\n"+($F{percent_achievement} >= 100  ? "Achieve":"No Achieve")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{actual_value}==null)?"":($F{actual_value}+"\n"+($F{percent_achievement} >= 100  ? "Achieve":"No Achieve"))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="30" splitType="Prevent">

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report-Assignment" pageWidth="2384" pageHeight="1684" orientation="Landscape" columnWidth="2344" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="608bc336-d1aa-491d-9351-8c4300cff718">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-fmo"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
@@ -70,6 +70,8 @@
  )end) as chief_second
 , org.org_name
 , i.item_name
+, f.form_id
+, uom.is_date
 , s.structure_name
 , (CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN 'ค่าเป้าหมาย' ELSE 'ค่ามากสุดก่อน\nโดนหักคะแนน' END)AS name_one
 , COALESCE((CASE WHEN (f.form_id = 1 OR f.form_id = 2) THEN air.target_value ELSE air.max_value END),0) AS one
@@ -124,6 +126,7 @@ inner join appraisal_level level on air.level_id = level.level_id
 inner join position po on po.position_id = air.position_id
 inner join org org on org.org_id = air.org_id
 INNER JOIN appraisal_item i ON air.item_id = i.item_id
+INNER JOIN uom ON uom.uom_id = i.uom_id
 INNER JOIN appraisal_structure s ON i.structure_id = s.structure_id
 INNER JOIN form_type f ON s.form_id = f.form_id
 INNER JOIN structure_result sr ON sr.period_id = air.period_id
@@ -181,6 +184,14 @@ ORDER BY emp_code ASC , air.org_id ASC ,i.perspective_id asc ,i.kpi_id asc ,i.it
 	<field name="item_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="item_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item"/>
+	</field>
+	<field name="form_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="form_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="form_type"/>
+	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 	</field>
 	<field name="structure_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="structure_name"/>
@@ -675,6 +686,12 @@ ORDER BY emp_code ASC , air.org_id ASC ,i.perspective_id asc ,i.kpi_id asc ,i.it
 				<measure name="six" class="java.lang.String" calculation="First">
 					<measureExpression><![CDATA[$F{six}]]></measureExpression>
 				</measure>
+				<measure name="form_id" class="java.lang.Integer">
+					<measureExpression><![CDATA[$F{form_id}]]></measureExpression>
+				</measure>
+				<measure name="is_date" class="java.lang.Integer">
+					<measureExpression><![CDATA[$F{is_date}]]></measureExpression>
+				</measure>
 				<crosstabCell width="290" height="40">
 					<cellContents mode="Opaque" style="Crosstab_CD">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
@@ -690,6 +707,7 @@ ORDER BY emp_code ASC , air.org_id ASC ,i.perspective_id asc ,i.kpi_id asc ,i.it
 								<font fontName="TH SarabunPSK" size="16"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{one}]]></textFieldExpression>
+							<patternExpression><![CDATA[($V{form_id} == 1 || $V{form_id} == 2) ? (($V{is_date}==1)?"###0":"#,##0.0000") : "#,##0.0000"]]></patternExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="50" y="0" width="48" height="40" uuid="023b1af2-7720-494f-a443-b7a6063829f8"/>
@@ -703,6 +721,7 @@ ORDER BY emp_code ASC , air.org_id ASC ,i.perspective_id asc ,i.kpi_id asc ,i.it
 								<font fontName="TH SarabunPSK" size="16"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$V{two}]]></textFieldExpression>
+							<patternExpression><![CDATA[($V{form_id} == 1 || $V{form_id} == 3) ? (($V{is_date}==1)?"###0":"#,##0.0000") : "#,##0.0000"]]></patternExpression>
 						</textField>
 						<textField isBlankWhenNull="true">
 							<reportElement stretchType="RelativeToBandHeight" x="98" y="0" width="48" height="40" uuid="614b00a4-c4bc-4bad-b1b3-a6625873e8d5"/>

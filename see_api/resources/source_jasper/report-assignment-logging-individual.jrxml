@@ -956,7 +956,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table_TH" height="20">
-								<textField pattern="#,##0.00">
+								<textField>
 									<reportElement x="0" y="0" width="50" height="20" uuid="5957ba07-ede9-4a98-9b93-64fadb4106a7"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
@@ -965,7 +965,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1132,7 +1132,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="50" y="0" width="50" height="20" uuid="c0690c9a-6a0c-4bd6-b61a-0de7be4cd439"/>
@@ -1143,7 +1143,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="100" y="0" width="50" height="20" uuid="b48da7c8-6296-4ec3-b1e9-9c49867b4e22"/>
@@ -1154,7 +1154,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="150" y="0" width="50" height="20" uuid="de9f7de8-6a67-4133-b1bf-5d32dd7c4308"/>
@@ -1165,7 +1165,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="200" y="0" width="50" height="20" uuid="7f16a19f-69ee-4ad7-a0c8-13024b72f9a4"/>
@@ -1176,7 +1176,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="250" y="0" width="50" height="20" uuid="eebd7f24-0d89-4263-9e60-3de366413b6f"/>
@@ -1187,7 +1187,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="300" y="0" width="50" height="20" uuid="2e21501b-d173-4288-aab0-40b0c673ca0c"/>
@@ -1198,7 +1198,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score6}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1268,7 +1268,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							</jr:columnHeader>
 							<jr:detailCell style="Table_TH" height="20">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-								<textField pattern="#,##0.00">
+								<textField>
 									<reportElement x="0" y="0" width="56" height="20" uuid="1714db53-60dd-4ecd-88b4-7daa9dc03dde"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
@@ -1277,6 +1277,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField pattern="#,##0.00">
 									<reportElement x="56" y="0" width="54" height="20" uuid="c42b47b6-a489-420f-a484-6aa91b3a4401"/>
@@ -1533,6 +1534,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="11"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1736,7 +1738,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -1856,7 +1858,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score0}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="40" y="0" width="40" height="20" uuid="6b5892b4-e33a-4614-8121-d012c621532e"/>
@@ -1867,7 +1869,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score1}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="80" y="0" width="40" height="20" uuid="3d85022f-e400-4852-8df6-d208586a2de5"/>
@@ -1878,7 +1880,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score2}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="120" y="0" width="40" height="20" uuid="131d08c3-59df-4e9a-a38d-902dc7c22eec"/>
@@ -1889,7 +1891,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score3}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="160" y="0" width="40" height="20" uuid="7f16e467-ce14-4b70-822e-dfaf4c50d659"/>
@@ -1900,7 +1902,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score4}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="200" y="0" width="40" height="20" uuid="374d3a23-f5da-4a6b-a2fb-0abff9397dbf"/>
@@ -1911,7 +1913,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score5}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField isBlankWhenNull="true">
 									<reportElement x="240" y="0" width="43" height="20" uuid="e3a6fafc-e562-4786-aaf7-76c30518c52e"/>
@@ -1922,7 +1924,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="12"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{score6}]]></textFieldExpression>
-									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.00"]]></patternExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2054,7 +2056,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 								</staticText>
 							</jr:columnHeader>
 							<jr:detailCell style="Table_TH" height="20">
-								<textField pattern="#,##0.00">
+								<textField>
 									<reportElement x="0" y="0" width="120" height="20" uuid="26362e51-015f-418c-ae8a-2294c14f8972"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
@@ -2063,6 +2065,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 							</jr:detailCell>
 						</jr:column>
@@ -2166,7 +2169,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 							</jr:columnHeader>
 							<jr:detailCell style="Table_TH" height="20">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-								<textField pattern="#,##0.00">
+								<textField>
 									<reportElement x="0" y="0" width="89" height="20" uuid="073498b2-f823-4e6f-909c-b817d4e65563"/>
 									<box rightPadding="3">
 										<pen lineWidth="0.5"/>
@@ -2175,6 +2178,7 @@ ORDER BY emp.emp_id ASC ,api.perspective_id asc ,api.kpi_id asc ,api.item_name a
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+									<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 								</textField>
 								<textField pattern="#,##0.00">
 									<reportElement x="89" y="0" width="87" height="20" uuid="5790c4b3-e6de-456d-8076-cc71ba90d08b"/>
