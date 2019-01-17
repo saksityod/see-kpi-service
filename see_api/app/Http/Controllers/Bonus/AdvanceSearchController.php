@@ -518,8 +518,15 @@ class AdvanceSearchController extends Controller
     public function FormSalaryList(Request $request)
     {
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
-            ->where('is_active', 1)
             ->where('is_raise', 1)
+            ->get();
+        return response()->json($forms);
+    }
+
+    public function FormMpiList(Request $request)
+    {
+        $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
+            ->where('is_mpi', 1)
             ->get();
         return response()->json($forms);
     }
