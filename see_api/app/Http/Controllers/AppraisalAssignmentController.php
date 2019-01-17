@@ -2975,13 +2975,13 @@ class AppraisalAssignmentController extends Controller
 							$aitemlog->target_value = $i['target_value'];
 							$aitemlog->weight_percent = $i['weight_percent'];
 							//ดั้งเดิมเมื่อหน้าจอส่งข้อมูลมาเป็น null -> Service บันทึกข้อมูลเป็น 0 ดังนั้นจึงเปลี่ยนให้เป็นบันทึกข้อมูลเป็นค่า null
-							array_key_exists('score0', $i)? (($i['score0'] == 'null' || empty($i['score0']))? $aitemlog->score0 = null : $aitemlog->score0 = $i['score0'])  : null;
-							array_key_exists('score1', $i)? (($i['score1'] == 'null' || empty($i['score1']))? $aitemlog->score1 = null : $aitemlog->score1 = $i['score1'])  : null;
-							array_key_exists('score2', $i)? (($i['score2'] == 'null' || empty($i['score2']))? $aitemlog->score2 = null : $aitemlog->score2 = $i['score2'])  : null;
-							array_key_exists('score3', $i)? (($i['score3'] == 'null' || empty($i['score3']))? $aitemlog->score3 = null : $aitemlog->score3 = $i['score3'])  : null;
-							array_key_exists('score4', $i)? (($i['score4'] == 'null' || empty($i['score4']))? $aitemlog->score4 = null : $aitemlog->score4 = $i['score4'])  : null;
-							array_key_exists('score5', $i)? (($i['score5'] == 'null' || empty($i['score5']))? $aitemlog->score5 = null : $aitemlog->score5 = $i['score5'])  : null;
-							array_key_exists('score6', $i)? (($i['score6'] == 'null' || empty($i['score6']))? $aitemlog->score6 = null : $aitemlog->score6 = $i['score6'])  : null;
+							array_key_exists('score0', $i)? (($i['score0'] != '0' && empty($i['score0']))? $aitemlog->score0 = null : $aitemlog->score0 = $i['score0'])  : null;
+							array_key_exists('score1', $i)? (($i['score1'] != '0' && empty($i['score1']))? $aitemlog->score1 = null : $aitemlog->score1 = $i['score1'])  : null;
+							array_key_exists('score2', $i)? (($i['score2'] != '0' && empty($i['score2']))? $aitemlog->score2 = null : $aitemlog->score2 = $i['score2'])  : null;
+							array_key_exists('score3', $i)? (($i['score3'] != '0' && empty($i['score3']))? $aitemlog->score3 = null : $aitemlog->score3 = $i['score3'])  : null;
+							array_key_exists('score4', $i)? (($i['score4'] != '0' && empty($i['score4']))? $aitemlog->score4 = null : $aitemlog->score4 = $i['score4'])  : null;
+							array_key_exists('score5', $i)? (($i['score5'] != '0' && empty($i['score5']))? $aitemlog->score5 = null : $aitemlog->score5 = $i['score5'])  : null;
+							array_key_exists('score6', $i)? (($i['score6'] != '0' && empty($i['score6']))? $aitemlog->score6 = null : $aitemlog->score6 = $i['score6'])  : null;
 							array_key_exists('forecast_value', $i) ? $aitemlog->forecast_value = $i['forecast_value'] : null;
 							$aitemlog->over_value = 0;
 							$aitemlog->weigh_score = 0;
@@ -3106,13 +3106,13 @@ class AppraisalAssignmentController extends Controller
 					$aitem->item_desc = $i['item_desc'];
 					$aitem->target_value = $i['target_value'];
 					//ดั้งเดิมเมื่อหน้าจอส่งข้อมูลมาเป็น null -> Service บันทึกข้อมูลเป็น 0 ดังนั้นจึงเปลี่ยนให้เป็นบันทึกข้อมูลเป็นค่า null
-					array_key_exists('score0', $i)? (($i['score0'] == 'null' || empty($i['score0']))? $aitem->score0 = null : $aitem->score0 = $i['score0'])  : null;
-					array_key_exists('score1', $i)? (($i['score1'] == 'null' || empty($i['score1']))? $aitem->score1 = null : $aitem->score1 = $i['score1'])  : null;
-					array_key_exists('score2', $i)? (($i['score2'] == 'null' || empty($i['score2']))? $aitem->score2 = null : $aitem->score2 = $i['score2'])  : null;
-					array_key_exists('score3', $i)? (($i['score3'] == 'null' || empty($i['score3']))? $aitem->score3 = null : $aitem->score3 = $i['score3'])  : null;
-					array_key_exists('score4', $i)? (($i['score4'] == 'null' || empty($i['score4']))? $aitem->score4 = null : $aitem->score4 = $i['score4'])  : null;
-					array_key_exists('score5', $i)? (($i['score5'] == 'null' || empty($i['score5']))? $aitem->score5 = null : $aitem->score5 = $i['score5'])  : null;
-					array_key_exists('score6', $i)? (($i['score6'] == 'null' || empty($i['score6']))? $aitem->score6 = null : $aitem->score6 = $i['score6'])  : null;
+					array_key_exists('score0', $i)? (($i['score0'] != '0' && empty($i['score0']))? $aitem->score0 = null : $aitem->score0 = $i['score0'])  : null;
+					array_key_exists('score1', $i)? (($i['score1'] != '0' && empty($i['score1']))? $aitem->score1 = null : $aitem->score1 = $i['score1'])  : null;
+					array_key_exists('score2', $i)? (($i['score2'] != '0' && empty($i['score2']))? $aitem->score2 = null : $aitem->score2 = $i['score2'])  : null;
+					array_key_exists('score3', $i)? (($i['score3'] != '0' && empty($i['score3']))? $aitem->score3 = null : $aitem->score3 = $i['score3'])  : null;
+					array_key_exists('score4', $i)? (($i['score4'] != '0' && empty($i['score4']))? $aitem->score4 = null : $aitem->score4 = $i['score4'])  : null;
+					array_key_exists('score5', $i)? (($i['score5'] != '0' && empty($i['score5']))? $aitem->score5 = null : $aitem->score5 = $i['score5'])  : null;
+					array_key_exists('score6', $i)? (($i['score6'] != '0' && empty($i['score6']))? $aitem->score6 = null : $aitem->score6 = $i['score6'])  : null;
 					array_key_exists('forecast_value', $i) ? $aitem->forecast_value = $i['forecast_value'] : null;
 					$aitem->over_value = 0;
 					//$aitem->weigh_score = 0;
