@@ -533,6 +533,10 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('import_pqpi/export','Salary\ImportPQPIController@export');
 	// Salary -> Import Salary
 	Route::post('import_salary/export','Salary\ImportSalaryController@export');
+	// Salary -> Export MPI
+	Route::post('export_mpi/export','Salary\ExportMpiController@export');
+
+	
 
 	// Bonus //
 	// Bonus --> Advance Search //
