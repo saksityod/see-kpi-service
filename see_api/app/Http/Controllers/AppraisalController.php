@@ -14,6 +14,8 @@ use App\AttachFile;
 use App\SystemConfiguration;
 use App\Employee;
 use App\Org;
+use App\AppraisalStructure;
+use App\AppraisalItem;
 use App\Http\Controllers\Appraisal360Degree\AppraisalGroupController;
 
 
@@ -1094,8 +1096,8 @@ class AppraisalController extends Controller
 				$groups[$key]['count'] += 1;
 			}
 		}
-	//	$resultT = $items->toArray();
-	//	$items['group'] = $groups;
+		//	$resultT = $items->toArray();
+		//	$items['group'] = $groups;
 
 		$stage = DB::select("
 			SELECT a.created_by, a.created_dttm, b.from_action, b.to_action, a.remark
@@ -1455,6 +1457,13 @@ class AppraisalController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
+		// get structure is derive flag
+		$structureIsDeriveArr = [];
+		$structureIsDerive = AppraisalStructure::select('structure_id')->where('is_derive', 1)->where('is_active', 1)->get();
+		foreach ($structureIsDerive as $struc) {
+			array_push($structureIsDeriveArr, $struc->structure_id);
+		}
+
 		if (!empty($request->appraisal)) {
 			foreach ($request->appraisal as $a) {
 				$aresult = AppraisalItemResult::find($a['item_result_id']);
@@ -1468,6 +1477,24 @@ class AppraisalController extends Controller
 					array_key_exists('contribute_percent', $a) ? $aresult->contribute_percent = $a['contribute_percent'] : null;
 					$aresult->updated_by = Auth::id();
 					$aresult->save();
+
+					// ถัา item มี structure เป็น is derive ให้เอาข้อมูลไป update ให้ลูกน้องด้วย
+					$appraisalItem = AppraisalItem::find($aresult->item_id); 
+					if (in_array($appraisalItem->structure_id, $structureIsDeriveArr)) {
+						DB::table('appraisal_item_result')
+						->where('derive_item_result_id', $aresult->item_result_id)
+						->update([
+							'first_score' => $aresult->first_score,
+							'second_score' => $aresult->second_score,
+							'score' => $aresult->score,
+							'forecast_value' => $aresult->forecast_value,
+							'actual_value' => $aresult->actual_value,
+							'contribute_percent' => $aresult->contribute_percent,
+							'updated_by' => Auth::id(),
+							'updated_dttm' => date('Y-m-d H:i:s')
+						]);
+					}
+
 				}
 			}
 		}
