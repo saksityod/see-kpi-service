@@ -1512,7 +1512,7 @@ class AppraisalAssignmentController extends Controller
 
 	    	$items = DB::select($query_unassign . " order by org_code asc,emp_code asc", $qinput);
 
-	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id);
+	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id, $request->appraisal_type_id);
 
 		// Get the current page from the url if it's not set default to 1
 	    	empty($request->page) ? $page = 1 : $page = $request->page;
@@ -1548,7 +1548,7 @@ class AppraisalAssignmentController extends Controller
 
 	}
 
-	function find_derive($items, $appraisal_form, $period_id) {
+	function find_derive($items, $appraisal_form, $period_id, $appraisal_type_id) {
 		// $findDerive = DB::select("
 		// 	SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
 		// 	FROM appraisal_structure ast
@@ -1674,35 +1674,99 @@ class AppraisalAssignmentController extends Controller
 
 			    } else if($findDerives->is_org==1) {
 			    	//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
-			    	$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
-			    	// exit(json_encode(['data' => $findChiefEmp]));
-			    	// if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
-			    	// 	$items[$key]->assigned = 1;
-		    		// 	$items[$key]->assigned_msg = '';
-			    	// } else {
-				    	$findEmpResult = DB::table('emp_result')
-				        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
-				        ->where('emp_result.period_id', $period_id)
-				        ->where('emp_result.appraisal_form_id', $appraisal_form)
-				        ->where('emp_result.org_id', $findChiefEmp['org_id'])
-				        ->orWhere('emp_result.org_id', $item->org_id)
-				        ->where('emp_result.emp_id', null)
-				        ->where('appraisal_stage.assignment_flag', 1)
-				        ->where('appraisal_stage.edit_flag', 0)
-				        ->first();
+			    	$getLv = Org::find($item->org_id)->level_id;
+			    	if($appraisal_type_id==1 && $findDerives->level_id==$getLv) {
+			    		$items[$key]->assigned = 1;
+		    			$items[$key]->assigned_msg = '';
+			    	} else {
+			    		$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
 
-				    	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
-				    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
-				    			// กรณี ยังไม่มีการ complete เลย
-					    		$items[$key]->assigned = 0;
-					    		$items[$key]->assigned_msg = 'Parent Org not Assign to Stage Complete';
-				    		}
-				    	} else {
-				    		$items[$key]->assigned = 1;
-				    		$items[$key]->assigned_msg = 'Complete';
-				    		$items[$key]->org_id_array[] = $findEmpResult->org_id;
-				    		$items[$key]->is_derive_check[] = 'org';
-				    	}
+				    	// exit(json_encode(['level' => $findDerives->level_id, '$getLv' => $getLv, 'findChiefEmp' => $findChiefEmp]));
+				    	// exit(json_encode(['data' => $findChiefEmp]));
+
+				    	// exit(json_encode(['data' => $findChiefEmp, 'org_code' => $item->org_code]));
+				    	// exit(json_encode(['data' => $findChiefEmp]));
+				    	// if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
+				    	// 	$items[$key]->assigned = 1;
+			    		// 	$items[$key]->assigned_msg = '';
+				    	// } else {
+					    	$findEmpResult = DB::table('emp_result')
+					        ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+					        ->where('emp_result.period_id', $period_id)
+					        ->where('emp_result.appraisal_form_id', $appraisal_form)
+					        ->where('emp_result.org_id', $findChiefEmp['org_id'])
+					        ->orWhere('emp_result.org_id', $item->org_id)
+					        ->where('emp_result.emp_id', null)
+					        ->where('appraisal_stage.assignment_flag', 1)
+					        ->where('appraisal_stage.edit_flag', 0)
+					        ->first();
+
+					        // $ddd = DB::select("
+					        // 	selects * 
+					        // 	from emp_result er
+					        // 	inner join appraisal_stage ast on ast.stage_id = er.stage_id
+					        // 	where er.period_id = 
+					        // 	and er.appraisal_form_id = $appraisal_form
+					        // 	and (er.org_id = '{$findChiefEmp['org_id']}' or er.org_id = {$item->org_id})
+					        // 	and er.emp_id is null
+					        // 	and ast.assignment_flag = 1
+					        // 	and ast.edit_flag = 0 
+					        // ");
+
+
+
+					        // exit(json_encode(['data' => $findEmpResult]));
+
+					    	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+					    		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
+					    			// กรณี ยังไม่มีการ complete เลย
+						    		$items[$key]->assigned = 0;
+						    		$items[$key]->assigned_msg = 'Parent Org not Assign to Stage Complete';
+					    		}
+					    	} else {
+					    		$items[$key]->assigned = 1;
+					    		$items[$key]->assigned_msg = 'Complete';
+					    		$items[$key]->org_id_array[] = $findEmpResult->org_id;
+					    		$items[$key]->is_derive_check[] = 'org';
+					    	}
+			    	}
+			    	// exit(json_encode(['org_code' => $getLv, 'level' => $findDerives->level_id]));
+			    	// $findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+
+			    	// exit(json_encode(['level' => $findDerives->level_id, '$getLv' => $getLv, 'findChiefEmp' => $findChiefEmp]));
+			    	// // exit(json_encode(['data' => $findChiefEmp]));
+
+			    	// // exit(json_encode(['data' => $findChiefEmp, 'org_code' => $item->org_code]));
+			    	// // exit(json_encode(['data' => $findChiefEmp]));
+			    	// // if($findChiefEmp['org_id']==0) { // กรณีไม่มี parent_org_code
+			    	// // 	$items[$key]->assigned = 1;
+		    		// // 	$items[$key]->assigned_msg = '';
+			    	// // } else {
+				    // 	$findEmpResult = DB::table('emp_result')
+				    //     ->join('appraisal_stage', 'appraisal_stage.stage_id', '=', 'emp_result.stage_id')
+				    //     ->where('emp_result.period_id', $period_id)
+				    //     ->where('emp_result.appraisal_form_id', $appraisal_form)
+				    //     ->where('emp_result.org_id', $findChiefEmp['org_id'])
+				    //     ->orWhere('emp_result.org_id', $item->org_id)
+				    //     ->where('emp_result.emp_id', null)
+				    //     ->where('appraisal_stage.assignment_flag', 1)
+				    //     ->where('appraisal_stage.edit_flag', 0)
+				    //     ->first();
+
+				    //     // exit(json_encode(['data' => $findEmpResult]));
+
+				    // 	if(empty($findEmpResult)) { // กรณี stage ยังไม่ complete
+				    // 		if(empty($items[$key]->assigned) || $items[$key]->assigned==0) { 
+				    // 			// กรณี ยังไม่มีการ complete เลย
+					   //  		$items[$key]->assigned = 0;
+					   //  		$items[$key]->assigned_msg = 'Parent Org not Assign to Stage Complete';
+				    // 		}
+				    // 	} else {
+				    // 		$items[$key]->assigned = 1;
+				    // 		$items[$key]->assigned_msg = 'Complete';
+				    // 		$items[$key]->org_id_array[] = $findEmpResult->org_id;
+				    // 		$items[$key]->is_derive_check[] = 'org';
+				    // 	}
 					// }
 			    }
 			}
