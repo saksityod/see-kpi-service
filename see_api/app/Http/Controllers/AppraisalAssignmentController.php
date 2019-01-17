@@ -1612,7 +1612,7 @@ class AppraisalAssignmentController extends Controller
 		, a.no_raise_value, b.is_no_raise_value
 		from appraisal_item a 
 		".( 
-			(empty($request->emp_result_id) && ($request->obj_stage['appraisal_type_id'] == '2')) ?
+			(($request->obj_stage['appraisal_type_id'] == '2')) ?
 			"
 			INNER JOIN (
 				SELECT DISTINCT aip.item_id
@@ -1620,7 +1620,7 @@ class AppraisalAssignmentController extends Controller
 				WHERE aip.position_id in(
 							SELECT DISTINCT e.position_id
 							FROM employee AS e
-							WHERE FIND_IN_SET(e.emp_code,"."'" . implode(",", $request->emp_code_list) ."'" .")
+							WHERE FIND_IN_SET(e.emp_code,"."'" . (empty($request->emp_code_list) ? $request['obj_stage']['emp_code'] : implode(",", $request->emp_code_list)) ."'" .")
 							and e.is_active = 1))
 				api on a.item_id = api.item_id 
 			":""
