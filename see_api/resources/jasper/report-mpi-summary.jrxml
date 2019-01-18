@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name=" report-mpi-summary" pageWidth="890" pageHeight="595" orientation="Landscape" columnWidth="850" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="param_year" class="java.lang.String"/>
+	<parameter name="param_org_id" class="java.lang.String"/>
+	<parameter name="param_period" class="java.lang.String"/>
+	<parameter name="param_position" class="java.lang.String"/>
+	<parameter name="param_emp" class="java.lang.String"/>
+	<parameter name="param_level_emp" class="java.lang.String"/>
+	<parameter name="param_level_org" class="java.lang.String"/>
+	<parameter name="param_from" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+ e.emp_code,
+ e.emp_name,
+ l.appraisal_level_name level_name,
+ o.org_name,
+ p.position_name,
+ af.appraisal_form_name form_name,
+ ap.appraisal_period_desc period_desc,
+ CASE WHEN ISNULL(ej.adjust_result_score) THEN er.result_score ELSE ej.adjust_result_score END as score,
+ CASE WHEN ISNULL(ej.adjust_grade) THEN er.grade ELSE ej.adjust_result_score END as grade,
+ CASE WHEN ISNULL(ej.adjust_amount) THEN FROM_BASE64(er.mpi_amount)  ELSE FROM_BASE64(ej.adjust_amount) END as amount
+FROM emp_result er
+INNER JOIN appraisal_form af ON er.appraisal_form_id = af.appraisal_form_id
+INNER JOIN employee e ON er.emp_id = e.emp_id
+INNER JOIN position p ON er.position_id = p.position_id
+INNER JOIN org o ON er.org_id = o.org_id
+INNER JOIN appraisal_level l ON er.level_id = l.level_id
+INNER JOIN appraisal_period ap on er.period_id = ap.period_id
+LEFT JOIN emp_result_judgement ej ON ej.emp_result_id = er.emp_result_id
+WHERE  af.is_raise = 1
+AND ap.appraisal_year = $P{param_year}     -- 2018
+AND er.period_id =  $P{param_period}    -- 1
+AND (er.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
+AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
+AND (er.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
+AND (er.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
+AND (er.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)
+AND er.position_id in ( $P!{param_position})
+AND ej.created_dttm = (SELECT max(erj.created_dttm) FROM emp_result_judgement erj WHERE erj.emp_result_id = er.emp_result_id ) 
+Order by o.org_id,l.seq_no ,e.emp_code]]>
+	</queryString>
+	<field name="emp_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="emp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="level_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="level_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_level"/>
+	</field>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
+	</field>
+	<field name="position_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="form_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="form_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_form"/>
+	</field>
+	<field name="period_desc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="period_desc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="score" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="score"/>
+	</field>
+	<field name="grade" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="grade"/>
+	</field>
+	<field name="amount" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="amount"/>
+	</field>
+	<group name="Group1"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="60" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="30" y="0" width="168" height="60" backcolor="#B8B8B8" uuid="70044e45-dae4-42f8-8aa2-3bc3daeb7093"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Emp Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="198" y="0" width="42" height="60" backcolor="#B8B8B8" uuid="3a7a127a-4a21-401d-aa8f-b3029a65d11b"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Level]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="360" y="0" width="120" height="60" backcolor="#B8B8B8" uuid="ec34b963-420b-448a-9ced-38d1f16251f2"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Position]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="240" y="0" width="120" height="60" backcolor="#B8B8B8" uuid="29bb250a-89c4-45ca-98ce-432b07de9516"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Organization]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="-20" y="0" width="50" height="60" backcolor="#B8B8B8" uuid="9b480d8f-46ab-4f96-a0e5-32f7e283935b"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Emp Code]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="480" y="0" width="50" height="60" backcolor="#B8B8B8" uuid="0f13d916-c67d-43ae-a2d7-50abdac2da0b"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Form]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="530" y="0" width="130" height="60" backcolor="#B8B8B8" uuid="38a2d524-171a-4846-8abd-a9ba21a20443"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Period]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="660" y="0" width="70" height="60" backcolor="#B8B8B8" uuid="386d3020-ff2d-4dcd-802c-c05e704b4ecf"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Score]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="730" y="0" width="70" height="60" backcolor="#B8B8B8" uuid="39eab56f-a0a6-48e0-852c-680b9300f2d7"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Grade]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="800" y="0" width="70" height="60" backcolor="#B8B8B8" uuid="3fd7c6c1-6b1a-4a9f-a158-8c0aaf27bcc4"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="30" splitType="Prevent">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="-20" y="0" width="50" height="30" uuid="9e2b189d-fa45-404c-845c-5eb0c9f7c818">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="240" y="0" width="120" height="30" uuid="5300d902-0350-41f9-98ed-bec5a91dfac8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="198" y="0" width="42" height="30" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{level_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="30" y="0" width="168" height="30" uuid="33297ad5-0722-4377-aa68-490dba044fe7">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="360" y="0" width="120" height="30" uuid="8b27a87c-0017-406c-ba2c-155a671d4f82">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="480" y="0" width="50" height="30" uuid="e48c62fe-266a-4a01-8857-a4c6c361976d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{form_name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="530" y="0" width="130" height="30" uuid="d2c3f9f9-e0e0-4f63-b1b7-1f56a39a0b45">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period_desc}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="660" y="0" width="70" height="30" uuid="af312f67-249e-4702-b0fd-dacf17404437">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="0" rightPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{score}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="730" y="0" width="70" height="30" uuid="03ccf4e8-7033-4671-8ab2-c5aa2ed3b79e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{grade}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="800" y="0" width="70" height="30" uuid="8a8093a1-1968-48a2-bfd3-6f22e66869e9">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="0" rightPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="100">
+			<staticText>
+				<reportElement x="360" y="46" width="490" height="24" uuid="dc3738c1-33a4-42d4-a34e-3aef08e19ab6"/>
+				<textElement textAlignment="Center">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Approved By .....................................................       Date ....../....../.........]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="-20" y="70" width="870" height="30" uuid="5f41bccb-ffbc-4f53-94e4-65582ca2b7dc">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box leftPadding="0" rightPadding="3">
+					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="TH SarabunPSK" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(Page "+$V{PAGE_NUMBER}+")"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>
