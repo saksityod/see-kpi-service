@@ -11,6 +11,7 @@ use App\CompetencyResult;
 use App\AppraisalItemResult;
 use App\WorkflowStage;
 use App\Http\Controllers\AppraisalController;
+use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 use Auth;
 use DB;
@@ -33,6 +34,7 @@ class AppraisalGroupController extends Controller
 	public function __construct()
 	{
 		$this->middleware('jwt.auth');
+		$this->advanSearch = new AdvanceSearchController;
 	}
 
 	public function check_permission_popup($emp_result_id) {
@@ -162,6 +164,7 @@ class AppraisalGroupController extends Controller
 
 	public function index(Request $request)
 	{
+		$employee = Employee::find(Auth::id());
 		$all_emp = DB::select("
 			SELECT sum(b.is_all_employee) count_no
 			from employee a
@@ -240,6 +243,12 @@ class AppraisalGroupController extends Controller
 				$items = DB::select($query. " order by o.org_code asc, d.seq_no desc, b.emp_code asc ", $qinput);
 
 			} else {
+				$in_org_code = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+				empty($in_org_code) ? $in_org_code = "null," : null;
+
+				$org_code_auth = DB::table('org')->select('org_code')->where('org_id', $employee->org_id)->first();
+				
+				empty($system_config->appraisal_360_flag)?($appraisal_360_flag=""):($appraisal_360_flag = $system_config->appraisal_360_flag);
 
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, 
@@ -260,7 +269,7 @@ class AppraisalGroupController extends Controller
 					INNER JOIN appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 				";
-
+				($appraisal_360_flag == 0 ) ?($query .= " and o.org_code in ({$in_org_code}".$org_code_auth->org_code.")"):null ;
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
 				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);

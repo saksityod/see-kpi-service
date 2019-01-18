@@ -17,6 +17,7 @@ use App\Org;
 use App\AppraisalStructure;
 use App\AppraisalItem;
 use App\Http\Controllers\Appraisal360Degree\AppraisalGroupController;
+use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 
 use Auth;
@@ -38,6 +39,7 @@ class AppraisalController extends Controller
 	public function __construct()
 	{
 		$this->middleware('jwt.auth');
+		$this->advanSearch = new AdvanceSearchController;
 	}
 
 	public function year_list()
@@ -669,7 +671,7 @@ class AppraisalController extends Controller
 			$items = DB::select($query. " order by o.org_code ASC, a.level_id DESC , b.emp_code ASC ", $qinput); //period_id,emp_code,org_code  asc
 
 		} else {
-
+		/*
 			$re_emp = array();
 
 			$emp_list = array();
@@ -755,9 +757,16 @@ class AppraisalController extends Controller
 					$in_emp .= "'" . $v . "'" . ',';
 				}
 			}
+			*/
 
-			empty($in_emp) ? $in_emp = "null" : null;
+			// ค้นหาให้แสดงพนักงานทั้งสายที่อยู่ใต้ตัวเอง
+			$in_emp = $this->advanSearch->GetallUnderEmp(Auth::id());
+			empty($in_emp) ? $in_emp = "null," : null;
+
+			empty($system_config->appraisal_360_flag)?($appraisal_360_flag=""):($appraisal_360_flag = $system_config->appraisal_360_flag);
+		
 			$dotline_code = Auth::id();
+			
 			if ($request->appraisal_type_id == 2) {
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
@@ -774,11 +783,11 @@ class AppraisalController extends Controller
 					left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
-					and (b.emp_code = '{$dotline_code}' or b.dotline_code = '{$dotline_code}' or b.chief_emp_code = '{$dotline_code}')
+					-- and (b.emp_code = '{$dotline_code}' or b.dotline_code = '{$dotline_code}' or b.chief_emp_code = '{$dotline_code}')
 					-- and (b.emp_code in ({$in_emp}) or b.dotline_code = '{$dotline_code}')
 				";
 				// User ที่ไม่ใช่ Admin และเป็นแบบ Individual เวลาที่หาให้แสดงตนเอง คนที่เป็นลูกน้องโดยตรงของตนเอง และคนที่ตนเองสามารถประเมิณได้
-	
+				($appraisal_360_flag == 0 ) ?($query .= " and b.emp_code in ({$in_emp}".Auth::id().")"):null ;
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
 				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
