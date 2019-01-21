@@ -33,6 +33,7 @@ class AppraisalGradeController extends Controller
 			from appraisal_level
 			where is_active = 1
 			and is_individual = 1
+			and is_hr = 0
 			order by appraisal_level_name
 		");
 		return response()->json($items);
@@ -102,7 +103,7 @@ class AppraisalGradeController extends Controller
 		}
 
 		empty($request->appraisal_form_id) ?: ($query .= " AND a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id in(?) " AND $qinput[] = $request->appraisal_level_id);
+		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
 		$qfooter = " ORDER BY a.appraisal_form_id, a.appraisal_level_id, a.begin_score";
 
@@ -131,6 +132,7 @@ class AppraisalGradeController extends Controller
 	public function store(Request $request)
 	{
 		$errors = array();
+		$respData = collect();
 
 		try {
 			$config = SystemConfiguration::firstOrFail();
@@ -138,63 +140,76 @@ class AppraisalGradeController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
-		$validator = Validator::make($request->all(), [
-			'appraisal_form_id' => 'required|integer',
-			'appraisal_level_id' => 'required|integer',
-			'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $request->appraisal_level_id,
-			'begin_score' => 'required|numeric',
-			'end_score' => 'required|numeric',
-			'salary_raise_amount' => 'required|numeric',
-			'is_active' => 'required|boolean',
-		]);
-
-		$range_check = DB::select("
-			select grade, begin_score, end_score
-			from appraisal_grade
-			where appraisal_level_id = ?
-			and (? between begin_score and end_score
-			or ? between end_score and begin_score
-			or ? between begin_score and end_score
-			or ? between end_score and begin_score)
-		", array($request->appraisal_level_id, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
-
-		if ($validator->fails()) {
-			$errors = $validator->errors()->toArray();
-			if (!empty($range_check)) {
-				$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
-			}
-			return response()->json(['status' => 400, 'data' => $errors]);
-		} else {
-			if (!empty($range_check)) {
-				$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
-				return response()->json(['status' => 400, 'data' => $errors]);
-			}
-			$item = new AppraisalGrade;
-			$item->fill($request->except(['salary_raise_amount', 'structure_id']));
-
-			if ($config->raise_type == 1) {
-				$item->salary_raise_amount = $request->salary_raise_amount;
-				$item->salary_raise_percent = null;
-				$item->salary_raise_step = null;
-				$item->structure_id = null;
-			} elseif ($config->raise_type == 2) {
-				$item->salary_raise_amount = null;
-				$item->salary_raise_percent = $request->salary_raise_amount;
-				$item->salary_raise_step = null;
-				$item->structure_id = null;
-			}elseif ($config->raise_type == 3) {
-				$item->salary_raise_amount = null;
-				$item->salary_raise_percent = null;
-				$item->salary_raise_step = $request->salary_raise_amount;
-				$item->structure_id = ($request->structure_id==0)?null:$request->structure_id;
-			}
-
-			$item->created_by = Auth::id();
-			$item->updated_by = Auth::id();
-			$item->save();
+		// check level if not null
+		if(count($request->appraisal_level_id) == 0){
+			return response()->json(['status' => 404, 'data' => 'Please select at least one Appraisal Level.']);
 		}
 
-		return response()->json(['status' => 200, 'data' => $item]);
+		// Perform one level at a timeใ
+		foreach ($request->appraisal_level_id as $key => $vel) {
+			$validator = Validator::make($request->all(), [
+				'appraisal_form_id' => 'required|integer',
+				'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $vel,
+				'begin_score' => 'required|numeric',
+				'end_score' => 'required|numeric',
+				'salary_raise_amount' => 'required|numeric',
+				// 'is_active' => 'required|boolean',
+			]);
+
+			$range_check = DB::select("
+				select grade, begin_score, end_score
+				from appraisal_grade
+				where appraisal_level_id = ?
+				and (? between begin_score and end_score
+				or ? between end_score and begin_score
+				or ? between begin_score and end_score
+				or ? between end_score and begin_score)
+			", array($vel, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
+
+			if ($validator->fails()) {
+				$errors = $validator->errors()->toArray();
+				if (!empty($range_check)) {
+					$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
+				}
+				return response()->json(['status' => 400, 'data' => $errors]);
+				
+			} else {
+				if (!empty($range_check)) {
+					$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
+					return response()->json(['status' => 400, 'data' => $errors]);
+				}
+
+				$item = new AppraisalGrade;
+				$item->fill($request->except(['salary_raise_amount', 'structure_id', 'appraisal_level_id', 'is_active']));
+
+				$item->appraisal_level_id = $vel;
+				$item->is_active = ($request->is_active == 'on') ? true : false;
+				if ($config->raise_type == 1) {
+					$item->salary_raise_amount = $request->salary_raise_amount;
+					$item->salary_raise_percent = null;
+					$item->salary_raise_step = null;
+					$item->structure_id = null;
+				} elseif ($config->raise_type == 2) {
+					$item->salary_raise_amount = null;
+					$item->salary_raise_percent = $request->salary_raise_amount;
+					$item->salary_raise_step = null;
+					$item->structure_id = null;
+				}elseif ($config->raise_type == 3) {
+					$item->salary_raise_amount = null;
+					$item->salary_raise_percent = null;
+					$item->salary_raise_step = $request->salary_raise_amount;
+					$item->structure_id = ($request->structure_id==0)?null:$request->structure_id;
+				}
+	
+				$item->created_by = Auth::id();
+				$item->updated_by = Auth::id();
+				$item->save();
+
+				$respData->push($item);
+			}
+		}
+
+		return response()->json(['status' => 200, 'data' => $respData]);
 	}
 
 
@@ -222,7 +237,7 @@ class AppraisalGradeController extends Controller
 
 
 	public function update(Request $request, $grade_id)
-	{
+	{ 
 		try {
 			$item = AppraisalGrade::findOrFail($grade_id);
 		} catch (ModelNotFoundException $e) {
@@ -235,15 +250,20 @@ class AppraisalGradeController extends Controller
 			return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
 		}
 
+		// check level if not null
+		if(count($request->appraisal_level_id) == 0){
+			return response()->json(['status' => 404, 'data' => 'Please select at least one Appraisal Level.']);
+		}
+
 		$errors = array();
 		$validator = Validator::make($request->all(), [
 			'appraisal_form_id' => 'required|integer',
-			'appraisal_level_id' => 'required|integer',
-			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id,
+			// 'appraisal_level_id' => 'required|integer',
+			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id[0],
 			'begin_score' => 'required|numeric',
 			'end_score' => 'required|numeric',
 			'salary_raise_amount' => 'required|numeric',
-			'is_active' => 'required|boolean',
+			// 'is_active' => 'required|boolean',
 		]);
 
 		$range_check = DB::select("
@@ -255,7 +275,7 @@ class AppraisalGradeController extends Controller
 			or ? between begin_score and end_score
 			or ? between end_score and begin_score)
 			and grade <> ?
-		", array($request->appraisal_level_id, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score, $item->grade));
+		", array($request->appraisal_level_id[0], $request->begin_score, $request->begin_score, $request->end_score, $request->end_score, $item->grade));
 
 		if ($validator->fails()) {
 			$errors = $validator->errors()->toArray();
@@ -268,7 +288,9 @@ class AppraisalGradeController extends Controller
 				$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
 				return response()->json(['status' => 400, 'data' => $errors]);
 			}
-			$item->fill($request->except(['salary_raise_amount', 'structure_id']));
+			$item->fill($request->except(['salary_raise_amount', 'structure_id', 'appraisal_level_id', 'is_active']));
+			$item->appraisal_level_id = $request->appraisal_level_id[0];
+			$item->is_active = ($request->is_active == 'on') ? true : false;
 			if ($config->raise_type == 1) {
 				$item->salary_raise_amount = $request->salary_raise_amount;
 				$item->salary_raise_percent = null;
@@ -288,6 +310,7 @@ class AppraisalGradeController extends Controller
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
+
 		return response()->json(['status' => 200, 'data' => $item]);
 	}
 
