@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Bonus;
 
 use Illuminate\Http\Request;
 
+use App\EmpResultJudgement;
+use App\Employee;
+use App\EmpResult;
+use App\AppraisalStage;
+use App\EmpResultStage;
+
+use Validator;
 use DB;
 use Auth;
-use App\Employee;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -145,9 +151,6 @@ class SalaryAdjustmentController extends Controller
     				, aps.seq_no
     				, apc.weight_percent";
 
-        $result = DB::select($stucture_form);
-        return response()->json($result);
-
         // หาค่า total และ score ของแต่ละ stucture
         $score_stucture = "
             SELECT result.emp_result_id
@@ -278,9 +281,9 @@ class SalaryAdjustmentController extends Controller
         $gueOrgCodeByEmpId = empty($request->emp_id) ? '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
         $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
 
-        $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.level_id = '{$request->emp_level}' OR find_in_set(er.level_id, '{$gue_emp_level}'))";
-        $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (o.level_id = '{$request->org_level}' OR find_in_set(org.level_id, '{$gue_org_level}'))";
-        $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
+        $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.level_id = '{$request->emp_level}' OR find_in_set(emp.level_id, '{$gue_emp_level}'))";
+        $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (o.level_id = '{$request->org_level}' OR find_in_set(o.level_id, '{$gue_org_level}'))";
+        $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
 
         $all_emp = $this->advanSearch->isAll();
         $employee = Employee::find(Auth::id());
@@ -305,8 +308,23 @@ class SalaryAdjustmentController extends Controller
         $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 
+        // select ข้อมูล
+        $item = DB::select(
+          $main_data."
+          AND emp.period_id = ".$request->period_id."
+          ".$qryFormId ."
+          ".$qryEmpLevel."
+          ".$qryOrgLevel."
+          ".$qryOrgId."
+          ".$qryEmpId."
+          ".$qryPositionId."
+          ".$qryStageId."
+          ORDER BY o.org_code ASC
+          , le.level_id DESC
+          , em.emp_code ASC");
 
         // สร้างลำดับให้กับข้อมูล test
+        /*
         $item = DB::select("
             SELECT @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
             , rows.*
@@ -328,6 +346,7 @@ class SalaryAdjustmentController extends Controller
             ,  (SELECT @row_num := 1) num_value,
             (SELECT @prev_value := '') set_value "
           );
+          */
 
 
         // สร้างลำดับให้กับข้อมูล
@@ -362,6 +381,11 @@ class SalaryAdjustmentController extends Controller
               'sum_var_other_amount' => $i->var_other_amount,
               'sum_miss_over' => $i->miss_over,
               'sum_cal_standard' => $i->cal_standard,
+              'total_one' => $i->total_one,
+              'total_two' => $i->total_two,
+              'total_three' => $i->total_three,
+              'total_four' => $i->total_four,
+              'total_five' => $i->total_five,
         			'count' => 1,
               'edit_flag' => $user[0]->is_board,
         		);
@@ -376,6 +400,11 @@ class SalaryAdjustmentController extends Controller
             $groups[$key]['sum_var_other_amount'] += $i->var_other_amount;
             $groups[$key]['sum_miss_over'] += $i->miss_over;
             $groups[$key]['sum_cal_standard'] += $i->cal_standard;
+            $groups[$key]['total_one'] += $i->total_one;
+            $groups[$key]['total_two'] += $i->total_two;
+            $groups[$key]['total_three'] += $i->total_three;
+            $groups[$key]['total_four'] += $i->total_four;
+            $groups[$key]['total_five'] += $i->total_five;
         		$groups[$key]['count'] += 1;
             $groups[$key]['edit_flag'] = $user[0]->is_board;
         	}
@@ -403,6 +432,73 @@ class SalaryAdjustmentController extends Controller
       	$result = new LengthAwarePaginator($itemsForCurrentPage, count($groups), $perPage, $page);
         */
 
+    }
+
+    public function update(Request $request) {
+        $errors = [];
+        $errors_validator = [];
+
+        $validator = Validator::make([
+            'stage_id' => $request->stage_id
+        ], [
+            'stage_id' => 'required|integer'
+        ]);
+
+        if($validator->fails()) {
+            $errors_validator[] = $validator->errors();
+        }
+
+        foreach ($request['detail'] as $d) {
+            $validator_detail = Validator::make([
+                'emp_result_id' => $d['emp_result_id'],
+                'emp_id' => $d['emp_id'],
+                'salary' => $d['salary'],
+                'pqpi' => $d['pqpi']
+            ], [
+                'emp_result_id' => 'required|integer',
+                'emp_id' => 'required|integer',
+                'salary' => 'required|numeric',
+                'pqpi' => 'required|numeric'
+            ]);
+
+            if($validator_detail->fails()) {
+                $errors_validator[] = $validator_detail->errors();
+            }
+        }
+
+        if(!empty($errors_validator)) {
+            return response()->json(['status' => 400, 'data' => $errors_validator]);
+        }
+
+        foreach ($request['detail'] as $d) {
+            $empl = Employee::find($d['emp_id']);
+            $empl->s_amount = $d['salary'];
+            $empl->pqpi_amount = $d['pqpi'];
+            $empl->updated_by = Auth::id();
+
+            $emp = EmpResult::find($d['emp_result_id']);
+            $emp->adjust_new_s_amount = $d['salary'];
+            $emp->adjust_new_pqpi_amount = $d['pqpi'];
+            $emp->stage_id = $request->stage_id;
+            $emp->status = AppraisalStage::find($request->stage_id)->status;
+            $emp->updated_by = Auth::id();
+
+            $emp_stage = new EmpResultStage;
+            $emp_stage->emp_result_id = $d['emp_result_id'];
+            $emp_stage->stage_id = $request->stage_id;
+            $emp_stage->created_by = Auth::id();
+            $emp_stage->updated_by = Auth::id();
+
+            try {
+                $emp->save();
+                $emp_stage->save();
+                $empl->save();
+            } catch (Exception $e) {
+                $errors[] = substr($e, 254);
+            }
+        }
+
+        return response()->json(['status' => 200, 'data' => $errors]);
     }
 
 }

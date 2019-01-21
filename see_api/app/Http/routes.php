@@ -102,7 +102,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::delete('cds_result/{cds_result_id}','CDSResultController@destroy');
 	Route::post('cds_result/upload_file/{cds_result_id}', 'CDSResultController@cds_result_upload_files');
 	Route::get('cds_result/upload_file/{cds_result_id}','CDSResultController@cds_result_files_list');
-	Route::get('cds_result/delete_file/{cds_result_doc_id}','CDSResultController@delete_file');	
+	Route::get('cds_result/delete_file/{cds_result_doc_id}','CDSResultController@delete_file');
 
 	// Appraisal Data //
 	Route::get('appraisal_data/structure_list','AppraisalDataController@structure_list');
@@ -138,7 +138,7 @@ Route::group(['middleware' => 'cors'], function()
 
 	Route::get('appraisal_assignment/period_list', 'AppraisalAssignmentController@period_list');
 	Route::get('appraisal_assignment/frequency_list', 'AppraisalAssignmentController@frequency_list');
-	
+
 	Route::get('appraisal_assignment/status_list', 'AppraisalAssignmentController@status_list');
 	Route::patch('appraisal_assignment/update_action', 'AppraisalAssignmentController@update_action');
 
@@ -428,7 +428,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('benchmark_data/search_kpi/', 'BenchmarkDataController@search_kpi');
 	Route::get('benchmark_data/search_chart/', 'BenchmarkDataController@search_chart');
 	Route::get('benchmark_data/search_chart_quarter/', 'BenchmarkDataController@search_chart_quarter');
-	
+
 	// Dashboard Performance Comparison //
 	Route::get('dashboard/performance/position','DashboardPerformanceComparisonController@position_list');
 	Route::get('dashboard/performance/bar_chart','DashboardPerformanceComparisonController@bar_chart');
@@ -453,14 +453,14 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal/parameter/org_level_individual', 'AppraisalController@org_level_list_individual');
 	Route::get('appraisal/parameter/org_individual', 'AppraisalController@org_individual');
 	Route::get('appraisal/parameter/org_individual_report', 'AppraisalController@org_individual_report');
-	
+
 	//add by toto
 	Route::get('appraisal/parameter/org_level_by_empname', 'AppraisalController@org_level_by_empname');
 	Route::get('appraisal/parameter/organization_by_empname', 'AppraisalController@organization_by_empname');
 
 	// Import Employee //
 	Route::get('import_employee/assign/appraisal_level','ImportEmployeeController@appraisal_level');
-	
+
 	Route::Resource('generate', 'JasperController@generate');
 	Route::Resource('generateAuth', 'JasperController@generateAuth');
 
@@ -468,18 +468,18 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('report/al_list_org','ReportController@al_list_org');
 	Route::get('report/org_list','ReportController@org_list');
 	Route::get('report/status_list','ReportController@status_list');
-	
+
 	Route::get('job_log', 'JobLogController@index');
 	Route::get('job_log/{job_log_id}', 'JobLogController@show');
 	Route::patch('job_log/{job_log_id}', 'JobLogController@update');
 	Route::get('job_log/run/{job_log_id}', 'JobLogController@run');
-	
+
 	// MPI Judgement //
 	Route::get('mpi/parameter/form', 'MPIJudgementController@form_list');
 	Route::get('mpi/mpi_judgement', 'MPIJudgementController@index');
 	Route::patch('mpi/mpi_judgement', 'MPIJudgementController@update');
-	
-	
+
+
 
 	// Appraisal 360 Degree //
 	// Appraisal 360 Degree --> Appraisal Level //
@@ -504,8 +504,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal360/check_permission_popup/{emp_result_id}', 'Appraisal360Degree\AppraisalGroupController@check_permission_popup');
 
 
-	
-	
+
+
 	// Salary //
 	// Sarary --> Import Salary Range //
 	Route::get('salary_structure/all_list_year', 'Salary\SalaryStructureController@all_list_year');
@@ -536,7 +536,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Salary -> Export MPI
 	Route::post('export_mpi/export','Salary\ExportMpiController@export');
 
-	
+
 
 	// Bonus //
 	// Bonus --> Advance Search //
@@ -574,8 +574,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('salary/parameter/form', 'Bonus\SalaryAdjustmentController@form_list');
 	Route::get('salary/parameter/period', 'Bonus\SalaryAdjustmentController@period_list');
 	Route::get('salary/show', 'Bonus\SalaryAdjustmentController@index');
+	Route::patch('salary/update', 'Bonus\SalaryAdjustmentController@update');
 
-	
 
 	// ETL API //
 	Route::get('emp/derive_id/{paramEmp}/{paramDeriveLevel}', 'EtlApiController@GetChiefEmpDeriveLevel');
