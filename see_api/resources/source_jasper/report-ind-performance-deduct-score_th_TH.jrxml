@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_4" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="four" class="java.lang.Integer"/>
 	<parameter name="emp_id" class="java.lang.String"/>
@@ -15,6 +15,7 @@
 , aps.structure_name
 , app.appraisal_period_desc
 , air.item_name
+, uom.is_date
 , COALESCE(air.max_value,0) as max_value
 , COALESCE(air.actual_value, 0) as actual_value
 , COALESCE(air.over_value, 0) as over_value
@@ -43,6 +44,7 @@
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
@@ -91,6 +93,10 @@ ORDER BY aps.structure_id ASC
 	<field name="item_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="item_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_item_result"/>
+	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 	</field>
 	<field name="max_value" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="max_value"/>
@@ -385,6 +391,7 @@ ORDER BY aps.structure_id ASC
 					<paragraph leftIndent="0" rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="485" y="0" width="65" height="25" uuid="a8efae5e-bfb3-42c5-b18d-501ab2f52e2a"/>

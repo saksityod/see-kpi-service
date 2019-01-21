@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_1" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_demo"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="one" class="java.lang.Integer"/>
 	<parameter name="emp_id" class="java.lang.String"/>
@@ -11,6 +11,7 @@
 	<parameter name="appraisal_year" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT aps.seq_no
+, uom.is_date
 , aps.structure_id
 , aps.structure_name
 , app.period_id
@@ -49,6 +50,7 @@
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
@@ -87,6 +89,10 @@ ORDER BY aps.structure_id ASC
 	<field name="seq_no" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="seq_no"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_structure"/>
+	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="uom"/>
 	</field>
 	<field name="structure_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
@@ -389,6 +395,7 @@ ORDER BY aps.structure_id ASC
 					<paragraph rightIndent="1" spacingBefore="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="440" y="0" width="120" height="20" uuid="44a973cd-b9d9-4a8b-9f4a-67442058dbcd"/>
@@ -411,6 +418,7 @@ ORDER BY aps.structure_id ASC
 					<paragraph rightIndent="1" spacingBefore="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="642" y="0" width="78" height="20" uuid="34db6dab-ff5e-4774-865e-bd8a52871533"/>

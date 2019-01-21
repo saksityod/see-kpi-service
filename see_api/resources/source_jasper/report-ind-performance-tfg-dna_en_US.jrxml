@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_3" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="4fb0b1b6-c9b3-4a27-b33f-149f103c9f03">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lenso_demo"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="479"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="521"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-test"/>
 	<parameter name="three" class="java.lang.Integer"/>
 	<parameter name="emp_id" class="java.lang.String"/>
 	<parameter name="level_id" class="java.lang.Integer"/>
@@ -13,6 +13,7 @@
 	<parameter name="appraisal_year" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT aps.seq_no
+, uom.is_date
 , aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
@@ -61,6 +62,7 @@
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
@@ -86,6 +88,7 @@ GROUP BY aps.seq_no
 , COALESCE(str.weigh_score,0) 
 UNION
 SELECT aps.seq_no
+, uom.is_date
 , aps.structure_id
 , aps.structure_name
 , app.appraisal_period_desc
@@ -134,6 +137,7 @@ SELECT aps.seq_no
   ,0) as total
 FROM appraisal_item_result air
 INNER JOIN appraisal_item api ON api.item_id = air.item_id
+INNER JOIN uom ON uom.uom_id = api.uom_id
 INNER JOIN appraisal_structure aps ON aps.structure_id = api.structure_id
 INNER JOIN appraisal_period app ON air.period_id = app.period_id
 LEFT JOIN structure_result str ON str.emp_id = air.emp_id
@@ -165,6 +169,9 @@ ORDER BY 2 asc
 	</queryString>
 	<field name="seq_no" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="seq_no"/>
+	</field>
+	<field name="is_date" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="is_date"/>
 	</field>
 	<field name="structure_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="structure_id"/>
@@ -473,6 +480,7 @@ ORDER BY 2 asc
 					<paragraph leftIndent="0" rightIndent="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="450" y="0" width="115" height="25" uuid="c9883f0b-6722-4592-8e69-45366e2f7123"/>

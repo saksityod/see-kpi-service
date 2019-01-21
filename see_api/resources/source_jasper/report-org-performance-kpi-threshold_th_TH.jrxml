@@ -497,7 +497,7 @@ ORDER BY aps.structure_id ASC
 					<paragraph rightIndent="2" spacingBefore="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target_value}]]></textFieldExpression>
-				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.000"]]></patternExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="260" y="0" width="45" height="20" uuid="44a973cd-b9d9-4a8b-9f4a-67442058dbcd"/>
@@ -580,6 +580,7 @@ ORDER BY aps.structure_id ASC
 					<paragraph rightIndent="2" spacingBefore="3"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{actual_value}]]></textFieldExpression>
+				<patternExpression><![CDATA[($F{is_date}==1)?"###0":"#,##0.0000"]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToTallestObject" x="705" y="0" width="45" height="20" uuid="34db6dab-ff5e-4774-865e-bd8a52871533"/>
