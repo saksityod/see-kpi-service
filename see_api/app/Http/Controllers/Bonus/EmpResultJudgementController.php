@@ -348,6 +348,11 @@ class EmpResultJudgementController extends Controller
         // get judgement level
         $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where('is_start_cal_bonus', 1)->where('is_org', 1)->first();
         $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel->level_id, true);
+		
+		// fixed appraisal_level_name
+		$levelList[0]->appraisal_level_name = "BU.";
+		$levelList[1]->appraisal_level_name = "COO.";
+		$levelList[2]->appraisal_level_name = "Board";
 
         // set parameter
         $employee = Employee::find(Auth::id());
