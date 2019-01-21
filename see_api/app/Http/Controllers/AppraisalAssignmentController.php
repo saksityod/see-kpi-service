@@ -47,10 +47,12 @@ class AppraisalAssignmentController extends Controller
 
 	public function email_link_assignment(Request $request) {
 		$items = DB::select("
-			select air.org_id, air.level_id as level_id_emp, o.level_id as level_id
+			select e.emp_code,air.org_id, air.level_id as level_id_emp, o.level_id as level_id
 			from appraisal_item_result air
 			left join org o
 			on o.org_id = air.org_id
+			left join employee e
+			on air.emp_id = e.emp_id 
 			where air.emp_result_id = {$request->emp_result_id}
 			limit 0,1
 			");
@@ -1670,6 +1672,7 @@ class AppraisalAssignmentController extends Controller
 		$groups = array();
 		foreach ($items as $item) {
 			$key = $item->structure_name;
+			
 			if (!isset($groups[$key])) {
 				if ($item->form_name == 'Quantity') {
 					$columns = [
@@ -1802,12 +1805,7 @@ class AppraisalAssignmentController extends Controller
 					}
 				}
 
-				$self_assign = DB::select("
-					SELECT DISTINCT a.structure_id,s.is_self_assign from employee e
-					INNER JOIN appraisal_criteria a on a.appraisal_level_id = e.level_id 
-					INNER JOIN appraisal_structure s on a.structure_id = s.structure_id
-					WHERE e.emp_code = ?
-					",array(Auth::id()));
+				
 				
 				// $check = DB::select("
 					// select ifnull(max(a.end_threshold),0) max_no
@@ -1824,7 +1822,7 @@ class AppraisalAssignmentController extends Controller
 				// }
 
 				$total_weight = $item->weight_percent;
-
+				
 				$groups[$key] = array(
 					'items' => array($item),
 					'count' => 1,
@@ -1847,6 +1845,13 @@ class AppraisalAssignmentController extends Controller
 				$groups[$key]['count'] += 1;
 			}
 		}
+		
+		$self_assign = DB::select("
+					SELECT DISTINCT a.structure_id,s.is_self_assign from employee e
+					INNER JOIN appraisal_criteria a on a.appraisal_level_id = e.level_id 
+					INNER JOIN appraisal_structure s on a.structure_id = s.structure_id
+					WHERE e.emp_code = ?
+					",array(Auth::id()));
 	//	$resultT = $items->toArray();
 	//	$items['group'] = $groups
 		if($request['obj_stage']['appraisal_type_id']==1) {
