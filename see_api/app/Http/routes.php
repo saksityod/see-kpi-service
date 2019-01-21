@@ -570,6 +570,10 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('bonus/bonus_adjustment', 'Bonus\BonusAdjustmentController@Export');
 	// Bonus --> Report //
 	Route::get('bonus/report', 'Bonus\BonusReportController@index');
+	// Bonus --> Salary Adjustment //
+	Route::get('salary/parameter/form', 'Bonus\SalaryAdjustmentController@form_list');
+	Route::get('salary/parameter/period', 'Bonus\SalaryAdjustmentController@period_list');
+	Route::get('salary/show', 'Bonus\SalaryAdjustmentController@index');
 
 	
 
