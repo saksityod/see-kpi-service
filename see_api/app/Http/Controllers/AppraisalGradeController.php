@@ -159,12 +159,13 @@ class AppraisalGradeController extends Controller
 			$range_check = DB::select("
 				select grade, begin_score, end_score
 				from appraisal_grade
-				where appraisal_level_id = ?
+				where appraisal_form_id = ?
+				and appraisal_level_id = ?
 				and (? between begin_score and end_score
 				or ? between end_score and begin_score
 				or ? between begin_score and end_score
 				or ? between end_score and begin_score)
-			", array($vel, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
+			", array($request->appraisal_form_id, $vel, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
 
 			if ($validator->fails()) {
 				$errors = $validator->errors()->toArray();
