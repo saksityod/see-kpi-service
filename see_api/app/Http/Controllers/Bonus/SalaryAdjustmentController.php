@@ -308,11 +308,12 @@ class SalaryAdjustmentController extends Controller
         $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 
+        // return $main_data;
         // select ข้อมูล
         $item = DB::select(
           $main_data."
           AND emp.period_id = ".$request->period_id."
-          ".$qryFormId ."
+          ".$qryFormId."
           ".$qryEmpLevel."
           ".$qryOrgLevel."
           ".$qryOrgId."
@@ -471,7 +472,7 @@ class SalaryAdjustmentController extends Controller
         }
 
         foreach ($request['detail'] as $d) {
-            $empl = Employee::find($d['emp_id']);
+            $empl = Employee::where('emp_id', $d['emp_id'])->first();
             $empl->s_amount = $d['salary'];
             $empl->pqpi_amount = $d['pqpi'];
             $empl->updated_by = Auth::id();
