@@ -199,7 +199,7 @@ class SalaryAdjustmentController extends Controller
         // หา org ภายใต้ user และดูว่า user คือ board หรือไม่? [กำหนด board : edit_flag = 1 นอกนั้นเป็น 0]
         $login = Auth::id();
         $user = DB::select("
-            SELECT (CASE WHEN em.level_id = le.level_board THEN 1 ELSE 0 END) as is_board
+            SELECT (CASE WHEN o.level_id = le.level_board THEN 1 ELSE 0 END) as is_board
             , em.level_id
             , em.org_id
             , o.org_code

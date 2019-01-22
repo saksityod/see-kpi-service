@@ -172,8 +172,8 @@ class MPIJudgementController extends Controller
         // หา org ภายใต้ user และดูว่า user คือ board หรือไม่? [กำหนด board : edit_flag = 1 นอกนั้นเป็น 0]
         $login = Auth::id();
         $user = DB::select("
-            SELECT (CASE WHEN em.level_id = le.level_bu THEN 1 ELSE 0 END) as is_bu
-            , (CASE WHEN em.level_id = le.level_coo THEN 1 ELSE 0 END) as is_coo
+            SELECT (CASE WHEN o.level_id = le.level_bu THEN 1 ELSE 0 END) as is_bu
+            , (CASE WHEN o.level_id = le.level_coo THEN 1 ELSE 0 END) as is_coo
             , em.emp_id
 						, em.level_id
             FROM employee em
