@@ -349,10 +349,6 @@ class EmpResultJudgementController extends Controller
         $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where('is_start_cal_bonus', 1)->where('is_org', 1)->first();
         $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel->level_id, true);
 		
-		// fixed appraisal_level_name
-		$levelList[0]->appraisal_level_name = "BU.";
-		$levelList[1]->appraisal_level_name = "COO.";
-		$levelList[2]->appraisal_level_name = "Board";
 
         // set parameter
         $employee = Employee::find(Auth::id());
@@ -618,15 +614,17 @@ class EmpResultJudgementController extends Controller
                 'judge_id' => 0, 'adjust_result_score'=>$result->mgr_score
             ]);
             $lastJudScore = $result->mgr_score;
+			
+			$array = ['BU.', 'COO.', 'Board'];
 
-            foreach ($levelList as $level) {
+            foreach ($levelList as $index => $level) {
                 
                 $empResultJudgement = EmpResultJudgement::select('judge_id', 'adjust_result_score')->where('emp_result_id', $result->emp_result_id)
                     ->where('org_level_id', $level->level_id)->first();
                     
                 if($empResultJudgement){
                     $judgements = $judgements->push([
-                        'org_level_id' => $level->level_id, 'org_level_name' => $level->appraisal_level_name,
+                        'org_level_id' => $level->level_id, 'org_level_name' => $array[$index],  // $level->appraisal_level_name,
                         'judge_id' => $empResultJudgement->judge_id, 'adjust_result_score' => $empResultJudgement->adjust_result_score
                     ]);
                     $lastJudScore = $empResultJudgement->adjust_result_score;
