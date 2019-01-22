@@ -108,7 +108,9 @@ class AppraisalGradeController extends Controller
 		$qfooter = " ORDER BY a.appraisal_form_id, a.appraisal_level_id, a.begin_score";
 
 		$items = DB::select($query . $qfooter, $qinput);
-
+		if($request->rpp=='All') {
+			$request->rpp = count($items);
+		} 
 
 		// Get the current page from the url if it's not set default to 1
 		empty($request->page) ? $page = 1 : $page = $request->page;
