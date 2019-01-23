@@ -68,47 +68,48 @@ class AppraisalGroupController extends Controller
 
 	public function emp_level_list(Request $request)
 	{
-		$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
+		$config = SystemConfiguration::firstOrFail();
+		if($config->appraisal_360_flag == 1){
+			$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
 			->where('is_active', 1)
 			->where('is_individual', 1)
 			->orderBy('seq_no','asc')
 			->get();
-		
-		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง
-		$AuthEmpCode = Auth::id();
-		$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
-		if ($empLevInfo["is_all"]) {
-			$result = DB::select("
-				SELECT level_id, appraisal_level_name
-				FROM appraisal_level
-				WHERE is_active = 1
-				AND is_individual = 1
-				ORDER BY level_id DESC
-			");
-		} else {
-			// Get chief and under //
-			$allChiefEmp = $this->GetallChiefEmp($AuthEmpCode)->lists('emp_code')->toArray();
-			$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->lists('emp_code')->toArray();
-			$empList = array_merge($allChiefEmp, $allUnderEmp);
-			$empList = implode(",",$empList);
+		} else{
+		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง */
+			$AuthEmpCode = Auth::id();
+			$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
+			if ($empLevInfo["is_all"]) {
+				$result = DB::select("
+					SELECT level_id, appraisal_level_name
+					FROM appraisal_level
+					WHERE is_active = 1
+					AND is_individual = 1
+					ORDER BY level_id DESC
+				");
+			} else {
+				// Get chief and under //
+				$allChiefEmp = $this->GetallChiefEmp($AuthEmpCode)->lists('emp_code')->toArray();
+				$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->lists('emp_code')->toArray();
+				$empList = array_merge($allChiefEmp, $allUnderEmp);
+				$empList = implode(",",$empList);
 
-			$result = DB::select("
-				SELECT lev.level_id, lev.appraisal_level_name
-				FROM employee emp
-				INNER JOIN appraisal_level lev ON lev.level_id = emp.level_id
-				WHERE emp.is_active = 1
-				AND lev.is_active = 1
-				AND lev.is_individual = 1
-				AND (
-					find_in_set(emp.emp_code, '{$empList}')
-					OR emp.emp_code = '{$AuthEmpCode}'
-				)
-				GROUP BY lev.level_id
-				ORDER BY lev.level_id DESC
-			");
-		}
-		*/
-
+				$result = DB::select("
+					SELECT lev.level_id, lev.appraisal_level_name
+					FROM employee emp
+					INNER JOIN appraisal_level lev ON lev.level_id = emp.level_id
+					WHERE emp.is_active = 1
+					AND lev.is_active = 1
+					AND lev.is_individual = 1
+					AND (
+						find_in_set(emp.emp_code, '{$empList}')
+						OR emp.emp_code = '{$AuthEmpCode}'
+					)
+					GROUP BY lev.level_id
+					ORDER BY lev.level_id DESC
+				");
+			}
+		} 
 		return response()->json($result);
 	}
 
