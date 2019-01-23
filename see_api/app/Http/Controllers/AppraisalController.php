@@ -73,21 +73,21 @@ class AppraisalController extends Controller
 		", array($request->appraisal_year));
 		return response()->json($items);
 	}
-	
+
 	public function period_list_salary(Request $request)
 	{
 		$items = DB::select("
 			Select period_id, period_no, appraisal_period_desc
 			from appraisal_period
-			where appraisal_year = ? and is_raise = 1 
+			where appraisal_year = ? and is_raise = 1
 			order by period_id asc
 		", array($request->appraisal_year));
 		return response()->json($items);
 	}
-	
+
 	public function OrgBUList(Request $request)
 	{
-		
+
 		$OrgBU = DB::select("
 			SELECT org_id, org_name
 			FROM org o
@@ -518,7 +518,7 @@ class AppraisalController extends Controller
 
 			$emps = DB::select("
 				select distinct emp_code
-				from employee 
+				from employee
 				where chief_emp_code = ?
 			", array(Auth::id()));
 
@@ -602,7 +602,7 @@ class AppraisalController extends Controller
 			$qinput = array();
 			$query = "
 				Selecst e.emp_id, e.emp_code, e.emp_name
-				From employee e 
+				From employee e
 				inner join appraisal_item_result a
 				on e.emp_id = a.emp_id
 				Where e.emp_name like ?
@@ -652,7 +652,7 @@ class AppraisalController extends Controller
 				inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 				where d.is_hr = 0
 			";
-		
+
 			empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 			empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
 			empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
@@ -663,7 +663,7 @@ class AppraisalController extends Controller
 			empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
 			empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 			empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
-			
+
 			/*
 			echo $query. " order by period_id,emp_code,org_code  asc ";
 			print_r($qinput);
@@ -764,9 +764,9 @@ class AppraisalController extends Controller
 			empty($in_emp) ? $in_emp = "null," : null;
 
 			empty($system_config->appraisal_360_flag)?($appraisal_360_flag=""):($appraisal_360_flag = $system_config->appraisal_360_flag);
-		
+
 			$dotline_code = Auth::id();
-			
+
 			if ($request->appraisal_type_id == 2) {
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
@@ -797,6 +797,332 @@ class AppraisalController extends Controller
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+
+				/*
+				echo $query. " order by period_id,emp_code,org_code  asc ";
+				echo "<br>";
+				print_r($qinput);
+				*/
+
+				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
+
+			} else {
+
+				$query = "
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					from emp_result a
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
+					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
+					where d.is_hr = 0
+				";
+
+				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
+				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
+				empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
+				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
+				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+
+				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
+
+			}
+
+		}
+
+
+		// Get the current page from the url if it's not set default to 1
+		empty($request->page) ? $page = 1 : $page = $request->page;
+
+		// Number of items per page
+		empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
+
+		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
+
+		// Get only the items you need using array_slice (only get 10 items since that's what you need)
+		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
+
+		// Add Assessor Group.
+		foreach($itemsForCurrentPage as $item) {
+			// Is Organization.
+			if($request->appraisal_type_id == 1){
+				$assGroup = AssessorGroup::find(4);
+				$item->group_id = $assGroup->assessor_group_id;
+				$item->group_name = $assGroup->assessor_group_name;
+			} else {  // Is Individual.
+				// $assGroup = $this->AppraisalGroup->getAssessorGroup($item->emp_code);
+				$assGroup = (new \App\Http\Controllers\Appraisal360Degree\AppraisalGroupController)->getAssessorGroup($item->emp_code);
+				if($assGroup != null){
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				} else {
+					$assGroup = AssessorGroup::find(4);
+					$item->group_id = $assGroup->assessor_group_id;
+					$item->group_name = $assGroup->assessor_group_name;
+				}
+			}
+		}
+
+		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
+		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
+
+
+		$groups = array();
+		foreach ($itemsForCurrentPage as $item) {
+			$key = "p".$item->period_id;
+			if (!isset($groups[$key])) {
+				$groups[$key] = array(
+					'items' => array($item),
+					'appraisal_period_desc' => $item->appraisal_period_desc,
+					'appraisal_period_start_date' => $item->appraisal_period_start_date,
+					'count' => 1,
+				);
+			} else {
+				$groups[$key]['items'][] = $item;
+				$groups[$key]['count'] += 1;
+			}
+		}
+		$resultT = $result->toArray();
+		$resultT['group'] = $groups;
+		$resultT['system_config'] = $system_config;
+		return response()->json($resultT);
+
+	}
+
+	public function index2(Request $request)
+	{
+
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+		", array(Auth::id()));
+
+		$qinput = array();
+
+		$system_config = SystemConfiguration::where('current_appraisal_year', $request->appraisal_year)->first();
+
+		// start กรอง organization ที่อยู่ภายใต้
+		$gue_emp_level = empty($request->level_id) ? '' : $this->advanSearch->GetallUnderLevel($request->level_id);
+		$gue_org_level = empty($request->level_id_org) ? '' : $this->advanSearch->GetallUnderLevel($request->level_id_org);
+		$gueOrgCodeByEmpId = empty($request->emp_id) ? '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+		$gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+
+		$empLevelQueryStr = empty($gue_emp_level) && empty($request->level_id) ? "" : " AND (b.level_id = '{$request->level_id}' OR find_in_set(b.level_id, '{$gue_emp_level}'))";
+		$orgLevelQueryStr = empty($gue_org_level) && empty($request->level_id_org) ? "" : " AND (o.level_id = '{$request->level_id_org}' OR find_in_set(o.level_id, '{$gue_org_level}'))";
+		$empIdQueryStr = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (b.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
+		// end กรอง organization ที่อยู่ภายใต้
+
+		if ($all_emp[0]->count_no > 0) {
+			if($request->appraisal_type_id==2) {
+				if(empty($request->org_id)) {
+						$orgQueryStr = "";
+				} else {
+						$orgQueryStr = "AND (o.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				}
+
+				$query = "
+					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					from emp_result a
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
+					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
+					where d.is_hr = 0
+					".$empLevelQueryStr."
+					".$orgLevelQueryStr."
+					".$empIdQueryStr."
+					".$orgQueryStr."
+				";
+
+				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
+				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
+
+			} else {
+				$query = "
+					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					from emp_result a
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
+					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
+					where d.is_hr = 0
+				";
+
+				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
+				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
+				empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
+				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
+				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
+			}
+
+			/*
+			echo $query. " order by period_id,emp_code,org_code  asc ";
+			print_r($qinput);
+			*/
+			$items = DB::select($query. " order by o.org_code ASC, a.level_id DESC , b.emp_code ASC ", $qinput); //period_id,emp_code,org_code  asc
+
+		} else {
+		/*
+			$re_emp = array();
+
+			$emp_list = array();
+
+			$emps = DB::select("
+				select distinct emp_code
+				from employee
+				where chief_emp_code = ?
+			", array(Auth::id()));
+
+			foreach ($emps as $e) {
+				$emp_list[] = $e->emp_code;
+				$re_emp[] = $e->emp_code;
+			}
+
+			$emp_list = array_unique($emp_list);
+
+			// Get array keys
+			$arrayKeys = array_keys($emp_list);
+			// Fetch last array key
+			$lastArrayKey = array_pop($arrayKeys);
+			//iterate array
+			$in_emp = '';
+			foreach($emp_list as $k => $v) {
+				if($k == $lastArrayKey) {
+					//during array iteration this condition states the last element.
+					$in_emp .= "'" . $v . "'";
+				} else {
+					$in_emp .= "'" . $v . "'" . ',';
+				}
+			}
+
+			do {
+				empty($in_emp) ? $in_emp = "null" : null;
+
+				$emp_list = array();
+
+				$emp_items = DB::select("
+					select distinct emp_code
+					from employee
+					where chief_emp_code in ({$in_emp})
+					and is_active = 1
+					and chief_emp_code != emp_code
+				");
+
+				foreach ($emp_items as $e) {
+					$emp_list[] = $e->emp_code;
+					$re_emp[] = $e->emp_code;
+				}
+
+				$emp_list = array_unique($emp_list);
+
+				// Get array keys
+				$arrayKeys = array_keys($emp_list);
+				// Fetch last array key
+				$lastArrayKey = array_pop($arrayKeys);
+				//iterate array
+				$in_emp = '';
+				foreach($emp_list as $k => $v) {
+					if($k == $lastArrayKey) {
+						//during array iteration this condition states the last element.
+						$in_emp .= "'" . $v . "'";
+					} else {
+						$in_emp .= "'" . $v . "'" . ',';
+					}
+				}
+			} while (!empty($emp_list));
+
+			$re_emp[] = Auth::id();
+			$re_emp = array_unique($re_emp);
+
+			// Get array keys
+			$arrayKeys = array_keys($re_emp);
+			// Fetch last array key
+			$lastArrayKey = array_pop($arrayKeys);
+			//iterate array
+			$in_emp = '';
+			foreach($re_emp as $k => $v) {
+				if($k == $lastArrayKey) {
+					//during array iteration this condition states the last element.
+					$in_emp .= "'" . $v . "'";
+				} else {
+					$in_emp .= "'" . $v . "'" . ',';
+				}
+			}
+			*/
+
+			if ($request->appraisal_type_id == 2) {
+				$employee = Employee::find(Auth::id());
+				if(empty($request->org_id)) {
+						$gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+						$orgQueryStr = "AND (b.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				} else {
+						$orgQueryStr = "AND (b.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				}
+
+				$query = "
+					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					, g.start_date as appraisal_period_start_date
+					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					from emp_result a
+					left outer join employee b on a.emp_id = b.emp_id
+					left outer join appraisal_level d on a.level_id = d.level_id
+					left outer join appraisal_type e on a.appraisal_type_id = e.appraisal_type_id
+					left outer join appraisal_stage f on a.stage_id = f.stage_id
+					left outer join appraisal_period g on a.period_id = g.period_id
+					left outer join position p on a.position_id = p.position_id
+					left outer join org o on a.org_id = o.org_id
+					left outer join org po on o.parent_org_code = po.org_code
+					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
+					where d.is_hr = 0
+					".$empLevelQueryStr."
+					".$orgLevelQueryStr."
+					".$empIdQueryStr."
+					".$orgQueryStr."
+				";
+
+				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
+				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
 
 				/*
 				echo $query. " order by period_id,emp_code,org_code  asc ";
@@ -933,7 +1259,7 @@ class AppraisalController extends Controller
 			inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 			where a.emp_result_id = ?
 		", array($emp_result_id));
-		
+
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
 				select b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
@@ -1247,39 +1573,39 @@ class AppraisalController extends Controller
 		$first_see = null;
 		$second_see = null;
 		$has_second = null;
-		
+
 		$hr_see = DB::select("
 			select b.is_hr
 			from employee a left outer join appraisal_level b
 			on a.level_id = b.level_id
-			where emp_code = ?		
+			where emp_code = ?
 		", array(Auth::id()));
-		
+
 		empty($hr_see) ? $hr_see = null : $hr_see = $hr_see[0]->is_hr;
-		
+
 		if ($hr_see == 0) {
 			$hr_see = null;
 		}
-		
+
 		if ($request->appraisal_type_id == 2) {
 			if ($request->emp_code == Auth::id()) {
 				$self_see = 1;
 			} else {
 				$self_see = null;
 			};
-			
+
 			$employee = Employee::find($request->emp_code);
-			
-			if (empty($employee)) { 
+
+			if (empty($employee)) {
 				$chief_emp_code = null;
-			} else {		
+			} else {
 				$chief_emp_code = $employee->chief_emp_code;
 				if ($chief_emp_code == Auth::id()) {
 					$first_see = 1;
 				} else {
 					$first_see = null;
-				}			
-				
+				}
+
 				if ($employee->has_second_line == 1) {
 					$has_second = 1;
 					$check_second = DB::select("
@@ -1299,30 +1625,30 @@ class AppraisalController extends Controller
 				} else {
 					$second_see = null;
 					$has_second = 0;
-				}			
+				}
 			}
 		} else {
-		
+
 			$cu = Employee::find(Auth::id());
-			$co = Org::find($cu->org_id);		
-		
+			$co = Org::find($cu->org_id);
+
 			if ($request->org_code == $co->org_code) {
 				$self_see = 1;
 			} else {
 				$self_see = null;
 			};
-			
+
 			$org = Org::where('org_code',$request->org_code)->first();
-			
-			if (empty($org)) { 
+
+			if (empty($org)) {
 				$parent_org_code = null;
-			} else {		
+			} else {
 				$parent_org_code = $org->parent_org_code;
 				if ($parent_org_code == $co->org_code) {
 					$first_see = 1;
 				} else {
 					$first_see = null;
-				}			
+				}
 				$check_second = DB::select("
 					select parent_org_code
 					from org
@@ -1336,15 +1662,15 @@ class AppraisalController extends Controller
 					} else {
 						$second_see = null;
 					}
-				}	
+				}
 			}
-		
+
 		}
-		
+
 		if ($has_second == 1) {
 			$items = DB::select("
 				select stage_id, to_action
-				from appraisal_stage 
+				from appraisal_stage
 				where from_stage_id = ?
 				and appraisal_flag = 1
 				and appraisal_type_id = ?
@@ -1355,11 +1681,11 @@ class AppraisalController extends Controller
 					or second_see = ?
 				)
 			", array($request->stage_id,$request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
-			
+
 			if (empty($items)) {
 				$workflow = WorkflowStage::find($request->stage_id);
 				empty($workflow->to_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->to_stage_id;
-				$items = DB::select("	
+				$items = DB::select("
 					select stage_id, to_action
 					from appraisal_stage a
 					where stage_id in ({$to_stage_id})
@@ -1378,7 +1704,7 @@ class AppraisalController extends Controller
 			if ($workflow->no_second_line_stage_id == 0) {
 				$items = DB::select("
 					select stage_id, to_action
-					from appraisal_stage 
+					from appraisal_stage
 					where from_stage_id = ?
 					and appraisal_flag = 1
 					and appraisal_type_id = ?
@@ -1388,11 +1714,11 @@ class AppraisalController extends Controller
 						or first_see = ?
 						or second_see = ?
 					)
-				", array($request->stage_id,$request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));			
+				", array($request->stage_id,$request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
 				if (empty($items)) {
 					$workflow = WorkflowStage::find($request->stage_id);
 					empty($workflow->to_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->to_stage_id;
-					$items = DB::select("	
+					$items = DB::select("
 						select stage_id, to_action
 						from appraisal_stage a
 						where stage_id in ({$to_stage_id})
@@ -1405,10 +1731,10 @@ class AppraisalController extends Controller
 							or second_see = ?
 						)
 					",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
-				}				
+				}
 			} else {
 				empty($workflow->no_second_line_stage_id) ? $to_stage_id = "null" : $to_stage_id = $workflow->no_second_line_stage_id;
-				$items = DB::select("	
+				$items = DB::select("
 					select stage_id, to_action
 					from appraisal_stage a
 					where stage_id in ({$to_stage_id})
@@ -1420,7 +1746,7 @@ class AppraisalController extends Controller
 						or first_see = ?
 						or second_see = ?
 					)
-				",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));			
+				",array($request->appraisal_type_id,$hr_see,$self_see,$first_see,$second_see));
 			}
 		}
 		//return response()->json(['items'=>$items,'hr_see'=>$hr_see,'self_see'=>$self_see,'first_see'=>$first_see,'second_see'=>$second_see,'chief_emp_code'=>$chief_emp_code,'auth_id'=>Auth::id()]);
@@ -1488,7 +1814,7 @@ class AppraisalController extends Controller
 					$aresult->save();
 
 					// ถัา item มี structure เป็น is derive ให้เอาข้อมูลไป update ให้ลูกน้องด้วย
-					$appraisalItem = AppraisalItem::find($aresult->item_id); 
+					$appraisalItem = AppraisalItem::find($aresult->item_id);
 					if (in_array($appraisalItem->structure_id, $structureIsDeriveArr)) {
 						DB::table('appraisal_item_result')
 						->where('derive_item_result_id', $aresult->item_result_id)
@@ -1546,14 +1872,14 @@ class AppraisalController extends Controller
 		// $emp_stage->save();
 
 		$mail_error = '';
-		
+
 		if ($config->email_reminder_flag == 1) {
 			Config::set('mail.driver',$config->mail_driver);
 			Config::set('mail.host',$config->mail_host);
 			Config::set('mail.port',$config->mail_port);
 			Config::set('mail.encryption',$config->mail_encryption);
 			Config::set('mail.username',$config->mail_username);
-			Config::set('mail.password',$config->mail_password);		
+			Config::set('mail.password',$config->mail_password);
 			$from = Config::get('mail.from');
 			if ($emp->appraisal_type_id == 2) {
 
@@ -2017,35 +2343,37 @@ class AppraisalController extends Controller
    * @param  Employee Code
    * @return Info
    */
-  public function is_all_employee($empCode){
-		// Get user level
-    $userlevelId = 0; $userlevelAllEmp = 0; $userParentId = 0;
-    $userlevelDb = DB::select("
-      SELECT org.level_id, al.appraisal_level_name, al.is_all_employee, al.parent_id
-      FROM employee emp
-      INNER JOIN org ON org.org_id = emp.org_id
-      INNER JOIN appraisal_level al ON al.level_id = org.level_id
-      WHERE emp_code = '{$empCode}'
-      AND al.is_org = 1
-      AND al.is_active = 1
-      AND emp.is_active = 1
-      AND org.is_active = 1
-      LIMIT 1");
+	 public function is_all_employee($empCode){
+ 		// Get user level
+     $userlevelId = 0; $userlevelAllEmp = 0; $userParentId = 0;
+     $userlevelDb = DB::select("
+       SELECT org.level_id, al.appraisal_level_name, al.is_all_employee, al.parent_id, org.org_id
+       FROM employee emp
+       INNER JOIN org ON org.org_id = emp.org_id
+       INNER JOIN appraisal_level al ON al.level_id = org.level_id
+       WHERE emp_code = '{$empCode}'
+       AND al.is_org = 1
+       AND al.is_active = 1
+       AND emp.is_active = 1
+       AND org.is_active = 1
+       LIMIT 1");
 
-		if ($userlevelDb[0]->is_all_employee == '1' || $userlevelDb[0]->parent_id == 0) {
-			return [
-				"is_all" => true,
-				"level_id" => $userlevelDb[0]->level_id,
-				"is_all_employee" => $userlevelDb[0]->is_all_employee,
-				"parent_id" => $userlevelDb[0]->parent_id];
-		} else {
-			return [
-				"is_all" => false,
-				"level_id" => $userlevelDb[0]->level_id,
-				"is_all_employee" => $userlevelDb[0]->is_all_employee,
-				"parent_id" => $userlevelDb[0]->parent_id];
-		}
-	}
+ 		if ($userlevelDb[0]->is_all_employee == '1' || $userlevelDb[0]->parent_id == 0) {
+ 			return [
+ 				"is_all" => true,
+ 				"level_id" => $userlevelDb[0]->level_id,
+ 				"is_all_employee" => $userlevelDb[0]->is_all_employee,
+ 				"org_id" => $userlevelDb[0]->org_id,
+ 				"parent_id" => $userlevelDb[0]->parent_id];
+ 		} else {
+ 			return [
+ 				"is_all" => false,
+ 				"level_id" => $userlevelDb[0]->level_id,
+ 				"is_all_employee" => $userlevelDb[0]->is_all_employee,
+ 				"org_id" => $userlevelDb[0]->org_id,
+ 				"parent_id" => $userlevelDb[0]->parent_id];
+ 		}
+ 	}
 
 
 
@@ -2141,6 +2469,40 @@ class AppraisalController extends Controller
 		return response()->json($result);
 	}
 
+	public function emp_level_list2(Request $request){
+		$empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
+
+		if ($empLevInfo["is_all"]) {
+			$result = DB::select("
+        		SELECT level_id, appraisal_level_name
+				FROM appraisal_level
+				WHERE is_active = 1
+				AND is_individual = 1
+				ORDER BY level_id DESC
+			");
+		} else {
+			$employee = Employee::find(Auth::id());
+			$gue_emp_level = $this->advanSearch->GetallUnderLevel($employee->level_id); // add by toto
+			$result = DB::select("
+				SELECT lev.level_id, lev.appraisal_level_name
+				FROM employee emp
+				INNER JOIN appraisal_level lev ON lev.level_id = emp.level_id
+				WHERE emp.is_active = 1
+				AND lev.is_active = 1
+				AND lev.is_individual = 1
+				AND (
+					emp.emp_code = '{$empCode}'
+					OR find_in_set(emp.level_id, '".$gue_emp_level."')
+				)
+				GROUP BY lev.level_id
+				ORDER BY lev.level_id DESC
+			");
+		}
+
+		return response()->json($result);
+	}
+
 
 
 	/**
@@ -2153,14 +2515,14 @@ class AppraisalController extends Controller
   public function auto_emp_list(Request $request){
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
-		
+
 		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and a.org_id in (" . $request->org_id_multi . ") ";
 		empty($request->org_id) ? $org = " " : $org = " and a.org_id = " . $request->org_id . " ";
 		empty($request->org_level) ? $org_level = " " : $org_level = " and org.level_id = " . $request->org_level . " ";
 		$levelStr = (empty($request->level_id)) ? " " : " AND a.level_id = {$request->level_id} " ;
-		
+
 		if ($empLevInfo["is_all"]) {
-			
+
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp
@@ -2173,7 +2535,7 @@ class AppraisalController extends Controller
 			$result = DB::select("
 				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
 				FROM employee emp inner join appraisal_item_result a
-				on a.emp_id = emp.emp_id 
+				on a.emp_id = emp.emp_id
 				inner join org on org.org_id = a.org_id
 				WHERE emp.is_active = 1
 				" . $org . $org_multi . $org_level."
@@ -2186,7 +2548,7 @@ class AppraisalController extends Controller
 						FROM employee de
 						INNER JOIN employee ce ON ce.emp_code = de.chief_emp_code
 						WHERE -- de.has_second_line = 1
-						-- AND 
+						-- AND
 						de.is_active = 1
 						AND ce.is_active = 1
 						AND ce.chief_emp_code = '{$empCode}'
@@ -2211,10 +2573,10 @@ class AppraisalController extends Controller
   public function auto_position_list(Request $request){
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
-		
+
 		empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
 		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and org_id in (" . $request->org_id_multi . ") ";
-		
+
 		if ($empLevInfo["is_all"]) {
 			$result = DB::select("
 				SELECT distinct p.position_id, p.position_code, p.position_name
@@ -2223,7 +2585,7 @@ class AppraisalController extends Controller
 				WHERE p.is_active = 1
 				" . $org . "
 				" . $org_multi . "
-				AND p.position_name LIKE '%{$request->position_name}%' 
+				AND p.position_name LIKE '%{$request->position_name}%'
 				AND e.emp_name LIKE '%{$request->emp_name}%' ");
 		} else {
 			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
@@ -2249,7 +2611,7 @@ class AppraisalController extends Controller
 					)
 				)
 				".$levelStr."
-				AND pos.position_name LIKE '%{$request->position_name}%' 
+				AND pos.position_name LIKE '%{$request->position_name}%'
 				AND emp.emp_name LIKE '%{$request->emp_name}%' ");
 		}
 
@@ -2314,6 +2676,158 @@ class AppraisalController extends Controller
 		return response()->json($result);
 	}
 
+	public function auto_emp_list2(Request $request){
+		$empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
+
+		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and a.org_id in (" . $request->org_id_multi . ") ";
+		// empty($request->org_id) ? $org = " " : $org = " and a.org_id = " . $request->org_id . " ";
+		empty($request->org_level) ? $org_level = " " : $org_level = " and org.level_id = " . $request->org_level . " ";
+		$levelStr = (empty($request->level_id)) ? " " : " AND a.level_id = {$request->level_id} " ;
+
+		if ($empLevInfo["is_all"]) {
+			if(empty($request->org_id)) {
+					$gueOrgCodeByOrgId = '';
+			} else {
+					$findIn = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+					$gueOrgCodeByOrgId = "and (emp.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+			}
+
+			$result = DB::select("
+				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
+				FROM employee emp
+				inner join appraisal_item_result a on a.emp_id = emp.emp_id
+				inner join org on org.org_id = a.org_id
+				WHERE emp.is_active = 1
+				" . $org_multi . $gueOrgCodeByOrgId . $levelStr . $org_level."
+				AND emp.emp_name like '%{$request->emp_name}%' ");
+		} else {
+			$findIn = $this->advanSearch->GetallUnderOrgByOrg($empLevInfo['org_id']); // add by toto
+			if(empty($request->org_id)) {
+					$gueOrgCodeByOrgId = "and (emp.org_id = '{$empLevInfo['org_id']}' OR find_in_set(org.org_code, '".$findIn."'))";
+			} else {
+					$gueOrgCodeByOrgId = "and (emp.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+			}
+
+			$result = DB::select("
+				SELECT distinct emp.emp_id, emp.emp_code, emp.emp_name
+				FROM employee emp inner join appraisal_item_result a
+				on a.emp_id = emp.emp_id
+				inner join org on org.org_id = a.org_id
+				WHERE emp.is_active = 1
+				" . $gueOrgCodeByOrgId . $org_multi . $org_level."
+				".$levelStr."
+				AND emp.emp_name LIKE '%{$request->emp_name}%' ");
+		}
+
+		return response()->json($result);
+	}
+
+
+
+	/**
+   * Get position list for auto complete search.
+   *
+   * @author P.Wirun (GJ)
+   * @param  \Illuminate\Http\Request (level_id, position_name)
+   * @return \Illuminate\Http\Response
+   */
+  public function auto_position_list2(Request $request){
+		$empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
+
+		// empty($request->org_id) ? $org = "" : $org = " and org_id = " . $request->org_id . " ";
+		empty($request->org_id_multi) ? $org_multi = "" : $org_multi = " and org_id in (" . $request->org_id_multi . ") ";
+
+		if ($empLevInfo["is_all"]) {
+			if(empty($request->org_id)) {
+					$gueOrgCodeByOrgId = '';
+			} else {
+					$findIn = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+					$gueOrgCodeByOrgId = "and (e.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+			}
+
+			$result = DB::select("
+				SELECT distinct p.position_id, p.position_code, p.position_name
+				FROM position p left outer join employee e
+				on p.position_id = e.position_id
+				left outer join org on org.org_id = e.org_id
+				WHERE p.is_active = 1
+				" . $gueOrgCodeByOrgId . "
+				" . $org_multi . "
+				AND p.position_name LIKE '%{$request->position_name}%'
+				AND e.emp_name LIKE '%{$request->emp_name}%' ");
+		} else {
+			$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
+			$findIn = $this->advanSearch->GetallUnderOrgByOrg($empLevInfo['org_id']);
+			if(empty($request->org_id)) {
+					$gueOrgCodeByOrgId = "and (emp.org_id = '{$empLevInfo['org_id']}' OR find_in_set(org.org_code, '".$findIn."'))";
+			} else {
+					$gueOrgCodeByOrgId = "and (emp.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
+			}
+			$result = DB::select("
+				SELECT distinct emp.position_id, pos.position_code, pos.position_name
+				FROM employee emp
+				INNER JOIN position pos ON pos.position_id = emp.position_id
+				INNER JOIN org on org.org_id = emp.org_id
+				WHERE emp.is_active = 1
+				" . $gueOrgCodeByOrgId . "
+				" . $org_multi . "
+				".$levelStr."
+				AND pos.position_name LIKE '%{$request->position_name}%'
+				AND emp.emp_name LIKE '%{$request->emp_name}%' ");
+		}
+
+		return response()->json($result);
+	}
+
+
+
+	/**
+   * Get Level list filter by Org for Individual Type.
+   *
+   * @author P.Wirun (GJ)
+   * @param  \Illuminate\Http\Request (level_id)
+   * @return \Illuminate\Http\Response
+   */
+  public function org_level_list_individual2(Request $request){
+    $empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
+		$levelStr = (empty($request->level_id)) ? " " : "AND emp.level_id = {$request->level_id}" ;
+		$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}" ;
+		if ($empLevInfo["is_all"]) {
+	      $result = DB::select("
+	        SELECT distinct org.level_id, lev.appraisal_level_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					WHERE 1 = 1
+					".$levelStr."
+					".$periodStr."
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC");
+	    } else {
+				$gue_org_level = $this->advanSearch->GetallUnderLevel($empLevInfo['level_id']); //add by toto
+	      $result = DB::select("
+		      SELECT distinct org.level_id, lev.appraisal_level_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					left outer join employee e on emp.emp_id = e.emp_id
+					WHERE 1 = 1
+					AND (
+						e.emp_code = '{$empCode}'
+						OR find_in_set(org.level_id, '{$gue_org_level}')
+					)
+					".$levelStr."
+					".$periodStr."
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC");
+	    }
+
+		return response()->json($result);
+	}
+
 	//add by toto
 	public function org_level_by_empname(Request $request) {
 		$emp_id = (empty($request->emp_id)) ? " " : "WHERE emp.emp_id = {$request->emp_id}";
@@ -2334,7 +2848,7 @@ class AppraisalController extends Controller
 		$emp_id = (empty($request->emp_id)) ? " " : "WHERE emp.emp_id = {$request->emp_id}";
 		$org_level = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level}";
 		$period_id = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id}";
-		
+
 		$items = DB::select("
 	        SELECT distinct org.org_id, org.org_name
 	        FROM appraisal_item_result emp
@@ -2380,7 +2894,7 @@ class AppraisalController extends Controller
 				// ".$periodStr."
 				// GROUP BY org.org_id ");
     // //}
-	
+
 		$empCode = Auth::id();
 		$empLevInfo = $this->is_all_employee($empCode);
 			$orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
@@ -2430,7 +2944,76 @@ class AppraisalController extends Controller
 					".$periodStr."
 					AND lev.is_org = 1
 					ORDER BY org.level_id ASC, org.org_code ASC");
-	    }	
+	    }
+
+		return response()->json($result);
+	}
+
+	public function org_individual2(Request $request){
+    // $empCode = Auth::id();
+		// $empLevInfo = $this->is_all_employee($empCode);
+
+		// // if ($empLevInfo["is_all"]) {
+  // //     $result = DB::select("
+  // //       SELECT org.org_id, org.org_name
+		// // 		FROM org
+		// // 		WHERE org.is_active = 1");
+  // //   } else {
+			// $orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
+			// $empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
+			// $empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
+			// $periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
+      // $result = DB::select("
+				// SELECT distinct org.org_id, org.org_name
+				// FROM org
+				// INNER JOIN appraisal_item_result emp ON emp.org_id = org.org_id
+				// WHERE org.is_active = 1
+				// ".$orgLevelStr."
+				// ".$empLevelStr."
+				// ".$empIdStr."
+				// ".$periodStr."
+				// GROUP BY org.org_id ");
+    // //}
+
+		$empCode = Auth::id();
+		$empLevInfo = $this->is_all_employee($empCode);
+			$orgLevelStr = (empty($request->org_level)) ? " " : "AND org.level_id = {$request->org_level} " ;
+			$empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
+			$empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
+			$periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
+		if ($empLevInfo["is_all"]) {
+	      $result = DB::select("
+	        SELECT distinct emp.org_id, org.org_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					WHERE 1 = 1
+					".$orgLevelStr."
+					".$empLevelStr."
+					".$empIdStr."
+					".$periodStr."
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC, org.org_code ASC");
+	    } else {
+				$gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($empLevInfo['org_id']);// add by toto
+	      $result = DB::select("
+		      SELECT distinct emp.org_id, org.org_name
+					FROM appraisal_item_result emp
+					INNER JOIN org ON org.org_id = emp.org_id
+					INNER JOIN appraisal_level lev ON lev.level_id = org.level_id
+					left outer join employee e on emp.emp_id = e.emp_id
+					WHERE 1 = 1
+					AND (
+						e.emp_code = '{$empCode}'
+						OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')
+					)
+					".$orgLevelStr."
+					".$empLevelStr."
+					".$empIdStr."
+					".$periodStr."
+					AND lev.is_org = 1
+					ORDER BY org.level_id ASC, org.org_code ASC");
+	    }
 
 		return response()->json($result);
 	}
@@ -2442,16 +3025,15 @@ class AppraisalController extends Controller
 		 $empLevelStr = (empty($request->emp_level)) ? " " : "AND emp.level_id = {$request->emp_level} " ;
 		 $empIdStr = (empty($request->emp_id)) ? " " : "AND emp.emp_id = {$request->emp_id} " ;
 		 $periodStr = (empty($request->period_id)) ? " " : "AND emp.period_id = {$request->period_id} " ;
-	  
+
 		 $result = DB::select("
 		  SELECT org_id, org_name
 		 FROM org
 		 WHERE 1 = 1
 		 ".$orgLevelStr."
 		 ORDER BY org_id ASC");
-	  
-		 
+
+
 		return response()->json($result);
 		}
 }
-

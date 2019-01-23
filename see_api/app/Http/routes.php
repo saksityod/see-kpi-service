@@ -166,7 +166,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('appraisal/auto_position_name','AppraisalController@auto_position_name');
 	Route::get('appraisal/auto_employee_name','AppraisalController@auto_employee_name');
 	Route::post('appraisal/calculate_weight','AppraisalController@calculate_weight');
-	Route::get('appraisal','AppraisalController@index');
+	Route::get('appraisal','AppraisalController@index2');
 	Route::get('appraisal/edit_assign_to', 'AppraisalController@edit_assign_to');
 	Route::get('appraisal/edit_action_to', 'AppraisalController@edit_action_to');
 	Route::post('appraisal/edit_action_to', 'AppraisalController@edit_action_to');
@@ -446,12 +446,12 @@ Route::group(['middleware' => 'cors'], function()
 	// Editting
 	// Appraisal //
 	Route::get('appraisal/parameter/org_level', 'AppraisalController@org_level_list');
-	Route::get('appraisal/parameter/emp_level', 'AppraisalController@emp_level_list');
-	Route::get('appraisal/parameter/auto_emp_list', 'AppraisalController@auto_emp_list');
+	Route::get('appraisal/parameter/emp_level', 'AppraisalController@emp_level_list2');
+	Route::get('appraisal/parameter/auto_emp_list', 'AppraisalController@auto_emp_list2');
 	Route::get('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list');
-	Route::post('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list');
-	Route::get('appraisal/parameter/org_level_individual', 'AppraisalController@org_level_list_individual');
-	Route::get('appraisal/parameter/org_individual', 'AppraisalController@org_individual');
+	Route::post('appraisal/parameter/auto_position_list', 'AppraisalController@auto_position_list2');
+	Route::get('appraisal/parameter/org_level_individual', 'AppraisalController@org_level_list_individual2');
+	Route::get('appraisal/parameter/org_individual', 'AppraisalController@org_individual2');
 	Route::get('appraisal/parameter/org_individual_report', 'AppraisalController@org_individual_report');
 
 	//add by toto
