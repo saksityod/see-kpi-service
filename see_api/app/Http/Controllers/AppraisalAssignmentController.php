@@ -2115,6 +2115,20 @@ class AppraisalAssignmentController extends Controller
 
 
 			if (empty($request->head_params['period_id'])) {
+				// filter period is existing emp result
+				foreach ($period_check as $k => $p) {
+					$emp = Employee::find($e['emp_code']);
+					$empResultCnt = EmpResult::where('period_id', $p->period_id)
+						->where('emp_id', $e['emp_id'])
+						->where('org_id', $e['org_id'])
+						->where('position_id', $emp->position_id)
+						->where('level_id', $emp->level_id)
+						->count();
+					if($empResultCnt > 0){
+						unset($period_check[$k]);
+					}
+				}
+				
 				foreach ($period_check as $p) {
 					// $appraisal_period = AppraisalPeriod::where('appraisal_year',$request->head_params['appraisal_year'])->where('period_no',$p)->where('appraisal_frequency_id',$request->head_params['frequency_id']);
 					$period_id = $p->period_id;
