@@ -473,13 +473,13 @@ class SalaryAdjustmentController extends Controller
 
         foreach ($request['detail'] as $d) {
             $empl = Employee::where('emp_id', $d['emp_id'])->first();
-            $empl->s_amount = $d['salary'];
-            $empl->pqpi_amount = $d['pqpi'];
+            $empl->s_amount = base64_encode($d['salary']);
+            $empl->pqpi_amount = base64_encode($d['pqpi']);
             $empl->updated_by = Auth::id();
 
             $emp = EmpResult::find($d['emp_result_id']);
-            $emp->adjust_new_s_amount = $d['salary'];
-            $emp->adjust_new_pqpi_amount = $d['pqpi'];
+            $emp->adjust_new_s_amount = base64_encode($d['salary']);
+            $emp->adjust_new_pqpi_amount = base64_encode($d['pqpi']);
             $emp->stage_id = $request->stage_id;
             $emp->status = AppraisalStage::find($request->stage_id)->status;
             $emp->updated_by = Auth::id();
