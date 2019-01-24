@@ -851,7 +851,8 @@ class QuestionaireDataController extends Controller
                 q.answer_type_id, 
                 q.parent_question_id, 
                 q.question_name, 
-                q.pass_score
+                q.pass_score,
+                q.is_require_answer
                 FROM question q
                 INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                 WHERE q.section_id = {$v_qdd->section_id}
@@ -870,7 +871,8 @@ class QuestionaireDataController extends Controller
                             q.answer_type_id, 
                             at.is_show_comment, 
                             q.parent_question_id, 
-                            q.question_name
+                            q.question_name,
+                            q.is_require_answer
                     FROM question q
                     INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                     WHERE q.parent_question_id = {$anv->question_id}
@@ -1004,6 +1006,7 @@ class QuestionaireDataController extends Controller
         }
 
         $req_date = $this->format_date($request->date);
+        $assessor = $this->get_emp_snapshot();
 
         $check_assign = DB::select("
             SELECT qdh.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
@@ -1013,6 +1016,7 @@ class QuestionaireDataController extends Controller
             WHERE qdh.questionaire_date = '{$req_date}'
             AND qn.questionaire_type_id = '{$request->questionaire_type_id}'
             AND qdh.emp_snapshot_id = '{$request->emp_snapshot_id}'
+            AND qdh.assessor_id = '{$assessor->emp_snapshot_id}'
             AND qdh.data_stage_id < 3
         ");
 
@@ -1042,7 +1046,7 @@ class QuestionaireDataController extends Controller
 
         foreach ($sub_items as $key => $qsv) {
             $sub_items[$key]->sub_section =  DB::select("
-                SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name, q.pass_score
+                SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name, q.pass_score, q.is_require_answer
                 FROM question q
                 INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                 WHERE q.section_id = {$qsv->section_id}
@@ -1057,7 +1061,7 @@ class QuestionaireDataController extends Controller
 
             foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
                 $sub_items[$key]->sub_section[$key2]->question =  DB::select("
-                    SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name
+                    SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name, q.is_require_answer
                     FROM question q
                     INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                     WHERE q.parent_question_id = {$anv->question_id}
@@ -1135,7 +1139,8 @@ class QuestionaireDataController extends Controller
                 q.answer_type_id, 
                 q.parent_question_id, 
                 q.question_name, 
-                q.pass_score
+                q.pass_score,
+                q.is_require_answer
                 FROM question q
                 INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                 WHERE q.section_id = {$v_qdd->section_id}
@@ -1155,7 +1160,8 @@ class QuestionaireDataController extends Controller
                         q.answer_type_id, 
                         at.is_show_comment, 
                         q.parent_question_id, 
-                        q.question_name
+                        q.question_name,
+                        q.is_require_answer
                         FROM question q
                         INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                         WHERE q.parent_question_id = {$anv->question_id}
@@ -1178,7 +1184,8 @@ class QuestionaireDataController extends Controller
                         q.answer_type_id, 
                         at.is_show_comment, 
                         q.parent_question_id, 
-                        q.question_name
+                        q.question_name,
+                        q.is_require_answer
                         FROM question q
                         INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                         WHERE q.parent_question_id = {$anv->question_id}
