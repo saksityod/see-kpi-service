@@ -207,10 +207,10 @@ class AdvanceSearchController extends Controller
         $inLoop = true;
         while ($inLoop) {
             $data = AppraisalLevel::select('level_id', 'appraisal_level_name', 'parent_id')
-                ->where('level_id', $data->parent_id)->where('is_org', 1)->first();
+                ->where('level_id', $data['parent_id'])->where('is_org', 1)->first();
             if($data){
                 $resData = $resData->push($data);
-                if($data->parent_id == 0){
+                if($data['parent_id'] == 0){
                     $inLoop = false;
                 }
             } else {

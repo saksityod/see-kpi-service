@@ -524,7 +524,7 @@ class EmpResultJudgementController extends Controller
 
         // get judgement level
         $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where($flagColumn, 1)->where('is_org', 1)->first();
-        $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel->level_id, true);
+        $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel['level_id'], true);
         
         // set parameter
         $employee = Employee::find(Auth::id());
@@ -564,7 +564,13 @@ class EmpResultJudgementController extends Controller
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
         
-
+        //ARJ = ให้แสดงผลข้อมูลหลังจากหน้า Result Judgement
+        if($request->stage_id=='ARJ') {
+            $stageQueryStr = " AND (ast.bonus_appraisal_flag = 1 OR ast.salary_adjustment_flag = 1 OR ast.bonus_adjustment_flag = 1)";
+        } else {
+            $stageQueryStr = " AND er.stage_id = '{$request->stage_id}'";
+        }
+        
         // get data from emp result
         $empResult = DB::select("
             SELECT
@@ -586,7 +592,7 @@ class EmpResultJudgementController extends Controller
             ) emp ON emp.emp_id = er.emp_id
             LEFT OUTER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
             WHERE er.period_id = '{$request->period_id}'
-            AND er.stage_id = '{$request->stage_id}'
+            ".$stageQueryStr."
             ".$empLevelQueryStr."
             ".$orgLevelQueryStr."
             ".$orgQueryStr."
@@ -620,17 +626,17 @@ class EmpResultJudgementController extends Controller
             foreach ($levelList as $index => $level) {
                 
                 $empResultJudgement = EmpResultJudgement::select('judge_id', 'adjust_result_score')->where('emp_result_id', $result->emp_result_id)
-                    ->where('org_level_id', $level->level_id)->first();
+                    ->where('org_level_id', $level['level_id'])->first();
                     
                 if($empResultJudgement){
                     $judgements = $judgements->push([
-                        'org_level_id' => $level->level_id, 'org_level_name' => $array[$index],  // $level->appraisal_level_name,
+                        'org_level_id' => $level['level_id'], 'org_level_name' => $array[$index],  // $level->appraisal_level_name,
                         'judge_id' => $empResultJudgement->judge_id, 'adjust_result_score' => $empResultJudgement->adjust_result_score
                     ]);
                     $lastJudScore = $empResultJudgement->adjust_result_score;
                 } else {
                     $judgements = $judgements->push([
-                        'org_level_id' => $level->level_id, 'org_level_name' => $level->appraisal_level_name,
+                        'org_level_id' => $level['level_id'], 'org_level_name' => $level['appraisal_level_name'],
                         'judge_id' => 0, 'adjust_result_score' => 0.00
                     ]);
                 }
