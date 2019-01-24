@@ -390,7 +390,7 @@ class AppraisalGroupController extends Controller
 				left outer join form_type d on c.form_id = d.form_id
 				left outer join perspective e on b.perspective_id = e.perspective_id
 				left outer join structure_result f on a.emp_result_id = f.emp_result_id and c.structure_id = f.structure_id
-				left outer join appraisal_criteria g on c.structure_id = g.structure_id and a.level_id = g.appraisal_level_id
+				left outer join appraisal_criteria g on g.appraisal_form_id = a.appraisal_form_id and c.structure_id = g.structure_id and a.level_id = g.appraisal_level_id
 				left outer join appraisal_level al on a.level_id = al.level_id
 				left outer join emp_result h on a.emp_result_id = h.emp_result_id
 				left join uom on  b.uom_id= uom.uom_id
@@ -402,6 +402,7 @@ class AppraisalGroupController extends Controller
 				order by c.seq_no, b.item_id
 				", array($request->assessor_group_id, $request->emp_result_id));
 		} else {
+			/* CancelBy:Wirun  CancelDate:2019.01.24
 			$items = DB::select("
 				SELECT DISTINCT b.item_name, b.formula_desc, uom.uom_name, b.structure_id, 
 					c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, 
@@ -431,8 +432,35 @@ class AppraisalGroupController extends Controller
 				GROUP BY a.item_result_id
 				ORDER BY c.seq_no asc, b.item_id
 			", array($request->assessor_group_id, $request->emp_result_id));
+			*/
+			$items = DB::select("
+				SELECT
+					ai.item_name, ai.formula_desc, uom.uom_name, ai.structure_id,
+					str.structure_name, ft.form_id, ft.app_url, str.nof_target_score, air.*, e.perspective_name,
+					air.weigh_score, f.weigh_score total_weigh_score, air.contribute_percent, air.weight_percent,
+					g.weight_percent total_weight_percent, al.no_weight,
+					IF(ifnull(air.target_value,0) = 0,0,(ifnull(air.actual_value,0)/air.target_value)*100) achievement,
+					air.percent_achievement, h.result_threshold_group_id, str.is_value_get_zero,
+					(select count(1) from appraisal_item_result_doc where air.item_result_id = item_result_id) files_amount,
+					air.weigh_score as weigh_score_swc, air.weigh_score as weigh_score_awc
+					, 1 as allow_input_actual
+					, str.is_no_raise_value
+				FROM appraisal_item_result air
+				INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+				LEFT OUTER JOIN appraisal_structure str ON ai.structure_id = str.structure_id
+				LEFT OUTER JOIN form_type ft ON ft.form_id = str.form_id
+				LEFT OUTER JOIN perspective e ON e.perspective_id = ai.perspective_id 
+				LEFT OUTER JOIN structure_result f ON f.emp_result_id = air.emp_result_id AND f.structure_id = str.structure_id
+				LEFT OUTER JOIN appraisal_criteria g ON g.appraisal_form_id = air.appraisal_form_id AND g.structure_id = ai.structure_id AND g.appraisal_level_id = air.level_id
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = air.level_id 
+				LEFT OUTER JOIN emp_result h ON h.emp_result_id = air.emp_result_id
+				LEFT OUTER JOIN uom ON uom.uom_id = ai.uom_id
+				INNER JOIN assessor_group_structure ags ON ags.structure_id = ai.structure_id AND ags.assessor_group_id = '{$request->assessor_group_id}'
+				WHERE air.emp_result_id = '{$request->emp_result_id}'
+				ORDER BY str.seq_no asc, ai.item_id
+			");
 		}
-
+		
 		$groups = array();
 		foreach ($items as $item) {
 			$key = $item->structure_name;
