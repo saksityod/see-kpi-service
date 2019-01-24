@@ -47,12 +47,14 @@ class AppraisalAssignmentController extends Controller
 
 	public function email_link_assignment(Request $request) {
 		$items = DB::select("
-			select e.emp_code,air.org_id, air.level_id as level_id_emp, o.level_id as level_id
+			select e.emp_code,air.org_id, air.level_id as level_id_emp, o.level_id as level_id,er.stage_id
 			from appraisal_item_result air
 			left join org o
 			on o.org_id = air.org_id
 			left join employee e
 			on air.emp_id = e.emp_id 
+			left join emp_result er
+			on er.emp_result_id = air.emp_result_id
 			where air.emp_result_id = {$request->emp_result_id}
 			limit 0,1
 			");
