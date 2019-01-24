@@ -88,7 +88,8 @@ class SystemConfigController extends Controller
 			'mail_password' => 'max:50',
 			'mail_encryption' => 'max:50',
 			'web_domain' => 'max:255',
-			'item_result_log' => 'boolean'
+			'item_result_log' => 'boolean',
+			'appraisal_360_flag' => 'required|integer'
 		]);
 
 		if ($validator->fails()) {

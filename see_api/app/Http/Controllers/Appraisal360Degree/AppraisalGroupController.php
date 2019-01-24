@@ -68,13 +68,48 @@ class AppraisalGroupController extends Controller
 
 	public function emp_level_list(Request $request)
 	{
-		$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
+		$config = SystemConfiguration::firstOrFail();
+		if($config->appraisal_360_flag == 1){
+			$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
 			->where('is_active', 1)
 			->where('is_individual', 1)
 			->orderBy('seq_no','asc')
 			->get();
-		
-		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง
+		} else{
+		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง */
+			$AuthEmpCode = Auth::id();
+			$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
+			if ($empLevInfo["is_all"]) {
+				$result = DB::select("
+					SELECT level_id, appraisal_level_name
+					FROM appraisal_level
+					WHERE is_active = 1
+					AND is_individual = 1
+					ORDER BY level_id DESC
+				");
+			} else {
+				// Get under //
+				$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->toArray();
+				$empList = implode(",",$allUnderEmp);
+
+				$result = DB::select("
+					SELECT lev.level_id, lev.appraisal_level_name
+					FROM employee emp
+					INNER JOIN appraisal_level lev ON lev.level_id = emp.level_id
+					WHERE emp.is_active = 1
+					AND lev.is_active = 1
+					AND lev.is_individual = 1
+					AND (
+						find_in_set(emp.emp_code, '{$empList}')
+						OR emp.emp_code = '{$AuthEmpCode}'
+					)
+					GROUP BY lev.level_id
+					ORDER BY lev.level_id DESC
+				");
+			}
+		} 
+
+		/* โค้ดที่ comment ด้านล่างเป็นแบบกรองตามหัวหน้าและลูกน้อง 
 		$AuthEmpCode = Auth::id();
 		$empLevInfo = (new AppraisalController())->is_all_employee($AuthEmpCode);
 		if ($empLevInfo["is_all"]) {
@@ -108,15 +143,16 @@ class AppraisalGroupController extends Controller
 			");
 		}
 		*/
-
 		return response()->json($result);
 	}
 
 
 	public function org_level_list_individual(Request $request)
 	{
-		$AuthEmpCode = Auth::id();
-		$result = DB::select("
+		$config = SystemConfiguration::firstOrFail();
+		if($config->appraisal_360_flag == 1){
+			$AuthEmpCode = Auth::id();
+			$result = DB::select("
 			SELECT DISTINCT org.level_id, vel.appraisal_level_name,
 				CASE 
 					WHEN org.level_id = 
@@ -139,24 +175,81 @@ class AppraisalGroupController extends Controller
 			)
 			ORDER BY vel.seq_no
 		");
+		}else{
+			$AuthEmpCode = Auth::id();
+			$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->toArray();
+			$empList = implode(",",$allUnderEmp);
+
+			$result = DB::select("
+			SELECT DISTINCT org.level_id, vel.appraisal_level_name,
+				CASE 
+					WHEN org.level_id = 
+						(
+							SELECT so.level_id
+							FROM org so 
+							INNER JOIN employee se ON se.org_id = so.org_id 
+							WHERE emp_code = '{$AuthEmpCode}'
+						)
+					THEN 1 
+					ELSE 0
+				END AS default_flag
+			FROM org
+			INNER JOIN appraisal_level vel ON vel.level_id = org.level_id
+			WHERE EXISTS(
+				SELECT 1
+				FROM employee emp 
+				WHERE emp.org_id = org.org_id
+				AND emp.level_id = {$request->level_id}
+				AND (
+					find_in_set(emp.emp_code, '{$empList}')
+					OR emp.emp_code = '{$AuthEmpCode}'
+				)
+			)
+			ORDER BY vel.seq_no
+		");
+		}
 
 		return response()->json($result);
 	}
 
 
 	public function org_individual(Request $request)
-	{
-		$AuthEmpCode = Auth::id();
-		$result = DB::select("
-			SELECT org.org_id, org.org_name,
-				CASE 
-					WHEN org.org_id = (SELECT org_id FROM employee WHERE emp_code = '{$AuthEmpCode}')
-					THEN 1 
-					ELSE 0
-				END AS default_flag
-			FROM org
-			WHERE org.level_id = '{$request->org_level}'
-		");
+	{ 
+		$config = SystemConfiguration::firstOrFail();
+		if($config->appraisal_360_flag == 1){
+			$AuthEmpCode = Auth::id();	
+			$result = DB::select("
+				SELECT org.org_id, org.org_name,
+					CASE 
+						WHEN org.org_id = (SELECT org_id FROM employee WHERE emp_code = '{$AuthEmpCode}')
+						THEN 1 
+						ELSE 0
+					END AS default_flag
+				FROM org 
+				WHERE org.level_id = '{$request->org_level}'
+			");
+		}else{
+
+			$AuthEmpCode = Auth::id();
+			$allUnderEmp = $this->GetallUnderEmp($AuthEmpCode)->toArray();
+			$empList = implode(",",$allUnderEmp);
+			$result = DB::select("
+				SELECT org.org_id, org.org_name,
+					CASE 
+						WHEN org.org_id = (SELECT org_id FROM employee WHERE emp_code = '{$AuthEmpCode}')
+						THEN 1 
+						ELSE 0
+					END AS default_flag
+				FROM org 
+				INNER JOIN (select distinct org_id from employee 
+					where (
+						find_in_set(emp_code, '{$empList}')
+						OR emp_code = '{$AuthEmpCode}'
+					)) emp on emp.org_id = org.org_id
+				WHERE org.level_id = '{$request->org_level}'
+			");
+		}
+
 		return response()->json($result);
 	}
 
