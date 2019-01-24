@@ -304,7 +304,7 @@ class ImportAssignmentController extends Controller
       AND iorg.org_id IN({$orgIdStr})
       ".$positionStr."
       ".$appraisalForm."
-      ORDER BY ai.structure_id, ai.item_id");
+      ORDER BY strc.seq_no, ai.item_id");
 
     $groupData = [];
     foreach ($items as $str) {
