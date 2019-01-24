@@ -564,7 +564,13 @@ class EmpResultJudgementController extends Controller
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
         
-
+        //ARJ = ให้แสดงผลข้อมูลหลังจากหน้า Result Judgement
+        if($request->stage_id=='ARJ') {
+            $stageQueryStr = " AND (ast.bonus_appraisal_flag = 1 OR ast.salary_adjustment_flag = 1 OR ast.bonus_adjustment_flag = 1)";
+        } else {
+            $stageQueryStr = " AND er.stage_id = '{$request->stage_id}'";
+        }
+        
         // get data from emp result
         $empResult = DB::select("
             SELECT
@@ -586,7 +592,7 @@ class EmpResultJudgementController extends Controller
             ) emp ON emp.emp_id = er.emp_id
             LEFT OUTER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
             WHERE er.period_id = '{$request->period_id}'
-            AND er.stage_id = '{$request->stage_id}'
+            ".$stageQueryStr."
             ".$empLevelQueryStr."
             ".$orgLevelQueryStr."
             ".$orgQueryStr."
