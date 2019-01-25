@@ -1137,6 +1137,7 @@ class QuestionaireDataController extends Controller
             $sub_items[$key]->sub_section = DB::select("
                 SELECT q.question_id, 
                 q.answer_type_id, 
+                at.is_show_comment,
                 q.parent_question_id, 
                 q.question_name, 
                 q.pass_score,
