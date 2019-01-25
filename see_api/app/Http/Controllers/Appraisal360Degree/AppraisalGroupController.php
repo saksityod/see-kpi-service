@@ -1928,7 +1928,7 @@ class AppraisalGroupController extends Controller
 				m.cds_id -- , child 
 				,s.level_id as parent_level_id,
 				2 as appraisal_type_id,
-			 , l.is_org, l.is_individual -- parent
+			  l.is_org, l.is_individual -- parent
 			FROM
 				appraisal_item_result ir
 			INNER JOIN employee e ON ir.emp_id = e.emp_id
@@ -1951,7 +1951,7 @@ class AppraisalGroupController extends Controller
 			AND s.is_derive = 1
 			AND s.level_id != ir.level_id
 
-			ORDER BY 3,6;
+			ORDER BY 3,6
 		", [$request->start_date, $request->start_date]);
 		
 		foreach ($chiefIndvKPIResult as $c) {
@@ -2062,7 +2062,7 @@ class AppraisalGroupController extends Controller
 				m.cds_id -- , child 
 				,s.level_id as parent_level_id,
 				2 as appraisal_type_id,
-				, l.is_org, l.is_individual -- parent
+			    l.is_org, l.is_individual -- parent
 			FROM
 				appraisal_item_result ir
 			INNER JOIN org o ON ir.org_id = o.org_id
@@ -2086,7 +2086,7 @@ class AppraisalGroupController extends Controller
 			AND s.is_derive = 1
 			AND s.level_id != ir.level_id
 
-			ORDER BY 3,6;
+			ORDER BY 3,6
 		", [$request->start_date, $request->start_date]);
 		
 		foreach ($ParentOrgKPIResult as $c) {
@@ -2866,7 +2866,7 @@ class AppraisalGroupController extends Controller
 				$java_percent_achievement = 0;
 				$java_percent_forecast = 0;
 				$java_weigh_score = 0;
-				$java_score = score;
+				$java_score = $r->score;
 				if( $r->value_type_id == 1){ //Bigger is better
 
 					if($r->target_value == 0 && $r->actual_value == 0){
@@ -2940,9 +2940,7 @@ class AppraisalGroupController extends Controller
 			$item_result->percent_forecast = $java_percent_forecast;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
-			$item_result->updated_dttm = date('Y-m-d H:i:s');
-			$item_result->etl_dttm = $r->etl_dttm;	
-				
+			$item_result->updated_dttm = date('Y-m-d H:i:s');				
 			
 		}
 		
@@ -3564,7 +3562,7 @@ class AppraisalGroupController extends Controller
 	
 		}
 		// END Emp Result Summary
-		return response()->json(['status' => '400']);
+		return response()->json(['status' => '200']);
 	}
 	
 	
