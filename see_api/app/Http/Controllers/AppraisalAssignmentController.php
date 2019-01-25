@@ -2118,7 +2118,7 @@ class AppraisalAssignmentController extends Controller
 
 			if (empty($request->head_params['period_id'])) {
 				// filter period is existing emp result
-				foreach ($period_check as $k => $p) {
+				/* foreach ($period_check as $k => $p) {
 					$emp = Employee::find($e['emp_code']);
 					$empResultCnt = EmpResult::where('period_id', $p->period_id)
 						->where('emp_id', $e['emp_id'])
@@ -2129,12 +2129,13 @@ class AppraisalAssignmentController extends Controller
 					if($empResultCnt > 0){
 						unset($period_check[$k]);
 					}
-				}
+				} */
 				
 				foreach ($period_check as $p) {
 					// $appraisal_period = AppraisalPeriod::where('appraisal_year',$request->head_params['appraisal_year'])->where('period_no',$p)->where('appraisal_frequency_id',$request->head_params['frequency_id']);
 					$period_id = $p->period_id;
 					$qinput = array();
+					$emp = Employee::find($e['emp_code']);
 
 					if ($request->head_params['appraisal_type_id'] == 2) {
 
@@ -2144,22 +2145,26 @@ class AppraisalAssignmentController extends Controller
 						where emp_id = ?
 						and org_id = ?
 						and position_id = ?
+						and level_id = ?
 						and period_id = ?
 						and appraisal_type_id = 2
 						";
 						$qinput[] = $e['emp_id'];
 						$qinput[] = $e['org_id'];
-						$qinput[] = $e['position_id'];
+						$qinput[] = $emp->position_id;
+						$qinput[] = $emp->level_id;
 
 					} else {
 						$query_unassign = "
 						select org_id
 						from emp_result
 						where org_id = ?
+						and level_id = ?
 						and period_id = ?
 						and appraisal_type_id = 1
 						";
 						$qinput[] = $e['org_id'];
+						$qinput[] = $emp->level_id;
 					}
 
 					$qinput[] = $period_id;
@@ -2383,13 +2388,38 @@ class AppraisalAssignmentController extends Controller
 							}
 						}
 					} else {
-						$already_assigned = ['emp_id' => $e['emp_id'], 'org_id' => $e['org_id'], 'period_id' => $period_id];
+
+						$emp_desc = DB::select("
+						SELECT
+							emp.emp_code,
+							emp.emp_name,
+							org.org_code,
+							org.org_name,
+							pe.appraisal_period_desc
+						FROM
+							employee emp
+							CROSS JOIN ( SELECT org_code, org_name FROM org WHERE org_id = ".$e['org_id']." ) org 
+							CROSS JOIN ( SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = ".$period_id." ) pe
+						WHERE
+							emp_id = ".$e['emp_id']."");
+
+
+						$already_assigned[] = ['emp_id' => $e['emp_id']
+						,'org_id' => $e['org_id']
+						,'period_id' => $period_id 
+						,'emp_code' => $emp_desc[0]->emp_code 
+						,'emp_name' => $emp_desc[0]->emp_name 
+						,'org_code' => $emp_desc[0]->org_code 
+						,'org_name' => $emp_desc[0]->org_name
+						,'appraisal_period_desc' => $emp_desc[0]->appraisal_period_desc];
+
 					}
 				}
 			} else {
 				$appraisal_period = AppraisalPeriod::where('appraisal_year',$request->head_params['appraisal_year'])->where('period_id',$request->head_params['period_id'])->where('appraisal_frequency_id',$request->head_params['frequency_id']);
 				$period_id = $appraisal_period->first()->period_id;
 				$qinput = array();
+				$emp = Employee::find($e['emp_code']);
 
 				if ($request->head_params['appraisal_type_id'] == 2) {
 					$query_unassign = "
@@ -2398,21 +2428,25 @@ class AppraisalAssignmentController extends Controller
 					Where emp_id = ?
 					and org_id = ?
 					and position_id = ?
+					and level_id = ?
 					and period_id = ?
 					and appraisal_type_id = 2
 					";
 					$qinput[] = $e['emp_id'];
 					$qinput[] = $e['org_id'];
-					$qinput[] = $e['position_id'];
+					$qinput[] = $emp->position_id;
+					$qinput[] = $emp->level_id;
 				} else {
 					$query_unassign = "
 					select org_id
 					from emp_result
 					Where org_id = ?
+					and level_id = ?
 					and period_id = ?
 					and appraisal_type_id = 1
 					";
 					$qinput[] = $e['org_id'];
+					$qinput[] = $emp->level_id;
 				}
 
 				$qinput[] = $period_id;
@@ -2668,7 +2702,29 @@ class AppraisalAssignmentController extends Controller
 					}
 
 				} else {
-					$already_assigned[] = ['emp_id' => $e['emp_id'], 'org_id' => $e['org_id'], 'period_id' => $period_id];
+						$emp_desc = DB::select("
+						SELECT
+							emp.emp_code,
+							emp.emp_name,
+							org.org_code,
+							org.org_name,
+							pe.appraisal_period_desc
+						FROM
+							employee emp
+							CROSS JOIN ( SELECT org_code, org_name FROM org WHERE org_id = ".$e['org_id']." ) org 
+							CROSS JOIN ( SELECT appraisal_period_desc FROM appraisal_period WHERE period_id = ".$period_id." ) pe
+						WHERE
+							emp_id = ".$e['emp_id']."");
+
+
+						$already_assigned[] = ['emp_id' => $e['emp_id']
+						,'org_id' => $e['org_id']
+						,'period_id' => $period_id 
+						,'emp_code' => $emp_desc[0]->emp_code 
+						,'emp_name' => $emp_desc[0]->emp_name 
+						,'org_code' => $emp_desc[0]->org_code 
+						,'org_name' => $emp_desc[0]->org_name
+						,'appraisal_period_desc' => $emp_desc[0]->appraisal_period_desc];
 				}
 
 			}
