@@ -392,7 +392,7 @@ class ImportAssignmentController extends Controller
           	emp.emp_name, item.item_id appraisal_item_id,
           	item.item_name appraisal_item_name, item.uom_name,
             item.max_value, item.unit_deduct_score, item.value_get_zero,
-          	item.structure_name, item.form_id, item.nof_target_score, item.is_value_get_zero, item.unit_reward_score
+          	item.structure_name, item.seq_no, item.form_id, item.nof_target_score, item.is_value_get_zero, item.unit_reward_score
           FROM(
           	SELECT
           		emp.level_id, vel.appraisal_level_name, vel.default_stage_id,
@@ -419,7 +419,7 @@ class ImportAssignmentController extends Controller
           	SELECT ail.level_id, aio.org_id,
           		itm.item_id, itm.item_name, uom.uom_name,
               itm.max_value, itm.unit_deduct_score, itm.value_get_zero, itm.unit_reward_score,
-          		strc.structure_name, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
+          		strc.structure_name, strc.seq_no, strc.form_id, strc.nof_target_score, strc.is_value_get_zero
           	FROM appraisal_item itm
           	LEFT JOIN appraisal_item_level ail ON ail.item_id = itm.item_id
           	LEFT JOIN appraisal_item_org aio ON aio.item_id = itm.item_id
@@ -447,6 +447,7 @@ class ImportAssignmentController extends Controller
           	WHERE 1 = 1
           	".$periodStr."
           )prd
+          ORDER BY seq_no, item_id
         ");
 
         // Generate Excel from query result. Return 404, If not found data.
@@ -1080,7 +1081,8 @@ class ImportAssignmentController extends Controller
               $criteriaInfoQry = DB::select("
                 SELECT weight_percent
                 FROM appraisal_criteria
-                WHERE appraisal_level_id = {$row->level_id}
+                WHERE appraisal_form_id = {$row->appraisal_form_id}
+                AND appraisal_level_id = {$row->level_id}
                 AND structure_id = {$itemInfo["structure_id"]}
                 LIMIT 1"
               );

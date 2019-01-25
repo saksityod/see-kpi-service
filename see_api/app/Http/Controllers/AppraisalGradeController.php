@@ -135,7 +135,8 @@ class AppraisalGradeController extends Controller
 	{
 		$errors = array();
 		$respData = collect();
-
+		DB::beginTransaction();
+		
 		try {
 			$config = SystemConfiguration::firstOrFail();
 		} catch (ModelNotFoundException $e) {
@@ -151,7 +152,7 @@ class AppraisalGradeController extends Controller
 		foreach ($request->appraisal_level_id as $key => $vel) {
 			$validator = Validator::make($request->all(), [
 				'appraisal_form_id' => 'required|integer',
-				'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $vel,
+				'grade' => 'required|max:100|unique:appraisal_grade,grade,null,appraisal_level_id,appraisal_level_id,' . $vel.',appraisal_form_id,appraisal_form_id'.$request->appraisal_form_id,
 				'begin_score' => 'required|numeric',
 				'end_score' => 'required|numeric',
 				'salary_raise_amount' => 'required|numeric',
@@ -159,8 +160,9 @@ class AppraisalGradeController extends Controller
 			]);
 
 			$range_check = DB::select("
-				select grade, begin_score, end_score
+				select grade, begin_score, end_score  ,appraisal_level_name
 				from appraisal_grade
+				inner join appraisal_level on appraisal_grade.appraisal_level_id = appraisal_level.level_id
 				where appraisal_form_id = ?
 				and appraisal_level_id = ?
 				and (? between begin_score and end_score
@@ -169,17 +171,18 @@ class AppraisalGradeController extends Controller
 				or ? between end_score and begin_score)
 			", array($request->appraisal_form_id, $vel, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
 
+
 			if ($validator->fails()) {
 				$errors = $validator->errors()->toArray();
 				if (!empty($range_check)) {
-					$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
+					$errors['overlap'][] = 'The level '.$range_check[0]->appraisal_level_name. ' has already been taken.';//$range_check;
 				}
-				return response()->json(['status' => 400, 'data' => $errors]);
+				//return response()->json(['status' => 400, 'data' => $errors ,'error1234']);
 				
 			} else {
 				if (!empty($range_check)) {
-					$errors['overlap'] = "The begin score and end score is overlapped with another grade.";//$range_check;
-					return response()->json(['status' => 400, 'data' => $errors]);
+					$errors['overlap'][] = "The level ".$range_check[0]->appraisal_level_name. " has already been taken.";//$range_check;
+					//return response()->json(['status' => 400, 'data' => $errors]);
 				}
 
 				$item = new AppraisalGrade;
@@ -209,7 +212,18 @@ class AppraisalGradeController extends Controller
 				$item->save();
 
 				$respData->push($item);
+
 			}
+		}
+
+		if(empty($errors['overlap'])){
+			DB::commit();
+
+		}else{
+		DB::rollback();
+		$respData->push($errors['overlap']);
+
+		return response()->json(['status' => 400, 'data' => $errors['overlap']]);
 		}
 
 		return response()->json(['status' => 200, 'data' => $respData]);
@@ -262,7 +276,7 @@ class AppraisalGradeController extends Controller
 		$validator = Validator::make($request->all(), [
 			'appraisal_form_id' => 'required|integer',
 			// 'appraisal_level_id' => 'required|integer',
-			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id[0],
+			'grade' => 'required|max:100|unique:appraisal_grade,grade,' . $grade_id . ',grade_id,appraisal_level_id,' . $request->appraisal_level_id[0].',appraisal_form_id,' . $request->appraisal_form_id,
 			'begin_score' => 'required|numeric',
 			'end_score' => 'required|numeric',
 			'salary_raise_amount' => 'required|numeric',
@@ -272,13 +286,14 @@ class AppraisalGradeController extends Controller
 		$range_check = DB::select("
 			select grade, begin_score, end_score
 			from appraisal_grade
-			where appraisal_level_id = ?
+			where appraisal_form_id = ? 
+			and appraisal_level_id = ?
 			and (? between begin_score and end_score
 			or ? between end_score and begin_score
 			or ? between begin_score and end_score
 			or ? between end_score and begin_score)
 			and grade <> ?
-		", array($request->appraisal_level_id[0], $request->begin_score, $request->begin_score, $request->end_score, $request->end_score, $item->grade));
+		", array($request->appraisal_form_id, $request->appraisal_level_id[0], $request->begin_score, $request->begin_score, $request->end_score, $request->end_score, $item->grade));
 
 		if ($validator->fails()) {
 			$errors = $validator->errors()->toArray();

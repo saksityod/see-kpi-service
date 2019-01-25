@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Position;
+use App\Employee;
 
 use Auth;
 use DB;
@@ -57,8 +58,7 @@ class PositionController extends Controller
 				$validator = Validator::make($i->toArray(), [
 					'position_name' => 'required|max:255',
 					'position_code' => 'required',
-					'job_code' => 'max:10'
-
+					'job_code' => 'max:10|exists:job_code,job_code'
 				]);
 
 				if ($validator->fails()) {
@@ -81,7 +81,7 @@ class PositionController extends Controller
 						try {
 							$position->save();
 						} catch (Exception $e) {
-							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
+							$errors[] = ['position_name' => $i->position_code, 'errors' => ["insert_error"=>[substr($e,0,254)]]];
 						}
 					} else {
 						$position->position_name = $i->position_name;
@@ -92,7 +92,7 @@ class PositionController extends Controller
 						try {
 							$position->save();
 						} catch (Exception $e) {
-							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
+							// $errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
 						}
 
 					}
@@ -168,7 +168,13 @@ class PositionController extends Controller
 			$item = Position::findOrFail($position_id);
 		} catch (ModelNotFoundException $e) {
 			return response()->json(['status' => 404, 'data' => 'Position not found.']);
-		}	
+		}
+
+		// ตรวจสอบเพิ่มเติมในกรณีที่ Position ถูกใช้งานแล้วใน Employee (*ไม่ได้กำหนด Foreign Key)
+		$posInEmpCnt = Employee::where('position_id', $position_id)->count();
+		if($posInEmpCnt > 0){
+			return response()->json(['status' => 400, 'data' => 'Cannot delete because this Position is in use Employee.']);
+		}
 
 		try {
 			$item->delete();
