@@ -260,7 +260,7 @@ class QuestionaireController extends Controller
 								], [
 									'answer_type_id' => 'required|integer',
 									'question_name' => 'required|max:255',
-									'is_require_answer' => 'integer'
+									'is_require_answer' => 'required|integer'
 								]);
 
 								if($validator_question->fails()) {
@@ -474,7 +474,8 @@ class QuestionaireController extends Controller
 									'is_require_answer' => $q['is_require_answer']
 								], [
 									'answer_type_id' => 'required|integer',
-									'question_name' => 'required|max:255'
+									'question_name' => 'required|max:255',
+									'is_require_answer' => 'required|integer'
 								]);
 
 								if($validator_question->fails()) {
