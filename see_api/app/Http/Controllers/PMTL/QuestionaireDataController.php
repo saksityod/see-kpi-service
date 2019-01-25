@@ -1046,7 +1046,7 @@ class QuestionaireDataController extends Controller
 
         foreach ($sub_items as $key => $qsv) {
             $sub_items[$key]->sub_section =  DB::select("
-                SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name, q.pass_score, q.is_require_answer
+                SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name, q.pass_score, q.is_require_answer ,at.is_show_comment
                 FROM question q
                 INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
                 WHERE q.section_id = {$qsv->section_id}
