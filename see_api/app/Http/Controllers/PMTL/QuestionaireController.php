@@ -141,7 +141,7 @@ class QuestionaireController extends Controller
 			");
 		foreach ($sub_items as $key => $qsv) {
 			$sub_items[$key]->sub_section =  DB::select("
-				SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name, q.pass_score
+				SELECT q.question_id, q.answer_type_id, at.is_show_comment, q.parent_question_id, q.question_name, q.pass_score ,q.is_require_answer
 				FROM question q
 				INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 				WHERE q.section_id = '{$qsv->section_id}'
@@ -161,7 +161,7 @@ class QuestionaireController extends Controller
 
 			foreach ($sub_items[$key]->sub_section as $key2 => $anv) {
 				$sub_items[$key]->sub_section[$key2]->question =  DB::select("
-					SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name
+					SELECT q.question_id, q.answer_type_id, q.parent_question_id, q.question_name ,q.is_require_answer
 					FROM question q
 					INNER JOIN answer_type at ON at.answer_type_id = q.answer_type_id
 					WHERE q.parent_question_id = '{$anv->question_id}'
@@ -255,10 +255,12 @@ class QuestionaireController extends Controller
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'] as $q_k => $q) {
 								$validator_question = Validator::make([
 									'answer_type_id' => $q['answer_type_id'],
-									'question_name' => $q['question_name']
+									'question_name' => $q['question_name'],
+									'is_require_answer' => $q['is_require_answer']
 								], [
 									'answer_type_id' => 'required|integer',
-									'question_name' => 'required|max:255'
+									'question_name' => 'required|max:255',
+									'is_require_answer' => 'integer'
 								]);
 
 								if($validator_question->fails()) {
@@ -331,6 +333,7 @@ class QuestionaireController extends Controller
 						$q->answer_type_id = $qssv['answer_type_id'];
 						$q->pass_score = $qssv['pass_score'];
 						$q->question_name = $qssv['question_name'];
+						$q->is_require_answer = $qssv['is_require_answer'];
 						$q->created_by = Auth::id();
 						$q->updated_by = Auth::id();
 						$q->save();
@@ -358,6 +361,7 @@ class QuestionaireController extends Controller
 								$ques->answer_type_id = $quesv['answer_type_id'];
 								$ques->parent_question_id = $q->question_id;
 								$ques->question_name = $quesv['question_name'];
+								$ques->is_require_answer = $quesv['is_require_answer'];
 								$ques->created_by = Auth::id();
 								$ques->updated_by = Auth::id();
 								$ques->save();
@@ -438,6 +442,7 @@ class QuestionaireController extends Controller
 						$validator_sub_section = Validator::make([
 							'answer_type_id' => $ss['answer_type_id'],
 							'question_name' => $ss['question_name']
+							
 						], [
 							'answer_type_id' => 'required|integer',
 							'question_name' => 'required|max:255'
@@ -465,7 +470,8 @@ class QuestionaireController extends Controller
 							foreach ($request['questionaire_section'][$qs_k]['sub_section'][$ss_key]['question'] as $q_k => $q) {
 								$validator_question = Validator::make([
 									'answer_type_id' => $q['answer_type_id'],
-									'question_name' => $q['question_name']
+									'question_name' => $q['question_name'],
+									'is_require_answer' => $q['is_require_answer']
 								], [
 									'answer_type_id' => 'required|integer',
 									'question_name' => 'required|max:255'
@@ -553,17 +559,22 @@ class QuestionaireController extends Controller
 							$q->answer_type_id = $qssv['answer_type_id'];
 							$q->pass_score = $qssv['pass_score'];
 							$q->question_name = $qssv['question_name'];
+							$q->is_require_answer = $qssv['is_require_answer'];
 							$q->created_by = Auth::id();
 							$q->updated_by = Auth::id();
 						} else {
 							$q = Question::find($qssv['question_id']);
+							
 							$q->section_id = $qs->section_id;
 							$q->seq_no = $qssv_k;
 							$q->answer_type_id = $qssv['answer_type_id'];
 							$q->pass_score = $qssv['pass_score'];
 							$q->question_name = $qssv['question_name'];
+							$q->is_require_answer = $qssv['is_require_answer'];
 							$q->updated_by = Auth::id();
+							
 						}
+						
 						$q->save();
 
 						if(!empty($request['questionaire_section'][$qsv_k]['sub_section'][$qssv_k]['answer'])) {
@@ -601,6 +612,7 @@ class QuestionaireController extends Controller
 									$ques->answer_type_id = $quesv['answer_type_id'];
 									$ques->parent_question_id = $q->question_id;
 									$ques->question_name = $quesv['question_name'];
+									$ques->is_require_answer = $quesv['is_require_answer'];
 									$ques->created_by = Auth::id();
 									$ques->updated_by = Auth::id();
 								} else {
@@ -610,6 +622,7 @@ class QuestionaireController extends Controller
 									$ques->answer_type_id = $quesv['answer_type_id'];
 									$ques->parent_question_id = $q->question_id;
 									$ques->question_name = $quesv['question_name'];
+									$ques->is_require_answer = $quesv['is_require_answer'];
 									$ques->updated_by = Auth::id();
 								}
 								$ques->save();
