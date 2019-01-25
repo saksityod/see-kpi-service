@@ -2668,7 +2668,7 @@ class AppraisalGroupController extends Controller
 			
 		}
 		// END KPI Result Quantity
-		
+
 		// START Recalculate Quantity
 		
 		$kpi_result = DB::select("
@@ -3061,12 +3061,14 @@ class AppraisalGroupController extends Controller
 					}else{
 						$java_weigh_score = ($r->score * $r->weight_percent)/100;
 					}
-				$item_result = AppraisalItemResult::find($r->item_result_id);
-				$item_result->weigh_score = $java_weigh_score;
-				$item_result->updated_by = 'ETL_SEE_KPI';
-				$item_result->updated_dttm = date('Y-m-d H:i:s');	
-				$item_result->save();
+					$item_result = AppraisalItemResult::find($r->item_result_id);
+					$item_result->weigh_score = $java_weigh_score;
+					$item_result->updated_by = 'ETL_SEE_KPI';
+					$item_result->updated_dttm = date('Y-m-d H:i:s');	
+					$item_result->save();
+				}
 			}
+			
 		}
 		
 		// END Quality
@@ -3300,7 +3302,7 @@ class AppraisalGroupController extends Controller
 			inner join appraisal_period ap on  ap.period_id  = air.period_id 
 			CROSS JOIN system_config sc
 			where fy.form_id in (1,2)
-			and status = 'accepted'
+			-- and status = 'accepted'
 			and er.period_id in (
 				SELECT ap.period_id
 				FROM appraisal_period ap
@@ -3315,33 +3317,66 @@ class AppraisalGroupController extends Controller
 			, er.emp_id
 			, ai.structure_id		
 		", [$request->start_date, $request->start_date, $request->emp_result_id, $request->emp_result_id]);
+	
 		
 		foreach ($item_result as $r) {
+			
 			if (!empty($r->emp_id)) { // individual
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('emp_id', $r->emp_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'count_of_item' => $r->count_of_item,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('emp_id', $r->emp_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'count_of_item' => $r->count_of_item,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);
+				
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'emp_id' => $r->emp_id,
+					'structure_id' => $r->structure_id
 				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->count_of_item = $r->count_of_item;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();
+				
+				
 			} else { // org
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'count_of_item' => $r->count_of_item,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
-				]);			
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'count_of_item' => $r->count_of_item,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);		
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'structure_id' => $r->structure_id
+				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->count_of_item = $r->count_of_item;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();
+				
 			}
 		}
 		
@@ -3409,7 +3444,8 @@ class AppraisalGroupController extends Controller
 								FROM appraisal_period ap
 								where ap.start_date <= ? and ap.end_date >= ?
 								and ap.appraisal_year = (select current_appraisal_year from system_config))
-						and status = 'accepted') sr
+						-- and status = 'accepted'
+						) sr
 			group by structure_id
 			,period_id
 			,level_id
@@ -3421,30 +3457,57 @@ class AppraisalGroupController extends Controller
 		
 		foreach ($item_result as $r) {
 			if (!empty($r->emp_id)) { // individual
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('emp_id', $r->emp_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'count_of_item' => $r->count_of_item,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('emp_id', $r->emp_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'count_of_item' => $r->count_of_item,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'emp_id' => $r->emp_id,
+					'structure_id' => $r->structure_id
 				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->count_of_item = $r->count_of_item;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();				
 			} else { // org
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'count_of_item' => $r->count_of_item,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
-				]);			
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'count_of_item' => $r->count_of_item,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);			
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'structure_id' => $r->structure_id
+				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->count_of_item = $r->count_of_item;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();				
 			}
 		}		
 		// END Structure Deduct
@@ -3496,7 +3559,8 @@ class AppraisalGroupController extends Controller
 								FROM appraisal_period ap
 								where ap.start_date <= ? and ap.end_date >= ?
 								and ap.appraisal_year = (select current_appraisal_year from system_config))
-						and status = 'accepted') sr
+						-- and status = 'accepted'
+						) sr
 			group by emp_result_id
 			,structure_id
 			,period_id
@@ -3508,28 +3572,53 @@ class AppraisalGroupController extends Controller
 		
 		foreach ($item_result as $r) {
 			if (!empty($r->emp_id)) { // individual
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('emp_id', $r->emp_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('emp_id', $r->emp_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'emp_id' => $r->emp_id,
+					'structure_id' => $r->structure_id
 				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();				
 			} else { // org
-				StructureResult::where('emp_result_id', $r->emp_result_id)
-				->where('period_id', $r->period_id)
-				->where('structure_id', $r->structure_id)
-				->update([
-					'weight_score_sum_detail' => $r->weight_score_sum_detail,
-					'nof_target_score' => $r->nof_target_score,
-					'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
-					'weigh_score' => $r->weigh_score,
-					'etl_dttm' => $r->etl_dttm,
-				]);			
+				// StructureResult::where('emp_result_id', $r->emp_result_id)
+				// ->where('period_id', $r->period_id)
+				// ->where('structure_id', $r->structure_id)
+				// ->update([
+					// 'weight_score_sum_detail' => $r->weight_score_sum_detail,
+					// 'nof_target_score' => $r->nof_target_score,
+					// 'weight_percent_deduct_score' => $r->weight_percent_deduct_score,
+					// 'weigh_score' => $r->weigh_score,
+					// 'etl_dttm' => $r->etl_dttm,
+				// ]);	
+				$sr = StructureResult::firstOrCreate([
+					'emp_result_id' => $r->emp_result_id, 
+					'period_id' => $r->period_id,
+					'structure_id' => $r->structure_id
+				]);
+				
+				$sr->weight_score_sum_detail = $r->weight_score_sum_detail;
+				$sr->nof_target_score = $r->nof_target_score;
+				$sr->weight_percent_deduct_score = $r->weight_percent_deduct_score;
+				$sr->weigh_score = $r->weigh_score;
+				$sr->etl_dttm = date('Y-m-d H:i:s');
+				$sr->save();							
 			}
 		}		
 		// END Structure Reward
@@ -3565,8 +3654,10 @@ class AppraisalGroupController extends Controller
 			$result->save();
 		}
 	
-		}
+	
 		// END Emp Result Summary
+		
+
 		return response()->json(['status' => '200']);
 	}
 	
