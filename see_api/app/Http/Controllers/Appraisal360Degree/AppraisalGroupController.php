@@ -2583,7 +2583,7 @@ class AppraisalGroupController extends Controller
 						$item_result->weigh_score = $java_weigh_score;
 						$item_result->updated_by = 'ETL_SEE_KPI';
 						$item_result->updated_dttm = date('Y-m-d H:i:s');
-						$item_result->etl_dttm = $r->etl_dttm;
+						$item_result->save();
 
 					}
 					
@@ -2661,8 +2661,8 @@ class AppraisalGroupController extends Controller
 					$item_result->percent_forecast = $java_percent_forecast;
 					$item_result->weigh_score = $java_weigh_score;
 					$item_result->updated_by = 'ETL_SEE_KPI';
-					$item_result->updated_dttm = date('Y-m-d H:i:s');
-					$item_result->etl_dttm = $r->etl_dttm;					
+					$item_result->updated_dttm = date('Y-m-d H:i:s');		
+					$item_result->save();
 				}
 			}
 			
@@ -2940,7 +2940,8 @@ class AppraisalGroupController extends Controller
 			$item_result->percent_forecast = $java_percent_forecast;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
-			$item_result->updated_dttm = date('Y-m-d H:i:s');				
+			$item_result->updated_dttm = date('Y-m-d H:i:s');		
+			$item_result->save();
 			
 		}
 		
@@ -3044,7 +3045,8 @@ class AppraisalGroupController extends Controller
 					$item_result = AppraisalItemResult::find($r->item_result_id);
 					$item_result->weigh_score = $java_weigh_score;
 					$item_result->updated_by = 'ETL_SEE_KPI';
-					$item_result->updated_dttm = date('Y-m-d H:i:s');	
+					$item_result->updated_dttm = date('Y-m-d H:i:s');
+					$item_result->save();
 					
 				}
 			} elseif ($r->flag_threshold == 0) {
@@ -3062,7 +3064,8 @@ class AppraisalGroupController extends Controller
 				$item_result = AppraisalItemResult::find($r->item_result_id);
 				$item_result->weigh_score = $java_weigh_score;
 				$item_result->updated_by = 'ETL_SEE_KPI';
-				$item_result->updated_dttm = date('Y-m-d H:i:s');					
+				$item_result->updated_dttm = date('Y-m-d H:i:s');	
+				$item_result->save();
 			}
 		}
 		
@@ -3162,7 +3165,8 @@ class AppraisalGroupController extends Controller
 			$item_result->over_value = $java_over_value;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
-			$item_result->updated_dttm = date('Y-m-d H:i:s');				
+			$item_result->updated_dttm = date('Y-m-d H:i:s');
+			$item_result->save();
 			
 		}
 		
@@ -3261,7 +3265,8 @@ class AppraisalGroupController extends Controller
 			$item_result->over_value = $java_over_value;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
-			$item_result->updated_dttm = date('Y-m-d H:i:s');				
+			$item_result->updated_dttm = date('Y-m-d H:i:s');		
+			$item_result->save();
 			
 		}
 		
