@@ -32,14 +32,14 @@ class EmpResultJudgementController extends Controller
         $this->advanSearch = new AdvanceSearchController;
     }
 
-    public function store2(Request $request) 
+    public function store2(Request $request)
     {
     /*
         $errors_validator = [];
 
         if(empty($request['detail'])) {
             return response()->json([
-                'status' => 400, 
+                'status' => 400,
                 'data' => 'Please Select Employee for Adjust'
             ]);
         }
@@ -84,7 +84,7 @@ class EmpResultJudgementController extends Controller
             // 1 คือ เป็นการประเมินแทน
             // 2 คือ เป็นการประเมินแทน แต่ปรับแค่ stage อย่างเดียว
             // 3 คือ การประเมินแบบปกติ
-            
+
             if($request->fake_flag==1) {
                 $judge_id = $request['object_judge']['emp_id'];
                 $judge_level = $request['object_judge']['level_id'];
@@ -103,7 +103,7 @@ class EmpResultJudgementController extends Controller
                             ->where('judge_id', $judge_id)
                             ->first();
 
-                        
+
                         // chech insert or update
                         if(!$empResultJudgement){
                             $item = new EmpResultJudgement;
@@ -182,7 +182,7 @@ class EmpResultJudgementController extends Controller
                     $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
                         ->where('judge_id', $this->advanSearch->orgAuth()->emp_id)
                         ->first();
-                    
+
                     // chech insert or update
                     if(!$empResultJudgement) {
                         $item = new EmpResultJudgement;
@@ -213,13 +213,13 @@ class EmpResultJudgementController extends Controller
     }
 
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $errors_validator = [];
 
         if(empty($request['detail'])) {
             return response()->json([
-                'status' => 400, 
+                'status' => 400,
                 'data' => 'Please Select Employee for Adjust'
             ]);
         }
@@ -283,7 +283,7 @@ class EmpResultJudgementController extends Controller
                     $empResultJudgement = EmpResultJudgement::where('emp_result_id', $d['emp_result_id'])
                     ->where('judge_id', $judge_id)
                     ->first();
-                    
+
                     $dataJudge = DB::table("employee")->where('emp_id', '=', $judge_id)->first();
 
                     // chech insert or update
@@ -306,7 +306,7 @@ class EmpResultJudgementController extends Controller
                         DB::table('emp_result_judgement')
                         ->where('emp_result_judgement_id', '=', $empResultJudgement->emp_result_judgement_id)
                         ->update([
-                            'percent_adjust' => $d['percent_adjust'], 
+                            'percent_adjust' => $d['percent_adjust'],
                             'adjust_result_score' => $d['adjust_result_score'],
                             'created_by' => $dataJudge->emp_code
                         ]);
@@ -348,14 +348,14 @@ class EmpResultJudgementController extends Controller
         // get judgement level
         $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where('is_start_cal_bonus', 1)->where('is_org', 1)->first();
         $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel->level_id, true);
-		
+
 
         // set parameter
         $employee = Employee::find(Auth::id());
         $appraisalLevel = AppraisalLevel::find($employee->level_id);
         $AuthOrgLevel = collect(DB::select("
-            SELECT level_id, appraisal_level_name 
-            FROM appraisal_level vel 
+            SELECT level_id, appraisal_level_name
+            FROM appraisal_level vel
             WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
         "))->first();
 
@@ -394,11 +394,11 @@ class EmpResultJudgementController extends Controller
         //     $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
         //     $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
         // }
-        
+
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
-        
+
 
         // get data from emp result
         $empResult = DB::select("
@@ -411,9 +411,9 @@ class EmpResultJudgementController extends Controller
             INNER JOIN (
                 SELECT e.emp_id, e.emp_code, e.emp_name, e.org_id,
                     el.level_id AS emp_level_id, el.appraisal_level_name AS emp_level_name,
-                    ol.level_id AS org_level_id, ol.appraisal_level_name AS org_level_name, 
-                    p.position_name, org.org_code, org.parent_org_code, org.org_name, el.seq_no           
-                FROM employee e 
+                    ol.level_id AS org_level_id, ol.appraisal_level_name AS org_level_name,
+                    p.position_name, org.org_code, org.parent_org_code, org.org_name, el.seq_no
+                FROM employee e
                 INNER JOIN appraisal_level el ON el.level_id = e.level_id
                 INNER JOIN org ON org.org_id = e.org_id
                 INNER JOIN appraisal_level ol ON ol.level_id = org.level_id
@@ -437,16 +437,16 @@ class EmpResultJudgementController extends Controller
         $empResult = $empResult->map(function($result) use($levelList, $AuthOrgLevel) {
             $judgements = collect();
             $judgements = $judgements->push([
-                'org_level_id' => 0,  'org_level_name' => 'Mgr.', 
+                'org_level_id' => 0,  'org_level_name' => 'Mgr.',
                 'judge_id' => 0, 'adjust_result_score'=>$result->mgr_score
             ]);
             $lastJudScore = $result->mgr_score;
 
             foreach ($levelList as $level) {
-                
+
                 $empResultJudgement = EmpResultJudgement::select('judge_id', 'adjust_result_score')->where('emp_result_id', $result->emp_result_id)
                     ->where('org_level_id', $level->level_id)->first();
-                    
+
                 if($empResultJudgement){
                     $judgements = $judgements->push([
                         'org_level_id' => $level->level_id, 'org_level_name' => $level->appraisal_level_name,
@@ -469,7 +469,7 @@ class EmpResultJudgementController extends Controller
 
         // calculate z-score
         $judAVG = $empResult->avg('last_judge_score'); // Score ล่าสุดที่ Adjust
-        
+
         $empResult = $empResult->toArray();
 
         $data_dt = [];
@@ -497,7 +497,7 @@ class EmpResultJudgementController extends Controller
 
         // Get the current page from the url if it's not set default to 1
         empty($request->page) ? $page = 1 : $page = $request->page;
-        
+
         $offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
 
         // Get only the items you need using array_slice (only get 10 items since that's what you need)
@@ -512,7 +512,7 @@ class EmpResultJudgementController extends Controller
 
     public function index5(Request $request)
     {
-        // get appraisal form info 
+        // get appraisal form info
         $appraisalForm = AppraisalForm::find($request->appraisal_form_id);
         if($appraisalForm->is_raise == 1){
             $flagColumn = "is_start_cal_raise";
@@ -525,13 +525,13 @@ class EmpResultJudgementController extends Controller
         // get judgement level
         $appraisalLevel = AppraisalLevel::select('level_id', 'appraisal_level_name')->where($flagColumn, 1)->where('is_org', 1)->first();
         $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel['level_id'], true);
-        
+
         // set parameter
         $employee = Employee::find(Auth::id());
         $appraisalLevel = AppraisalLevel::find($employee->level_id);
         $AuthOrgLevel = collect(DB::select("
-            SELECT level_id, appraisal_level_name 
-            FROM appraisal_level vel 
+            SELECT level_id, appraisal_level_name
+            FROM appraisal_level vel
             WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
         "))->first();
 
@@ -559,18 +559,18 @@ class EmpResultJudgementController extends Controller
                 $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
             }
         }
-        
+
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
         $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
-        
+
         //ARJ = ให้แสดงผลข้อมูลหลังจากหน้า Result Judgement
         if($request->stage_id=='ARJ') {
             $stageQueryStr = " AND (ast.bonus_appraisal_flag = 1 OR ast.salary_adjustment_flag = 1 OR ast.bonus_adjustment_flag = 1)";
         } else {
             $stageQueryStr = " AND er.stage_id = '{$request->stage_id}'";
         }
-        
+
         // get data from emp result
         $empResult = DB::select("
             SELECT
@@ -582,9 +582,9 @@ class EmpResultJudgementController extends Controller
             INNER JOIN (
                 SELECT e.emp_id, e.emp_code, e.emp_name, e.org_id,
                     el.level_id AS emp_level_id, el.appraisal_level_name AS emp_level_name,
-                    ol.level_id AS org_level_id, ol.appraisal_level_name AS org_level_name, 
-                    p.position_name, org.org_code, org.parent_org_code, org.org_name, el.seq_no           
-                FROM employee e 
+                    ol.level_id AS org_level_id, ol.appraisal_level_name AS org_level_name,
+                    p.position_name, org.org_code, org.parent_org_code, org.org_name, el.seq_no
+                FROM employee e
                 INNER JOIN appraisal_level el ON el.level_id = e.level_id
                 INNER JOIN org ON org.org_id = e.org_id
                 INNER JOIN appraisal_level ol ON ol.level_id = org.level_id
@@ -604,30 +604,30 @@ class EmpResultJudgementController extends Controller
         $empResult = collect($empResult);
 
         // bonus get level 3 step, mpi&raise 2 step
-        if($appraisalForm->is_raise == 1){
+        /* if($appraisalForm->is_raise == 1){
             $levelList = $levelList->slice(0, 2);
         }elseif($appraisalForm->is_mpi == 1){
             $levelList = $levelList->slice(0, 2);
         }else{
             $levelList = $levelList->slice(0, 3);
-        }
+        } */
 
         // get and push emp result judgement into emp result
         $empResult = $empResult->map(function($result) use($levelList, $AuthOrgLevel) {
             $judgements = collect();
             $judgements = $judgements->push([
-                'org_level_id' => 0,  'org_level_name' => 'Mgr.', 
+                'org_level_id' => 0,  'org_level_name' => 'Mgr.',
                 'judge_id' => 0, 'adjust_result_score'=>$result->mgr_score
             ]);
             $lastJudScore = $result->mgr_score;
-			
-			$array = ['BU.', 'COO.', 'Board'];
+
+			      $array = ['BU.', 'COO.', 'Board'];
 
             foreach ($levelList as $index => $level) {
-                
+
                 $empResultJudgement = EmpResultJudgement::select('judge_id', 'adjust_result_score')->where('emp_result_id', $result->emp_result_id)
                     ->where('org_level_id', $level['level_id'])->first();
-                    
+
                 if($empResultJudgement){
                     $judgements = $judgements->push([
                         'org_level_id' => $level['level_id'], 'org_level_name' => $array[$index],  // $level->appraisal_level_name,
@@ -636,7 +636,7 @@ class EmpResultJudgementController extends Controller
                     $lastJudScore = $empResultJudgement->adjust_result_score;
                 } else {
                     $judgements = $judgements->push([
-                        'org_level_id' => $level['level_id'], 'org_level_name' => $level['appraisal_level_name'],
+                        'org_level_id' => $level['level_id'], 'org_level_name' => (($level['appraisal_level_name'] == null) ? $level['appraisal_level_name'] : $array[$index]),  // $array[$index], // $array[$index],  // $level['appraisal_level_name'],
                         'judge_id' => 0, 'adjust_result_score' => 0.00
                     ]);
                 }
@@ -650,7 +650,7 @@ class EmpResultJudgementController extends Controller
 
         // calculate z-score
         $judAVG = $empResult->avg('last_judge_score'); // Score ล่าสุดที่ Adjust
-        
+
         $empResult = $empResult->toArray();
 
         $data_dt = [];
@@ -678,7 +678,7 @@ class EmpResultJudgementController extends Controller
 
         // Get the current page from the url if it's not set default to 1
         empty($request->page) ? $page = 1 : $page = $request->page;
-        
+
         $offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
 
         // Get only the items you need using array_slice (only get 10 items since that's what you need)
@@ -692,7 +692,7 @@ class EmpResultJudgementController extends Controller
 
 
     /**
-     * Salary calculator 
+     * Salary calculator
      *
      * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
@@ -722,7 +722,7 @@ class EmpResultJudgementController extends Controller
         if ($raiseType == 1) {
             try{
                 $salaryUpdate = DB::update("
-                    UPDATE emp_result er 
+                    UPDATE emp_result er
                     INNER JOIN (
                         SELECT ser.emp_result_id, af.is_raise, af.is_mpi,
                             emp.emp_id, ser.salary_grade_id,
@@ -740,7 +740,7 @@ class EmpResultJudgementController extends Controller
                         AND ser.period_id = '{$periodId}'
                         AND ser.emp_result_id = '{$empResulId}'
                     )emp ON emp.emp_result_id = er.emp_result_id
-                    SET 
+                    SET
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
@@ -758,7 +758,7 @@ class EmpResultJudgementController extends Controller
         } elseif($raiseType == 2) {
             try {
                 $salaryUpdate = DB::update("
-                    UPDATE emp_result er 
+                    UPDATE emp_result er
                     INNER JOIN (
                         SELECT ser.emp_result_id, af.is_raise, af.is_mpi,
                             emp.emp_id, ser.salary_grade_id,
@@ -776,7 +776,7 @@ class EmpResultJudgementController extends Controller
                         AND ser.period_id = '{$periodId}'
                         AND ser.emp_result_id = '{$empResulId}'
                     )emp ON emp.emp_result_id = er.emp_result_id
-                    SET 
+                    SET
                         er.new_s_amount = IF(emp.is_raise=1,emp.new_s_amount,er.new_s_amount),
                         er.raise_amount = IF(emp.is_raise=1, emp.raise_amount, er.raise_amount),
                         er.mpi_amount = IF(emp.is_mpi=1, emp.mpi_amount, er.mpi_amount),
@@ -801,7 +801,7 @@ class EmpResultJudgementController extends Controller
 
     /**
      * Calculate grades for employees.
-     * 
+     *
      * @param  \App\AppraisalPeriod  $periodInfo
      * @return object
      */
@@ -833,8 +833,8 @@ class EmpResultJudgementController extends Controller
                             LIMIT 1
                         ) result_grade
                     FROM emp_result er
-                    INNER JOIN employee emp 
-                        ON emp.emp_id = er.emp_id 
+                    INNER JOIN employee emp
+                        ON emp.emp_id = er.emp_id
                         AND er.org_id = er.org_id
                         AND er.position_id = er.position_id
                         AND er.level_id = er.level_id
