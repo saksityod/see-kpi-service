@@ -68,8 +68,16 @@ class AppraisalGroupController extends Controller
 
 	public function emp_level_list(Request $request)
 	{
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+			", array(Auth::id()));
+
 		$config = SystemConfiguration::firstOrFail();
-		if($config->appraisal_360_flag == 1){
+		if(($config->appraisal_360_flag == 1)||($all_emp[0]->count_no > 0)){
 			$result = AppraisalLevel::select('level_id', 'appraisal_level_name')
 			->where('is_active', 1)
 			->where('is_individual', 1)
@@ -149,8 +157,16 @@ class AppraisalGroupController extends Controller
 
 	public function org_level_list_individual(Request $request)
 	{
+		$all_emp = DB::select("
+			SELECT sum(b.is_all_employee) count_no
+			from employee a
+			left outer join appraisal_level b
+			on a.level_id = b.level_id
+			where emp_code = ?
+			", array(Auth::id()));
+
 		$config = SystemConfiguration::firstOrFail();
-		if($config->appraisal_360_flag == 1){
+		if(($config->appraisal_360_flag == 1)||($all_emp[0]->count_no > 0)){
 			$AuthEmpCode = Auth::id();
 			$result = DB::select("
 			SELECT DISTINCT org.level_id, vel.appraisal_level_name,
@@ -215,8 +231,16 @@ class AppraisalGroupController extends Controller
 
 	public function org_individual(Request $request)
 	{ 
+		$all_emp = DB::select("
+		SELECT sum(b.is_all_employee) count_no
+		from employee a
+		left outer join appraisal_level b
+		on a.level_id = b.level_id
+		where emp_code = ?
+		", array(Auth::id()));
+
 		$config = SystemConfiguration::firstOrFail();
-		if($config->appraisal_360_flag == 1){
+		if(($config->appraisal_360_flag == 1)||($all_emp[0]->count_no > 0)){
 			$AuthEmpCode = Auth::id();	
 			$result = DB::select("
 				SELECT org.org_id, org.org_name,
