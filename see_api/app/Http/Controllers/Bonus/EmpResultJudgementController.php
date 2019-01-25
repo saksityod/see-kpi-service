@@ -318,7 +318,19 @@ class EmpResultJudgementController extends Controller
                 }
             }
 
-            if($request->cal_flag==0) {
+            // cal_flag = 1 : คือ action มาจากปุ่ม Calculate จากหน้า Emp Result Judgement (คำนวณอย่างเดียวไม่บันทึก Stage)
+            // grade_cal_flag = 1 : คือ action ที่ Stage ต่อไปมี grade_calculate_flag = 1
+            
+            // เช็คว่า Stage ต่อไปมี grade_calculate_flag ถ้ามีต้องเช็ค $request->grade_cal_flag = 1 เพื่อทำการ Update stage
+            $appraisalStage = AppraisalStage::where('stage_id', $request->stage_id)->first();
+
+            // แต่เดิมเช็คแค่นี้ -> if($request->cal_flag == 0) {
+            if(
+                // กรณีที่ stage ไม่มีการคำนวณ ให้ดูว่า action มาจากปุ่มไหน submit หรือ calculate ถ้ามาจากปุ่ม calculate ค่า $request->cal_flag จะเท่ากับ 0
+                ($appraisalStage->grade_calculation_flag == 0 && $request->cal_flag == 0)
+                // กรณีที่ stage มีการคำนวณ(มากจากการกด submit เท่านั้น) ต้องเช็คว่า action ให้ทำการ save only หรือ save & calculate ถ้ามาจากปุ่ม save only ค่า $request->grade_cal_flag จะเท่ากับ 0
+                || ($appraisalStage->grade_calculation_flag == 1 && $request->grade_cal_flag == 1) 
+            ) {
                 $emp = EmpResult::find($d['emp_result_id']);
                 $emp->stage_id = $request->stage_id;
                 $emp->status = AppraisalStage::find($request->stage_id)->status;
