@@ -1080,7 +1080,8 @@ class ImportAssignmentController extends Controller
               $criteriaInfoQry = DB::select("
                 SELECT weight_percent
                 FROM appraisal_criteria
-                WHERE appraisal_level_id = {$row->level_id}
+                WHERE appraisal_form_id = {$row->appraisal_form_id}
+                AND appraisal_level_id = {$row->level_id}
                 AND structure_id = {$itemInfo["structure_id"]}
                 LIMIT 1"
               );

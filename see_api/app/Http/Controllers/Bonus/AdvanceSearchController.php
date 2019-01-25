@@ -973,15 +973,17 @@ class AdvanceSearchController extends Controller
         // set parameter in sql where clause
         if(empty($request->appraisal_form_id)){
             $appraisalFormQryStr = " ";
+            $stageFormQryStr = " ";
         } else {
-            $appraisalFormQryStr = " AND er.appraisal_form_id = '{$request->appraisal_form_id}'
-            AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')";
+            $appraisalFormQryStr = " AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+            $stageFormQryStr = " AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')";
         }
         if(empty($request->appraisal_type_id)){
             $appraisalTypeQryStr = " ";
+            $stageTypeQryStr = " ";
         } else {
-            $appraisalTypeQryStr = " AND er.appraisal_type_id = '{$request->appraisal_type_id}'
-            AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')";
+            $appraisalTypeQryStr = " AND er.appraisal_type_id = '{$request->appraisal_type_id}'";
+            $stageTypeQryStr = " AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')";
         }
         $empLevelQryStr = empty($request->emp_level) ? " ": " AND er.level_id = '{$request->emp_level}'";
         $orgLevelQryStr = empty($request->org_level) ? " ": " AND org.level_id = '{$request->org_level}'";
@@ -1004,16 +1006,25 @@ class AdvanceSearchController extends Controller
             LEFT OUTER JOIN org ON org.org_id = er.org_id
             LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
 	        WHERE {$flag}
-	        AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
-            {$appraisalFormQryStr }
-            {$appraisalTypeQryStr}
-            {$empLevelQryStr}
-            {$orgLevelQryStr}
-            {$orgIdQryStr}
-            {$appraisalYearQryStr}
-            {$periodIdQryStr}
-            {$empIdQryStr}
-            {$positionIdQryStr}
+            AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
+            {$stageFormQryStr}
+            {$stageTypeQryStr}
+            AND ast.stage_id IN(
+                SELECT er.stage_id
+                FROM emp_result er
+                LEFT OUTER JOIN org ON org.org_id = er.org_id
+                LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
+                WHERE 1 = 1
+                {$appraisalFormQryStr}
+                {$appraisalTypeQryStr}
+                {$empLevelQryStr}
+                {$orgLevelQryStr}
+                {$orgIdQryStr}
+                {$appraisalYearQryStr}
+                {$periodIdQryStr}
+                {$empIdQryStr}
+                {$positionIdQryStr}
+            )
 	        GROUP BY ast.stage_id
 	        ORDER BY ast.stage_id
         ");
