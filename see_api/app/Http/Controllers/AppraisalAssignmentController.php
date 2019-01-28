@@ -2530,6 +2530,10 @@ class AppraisalAssignmentController extends Controller
 						$emp_result->stage_id = $stage->stage_id;
 						$emp_result->created_by = Auth::id();
 						$emp_result->updated_by = Auth::id();
+						if ( ! empty($emp_result->emp_id)) {
+							$emp_result->s_amount = $employee->s_amount;
+							$emp_result->pqpi_amount = $employee->pqpi_amount;
+						}
 						$emp_result->save();
 
 						$emp_stage = new EmpResultStage;
@@ -2819,6 +2823,10 @@ class AppraisalAssignmentController extends Controller
 					$emp_result->stage_id = $stage->stage_id;
 					$emp_result->created_by = Auth::id();
 					$emp_result->updated_by = Auth::id();
+					if ( ! empty($emp_result->emp_id)) {
+						$emp_result->s_amount = $employee->s_amount;
+						$emp_result->pqpi_amount = $employee->pqpi_amount;
+					}
 					$emp_result->save();
 
 					$emp_stage = new EmpResultStage;

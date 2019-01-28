@@ -1134,7 +1134,7 @@ class ImportAssignmentController extends Controller
                 emp.emp_id = ? ";
 
               	$job_code_data = DB::select($job_code_query, array($row->appraisal_form_id, $row->emp_id));
-					
+                $empInfo = Employee::where('emp_id', $row->emp_id)->first();
                 //---- Insert @emp_result
                 $empResult = new EmpResult;
                 $empResult->appraisal_form_id = $row->appraisal_form_id;
@@ -1164,6 +1164,10 @@ class ImportAssignmentController extends Controller
                 $empResult->status = $row->status;
                 $empResult->created_by = Auth::id();
                 $empResult->updated_by = Auth::id();
+                if ( ! empty($row->emp_id)) {
+                  $empResult->s_amount = $empInfo->s_amount;
+                  $empResult->pqpi_amount = $empInfo->pqpi_amount;
+                }
                 try {
                   // Insert @emp_result
     							$empResult->save();
