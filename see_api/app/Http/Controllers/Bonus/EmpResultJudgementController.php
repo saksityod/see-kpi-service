@@ -320,7 +320,7 @@ class EmpResultJudgementController extends Controller
 
             // cal_flag = 1 : คือ action มาจากปุ่ม Calculate จากหน้า Emp Result Judgement (คำนวณอย่างเดียวไม่บันทึก Stage)
             // grade_cal_flag = 1 : คือ action ที่ Stage ต่อไปมี grade_calculate_flag = 1
-            
+
             // เช็คว่า Stage ต่อไปมี grade_calculate_flag ถ้ามีต้องเช็ค $request->grade_cal_flag = 1 เพื่อทำการ Update stage
             $appraisalStage = AppraisalStage::where('stage_id', $request->stage_id)->first();
 
@@ -329,7 +329,7 @@ class EmpResultJudgementController extends Controller
                 // กรณีที่ stage ไม่มีการคำนวณ ให้ดูว่า action มาจากปุ่มไหน submit หรือ calculate ถ้ามาจากปุ่ม calculate ค่า $request->cal_flag จะเท่ากับ 0
                 ($appraisalStage->grade_calculation_flag == 0 && $request->cal_flag == 0)
                 // กรณีที่ stage มีการคำนวณ(มากจากการกด submit เท่านั้น) ต้องเช็คว่า action ให้ทำการ save only หรือ save & calculate ถ้ามาจากปุ่ม save only ค่า $request->grade_cal_flag จะเท่ากับ 0
-                || ($appraisalStage->grade_calculation_flag == 1 && $request->grade_cal_flag == 1) 
+                || ($appraisalStage->grade_calculation_flag == 1 && $request->grade_cal_flag == 1)
             ) {
                 $emp = EmpResult::find($d['emp_result_id']);
                 $emp->stage_id = $request->stage_id;
@@ -541,11 +541,34 @@ class EmpResultJudgementController extends Controller
         // set parameter
         $employee = Employee::find(Auth::id());
         $appraisalLevel = AppraisalLevel::find($employee->level_id);
+
+        // หา level ที่เป็นระดับ bu และ coo และ board
+        $level_bu_coo_board = "
+            SELECT l.level_id as level_bu
+    				, le.level_id as level_coo
+            , le.parent_id as level_board
+    				FROM appraisal_level l
+    				LEFT JOIN appraisal_level le ON l.parent_id = le.level_id
+    				WHERE l.is_start_cal_bonus = 1";
+
+        // กำหนดชื่อ OrgLevel ของพนักงานที่เป็น BU., COO., Board
         $AuthOrgLevel = collect(DB::select("
+            SELECT vel.level_id
+            , (CASE WHEN vel.level_id = le.level_bu THEN 'BU.'
+              ELSE (CASE WHEN vel.level_id = le.level_coo THEN 'COO.'
+                ELSE (CASE WHEN vel.level_id = le.level_board THEN 'Board' ELSE vel.appraisal_level_name END)
+                END)
+              END) as appraisal_level_name
+            FROM appraisal_level vel
+            CROSS JOIN (".$level_bu_coo_board.") le
+            WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
+        "))->first();
+
+        /* $AuthOrgLevel = collect(DB::select("
             SELECT level_id, appraisal_level_name
             FROM appraisal_level vel
             WHERE level_id = (SELECT level_id FROM org WHERE org.org_id = {$employee->org_id})
-        "))->first();
+        "))->first(); */
 
         $gue_emp_level = empty($request->emp_level) ? '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
         $gue_org_level = empty($request->org_level) ? '' : $this->advanSearch->GetallUnderLevel($request->org_level);
