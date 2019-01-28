@@ -544,7 +544,7 @@ class AdvanceSearchController extends Controller
             $indLevels = DB::table('appraisal_level')->select('level_id', 'appraisal_level_name')
                 ->where('is_active', 1)
                 ->where('is_individual', 1)
-                ->orderBy('level_id', 'asc')
+                ->orderBy('seq_no', 'asc')
                 ->get();
         } else {
             $employee = Employee::find(Auth::id());
@@ -558,6 +558,7 @@ class AdvanceSearchController extends Controller
                 AND is_individual = 1
                 AND find_in_set(e.level_id, '".$gue_emp_level."')
                 GROUP BY l.level_id
+                ORDER BY l.seq_no ASC
             ");
         }
 
