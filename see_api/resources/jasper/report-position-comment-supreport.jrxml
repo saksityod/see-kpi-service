@@ -236,7 +236,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 		<property name="com.jaspersoft.studio.field.label" value="is_cust_search"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_section"/>
 	</field>
-	<group name="section-group">
+	<group name="section-group" isReprintHeaderOnEachPage="true" keepTogether="true">
 		<groupExpression><![CDATA[$F{section_id}]]></groupExpression>
 		<groupHeader>
 			<band height="25">
