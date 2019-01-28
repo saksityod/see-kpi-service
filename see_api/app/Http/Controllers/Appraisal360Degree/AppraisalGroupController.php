@@ -363,7 +363,7 @@ class AppraisalGroupController extends Controller
 				po.org_name parent_org_name, b.chief_emp_code, b.has_second_line, e.emp_name chief_emp_name, 
 				s.emp_code second_chief_emp_code, s.emp_name second_chief_emp_name, c.appraisal_period_desc, 
 				a.appraisal_type_id, d.appraisal_type_name, a.stage_id, f.status, a.result_score, f.edit_flag, 
-				al.no_weight, a.position_id, a.org_id, af.appraisal_form_name, ag.grade 
+				al.no_weight, a.position_id, a.org_id, af.appraisal_form_name, ag.grade , a.salary_grade_id, a.result_score ,a.level_id , a.appraisal_form_id
 			FROM emp_result a
 			left outer join employee b on a.emp_id = b.emp_id
 			left outer join appraisal_period c on c.period_id = a.period_id
@@ -379,7 +379,23 @@ class AppraisalGroupController extends Controller
 			left outer join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 			where a.emp_result_id = ?
 		", array($request->emp_result_id));
+		 $head = collect($head);
 
+		    // set grade if emp_result.grade is null
+		    $head = $head->map(function($hd){
+		      $grade = collect();
+		      if($hd->salary_grade_id === null){
+		        $grade = AppraisalGrade::where('is_active', 1)
+		          ->where("appraisal_form_id", $hd->appraisal_form_id)
+		          ->where("appraisal_level_id",$hd->level_id)
+		          ->whereRaw("? BETWEEN begin_score and end_score", [$hd->result_score])
+		          ->first();
+
+		        $hd->grade = (empty($grade->grade) ? null : $grade->grade);
+		      }
+		      return $hd;
+		    });
+		    
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
 				select b.item_name,uom.uom_name, b.structure_id, c.structure_name, d.form_id, d.app_url, c.nof_target_score, a.*, e.perspective_name, a.weigh_score, f.weigh_score total_weigh_score, a.contribute_percent, a.weight_percent, g.weight_percent total_weight_percent, al.no_weight,
