@@ -13,6 +13,7 @@ use App\WorkflowStage;
 use App\StructureResult;
 use App\EmpResult;
 use App\CDSResult;
+use App\AppraisalGrade;
 use App\Http\Controllers\AppraisalController;
 use App\Http\Controllers\Bonus\AdvanceSearchController;
 
