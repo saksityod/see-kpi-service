@@ -1515,7 +1515,7 @@ class AppraisalAssignmentController extends Controller
 	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id, $request->appraisal_type_id);
 
 		// Number of items per page
-        if($request->rpp == 'All') {
+        if($request->rpp == 'All' || empty($request->rpp)) {
             $request->rpp = empty($items2) ? 10 : count($items2);
         }
 
