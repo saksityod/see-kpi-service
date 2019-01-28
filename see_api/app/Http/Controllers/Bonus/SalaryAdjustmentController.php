@@ -66,10 +66,11 @@ class SalaryAdjustmentController extends Controller
     				WHERE l.is_start_cal_bonus = 1";
 
         // หาค่า score ของระดับ bu และ coo (ตาม level)
-        $score_bu_coo = "
+        $score_bu_coo_board = "
             SELECT result.emp_result_id
             , max(result.score_bu) as score_bu
             , max(result.score_coo) as score_coo
+            , max(result.score_board) as score_board
             FROM
             (
             		SELECT emrj.org_level_id
@@ -77,6 +78,7 @@ class SalaryAdjustmentController extends Controller
             		, emrj.adjust_result_score
             		, (CASE WHEN emrj.org_level_id = l.level_bu THEN emrj.adjust_result_score ELSE NULL END) as score_bu
             		, (CASE WHEN emrj.org_level_id = l.level_coo THEN emrj.adjust_result_score ELSE NULL END) as score_coo
+                , (CASE WHEN emrj.org_level_id = l.level_board THEN emrj.adjust_result_score ELSE NULL END) as score_board
             		FROM emp_result_judgement emrj
                 INNER JOIN (SELECT org_level_id, emp_result_id, max(created_dttm) as max_dttm
   									FROM emp_result_judgement
@@ -85,6 +87,7 @@ class SalaryAdjustmentController extends Controller
   									AND dttm.max_dttm = emrj.created_dttm
             		INNER JOIN (".$level_bu_coo_board.") l ON emrj.org_level_id = l.level_bu
             		OR emrj.org_level_id = l.level_coo
+                OR emrj.org_level_id = l.level_board
             ) result
             GROUP BY result.emp_result_id ";
 
@@ -107,7 +110,7 @@ class SalaryAdjustmentController extends Controller
             	AND emrj.adjust_result_score BETWEEN gr.begin_score and gr.end_score";
 
         // ค่า total ของแต่ละ stucture ตาม form ของ parameter
-        $total_stucture = "
+        /* $total_stucture = "
             SELECT (CASE WHEN max(re.total_one) = 0 THEN (max(re.total_two)+max(re.total_three)) ELSE max(re.total_one) END) as total_one
             , max(re.total_two) as total_two
             , max(re.total_three) as total_three
@@ -129,40 +132,36 @@ class SalaryAdjustmentController extends Controller
                 INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
                 WHERE apf.is_raise = 1
                 AND apf.appraisal_form_id = ".$request->appraisal_form_id."
-            ) re";
+            ) re"; */
 
        // หา structure_id ตาม form
         $stucture_form = "
-            SELECT apc.structure_id
-    				, aps.seq_no
-    				, apc.weight_percent
-            , total.total_one
-						, total.total_two
-						, total.total_three
-						, total.total_four
-						, total.total_five
-    				FROM appraisal_criteria apc
-    				INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-    				INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-            CROSS JOIN (".$total_stucture.") total
-    				WHERE apf.is_raise = 1
-    				AND apf.appraisal_form_id = total.appraisal_form_id
-    				GROUP BY apc.structure_id
-    				, aps.seq_no
-    				, apc.weight_percent";
+            SELECT apf.appraisal_form_id
+            , apc.appraisal_level_id
+            , apc.structure_id
+            , aps.seq_no
+            FROM appraisal_criteria apc
+            INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
+            INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
+            WHERE apf.is_raise = 1
+            AND apf.appraisal_form_id = ".$request->appraisal_form_id."
+            GROUP BY apf.appraisal_form_id
+            , apc.appraisal_level_id
+            , apc.structure_id
+            , aps.seq_no";
 
-        // หาค่า total และ score ของแต่ละ stucture
+        // ---------- seq_no : stucture -----------
+        // 101 : ผลการประเมินค่างาน
+        // 102 : คะแนนผลงานปีที่ผ่านมา
+        // 103 : คะแนนความสามารถที่มีคุณค่าต่อองค์กร
+        // 104 : คะแนนความรู้
+        // 105 : คะแนนศักยภาพ
+
+        // หาค่า score ของแต่ละ stucture
         $score_stucture = "
             SELECT result.emp_result_id
             , result.period_id
             , result.emp_id
-
-            , result.total_one
-            , result.total_two
-            , result.total_three
-            , result.total_four
-            , result.total_five
-
             , (CASE WHEN max(result.have_one) = 1 THEN max(result.one) ELSE (max(result.two)+max(result.three)) END) as one
             , max(result.two) as two
             , max(result.three) as three
@@ -170,27 +169,27 @@ class SalaryAdjustmentController extends Controller
             , max(result.five) as five
             FROM
             (
-            		SELECT re.structure_id
-            		, re.emp_result_id
-            		, re.period_id
-            		, re.emp_id
-            		, re.weigh_score
-            		, sr.seq_no
-            		, sr.weight_percent
-            		, (CASE WHEN sr.seq_no = 101 THEN 1 ELSE 0 END) as have_one
-            		, (CASE WHEN sr.seq_no = 101 THEN re.weigh_score ELSE NULL END) as one
-            		, (CASE WHEN sr.seq_no = 104 THEN re.weigh_score ELSE NULL END) as two
-            		, (CASE WHEN sr.seq_no = 105 THEN re.weigh_score ELSE NULL END) as three
-            		, (CASE WHEN sr.seq_no = 102 THEN re.weigh_score ELSE NULL END) as four
-            		, (CASE WHEN sr.seq_no = 103 THEN re.weigh_score ELSE NULL END) as five
 
-            		, sr.total_one
-            		, sr.total_two
-            		, sr.total_three
-            		, sr.total_four
-            		, sr.total_five
-            		FROM structure_result re
-            		INNER JOIN (".$stucture_form.") sr ON re.structure_id = sr.structure_id
+              SELECT re.structure_id
+              , re.emp_result_id
+              , re.period_id
+              , re.emp_id
+              , emp.level_id
+              , emp.appraisal_form_id
+              , re.weigh_score
+              , sr.seq_no
+              , (CASE WHEN sr.seq_no = 101 THEN 1 ELSE 0 END) as have_one
+              , (CASE WHEN sr.seq_no = 101 THEN re.weigh_score ELSE NULL END) as one
+              , (CASE WHEN sr.seq_no = 104 THEN re.weigh_score ELSE NULL END) as two
+              , (CASE WHEN sr.seq_no = 105 THEN re.weigh_score ELSE NULL END) as three
+              , (CASE WHEN sr.seq_no = 102 THEN re.weigh_score ELSE NULL END) as four
+              , (CASE WHEN sr.seq_no = 103 THEN re.weigh_score ELSE NULL END) as five
+              FROM structure_result re
+              INNER JOIN emp_result emp ON re.emp_result_id = emp.emp_result_id
+              LEFT JOIN (".$stucture_form.") sr ON re.structure_id = sr.structure_id
+              AND emp.level_id = sr.appraisal_level_id
+              AND emp.appraisal_form_id = sr.appraisal_form_id
+
             ) result
             GROUP BY result.emp_result_id
             , result.period_id
@@ -229,11 +228,6 @@ class SalaryAdjustmentController extends Controller
             , emp.capability_point
             , emp.total_point
             , emp.baht_per_point
-            , stu.total_one
-            , stu.total_two
-            , stu.total_three
-            , stu.total_four
-            , stu.total_five
             , stu.one
             , stu.two
             , stu.three
@@ -242,6 +236,7 @@ class SalaryAdjustmentController extends Controller
             , emp.result_score as score_manager
             , emj.score_bu
             , emj.score_coo
+            , emj.score_board
             , gr.adjust_result_score as score_for_grade
             , gr.grade
             , round(((emp.total_point*stu.one/65)*emp.baht_per_point)*(90/100),-2) as total_percent
@@ -265,7 +260,7 @@ class SalaryAdjustmentController extends Controller
             LEFT JOIN appraisal_form fo ON emp.appraisal_form_id = fo.appraisal_form_id
             LEFT JOIN appraisal_structure st ON emp.appraisal_form_id = st.form_id
             LEFT JOIN appraisal_period pe ON emp.period_id = pe.period_id
-            LEFT JOIN (".$score_bu_coo.") emj ON emj.emp_result_id = emp.emp_result_id
+            LEFT JOIN (".$score_bu_coo_board.") emj ON emj.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$grade_score.") gr ON gr.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$score_stucture.") stu ON stu.emp_result_id = emp.emp_result_id
               AND stu.period_id = emp.period_id
@@ -382,11 +377,6 @@ class SalaryAdjustmentController extends Controller
               'sum_var_other_amount' => $i->var_other_amount,
               'sum_miss_over' => $i->miss_over,
               'sum_cal_standard' => $i->cal_standard,
-              'total_one' => $i->total_one,
-              'total_two' => $i->total_two,
-              'total_three' => $i->total_three,
-              'total_four' => $i->total_four,
-              'total_five' => $i->total_five,
         			'count' => 1,
               'edit_flag' => $user[0]->is_board,
         		);
@@ -401,11 +391,6 @@ class SalaryAdjustmentController extends Controller
             $groups[$key]['sum_var_other_amount'] += $i->var_other_amount;
             $groups[$key]['sum_miss_over'] += $i->miss_over;
             $groups[$key]['sum_cal_standard'] += $i->cal_standard;
-            $groups[$key]['total_one'] += $i->total_one;
-            $groups[$key]['total_two'] += $i->total_two;
-            $groups[$key]['total_three'] += $i->total_three;
-            $groups[$key]['total_four'] += $i->total_four;
-            $groups[$key]['total_five'] += $i->total_five;
         		$groups[$key]['count'] += 1;
             $groups[$key]['edit_flag'] = $user[0]->is_board;
         	}
