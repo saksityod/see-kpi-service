@@ -288,6 +288,11 @@ class AppraisalGroupController extends Controller
 			}
 		}
 
+		// Number of items per page
+        if($request->rpp == 'All' || empty($request->rpp)) {
+            $request->rpp = empty($items) ? 10 : count($items);
+        }
+
 		// Get the current page from the url if it's not set default to 1
 		empty($request->page) ? $page = 1 : $page = $request->page;
 

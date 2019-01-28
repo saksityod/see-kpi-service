@@ -926,6 +926,13 @@ class AppraisalController extends Controller
 		$empIdQueryStr = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (b.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
 		// end กรอง organization ที่อยู่ภายใต้
 
+		//AA360 = ให้แสดงผลข้อมูลหลังจากหน้า Appraisal360
+        if($request->stage_id=='AA360') {
+            $stageQueryStr = " AND (f.emp_result_judgement_flag = 1 OR f.bonus_appraisal_flag = 1 OR f.salary_adjustment_flag = 1 OR f.bonus_adjustment_flag = 1 OR f.mpi_judgement_flag = 1)";
+        } else {
+            $stageQueryStr = " And a.stage_id = '{$request->stage_id}'";
+        }
+
 		if ($all_emp[0]->count_no > 0) {
 			if($request->appraisal_type_id==2) {
 				if(empty($request->org_id)) {
@@ -953,6 +960,7 @@ class AppraisalController extends Controller
 					".$orgLevelQueryStr."
 					".$empIdQueryStr."
 					".$orgQueryStr."
+					".$stageQueryStr."
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
@@ -960,7 +968,6 @@ class AppraisalController extends Controller
 				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
 
 			} else {
 				$query = "
@@ -1115,6 +1122,7 @@ class AppraisalController extends Controller
 					".$orgLevelQueryStr."
 					".$empIdQueryStr."
 					".$orgQueryStr."
+					".$stageQueryStr."
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
@@ -1122,7 +1130,6 @@ class AppraisalController extends Controller
 				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
 
 				/*
 				echo $query. " order by period_id,emp_code,org_code  asc ";
@@ -1167,6 +1174,10 @@ class AppraisalController extends Controller
 
 		}
 
+		// Number of items per page
+        if($request->rpp == 'All' || empty($request->rpp)) {
+            $request->rpp = empty($items) ? 10 : count($items);
+        }
 
 		// Get the current page from the url if it's not set default to 1
 		empty($request->page) ? $page = 1 : $page = $request->page;
