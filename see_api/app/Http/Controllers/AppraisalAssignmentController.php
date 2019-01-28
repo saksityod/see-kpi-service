@@ -1218,7 +1218,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, al.is_group_action, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, al.is_group_action, emp_id, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, al.seq_no
 	    				From employee e
 	    				left outer join org o on e.org_id = o.org_id
 	    				left outer join position p on e.position_id = p.position_id
@@ -1293,7 +1293,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id, al.seq_no
 	    				From org o
 	    				left outer join appraisal_level al on o.level_id = al.level_id
 	    				Where o.is_active = 1
@@ -1360,7 +1360,7 @@ class AppraisalAssignmentController extends Controller
 	    		if ($request->appraisal_type_id == 2) {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign .= "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, al.is_group_action, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, e.level_id, e.emp_id, al.is_group_action, emp_code, emp_name, o.org_id, o.org_code, o.org_name, e.position_id, p.position_name, 'Individual' as appraisal_type_name, 2 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, al.seq_no
 	    				From employee e 
 	    				left outer join	org o on e.org_id = o.org_id
 	    				left outer join position p on e.position_id = p.position_id
@@ -1446,7 +1446,7 @@ class AppraisalAssignmentController extends Controller
 	    		} else {
 	    			if($request->status=='Unassigned') {
 	    				$query_unassign = "
-	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id
+	    				Select distinct null as emp_result_id,  'Unassigned' as status, null emp_id, al.is_group_action, null emp_code, null emp_name, o.org_id, o.org_code, o.org_name, null position_name, 'Organization' as appraisal_type_name, 1 appraisal_type_id, 0 period_id, 'Unassigned' appraisal_period_desc, al.default_stage_id, '' appraisal_form_name, 0 edit_flag, 0 delete_flag, null stage_id, o.level_id, al.seq_no
 	    				From org o
 	    				left outer join appraisal_level al on o.level_id = al.level_id
 	    				Where o.is_active = 1
@@ -1510,7 +1510,7 @@ class AppraisalAssignmentController extends Controller
 	    		}
 	    	}
 
-	    	$items = DB::select($query_unassign . " order by org_code asc,emp_code asc", $qinput);
+	    	$items = DB::select($query_unassign . " order by org_code asc, seq_no asc, emp_code asc", $qinput);
 
 	    	$items2 = $this->find_derive($items, $request->appraisal_form, $request->period_id, $request->appraisal_type_id);
 

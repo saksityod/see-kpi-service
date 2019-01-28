@@ -634,7 +634,7 @@ class EmpResultJudgementController extends Controller
             ".$empIdQueryStr."
             ".$positionIdQueryStr."
             ".$formIdQueryStr."
-            ORDER BY emp.org_id ASC, emp.seq_no DESC, emp.emp_code ASC
+            ORDER BY emp.org_code ASC, emp.seq_no ASC, emp.emp_code ASC
         ");
         $empResult = collect($empResult);
 

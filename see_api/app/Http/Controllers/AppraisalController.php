@@ -945,6 +945,7 @@ class AppraisalController extends Controller
 					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					, d.seq_no
 					from emp_result a
 					left outer join employee b on a.emp_id = b.emp_id
 					left outer join appraisal_level d on a.level_id = d.level_id
@@ -974,6 +975,7 @@ class AppraisalController extends Controller
 					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
+					, d.seq_no
 					from emp_result a
 					left outer join employee b on a.emp_id = b.emp_id
 					left outer join appraisal_level d on a.level_id = d.level_id
@@ -1003,7 +1005,7 @@ class AppraisalController extends Controller
 			echo $query. " order by period_id,emp_code,org_code  asc ";
 			print_r($qinput);
 			*/
-			$items = DB::select($query. " order by o.org_code ASC, a.level_id DESC , b.emp_code ASC ", $qinput); //period_id,emp_code,org_code  asc
+			$items = DB::select($query. " order by o.org_code ASC, d.seq_no ASC , b.emp_code ASC ", $qinput); //period_id,emp_code,org_code  asc
 
 		} else {
 		/*

@@ -316,7 +316,7 @@ class SalaryAdjustmentController extends Controller
           ".$qryPositionId."
           ".$qryStageId."
           ORDER BY o.org_code ASC
-          , le.level_id DESC
+          , le.seq_no ASC
           , em.emp_code ASC");
 
         // สร้างลำดับให้กับข้อมูล test
