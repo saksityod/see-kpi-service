@@ -105,7 +105,7 @@ class AppraisalGradeController extends Controller
 		empty($request->appraisal_form_id) ?: ($query .= " AND a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
 
-		$qfooter = " ORDER BY a.appraisal_form_id, a.appraisal_level_id, a.begin_score";
+		$qfooter = " ORDER BY a.appraisal_form_id, b.seq_no ASC, a.begin_score";
 
 		$items = DB::select($query . $qfooter, $qinput);
 		if($request->rpp=='All') {
