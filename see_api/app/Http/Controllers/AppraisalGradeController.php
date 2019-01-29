@@ -34,7 +34,7 @@ class AppraisalGradeController extends Controller
 			where is_active = 1
 			and is_individual = 1
 			and is_hr = 0
-			order by appraisal_level_name
+			order by seq_no ASC,appraisal_level_name
 		");
 		return response()->json($items);
 	}
