@@ -47,7 +47,7 @@ class ImportSalaryController extends Controller
 		//return response()->json(['status' => 200 , 'data' => $items]);
 
 
-		$filename = "import_salary";  
+		$filename = "export_salary";  
 		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 
