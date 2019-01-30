@@ -45,7 +45,7 @@ class ImportPQPIController extends Controller
 
 		//return response()->json(['status' => 200 , 'data' => $items]);
 
-		$filename = "import_pqpi";  
+		$filename = "exort_pqpi";  
 		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 
