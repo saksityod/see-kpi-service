@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-salary-adjustment" pageWidth="1460" pageHeight="595" orientation="Landscape" columnWidth="1420" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas2"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -66,17 +66,16 @@ AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total
-, FORMAT(FROM_BASE64(emr.new_s_amount),2) as  new_s_amount
-, FORMAT((SELECT SUM(FROM_BASE64(emr.new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT(emr.adjust_new_s_amount,2) as  new_s_amount
+, FORMAT((SELECT SUM(emr.adjust_new_s_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1) ),2) as sum_new_s_amount
-, FORMAT(emr.new_pqpi_amount,2) as new_pqpi_amount
--- , FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
-, FORMAT((((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount))/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT(emr.adjust_new_pqpi_amount,2) as new_pqpi_amount
+, FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2) as diff
+, FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
@@ -87,42 +86,35 @@ AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_diff
-, FORMAT((SELECT SUM(emr.new_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
-, FORMAT((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as newtotal
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)+emr.new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT((SELECT SUM(emr.adjust_new_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
+, FORMAT((emr.adjust_new_s_amount+emr.adjust_new_pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as newtotal
+, FORMAT((SELECT SUM((emr.adjust_new_s_amount+emr.adjust_new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_newtotal
-, FORMAT((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)),2) as raise_salary
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount)) ) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT(emr.adjust_raise_s_amount,2) as raise_salary
+, FORMAT((SELECT SUM(emr.adjust_raise_s_amount ) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_salary
--- , emr.raise_amount
--- , (SELECT SUM(emr.raise_amount ) FROM emp_result emr
--- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise
-, FORMAT((emr.new_pqpi_amount-emr.pqpi_amount),2) as raise_pqpi
-, FORMAT((SELECT SUM((emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT(emr.adjust_raise_pqpi_amount,2) as raise_pqpi
+, FORMAT((SELECT SUM(emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_pqpi
--- , emr.raise_pqpi_amount
--- , (SELECT SUM(emr.raise_pqpi_amount) FROM emp_result emr
--- 		INNER JOIN employee e ON e.emp_id = emr.emp_id) as sum_raise_pqpi_amount
-, FORMAT(((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)),2) as total_raise
-, FORMAT((SELECT SUM((FROM_BASE64(emr.new_s_amount)-FROM_BASE64(emr.s_amount))+(emr.new_pqpi_amount-emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+, FORMAT((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount),2) as total_raise
+, FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total_raise
-
 
 FROM emp_result emr
 INNER JOIN employee e ON e.emp_id = emr.emp_id
