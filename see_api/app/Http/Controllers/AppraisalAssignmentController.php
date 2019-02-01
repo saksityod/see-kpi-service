@@ -1209,9 +1209,6 @@ class AppraisalAssignmentController extends Controller
 
 	    	$qinput = array();
 	    	$query_unassign = "";
-	    	if($request->status!='Unassigned') {
-	    		$appraisalStatus = explode("-",$request->status);
-	    	}
 
 	    	if ($all_emp[0]->count_no > 0) {
 
@@ -1271,23 +1268,25 @@ class AppraisalAssignmentController extends Controller
 	    						WHERE assigned_total >= period_total
 	    					)
 	    				";
-	    			} else {
+					} else {
+						$query_unassign .= $this->query_index_emp();
+						if($request->status=='afterAssignment') {
+							$query_unassign .= " and (ast.appraisal_flag = 1 or ast.emp_result_judgement_flag = 1 or ast.bonus_appraisal_flag = 1 or ast.salary_adjustment_flag = 1 or ast.bonus_adjustment_flag = 1 or ast.mpi_judgement_flag = 1) ";
+						} else {
+							$query_unassign .= " and ast.stage_id = '{$request->status}' ";
+						}
 
-	    				$query_unassign .= $this->query_index_emp();
-
-	    				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
-	    				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
-	    				empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-	    				empty($request->appraisal_level_id) ?: ($query_unassign .= " And er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
-	    				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
-	    				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
-	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
-	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
-	    				empty($appraisalStatus[0]) ?: ($query_unassign .= " and ast.to_action = ? " AND $qinput[] = $appraisalStatus[0]);
-	    				empty($appraisalStatus[1]) ?: ($query_unassign .= " and ast.from_action = ? " AND $qinput[] = $appraisalStatus[1]);
-	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
-	    			}
+						empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
+						empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
+						empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
+						empty($request->appraisal_level_id) ?: ($query_unassign .= " And er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+						empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
+						empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+						empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+						empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
+						empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+						empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
+					}
 					// end type = 2
 
 	    		} else {
@@ -1339,20 +1338,23 @@ class AppraisalAssignmentController extends Controller
 	    					)
 	    				";
 	    			} else {
-
-	    				$query_unassign .= $this->query_index_org();
+						$query_unassign .= $this->query_index_org();
+						if($request->status=='afterAssignment') {
+							$query_unassign .= " and (ast.appraisal_flag = 1 or ast.emp_result_judgement_flag = 1 or ast.bonus_appraisal_flag = 1 or ast.salary_adjustment_flag = 1 or ast.bonus_adjustment_flag = 1 or ast.mpi_judgement_flag = 1) ";
+						} else {
+							$query_unassign .= " and ast.stage_id = '{$request->status}' ";
+						}
 						//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
-	    				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
+						empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 						//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-	    				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
-	    				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
-	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
-	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
-	    				empty($appraisalStatus[0]) ?: ($query_unassign .= " and ast.to_action = ? " AND $qinput[] = $appraisalStatus[0]);
-	    				empty($appraisalStatus[1]) ?: ($query_unassign .= " and ast.from_action = ? " AND $qinput[] = $appraisalStatus[1]);
-	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
-	    			}
+						empty($request->appraisal_level_id_org) ?: ($query_unassign .= " And o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
+						empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+						empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+						empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
+						empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+						empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
+
+					}
 	    		}
 
 	    	} else {
@@ -1421,27 +1423,30 @@ class AppraisalAssignmentController extends Controller
 	    					)
 	    				";
 	    			} else {
+						$query_unassign .= $this->query_index_emp();
+						if($request->status=='afterAssignment') {
+							$query_unassign .= " and (ast.appraisal_flag = 1 or ast.emp_result_judgement_flag = 1 or ast.bonus_appraisal_flag = 1 or ast.salary_adjustment_flag = 1 or ast.bonus_adjustment_flag = 1 or ast.mpi_judgement_flag = 1) ";
+						} else {
+							$query_unassign .= " and ast.stage_id = '{$request->status}' ";
+						}
 
-	    				$query_unassign .= $this->query_index_emp();
-	    				$query_unassign .= " and (e.chief_emp_code = ? or e.emp_code = ?)";
+						$query_unassign .= " and (e.chief_emp_code = ? or e.emp_code = ?)";
 
-	    				$qinput[] = Auth::id();
-	    				$qinput[] = Auth::id();
+						$qinput[] = Auth::id();
+						$qinput[] = Auth::id();
 
-	    				empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
-	    				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
-	    				empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
-	    				empty($request->appraisal_level_id) ?: ($query_unassign .= " and er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
-	    				empty($request->appraisal_level_id_org) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
-	    				empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
+						empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
+						empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
+						empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
+						empty($request->appraisal_level_id) ?: ($query_unassign .= " and er.level_id = ? " AND $qinput[] = $request->appraisal_level_id);
+						empty($request->appraisal_level_id_org) ?: ($query_unassign .= " and o.level_id = ? " AND $qinput[] = $request->appraisal_level_id_org);
+						empty($request->appraisal_type_id) ?: ($query_unassign .= " and er.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
 						//empty($request->period_id) ?: ($query_unassign .= " and er.period_id = ? " AND $qinput[] = $request->period_id);
-	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
-	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
-	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
-	    				empty($appraisalStatus[0]) ?: ($query_unassign .= " and ast.to_action = ? " AND $qinput[] = $appraisalStatus[0]);
-	    				empty($appraisalStatus[1]) ?: ($query_unassign .= " and ast.from_action = ? " AND $qinput[] = $appraisalStatus[1]);
-	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
-	    			}
+						empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
+						empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
+						empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+						empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
+					}
 
 	    		} else {
 	    			if($request->status=='Unassigned') {
@@ -1492,8 +1497,12 @@ class AppraisalAssignmentController extends Controller
 	    					)
 	    				";
 	    			} else {
-
-	    				$query_unassign .= $this->query_index_org();
+						$query_unassign .= $this->query_index_org();
+						if($request->status=='afterAssignment') {
+							$query_unassign .= " and (ast.appraisal_flag = 1 or ast.emp_result_judgement_flag = 1 or ast.bonus_appraisal_flag = 1 or ast.salary_adjustment_flag = 1 or ast.bonus_adjustment_flag = 1 or ast.mpi_judgement_flag = 1) ";
+						} else {
+							$query_unassign .= " and ast.stage_id = '{$request->status}' ";
+						}
 						//empty($request->position_id) ?: ($query_unassign .= " and er.position_id = ? " AND $qinput[] = $request->position_id);
 	    				empty($request->org_id) ?: ($query_unassign .= " and er.org_id = ? " AND $qinput[] = $request->org_id);
 						//empty($request->emp_code) ?: ($query_unassign .= " and e.emp_code = ? " AND $qinput[] = $request->emp_code);
@@ -1502,8 +1511,6 @@ class AppraisalAssignmentController extends Controller
 	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
 	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
-	    				empty($appraisalStatus[0]) ?: ($query_unassign .= " and ast.to_action = ? " AND $qinput[] = $appraisalStatus[0]);
-	    				empty($appraisalStatus[1]) ?: ($query_unassign .= " and ast.from_action = ? " AND $qinput[] = $appraisalStatus[1]);
 	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 	    			}
 
