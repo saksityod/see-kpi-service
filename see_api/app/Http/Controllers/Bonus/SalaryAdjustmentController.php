@@ -140,6 +140,7 @@ class SalaryAdjustmentController extends Controller
             , apc.appraisal_level_id
             , apc.structure_id
             , aps.seq_no
+            , apc.weight_percent
             FROM appraisal_criteria apc
             INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
             INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
@@ -157,7 +158,7 @@ class SalaryAdjustmentController extends Controller
         // 104 : คะแนนความรู้
         // 105 : คะแนนศักยภาพ
 
-        // หาค่า score ของแต่ละ stucture
+        // หาค่า score ของแต่ละ stucture และหา total score สำหรับ "ผลการประเมินค่างาน"
         $score_stucture = "
             SELECT result.emp_result_id
             , result.period_id
@@ -167,6 +168,8 @@ class SalaryAdjustmentController extends Controller
             , max(result.three) as three
             , max(result.four) as four
             , max(result.five) as five
+
+            , (CASE WHEN max(result.have_one_total) = 1 THEN max(result.one_total) ELSE (max(result.two_total)+max(result.three_total)) END) as one_total
             FROM
             (
 
@@ -184,6 +187,11 @@ class SalaryAdjustmentController extends Controller
               , (CASE WHEN sr.seq_no = 105 THEN re.weigh_score ELSE NULL END) as three
               , (CASE WHEN sr.seq_no = 102 THEN re.weigh_score ELSE NULL END) as four
               , (CASE WHEN sr.seq_no = 103 THEN re.weigh_score ELSE NULL END) as five
+
+              , (CASE WHEN sr.seq_no = 101 THEN 1 ELSE 0 END) as have_one_total
+              , (CASE WHEN sr.seq_no = 101 THEN sr.weight_percent ELSE NULL END) as one_total
+              , (CASE WHEN sr.seq_no = 104 THEN sr.weight_percent ELSE NULL END) as two_total
+							, (CASE WHEN sr.seq_no = 105 THEN sr.weight_percent ELSE NULL END) as three_total
               FROM structure_result re
               INNER JOIN emp_result emp ON re.emp_result_id = emp.emp_result_id
               LEFT JOIN (".$stucture_form.") sr ON re.structure_id = sr.structure_id
@@ -239,17 +247,17 @@ class SalaryAdjustmentController extends Controller
             , emj.score_board
             , gr.adjust_result_score as score_for_grade
             , gr.grade
-            , round(((emp.total_point*stu.one/65)*emp.baht_per_point)*(90/100),-2) as total_percent
-            , round(((emp.total_point*stu.one/65)*emp.baht_per_point)*(65/100),-2) as fix_percent
-            , round(((emp.total_point*stu.one/65)*emp.baht_per_point)*(25/100),-2) as var_percent
-            , (from_base64(em.s_amount)+from_base64(em.pqpi_amount)+from_base64(em.fix_other_amount)+from_base64(em.mpi_amount)+from_base64(em.pi_amount)+from_base64(em.var_other_amount)) as total_now_salary
-            , from_base64(em.s_amount) as salary
-            , from_base64(em.pqpi_amount) as pqpi_amount
-            , from_base64(em.fix_other_amount) as fix_other_amount
-            , from_base64(em.mpi_amount) as mpi_amount
-            , from_base64(em.pi_amount) as pi_amount
-            , from_base64(em.var_other_amount) as var_other_amount
-            , ((from_base64(em.s_amount)+from_base64(em.pqpi_amount)+from_base64(em.fix_other_amount)+from_base64(em.mpi_amount)+from_base64(em.pi_amount)+from_base64(em.var_other_amount))-round(((emp.total_point*60/65)*emp.baht_per_point)*(90/100),-2)) as miss_over
+            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(90/100),-2) as total_percent
+            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(65/100),-2) as fix_percent
+            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(25/100),-2) as var_percent
+            , (from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount)) as total_now_salary
+            , from_base64(emp.s_amount) as salary
+            , from_base64(emp.pqpi_amount) as pqpi_amount
+            , from_base64(emp.fix_other_amount) as fix_other_amount
+            , from_base64(emp.mpi_amount) as mpi_amount
+            , from_base64(emp.pi_amount) as pi_amount
+            , from_base64(emp.var_other_amount) as var_other_amount
+            , ((from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount))-round(((emp.total_point*60/stu.one_total)*emp.baht_per_point)*(90/100),-2)) as miss_over
             , emp.raise_amount as cal_standard
             , pe.appraisal_year
             FROM emp_result emp
