@@ -429,6 +429,7 @@ class SalaryAdjustmentController extends Controller
     }
 
     public function update(Request $request) {
+        DB::beginTransaction();
         $errors = [];
         $errors_validator = [];
 
@@ -464,35 +465,54 @@ class SalaryAdjustmentController extends Controller
             return response()->json(['status' => 400, 'data' => $errors_validator]);
         }
 
+        $stage = AppraisalStage::find($request->stage_id);
+
         foreach ($request['detail'] as $d) {
-            $empl = Employee::where('emp_id', $d['emp_id'])->first();
-            $empl->s_amount = base64_encode($d['salary']);
-            $empl->pqpi_amount = base64_encode($d['pqpi']);
-            $empl->updated_by = Auth::id();
+            if($stage->salary_adjustment_flag==1) {
+                $empl = Employee::where('emp_id', $d['emp_id'])->first();
+                $empl->s_amount = base64_encode($d['salary']);
+                $empl->pqpi_amount = base64_encode($d['pqpi']);
+                $empl->updated_by = Auth::id();
+                try {
+                    $empl->save();
+                } catch (Exception $el) {
+                    $errors[] = substr($el, 254);
+                }
+            }
 
             $emp = EmpResult::find($d['emp_result_id']);
             $emp->adjust_new_s_amount = base64_encode($d['salary']);
             $emp->adjust_new_pqpi_amount = base64_encode($d['pqpi']);
             $emp->stage_id = $request->stage_id;
-            $emp->status = AppraisalStage::find($request->stage_id)->status;
+            $emp->status = $stage->status;
             $emp->updated_by = Auth::id();
+            try {
+                $emp->save();
+            } catch (Exception $em) {
+                $errors[] = substr($em, 254);
+            }
 
             $emp_stage = new EmpResultStage;
             $emp_stage->emp_result_id = $d['emp_result_id'];
             $emp_stage->stage_id = $request->stage_id;
             $emp_stage->created_by = Auth::id();
             $emp_stage->updated_by = Auth::id();
-
             try {
-                $emp->save();
                 $emp_stage->save();
-                $empl->save();
-            } catch (Exception $e) {
-                $errors[] = substr($e, 254);
+            } catch (Exception $et) {
+                $errors[] = substr($et, 254);
             }
         }
 
-        return response()->json(['status' => 200, 'data' => $errors]);
+        if(empty($errors)) {
+            $status = 200;
+            DB::commit();
+        } else {
+            $status = 400;
+            DB::rollback();
+        }
+
+        return response()->json(['status' => $status, 'data' => $errors]);
     }
 
 }
