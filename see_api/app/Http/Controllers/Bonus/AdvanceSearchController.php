@@ -1144,24 +1144,9 @@ class AdvanceSearchController extends Controller
         ->first();
 
         $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
-
+        $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')";
         if($request->flag=='appraisal_flag') {
             //ส่วนเฉพาะหน้า Appraisal360
-
-            // $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')";
-            // $to_action = DB::select("
-            //     SELECT stage_id, to_action
-            //     FROM appraisal_stage
-            //     WHERE stage_id IN ({$stage})
-            //     AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
-            //     {$appraisal_form_id}
-            //     AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
-            //     AND {$request->flag} = 1
-            //     AND find_in_set('{$request->appraisal_group_id}', assessor_see)
-            //     ORDER BY stage_id
-            // ");
-
-            $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')";
             $to_action = DB::select("
                 SELECT stage_id, to_action
                 FROM appraisal_stage
@@ -1178,19 +1163,6 @@ class AdvanceSearchController extends Controller
             //EmpJudgement
             //BonusJudgement
             //Assignment
-
-            // $to_action = DB::select("
-            //     SELECT stage_id, to_action
-            //     FROM appraisal_stage
-            //     WHERE stage_id IN ({$stage})
-            //     AND stage_id IN ({$stage_in_level}) #แสดง stage เฉพาะ level ที่มีสิธิ์เห็น
-            //     AND {$request->flag} = 1
-            //     AND (assessor_see LIKE '%{$in}%' OR assessor_see = 'all')
-            //     AND (appraisal_form_id = '{$request->appraisal_form_id}' OR appraisal_form_id = 'all')
-            //     AND (appraisal_type_id = '{$request->appraisal_type_id}' OR appraisal_type_id = 'all')
-            //     ORDER BY stage_id
-            // ");
-
             $to_action = DB::select("
                 SELECT stage_id, to_action
                 FROM appraisal_stage
@@ -1198,7 +1170,7 @@ class AdvanceSearchController extends Controller
                 AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
                 AND {$request->flag} = 1
                 AND (find_in_set('{$in}', assessor_see) OR assessor_see = 'all')
-                AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')
+                {$appraisal_form_id}
                 AND (find_in_set('{$request->appraisal_type_id}', appraisal_type_id) OR appraisal_type_id = 'all')
                 ORDER BY stage_id
             ");
