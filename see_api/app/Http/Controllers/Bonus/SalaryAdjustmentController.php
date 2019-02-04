@@ -469,7 +469,7 @@ class SalaryAdjustmentController extends Controller
         $stage = AppraisalStage::find($request->stage_id);
 
         foreach ($request['detail'] as $d) {
-            if($stage->salary_adjustment_flag==1) {
+            if($stage->final_salary_flag==1) {
                 $empl = Employee::where('emp_id', $d['emp_id'])->first();
                 $empl->s_amount = base64_encode($d['salary']);
                 $empl->pqpi_amount = base64_encode($d['pqpi']);
