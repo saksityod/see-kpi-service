@@ -135,6 +135,7 @@ class SalaryAdjustmentController extends Controller
             ) re"; */
 
        // หา structure_id ตาม form
+        $stringFormId = empty($request->appraisal_form_id) ? "" : " AND apf.appraisal_form_id = ".$request->appraisal_form_id."";
         $stucture_form = "
             SELECT apf.appraisal_form_id
             , apc.appraisal_level_id
@@ -145,7 +146,7 @@ class SalaryAdjustmentController extends Controller
             INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
             INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
             WHERE apf.is_raise = 1
-            AND apf.appraisal_form_id = ".$request->appraisal_form_id."
+            ".$stringFormId."
             GROUP BY apf.appraisal_form_id
             , apc.appraisal_level_id
             , apc.structure_id
