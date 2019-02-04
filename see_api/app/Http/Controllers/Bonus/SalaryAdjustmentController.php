@@ -225,7 +225,7 @@ class SalaryAdjustmentController extends Controller
             , em.emp_name
             , po.position_id
             , po.position_name
-            , le.level_id as PG
+            , le.appraisal_level_name as PG
             , o.org_code
             , o.org_name
             , fo.appraisal_form_id

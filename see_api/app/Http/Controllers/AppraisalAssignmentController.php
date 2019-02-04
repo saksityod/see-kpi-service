@@ -1261,6 +1261,7 @@ class AppraisalAssignmentController extends Controller
 	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
 	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 
 	    				$query_unassign .= " 
 	    							GROUP BY e.emp_code, p.appraisal_year, p.appraisal_frequency_id, er.appraisal_type_id
@@ -1330,6 +1331,7 @@ class AppraisalAssignmentController extends Controller
 	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
 	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 
 	    				$query_unassign .= "
 	    							GROUP BY o.org_id, p.appraisal_year, p.appraisal_frequency_id, er.appraisal_type_id
@@ -1415,6 +1417,7 @@ class AppraisalAssignmentController extends Controller
 	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
 	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 
 	    				$query_unassign .= "
 	    							GROUP BY e.emp_code, p.appraisal_year, p.appraisal_frequency_id, er.appraisal_type_id
@@ -1489,6 +1492,7 @@ class AppraisalAssignmentController extends Controller
 	    				empty($request->appraisal_year) ?: ($query_unassign .= " and p.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 	    				empty($request->frequency_id) ?: ($query_unassign .= " and p.appraisal_frequency_id = ? " AND $qinput[] = $request->frequency_id);
 	    				empty($request->period_id) ?: ($query_unassign .= " and p.period_id = ? " AND $qinput[] = $request->period_id);
+	    				empty($request->appraisal_form) ?: ($query_unassign .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form);
 
 	    				$query_unassign .= "
 	    								GROUP  BY o.org_id, p.appraisal_year, p.appraisal_frequency_id, er.appraisal_type_id
