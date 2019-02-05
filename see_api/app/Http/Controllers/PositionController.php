@@ -52,7 +52,7 @@ class PositionController extends Controller
 	{
 		$errors = array();
 		foreach ($request->file() as $f) {
-			$items = Excel::load($f, function($reader){})->get();	
+			$items = Excel::load($f, function($reader){})->get();
 			foreach ($items as $i) {
 				
 				$validator = Validator::make($i->toArray(), [
@@ -84,6 +84,7 @@ class PositionController extends Controller
 							$errors[] = ['position_name' => $i->position_code, 'errors' => ["insert_error"=>[substr($e,0,254)]]];
 						}
 					} else {
+						$position = position::find($position->position_id);
 						$position->position_name = $i->position_name;
 						$position->position_code = $i->position_code;
 						$position->job_code = $i->job_code;
@@ -92,7 +93,7 @@ class PositionController extends Controller
 						try {
 							$position->save();
 						} catch (Exception $e) {
-							// $errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
+							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
 						}
 
 					}
