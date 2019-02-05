@@ -991,7 +991,16 @@ class AdvanceSearchController extends Controller
         $orgIdQryStr = empty($request->org_id) ? " ": " AND er.org_id = '{$request->org_id}'";
         $appraisalYearQryStr = empty($request->appraisal_year) ? " ": " AND ap.appraisal_year = '{$request->appraisal_year}'";
         $periodIdQryStr = empty($request->period_id) ? " ": " AND er.period_id = '{$request->period_id}'";
-        $empIdQryStr = empty($request->emp_id) ? " ": " AND er.emp_id = '{$request->emp_id}'";
+
+        if(empty($request->emp_id)) {
+            $empIdQryStr = "";
+        } else {
+            //$request->emp_id is emp_code
+            $employee_id = Employee::find($request->emp_id)->emp_id;
+            $empIdQryStr = " AND er.emp_id = '{$employee_id}'";
+        }
+        
+        // $empIdQryStr = empty($request->emp_id) ? " ": " AND er.emp_id = '{$request->emp_id}'";
         if(gettype($request->position_id) == 'string'){ // Position String
             $positionIdQryStr = empty($request->position_id) ? " ": " AND er.position_id = '{$request->position_id}'";
         } else { // Position Array or Object
