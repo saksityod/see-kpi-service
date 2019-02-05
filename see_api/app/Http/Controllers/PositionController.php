@@ -6,6 +6,7 @@ use App\Position;
 use App\Employee;
 
 use Auth;
+use Crypt;
 use DB;
 use File;
 use Validator;
@@ -52,9 +53,8 @@ class PositionController extends Controller
 	{
 		$errors = array();
 		foreach ($request->file() as $f) {
-			$items = Excel::load($f, function($reader){})->get();
+			$items = Excel::selectSheets('appraisal_position_template')->load($f, function($reader){})->get();
 			foreach ($items as $i) {
-				
 				$validator = Validator::make($i->toArray(), [
 					'position_name' => 'required|max:255',
 					'position_code' => 'required',
@@ -69,7 +69,7 @@ class PositionController extends Controller
 						from position
 						where position_code = ?
 					",array($i->position_code));*/
-					$position = position::where('position_code', $i->position_code)->first();
+					$position = Position::where('position_code', $i->position_code)->first();
 					if (empty($position)) {
 						$position = new Position;	
 						$position->position_name = $i->position_name;
@@ -81,10 +81,10 @@ class PositionController extends Controller
 						try {
 							$position->save();
 						} catch (Exception $e) {
-							$errors[] = ['position_name' => $i->position_code, 'errors' => ["insert_error"=>[substr($e,0,254)]]];
+							$errors[] = ['position_name' => $i->position_name, 'errors' => ["insert_error"=>[substr($e,0,254)]]];
 						}
 					} else {
-						$position = position::find($position->position_id);
+						$position = Position::find($position->position_id);
 						$position->position_name = $i->position_name;
 						$position->position_code = $i->position_code;
 						$position->job_code = $i->job_code;
@@ -93,7 +93,7 @@ class PositionController extends Controller
 						try {
 							$position->save();
 						} catch (Exception $e) {
-							$errors[] = ['position_name' => $i->position_code, 'errors' => substr($e,0,254)];
+							$errors[] = ['position_name' => $i->position_name, 'errors' => substr($e,0,254)];
 						}
 
 					}
