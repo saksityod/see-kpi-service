@@ -498,11 +498,28 @@ class AdvanceSearchController extends Controller
 
     public function FormList(Request $request)
     {
+        /*
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
             ->where('is_active', 1)
             // ->where('is_bonus', 1)
             ->get();
         return response()->json($forms);
+        */
+
+		$isBonus = (empty($request->is_bonus)) ? "" : " AND is_bonus = 1";
+		$isRaise = (empty($request->is_raise)) ? "" : " AND is_raise = 1";
+		$isMpi = (empty($request->is_mpi)) ? "" : " AND is_mpi = 1";
+		
+		$items = DB::select("
+			SELECT appraisal_form_id, appraisal_form_name
+			FROM appraisal_form 
+			WHERE is_active = 1
+			{$isBonus}
+			{$isRaise}
+			{$isMpi}
+        ");
+        
+        return response()->json($items);
     }
     
     public function FormListhr(Request $request)
