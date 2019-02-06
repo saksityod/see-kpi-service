@@ -75,7 +75,6 @@ class ImportJobCodeController extends Controller
             job_code,
             knowledge_point,
             capability_point,
-            total_point,
             baht_per_point 
         FROM
              job_code 
@@ -89,14 +88,13 @@ class ImportJobCodeController extends Controller
 		$x = Excel::create($filename, function($excel) use($items, $filename, $request) {
 			$excel->sheet($filename, function($sheet) use($items, $request) {
 
-				$sheet->appendRow(array('Job Code', 'Knowledge Point', 'Capability Point', 'Total Point', 'Baht Per Point'));
+				$sheet->appendRow(array('Job Code', 'Knowledge Point', 'Capability Point', 'Baht Per Point'));
 
 				foreach ($items as $i) {						
 					$sheet->appendRow(array(
 						$i->job_code,
 						$i->knowledge_point,
 						$i->capability_point,
-						$i->total_point,
 						$i->baht_per_point, 
 					));
 				}
@@ -116,48 +114,53 @@ class ImportJobCodeController extends Controller
 			foreach ($items as $i) {
 				$validator = Validator::make($i->toArray(), [
 					'job_code' => 'required|max:10',
-					'knowledge_point' => 'integer|required|max:32767|min:0',
-					'capability_point' => 'integer|required|max:32767|min:0',
-					'total_point' => 'integer|required|max:32767|min:0',
-					'baht_per_point' => 'integer|required|max:32767|min:0',				
+					'knowledge_point' => 'numeric|required|between:0,99999.99',
+					'capability_point' => 'numeric|required|between:0,99999.99',
+					'baht_per_point' => 'numeric|required|between:0,99999.99'
 				]);
 
 				if ($validator->fails()) {
 					$errors[] = ['job_code' => $i->job_code, 'errors' => $validator->errors()];
 				} else {
-					$job = JobCode::where('job_code', $i->job_code)->first();
-					if (empty($job)) {
-						$job = new JobCode;
-						$job->job_code = $i->job_code;
-						$job->knowledge_point = $i->knowledge_point;
-                        $job->capability_point = $i->capability_point;
-                        $job->total_point = $i->total_point;
-                        $job->baht_per_point = $i->baht_per_point;
-						$job->created_by = Auth::id();
-						$job->updated_by = Auth::id();
-						try {
-							$job->save();
-							// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม Job Code 
-							$newEmp[] = ["job_code"=> $i->job_code];
-						} catch (Exception $e) {
-							$errors[] = ['job_code' => $i->job_code, 'errors' => substr($e,0,254)];
-						}
-					} else {    
-						try {
-                            $user = Auth::id();
-                            $job = DB::select("UPDATE job_code 
-                            SET  
-                                knowledge_point = $i->knowledge_point,
-                                capability_point = $i->capability_point,
-                                total_point = $i->total_point,
-                                baht_per_point = $i->baht_per_point,
-                                updated_by = '".$user."'
-                            WHERE job_code = '".$i->job_code."'
-                            ");
-						} catch (Exception $e) {
-							$errors[] = ['job_code' => $i->job_code, 'errors' => substr($e,0,254)];
+					if(($i->knowledge_point + $i->capability_point) > 99999.99){
+						$errors[] = ['job_code' => $i->job_code, 'errors' => ['total_point' => ['The total point (knowledge + capability) must be between 0 and 99999.99.']]];
+					} else {
+						$job = JobCode::where('job_code', $i->job_code)->first();
+						if (empty($job)) {
+							$job = new JobCode;
+							$job->job_code = $i->job_code;
+							$job->knowledge_point = $i->knowledge_point;
+							$job->capability_point = $i->capability_point;
+							$job->total_point = ($i->knowledge_point + $i->capability_point);
+							$job->baht_per_point = $i->baht_per_point;
+							$job->created_by = Auth::id();
+							$job->updated_by = Auth::id();
+							try {
+								$job->save();
+								// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม Job Code 
+								$newEmp[] = ["job_code"=> $i->job_code];
+							} catch (Exception $e) {
+								$errors[] = ['job_code' => $i->job_code, 'errors' => substr($e,0,254)];
+							}
+						} else {    
+							try {
+								$user = Auth::id();
+								$job = DB::table('job_code')
+									->where('job_code', $i->job_code)
+									->update([
+										'knowledge_point' => $i->knowledge_point,
+										'capability_point' => $i->capability_point,
+										'total_point' => ($i->knowledge_point + $i->capability_point),
+										'baht_per_point' => $i->baht_per_point,
+										'updated_by' => Auth::id(),
+										'updated_dttm' => date("Y-m-d H:i:s")
+									]);
+							} catch (Exception $e) {
+								$errors[] = ['job_code' => $i->job_code, 'errors' => substr($e,0,254)];
+							}
 						}
 					}
+					
 				}
 			}
 		}
@@ -196,15 +199,18 @@ class ImportJobCodeController extends Controller
 		}
 
         $validator = Validator::make($request->all(), [
-			'knowledge_point' => 'integer|required|max:32767|min:0',
-			'capability_point' => 'integer|required|max:32767|min:0',
-			'total_point' => 'integer|required|max:32767|min:0',
-			'baht_per_point' => 'integer|required|max:32767|min:0',
+			'knowledge_point' => 'numeric|required|between:0,99999.99',
+			'capability_point' => 'numeric|required|between:0,99999.99',
+			'baht_per_point' => 'numeric|required|between:0,99999.99'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'data' => $validator->errors()]);
-        } else {			
+        } else {
+			if(($request->knowledge_point + $request->capability_point) > 99999.99){
+				return response()->json(['status' => 400, 'data' => ['total_point' => ['The total point (knowledge + capability) must be between 0 and 99999.99.']]]);
+			} 
+
             $item->knowledge_point = $request->knowledge_point;
             $item->capability_point = $request->capability_point;
             $item->total_point = $request->total_point;
