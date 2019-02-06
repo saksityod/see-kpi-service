@@ -134,7 +134,7 @@ class SalaryAdjustmentController extends Controller
                 AND apf.appraisal_form_id = ".$request->appraisal_form_id."
             ) re"; */
 
-       // หา structure_id ตาม form
+        /* หา structure_id ตาม form
         $stringFormId = empty($request->appraisal_form_id) ? "" : " AND apf.appraisal_form_id = ".$request->appraisal_form_id."";
         $stucture_form = "
             SELECT apf.appraisal_form_id
@@ -150,7 +150,7 @@ class SalaryAdjustmentController extends Controller
             GROUP BY apf.appraisal_form_id
             , apc.appraisal_level_id
             , apc.structure_id
-            , aps.seq_no";
+            , aps.seq_no"; */
 
         // ---------- seq_no : stucture -----------
         // 101 : ผลการประเมินค่างาน
@@ -159,7 +159,7 @@ class SalaryAdjustmentController extends Controller
         // 104 : คะแนนความรู้
         // 105 : คะแนนศักยภาพ
 
-        // หาค่า score ของแต่ละ stucture และหา total score สำหรับ "ผลการประเมินค่างาน"
+        /* หาค่า score ของแต่ละ stucture และหา total score สำหรับ "ผลการประเมินค่างาน"
         $score_stucture = "
             SELECT result.emp_result_id
             , result.period_id
@@ -202,7 +202,7 @@ class SalaryAdjustmentController extends Controller
             ) result
             GROUP BY result.emp_result_id
             , result.period_id
-            , result.emp_id";
+            , result.emp_id"; */
 
         // หา org ภายใต้ user และดูว่า user คือ board หรือไม่? [กำหนด board : edit_flag = 1 นอกนั้นเป็น 0]
         $login = Auth::id();
@@ -221,6 +221,8 @@ class SalaryAdjustmentController extends Controller
         $main_data = "
             SELECT (1) as num
             , emp.emp_result_id
+            , emp.level_id
+            , emp.period_id
             , em.emp_id
             , em.emp_code
             , em.emp_name
@@ -237,28 +239,28 @@ class SalaryAdjustmentController extends Controller
             , emp.capability_point
             , emp.total_point
             , emp.baht_per_point
-            , stu.one
-            , stu.two
-            , stu.three
-            , stu.four
-            , stu.five
+            -- , stu.one
+            -- , stu.two
+            -- , stu.three
+            -- , stu.four
+            -- , stu.five
             , emp.result_score as score_manager
             , emj.score_bu
             , emj.score_coo
             , emj.score_board
             , gr.adjust_result_score as score_for_grade
             , gr.grade
-            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(90/100),-2) as total_percent
-            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(65/100),-2) as fix_percent
-            , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(25/100),-2) as var_percent
-            , (from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount)) as total_now_salary
+            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(90/100),-2) as total_percent
+            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(65/100),-2) as fix_percent
+            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(25/100),-2) as var_percent
+            -- , (from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount)) as total_now_salary
             , from_base64(emp.s_amount) as salary
             , from_base64(emp.pqpi_amount) as pqpi_amount
             , from_base64(emp.fix_other_amount) as fix_other_amount
             , from_base64(emp.mpi_amount) as mpi_amount
             , from_base64(emp.pi_amount) as pi_amount
             , from_base64(emp.var_other_amount) as var_other_amount
-            , ((from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount))-round(((emp.total_point*60/stu.one_total)*emp.baht_per_point)*(90/100),-2)) as miss_over
+            -- , ((from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount))-round(((emp.total_point*60/stu.one_total)*emp.baht_per_point)*(90/100),-2)) as miss_over
             , emp.raise_amount as cal_standard
             , pe.appraisal_year
             FROM emp_result emp
@@ -271,9 +273,6 @@ class SalaryAdjustmentController extends Controller
             LEFT JOIN appraisal_period pe ON emp.period_id = pe.period_id
             LEFT JOIN (".$score_bu_coo_board.") emj ON emj.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$grade_score.") gr ON gr.emp_result_id = emp.emp_result_id
-            LEFT JOIN (".$score_stucture.") stu ON stu.emp_result_id = emp.emp_result_id
-              AND stu.period_id = emp.period_id
-              AND stu.emp_id = emp.emp_id
             WHERE emp.appraisal_type_id = 2";
 
 
@@ -312,7 +311,6 @@ class SalaryAdjustmentController extends Controller
         $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 
-        // return $main_data;
         // select ข้อมูล
         $item = DB::select(
           $main_data."
@@ -328,47 +326,46 @@ class SalaryAdjustmentController extends Controller
           , le.seq_no ASC
           , em.emp_code ASC");
 
-        // สร้างลำดับให้กับข้อมูล test
-        /*
-        $item = DB::select("
-            SELECT @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-            , rows.*
-            , @prev_value := rows.num
-            FROM (
-              ".$main_data."
-              AND emp.period_id = ".$request->period_id."
-              ".$qryFormId ."
-              ".$qryEmpLevel."
-              ".$qryOrgLevel."
-              ".$qryOrgId."
-              ".$qryEmpId."
-              ".$qryPositionId."
-              ".$qryStageId."
-              ORDER BY o.org_code ASC
-              , le.level_id DESC
-              , em.emp_code ASC
-            ) rows
-            ,  (SELECT @row_num := 1) num_value,
-            (SELECT @prev_value := '') set_value "
-          );
-          */
+        //หาค่า structure by record และคำนวณรายได้ปัจจุบัน
+        foreach ($item as $i) {
+           $i->total_now_salary = ($i->salary+$i->pqpi_amount+$i->fix_other_amount+$i->mpi_amount+$i->pi_amount+$i->var_other_amount);
 
+           // หาค่าที่ได้ และค่าเต็มของแต่ละ structure ตาม emp_result
+           $Structure_result = DB::select("
+              SELECT re.structure_id
+              , aps.structure_name
+              , aps.seq_no
+              , re.weigh_score as score
+              , sr.weight_percent as total_score
+              FROM structure_result re
+              INNER JOIN appraisal_structure aps ON re.structure_id = aps.structure_id
+              INNER JOIN emp_result emp ON re.emp_result_id = emp.emp_result_id
+              INNER JOIN (
+              		SELECT apf.appraisal_form_id
+              		, apc.appraisal_level_id
+              		, apc.structure_id
+              		, aps.seq_no
+              		, apc.weight_percent
+              		FROM appraisal_criteria apc
+              		INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
+              		INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
+              		WHERE apf.is_raise = 1
+              		AND apf.appraisal_form_id = ".$i->appraisal_form_id."
+              		AND apc.appraisal_level_id = ".$i->level_id."
+              		GROUP BY apf.appraisal_form_id
+              		, apc.appraisal_level_id
+              		, apc.structure_id
+              		, aps.seq_no
+              ) sr ON re.structure_id = sr.structure_id
+              AND emp.level_id = sr.appraisal_level_id
+              AND emp.appraisal_form_id = sr.appraisal_form_id
+              WHERE re.emp_result_id = ".$i->emp_result_id."
+              AND re.period_id = ".$i->period_id."
+              AND re.emp_id = ".$i->emp_id."
+              ORDER BY sr.seq_no ASC");
 
-        // สร้างลำดับให้กับข้อมูล
-        /* $item = DB::select("
-            SELECT @row_num := IF(@prev_value = rows.num ,@row_num+1 ,1) AS RowNumber
-            , rows.*
-            , @prev_value := rows.num
-            FROM (
-              ".$main_data."
-              ".$qryPositionId."
-              ORDER BY o.org_code ASC
-              , le.level_id DESC
-              , em.emp_code ASC
-            ) rows
-            ,  (SELECT @row_num := 1) num_value,
-            (SELECT @prev_value := '') set_value "
-          , $qinput); */
+            $i->structure_result = $Structure_result;
+        }
 
         // สร้าง group เพื่อให้สามารถรวมข้อมูลได้
         $groups = array();
@@ -384,7 +381,6 @@ class SalaryAdjustmentController extends Controller
               'sum_mpi_amount' => $i->mpi_amount,
               'sum_pi_amount' => $i->pi_amount,
               'sum_var_other_amount' => $i->var_other_amount,
-              'sum_miss_over' => $i->miss_over,
               'sum_cal_standard' => $i->cal_standard,
         			'count' => 1,
               'edit_flag' => $user[0]->is_board,
@@ -398,7 +394,6 @@ class SalaryAdjustmentController extends Controller
             $groups[$key]['sum_mpi_amount'] += $i->mpi_amount;
             $groups[$key]['sum_pi_amount'] += $i->pi_amount;
             $groups[$key]['sum_var_other_amount'] += $i->var_other_amount;
-            $groups[$key]['sum_miss_over'] += $i->miss_over;
             $groups[$key]['sum_cal_standard'] += $i->cal_standard;
         		$groups[$key]['count'] += 1;
             $groups[$key]['edit_flag'] = $user[0]->is_board;
