@@ -23,7 +23,21 @@ class AppraisalFormController extends Controller
 
 	public function index(Request $request)
 	{
-		$items = AppraisalForm::orderBy('appraisal_form_id')->get();
+		$isActive = (empty($request->is_active)) ? "" : " AND is_active = 1";
+		$isBonus = (empty($request->is_bonus)) ? "" : " AND is_bonus = 1";
+		$isRaise = (empty($request->is_raise)) ? "" : " AND is_raise = 1";
+		$isMpi = (empty($request->is_mpi)) ? "" : " AND is_mpi = 1";
+		
+		$items = DB::select("
+			SELECT *
+			FROM appraisal_form 
+			WHERE 1 = 1
+			{$isActive}
+			{$isBonus}
+			{$isRaise}
+			{$isMpi}
+		");
+
 		return response()->json($items);
 	}
 
