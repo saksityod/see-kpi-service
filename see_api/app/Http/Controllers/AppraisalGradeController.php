@@ -55,7 +55,9 @@ class AppraisalGradeController extends Controller
 
 	public function form_list()
     {
-		$items = AppraisalForm::select('appraisal_form_id', 'appraisal_form_name')->get();
+		$items = AppraisalForm::select('appraisal_form_id', 'appraisal_form_name')
+				->where('is_active',1)       
+				->get();
 		return response()->json($items);
 	}
 
@@ -79,6 +81,7 @@ class AppraisalGradeController extends Controller
 			LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
 			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 			WHERE 1=1
+			and f.is_active = 1
 			";
 		} else if($config->raise_type == 2) {
 			$query = "
@@ -89,6 +92,7 @@ class AppraisalGradeController extends Controller
 			LEFT OUTER JOIN appraisal_level b on a.appraisal_level_id = b.level_id
 			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 			WHERE 1=1
+			and f.is_active = 1
 			";
 		} else if($config->raise_type == 3) {
 			$query = "
@@ -99,6 +103,7 @@ class AppraisalGradeController extends Controller
 				LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
 				LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
 				WHERE 1=1
+				and f.is_active = 1
 			";
 		}
 
