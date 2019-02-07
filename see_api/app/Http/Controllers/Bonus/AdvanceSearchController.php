@@ -511,8 +511,15 @@ class AdvanceSearchController extends Controller
 		$isMpi = (empty($request->is_mpi)) ? "" : " AND is_mpi = 1";
 		
 		$items = DB::select("
-			SELECT appraisal_form_id, appraisal_form_name
-			FROM appraisal_form 
+            SELECT
+                appraisal_form_id, appraisal_form_name,
+                CASE 
+                    WHEN is_bonus = 1 THEN 'bonus'
+                    WHEN is_raise = 1 THEN 'raise'
+                    WHEN is_mpi = 1 THEN 'mpi'
+                    ELSE 'none'
+                END appraisal_form_type
+            FROM appraisal_form 
 			WHERE is_active = 1
 			{$isBonus}
 			{$isRaise}
@@ -989,13 +996,6 @@ class AdvanceSearchController extends Controller
         $flag = "ast.".$request->flag." = 1";
 
         // set parameter in sql where clause
-        if(empty($request->appraisal_form_id)){
-            $appraisalFormQryStr = " ";
-            $stageFormQryStr = " ";
-        } else {
-            $appraisalFormQryStr = " AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
-            $stageFormQryStr = " AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')";
-        }
         if(empty($request->appraisal_type_id)){
             $appraisalTypeQryStr = " ";
             $stageTypeQryStr = " ";
@@ -1017,13 +1017,36 @@ class AdvanceSearchController extends Controller
             $empIdQryStr = " AND er.emp_id = '{$employee_id}'";
         }
         
-        // $empIdQryStr = empty($request->emp_id) ? " ": " AND er.emp_id = '{$request->emp_id}'";
         if(gettype($request->position_id) == 'string'){ // Position String
             $positionIdQryStr = empty($request->position_id) ? " ": " AND er.position_id = '{$request->position_id}'";
         } else { // Position Array or Object
             $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
             $positionIdQryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
-        } 
+        }
+
+        if(empty($request->appraisal_form_id)){
+            $appraisalFormQryStr = " ";
+            $stageFormQryStr = " ";
+        } else {
+            // set appraisal form classified by value type (array or string)
+            if(gettype($request->appraisal_form_id) == 'string'){
+                $appraisalFormQryStr = " AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+                $stageFormQryStr = " AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')";
+            } else {
+                $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
+                $appraisalFormQryStr = " AND er.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
+                // เนื่องจาก appraisal form ส่งค่ามาเป็น array เพื่อนำไปหาใน appraisal_stage (comma string) เลยจำเป็นต้องทำการสร้างหลายเงื่อนไข
+                $stageFormQryStr = " AND (";
+                foreach ($request->appraisal_form_id as $key => $value) {
+                    if ($key == 0) {
+                        $stageFormQryStr .= "find_in_set('{$value}', er.appraisal_form_id)";
+                    } else {
+                        $stageFormQryStr .= " OR find_in_set('{$value}', er.appraisal_form_id)";
+                    }
+                }
+                $stageFormQryStr .= " OR er.appraisal_form_id = 'all')";
+            }
+        }
 
         // get status from db
 	    $status = DB::select("

@@ -525,13 +525,15 @@ class EmpResultJudgementController extends Controller
     public function index5(Request $request)
     {
         // get appraisal form info
-        $appraisalForm = AppraisalForm::find($request->appraisal_form_id);
+        $appraisalForm = AppraisalForm::find(collect($request->appraisal_form_id)->first());
         if($appraisalForm->is_raise == 1){
             $flagColumn = "is_start_cal_raise";
         }elseif($appraisalForm->is_mpi == 1){
             $flagColumn = "is_start_cal_mpi";
-        }else{
+        }elseif($appraisalForm->is_bonus == 1){
             $flagColumn = "is_start_cal_bonus";
+        }else{
+            $flagColumn = "";
         }
 
         // get judgement level
@@ -597,7 +599,7 @@ class EmpResultJudgementController extends Controller
 
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $positionIdQueryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
-        $formIdQueryStr = empty($request->appraisal_form_id) ? "" : "AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+        $formIdQueryStr = empty($request->appraisal_form_id) ? "" : " AND er.appraisal_form_id IN(".implode(',', $request->appraisal_form_id).") ";
 
         //ARJ = ให้แสดงผลข้อมูลหลังจากหน้า Result Judgement
         if($request->stage_id=='ARJ') {
