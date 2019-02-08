@@ -21,6 +21,7 @@
 	<parameter name="param_level_org" class="java.lang.String"/>
 	<parameter name="param_from" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="param_effectiveDate" class="java.util.Date"/>
 	<queryString>
 		<![CDATA[SELECT e.emp_code
 , e.emp_name
@@ -39,84 +40,84 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_salary
-, FORMAT(emr.pqpi_amount,2) as pqpi_amount
-, FORMAT((SELECT SUM(emr.pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_salary
+, FORMAT(FROM_BASE64(emr.pqpi_amount),2) as pqpi_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pqpi
-, FORMAT(emr.mpi_amount,2) as pmi_amount
-, FORMAT((SELECT SUM(emr.mpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pqpi
+, FORMAT(FROM_BASE64(emr.mpi_amount),2) as pmi_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.mpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pmi
-, FORMAT(emr.pi_amount,2) as pi_amount
-, FORMAT((SELECT SUM(emr.pi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pmi
+, FORMAT(FROM_BASE64(emr.pi_amount),2) as pi_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_pi
-, FORMAT((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as total
-, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pi
+, FORMAT((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),2) as total
+, FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total
-, FORMAT(emr.adjust_new_s_amount,2) as  new_s_amount
-, FORMAT((SELECT SUM(emr.adjust_new_s_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_total
+, FORMAT(FROM_BASE64(emr.adjust_new_s_amount),2) as  new_s_amount
+, FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1) ),2) as sum_new_s_amount
-, FORMAT(emr.adjust_new_pqpi_amount,2) as new_pqpi_amount
-,concat(FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)),2),"%") as diff
+AND emr.appraisal_form_id in  ( $P!{param_from} ) ),2) as sum_new_s_amount
+, FORMAT(FROM_BASE64(emr.adjust_new_pqpi_amount),2) as new_pqpi_amount
+,concat(FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))),2),"%") as diff
 , concat( FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1))/(SELECT SUM((FROM_BASE64(emr.s_amount)+emr.pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} ))/(SELECT SUM((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2),"%") as sum_diff
-, FORMAT((SELECT SUM(emr.adjust_new_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
-, FORMAT((emr.adjust_new_s_amount+emr.adjust_new_pqpi_amount+emr.mpi_amount+emr.pi_amount),2) as newtotal
-, FORMAT((SELECT SUM((emr.adjust_new_s_amount+emr.adjust_new_pqpi_amount+emr.mpi_amount+emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2),"%") as sum_diff
+, FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
+, FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),2) as newtotal
+, FORMAT((SELECT SUM((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_newtotal
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_newtotal
 , FORMAT(emr.adjust_raise_s_amount,2) as raise_salary
 , FORMAT((SELECT SUM(emr.adjust_raise_s_amount ) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_salary
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_raise_salary
 , FORMAT(emr.adjust_raise_pqpi_amount,2) as raise_pqpi
 , FORMAT((SELECT SUM(emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_raise_pqpi
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_raise_pqpi
 , FORMAT((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount),2) as total_raise
 , FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)),2) as sum_total_raise
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_total_raise
 
 FROM emp_result emr
 INNER JOIN employee e ON e.emp_id = emr.emp_id
@@ -132,7 +133,7 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND (emr.appraisal_form_id =  $P{param_from}  OR '' = $P{param_from}   OR ISNULL( $P{param_from}  )=1)
+AND emr.appraisal_form_id in  ( $P!{param_from} )
 AND emr.position_id in ( $P!{param_position})
 GROUP BY emr.emp_id
 ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
@@ -449,12 +450,20 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 	</background>
 	<pageHeader>
 		<band height="10">
-			<textField>
-				<reportElement x="-19" y="-12" width="841" height="19" uuid="2520f57f-d340-4012-bb14-f225ac9aa76c"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+			<textField pattern="d MMMM yyyy">
+				<reportElement x="-19" y="-12" width="538" height="19" uuid="2520f57f-d340-4012-bb14-f225ac9aa76c"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["รายงานสรุปการปรับเงินเดือน  ประจำปี: "+$F{appraisal_year}+"  รอบการประเมิน : "+$F{appraisal_period_desc}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["รายงานสรุปข้อมูลปรับรายได้สำหรับพนักงานรายเดือน  ประจำปี "+$F{appraisal_year}+"  มีผล  "]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd MMMM yyyy">
+				<reportElement x="519" y="-12" width="302" height="19" uuid="8a38e8c3-09a1-4bf2-845b-6b669f3c2eba"/>
+				<box leftPadding="3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{param_effectiveDate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
