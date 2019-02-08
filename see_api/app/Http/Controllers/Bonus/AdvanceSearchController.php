@@ -1013,7 +1013,8 @@ class AdvanceSearchController extends Controller
             $empIdQryStr = "";
         } else {
             //$request->emp_id is emp_code
-            $employee_id = Employee::find($request->emp_id)->emp_id;
+            //$employee_id = Employee::find($request->emp_id)->emp_id;
+            $employee_id = Employee::find('460901')->emp_id;
             $empIdQryStr = " AND er.emp_id = '{$employee_id}'";
         }
         
@@ -1142,7 +1143,27 @@ class AdvanceSearchController extends Controller
         ->first();
 
         $stage = empty($stage->to_stage_id) || $stage == 'null' ? "''" : $stage->to_stage_id;
-        $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')";
+        if(empty($request->appraisal_form_id)){
+            $appraisal_form_id = "";
+        } else {
+            // set appraisal form classified by value type (array or string)
+            if(gettype($request->appraisal_form_id) == 'string'){
+                $appraisal_form_id = empty($request->appraisal_form_id) ? "" : " AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')";
+            } else {
+                $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
+                // เนื่องจาก appraisal form ส่งค่ามาเป็น array เพื่อนำไปหาใน appraisal_stage (comma string) เลยจำเป็นต้องทำการสร้างหลายเงื่อนไข
+                $appraisal_form_id = " AND (";
+                foreach ($request->appraisal_form_id as $key => $value) {
+                    if ($key == 0) {
+                        $appraisal_form_id .= "find_in_set('{$value}', appraisal_form_id)";
+                    } else {
+                        $appraisal_form_id .= " OR find_in_set('{$value}', appraisal_form_id)";
+                    }
+                }
+                $appraisal_form_id .= " OR appraisal_form_id = 'all')";
+            }
+        }
+        
         if($request->flag=='appraisal_flag') {
             //ส่วนเฉพาะหน้า Appraisal360
             $to_action = DB::select("
@@ -1150,7 +1171,7 @@ class AdvanceSearchController extends Controller
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
                 AND {$request->flag} = 1
-                 AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
+                AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
                 {$appraisal_form_id}
                 AND (find_in_set('{$request->appraisal_type_id}', appraisal_type_id) OR appraisal_type_id = 'all')
                 AND find_in_set('{$request->appraisal_group_id}', assessor_see)
