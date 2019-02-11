@@ -663,7 +663,7 @@ class EmpResultJudgementController extends Controller
             foreach ($levelList as $index => $level) {
 
                 $empResultJudgement = EmpResultJudgement::select('judge_id', 'adjust_result_score')->where('emp_result_id', $result->emp_result_id)
-                    ->where('org_level_id', $level['level_id'])->first();
+                    ->where('org_level_id', $level['level_id'])->orderBy('created_dttm', 'desc')->first();
 
                 if($empResultJudgement){
                     $judgements = $judgements->push([

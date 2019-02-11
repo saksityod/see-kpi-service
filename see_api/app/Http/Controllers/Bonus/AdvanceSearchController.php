@@ -1013,8 +1013,7 @@ class AdvanceSearchController extends Controller
             $empIdQryStr = "";
         } else {
             //$request->emp_id is emp_code
-            //$employee_id = Employee::find($request->emp_id)->emp_id;
-            $employee_id = Employee::find('460901')->emp_id;
+            $employee_id = Employee::find($request->emp_id)->emp_id;
             $empIdQryStr = " AND er.emp_id = '{$employee_id}'";
         }
         
