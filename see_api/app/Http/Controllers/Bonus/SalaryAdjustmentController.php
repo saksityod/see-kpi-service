@@ -49,6 +49,7 @@ class SalaryAdjustmentController extends Controller
             , is_raise
             FROM appraisal_form
             WHERE is_raise = 1
+	    AND is_active = 1
             ORDER BY appraisal_form_id ASC");
 
         return response()->json($form);
