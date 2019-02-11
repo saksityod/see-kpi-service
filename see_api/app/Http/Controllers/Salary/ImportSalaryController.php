@@ -36,7 +36,8 @@ class ImportSalaryController extends Controller
 			INNER JOIN appraisal_form af on er.appraisal_form_id = af.appraisal_form_id
 			INNER JOIN employee e on er.emp_id = e.emp_id
 			WHERE 1 = 1
-			and af.is_raise = 1	
+			and af.is_raise = 1
+			and af.is_active = 1	
 		";
 		empty($request->appraisal_form_id) ?: ($query .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 		empty($request->period_id) ? ($query .= " and er.period_id = '' ") : ($query .= " and er.period_id = ? " AND $qinput[] = $request->period_id);
