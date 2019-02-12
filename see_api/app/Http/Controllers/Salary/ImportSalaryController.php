@@ -39,7 +39,7 @@ class ImportSalaryController extends Controller
 			and af.is_raise = 1
 			and af.is_active = 1	
 		";
-		empty($request->appraisal_form_id) ?: ($query .= " and er.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
+		empty($request->appraisal_form_id) ?: ($query .= " and er.appraisal_form_id IN (?) " AND $qinput[] = $request->appraisal_form_id);
 		empty($request->period_id) ? ($query .= " and er.period_id = '' ") : ($query .= " and er.period_id = ? " AND $qinput[] = $request->period_id);
 		$qfooter = " Order by e.emp_code"; 
 
