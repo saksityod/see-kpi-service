@@ -30,6 +30,24 @@
 , p.position_name
 , o.org_name
 , ap.appraisal_year
+, DATE_FORMAT($P{param_effectiveDate}, "%d") as num_day 
+, DATE_FORMAT($P{param_effectiveDate}, "%Y") as num_year 
+, DATE_FORMAT($P{param_effectiveDate}, "%m") as num_month
+, CONCAT(  
+ DATE_FORMAT( $P{param_effectiveDate} , "%d")," ", 
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 01 THEN "มกราคม" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 02 THEN "กุมภาพันธ์" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 03 THEN "มีนาคม" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 04 THEN "เมษายน" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 05 THEN "พฤษภาคม" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 06 THEN "มิถุนายน" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 07 THEN "กรกฎาคม" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 08 THEN "สิงหาคม" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 09 THEN "กันยายน" ELSE  
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 10 THEN "ตุลาคม" ELSE 
+ (CASE WHEN DATE_FORMAT( $P{param_effectiveDate}, "%m") = 11 THEN "พฤษจิกายน" ELSE  
+  "ธันวาคม" END) END) END) END) END) END) END) END) END) END) END) 
+ ," ",DATE_FORMAT( $P{param_effectiveDate}, "%Y")+543 ) AS date_string
 , emr.period_id
 , ap.appraisal_period_desc
 , af.appraisal_form_name
@@ -165,6 +183,18 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 	<field name="appraisal_year" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
+	</field>
+	<field name="num_day" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="num_day"/>
+	</field>
+	<field name="num_year" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="num_year"/>
+	</field>
+	<field name="num_month" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="num_month"/>
+	</field>
+	<field name="date_string" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="date_string"/>
 	</field>
 	<field name="period_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="period_id"/>
@@ -457,13 +487,28 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				</textElement>
 				<textFieldExpression><![CDATA["รายงานสรุปข้อมูลปรับรายได้สำหรับพนักงานรายเดือน  ประจำปี "+$F{appraisal_year}+"  มีผล  "]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd MMMM yyyy">
+			<textField>
 				<reportElement x="519" y="-12" width="302" height="19" uuid="8a38e8c3-09a1-4bf2-845b-6b669f3c2eba"/>
 				<box leftPadding="3"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{param_effectiveDate}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{num_day}+" "+
+(
+	($F{num_month}.equalsIgnoreCase("01")) ? "มกราคม" : 
+	($F{num_month}.equalsIgnoreCase("02")) ? "กุมภาพันธ์" :
+	($F{num_month}.equalsIgnoreCase("03")) ? "มีนาคม" :
+	($F{num_month}.equalsIgnoreCase("04")) ? "เมษายน" :
+	($F{num_month}.equalsIgnoreCase("05")) ? "พฤษภาคม" :
+	($F{num_month}.equalsIgnoreCase("06")) ? "มิถุนายน" : 
+	($F{num_month}.equalsIgnoreCase("07")) ? "กรกฎาคม" :
+	($F{num_month}.equalsIgnoreCase("08")) ? "สิงหาคม" :
+	($F{num_month}.equalsIgnoreCase("09")) ? "กันยายน" :
+	($F{num_month}.equalsIgnoreCase("10")) ? "ตุลาคม" :
+	($F{num_month}.equalsIgnoreCase("11") ? "กุมภาพันธ์" : "ธันวาคม")
+)
++" "
++(Integer.parseInt($F{num_year})+543)]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
