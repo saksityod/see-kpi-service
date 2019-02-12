@@ -49,7 +49,7 @@ class SalaryAdjustmentController extends Controller
             , is_raise
             FROM appraisal_form
             WHERE is_raise = 1
-	    AND is_active = 1
+			AND is_active = 1
             ORDER BY appraisal_form_id ASC");
 
         return response()->json($form);
@@ -286,6 +286,8 @@ class SalaryAdjustmentController extends Controller
         $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
 
         $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.level_id = '{$request->emp_level}' OR find_in_set(emp.level_id, '{$gue_emp_level}'))";
+        $qryStructureEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (apc.appraisal_level_id = '{$request->emp_level}' OR find_in_set(apc.appraisal_level_id, '{$gue_emp_level}'))";
+
         $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (o.level_id = '{$request->org_level}' OR find_in_set(o.level_id, '{$gue_org_level}'))";
         $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
 
@@ -308,8 +310,14 @@ class SalaryAdjustmentController extends Controller
 
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
         $qryPositionId = empty($request->position_id) ? "" : " AND emp.position_id IN (".implode(',', $request->position_id).")";
+
         $qryStageId = empty($request->stage_id) ? "": " AND emp.stage_id = '{$request->stage_id}'";
-        $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
+
+        $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
+        $qryFormId = empty($request->appraisal_form_id) ? "" : " AND emp.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
+        $qryStructureFormId = empty($request->appraisal_form_id) ? "" : " AND apf.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
+        // $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
+        // $qryStructureFormId = empty($request->appraisal_form_id) ? "": " AND apf.appraisal_form_id = {$request->appraisal_form_id}";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 
         // select ข้อมูล
@@ -327,12 +335,82 @@ class SalaryAdjustmentController extends Controller
           , le.seq_no ASC
           , em.emp_code ASC");
 
+        // structure ทั้งหมดที่จะต้องแสดงตาม parameter form, level [แสดงเฉพาะที่มีใน emp_result และถูกกำหนดใน appraisal_criteria]
+        $Structure = "
+            SELECT apc.structure_id
+            , aps.structure_name
+            , aps.seq_no
+            FROM appraisal_criteria apc
+            INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
+            INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
+            INNER JOIN (
+              SELECT ai.structure_id
+              FROM emp_result emp
+              LEFT JOIN appraisal_item_result air ON emp.emp_result_id = air.emp_result_id
+              LEFT JOIN appraisal_item ai ON air.item_id = ai.item_id
+              LEFT JOIN org o ON emp.org_id = o.org_id
+              WHERE emp.period_id = ".$request->period_id."
+              ".$qryFormId."
+              ".$qryEmpLevel."
+              ".$qryOrgLevel."
+              ".$qryOrgId."
+              ".$qryEmpId."
+              ".$qryPositionId."
+              ".$qryStageId."
+            ) em ON em.structure_id = apc.structure_id
+            WHERE apf.is_raise = 1
+            ".$qryStructureFormId."
+            ".$qryStructureEmpLevel."
+            GROUP BY apc.structure_id
+            , aps.structure_name
+            , aps.seq_no";
+
         //หาค่า structure by record และคำนวณรายได้ปัจจุบัน
         foreach ($item as $i) {
            $i->total_now_salary = ($i->salary+$i->pqpi_amount+$i->fix_other_amount+$i->mpi_amount+$i->pi_amount+$i->var_other_amount);
 
-           // หาค่าที่ได้ และค่าเต็มของแต่ละ structure ตาม emp_result
            $Structure_result = DB::select("
+              SELECT result.structure_id
+              , result.structure_name
+              , result.seq_no
+              , COALESCE(sr.weigh_score,0) as score
+              , COALESCE(ac.weight_percent,0) as total_score
+              FROM (".$Structure.") result
+              LEFT JOIN appraisal_criteria ac ON ac.structure_id = result.structure_id
+              	AND ac.appraisal_form_id = ".$i->appraisal_form_id."
+              	AND ac.appraisal_level_id = ".$i->level_id."
+              LEFT JOIN structure_result sr ON sr.structure_id = result.structure_id
+              	AND sr.emp_result_id = ".$i->emp_result_id."
+                AND sr.emp_id = ".$i->emp_id."
+              	AND sr.period_id = ".$i->period_id."
+              ORDER BY result.seq_no ASC");
+
+           $i->structure_result = $Structure_result;
+
+
+           /* foreach ($Structure as $struc) {
+                $score = DB::select("
+                    SELECT COALESCE(weigh_score,0) as score
+                    FROM structure_result
+                    WHERE structure_id = ".$struc->structure_id."
+                    AND emp_result_id = ".$i->emp_result_id."
+                    AND emp_id = ".$i->emp_id."
+                    AND period_id = ".$i->period_id." ");
+
+                $total_score = DB::select("
+                    SELECT COALESCE(weight_percent,0) as total_score
+                    FROM appraisal_criteria
+                    WHERE structure_id = ".$struc->structure_id."
+                    AND appraisal_form_id = ".$i->appraisal_form_id."
+                    AND appraisal_level_id = ".$i->level_id." ");
+
+                $Structure_result['score'] = $score[0]->score;
+                // $Structure_result->total_score = $total_score[0]->total_score;
+           }
+           */
+           // หาค่าที่ได้ และค่าเต็มของแต่ละ structure ตาม emp_result
+
+           /* $Structure_result = DB::select("
               SELECT re.structure_id
               , aps.structure_name
               , aps.seq_no
@@ -363,9 +441,8 @@ class SalaryAdjustmentController extends Controller
               WHERE re.emp_result_id = ".$i->emp_result_id."
               AND re.period_id = ".$i->period_id."
               AND re.emp_id = ".$i->emp_id."
-              ORDER BY sr.seq_no ASC");
+              ORDER BY sr.seq_no ASC"); */
 
-            $i->structure_result = $Structure_result;
         }
 
         // สร้าง group เพื่อให้สามารถรวมข้อมูลได้
