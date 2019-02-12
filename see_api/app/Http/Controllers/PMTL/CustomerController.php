@@ -168,11 +168,12 @@ class CustomerController extends Controller
 						$errors[] = ['customer_code' => $i['customer_code'], 'errors' => $validator->errors()];
 			            // return response()->json(['status' => 400, 'errors' => $errors_validator]);
 					} else {
+						$cc = $i['customer_code'];
 						$cus = DB::select("
 							select customer_id
 							from customer
-							where customer_code = '?'
-						",array($i['customer_code']));
+							where customer_code = '{$cc}'
+						");
 						if (empty($cus)) {
 							$new_cus = new Customer;
 							$new_cus->customer_code = $i['customer_code'];
