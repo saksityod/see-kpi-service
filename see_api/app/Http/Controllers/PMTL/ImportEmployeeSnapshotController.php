@@ -10,6 +10,7 @@ use App\AppraisalLevel;
 use App\Position;
 use App\Org;
 use App\Roles;
+use App\JobFunction;
 
 use Auth;
 use DB;
@@ -100,11 +101,12 @@ class ImportEmployeeSnapshotController extends Controller
 		$org_id = empty($request->org_id) ? "" : "AND es.org_id = '{$request->org_id}'";
 
 		$items = DB::select("
-			SELECT es.*, DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name, es.is_active
+			SELECT es.*,job.job_function_name ,DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name, es.is_active
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id
 			LEFT OUTER JOIN org o ON o.org_id = es.org_id
+			LEFT OUTER JOIN job_function job ON es.job_function_id = job.job_function_id
 			WHERE 1=1
 			".$level_id."
 			".$position_id."
@@ -141,14 +143,61 @@ class ImportEmployeeSnapshotController extends Controller
 		}
 
 		$items = DB::select("
-			SELECT DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, es.emp_id, es.emp_code, es.emp_first_name, es.emp_last_name, es.email, es.chief_emp_code, es.distributor_code, es.distributor_name, es.region, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name, es.is_active
+			SELECT DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, es.emp_snapshot_id ,es.emp_id, es.emp_code, es.emp_first_name, es.emp_last_name, es.email, es.chief_emp_code, es.distributor_code, es.distributor_name, es.region, al.appraisal_level_name, p.position_code, p.position_name, o.org_code, o.org_name, es.is_active ,j.*
 			FROM employee_snapshot es
 			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
 			LEFT OUTER JOIN position p ON p.position_id = es.position_id
 			LEFT OUTER JOIN org o ON o.org_id = es.org_id
+			LEFT OUTER JOIN job_function j ON es.job_function_id = j.job_function_id 
 			WHERE es.emp_snapshot_id = {$emp_snapshot_id}
 		");
 		return response()->json($items[0]);
+	}
+
+	public function list_job(Request $request)
+	{
+		try {
+			$items = JobFunction::select('job_function_id' ,'job_function_name')->get();
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Job Fonction not found.']);
+		}
+		return response()->json($items);
+	}
+
+	public function update(Request $request, $emp_snapshot_id)
+	{
+		try {
+			$item = EmployeeSnapshot::findOrFail($emp_snapshot_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Employee Snapshot not found.']);
+		}
+
+        $validator = Validator::make($request->all(), [
+			'emp_first_name' => 'required|max:100',
+			'emp_last_name' => 'required|max:100',
+			'email' => 'required|max:100',
+			'job_function_id' => 'required|max:11',
+			'distributor_code' => 'required|max:20',
+			'distributor_name' => 'required|max:255',
+			'region' => 'required|max:20',
+			'is_active' => 'required|integer|between:0,1'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 400, 'data' => $validator->errors()]);
+        } else {
+			$item->emp_first_name = $request->emp_first_name;
+			$item->emp_last_name = $request->emp_last_name;
+			$item->email = $request->email;
+			$item->job_function_id = $request->job_function_id;
+			$item->distributor_code = $request->distributor_code;
+			$item->distributor_name = $request->distributor_name;
+			$item->region = $request->region;
+			$item->is_active = $request->is_active;
+			$item->updated_by = Auth::id();
+			$item->save();
+		}
+		return response()->json(['status' => 200, 'data' => $item]);
 	}
 
 	public function import(Request $request)
@@ -413,27 +462,46 @@ class ImportEmployeeSnapshotController extends Controller
 		return response()->json(['status' => 200, 'errors' => $errors, "emp"=>$newEmp]);
 	}
 
-	public function export() {
+	public function export(Request $request) {
     	$extension = "xlsx";
     	$fileName = "import_employee_snapshot";
 
-		$emp_snap = [
-			'Start Date',
-			'EmployeeId',
-			'UserAccountCode',
-			'EmployeeFirstName',
-			'EmployeeLastName',
-			'EmployeeEmail',
-			'Level ID',
-			'Job Function ID',
-			'Line Manager',
-			'Position',
-			'DIST_CD',
-			'BusnOperationSiteDescription',
-			'Region',
-			'Organization Code',
-			'Is Active'
-		];
+		$request->start_date = $this->qdc_service->format_date($request->start_date);
+		$level_id = empty($request->level_id) ? "" : "AND al.level_id = '{$request->level_id}'";
+		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
+		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
+		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND es.emp_snapshot_id = '{$request->emp_snapshot_id}'";
+		$org_id = empty($request->org_id) ? "" : "AND es.org_id = '{$request->org_id}'";
+
+		$emp_snap = DB::select("
+		SELECT
+			DATE_FORMAT( es.start_date, '%d.%m.%Y' ) as 'Start Date',
+			es.emp_id as 'EmployeeId',
+			es.emp_code as 'UserAccountCode',
+			es.emp_first_name as 'EmployeeFirstName',
+			es.emp_last_name as 'EmployeeLastName',
+			es.email as 'EmployeeEmail',
+			es.level_id as 'Level ID',
+			es.job_function_id as 'Job Function ID',
+			es.chief_emp_code as 'Line Manager',
+			p.position_code as 'Position',
+			es.distributor_code as 'DIST_CD',
+			es.distributor_name as 'BusnOperationSiteDescription',
+			es.region as 'Region',
+			o.org_code as 'Organization Code',
+			es.is_active as 'Is Active'
+		FROM
+			employee_snapshot es
+			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
+			LEFT OUTER JOIN position p ON p.position_id = es.position_id
+			LEFT OUTER JOIN org o ON o.org_id = es.org_id 
+		WHERE 1 = 1 
+			".$level_id."
+			".$position_id."
+			".$start_date."
+			".$emp_snapshot_id."
+			".$org_id."
+		");
 
 		$org = DB::select("
 			SELECT org_code 'Organization Code', org_name 'Organization Name'

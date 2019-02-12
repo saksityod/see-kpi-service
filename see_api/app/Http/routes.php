@@ -469,6 +469,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('employee_snap', 'PMTL\ImportEmployeeSnapshotController@index');
 	Route::get('employee_snap/{emp_snapshot_id}', 'PMTL\ImportEmployeeSnapshotController@show');
 	Route::post('employee_snap/import', 'PMTL\ImportEmployeeSnapshotController@import');
+	Route::get('employee_snap/parameter/list_job', 'PMTL\ImportEmployeeSnapshotController@list_job');
+	Route::patch('employee_snap/{emp_snapshot_id}', 'PMTL\ImportEmployeeSnapshotController@update');
 
 	Route::get('questionaire/list_type', 'PMTL\QuestionaireController@list_type');
 	Route::get('questionaire/list_answer_type', 'PMTL\QuestionaireController@list_answer_type');
