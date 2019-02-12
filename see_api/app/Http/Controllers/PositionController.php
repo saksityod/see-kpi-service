@@ -52,8 +52,21 @@ class PositionController extends Controller
 	public function import(Request $request)
 	{
 		$errors = array();
-		foreach ($request->file() as $f) {
-			$items = Excel::selectSheets('appraisal_position_template')->load($f, function($reader){})->get();
+		foreach ($request->file() as $f) { 
+			$fileInfo = Excel::load($f, function($reader){});
+
+			try {
+				$items = Excel::selectSheets('appraisal_position_template')->load($f, function($reader){})->get();
+					
+			} catch (Exception $ex) {
+				return response()->json(['status' => 400, 'errors' => [[
+					'SheetName' => 'appraisal_position_template', 
+					'errors' => ["load_error"=>['Import again with a ".xlsx" from Microsoft Excel or ".ods" from Libreoffice Calc.']]]]]);
+			}
+			
+			// กรณีที่เป็นไฟล์ .ods จะมี Array ซ้อนอยู่อีกชั้นนึง เลยต้อทำการเลือกเอา array ที่เราจะใช้งานเท่านั้น
+			$items = ($fileInfo->format == 'OOCalc') ? $items[0]: $items;
+
 			foreach ($items as $i) {
 				$validator = Validator::make($i->toArray(), [
 					'position_name' => 'required|max:255',
@@ -90,6 +103,7 @@ class PositionController extends Controller
 						$position->job_code = $i->job_code;
 						$position->is_active = 1;
 						$position->updated_by = Auth::id();
+						$position->updated_dttm = date('Y-m-d H:i:s');
 						try {
 							$position->save();
 						} catch (Exception $e) {
