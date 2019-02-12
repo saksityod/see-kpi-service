@@ -143,14 +143,14 @@ class CustomerController extends Controller
 						'customer_code' => $data[0],
 						'customer_name' => $data[1],
 						'customer_type' => $data[2],
-						'tse' => $data[3],
-						'vsm' => $data[4],
-						'lex' => $data[5],
+						'position_code[1]' => $data[3],
+						'position_code[2]' => $data[4],
+						'position_code[3]' => $data[5],
 						'industry_class' => $data[6],
 						'is_active' => $data[7]
 					];
 
-					$pc = array($i['tse'], $i['vsm'], $i['lex']);
+					$pc = array($i['position_code[1]'], $i['position_code[2]'], $i['position_code[3]']);
 					$validator = Validator::make($i, [
 						'customer_code' => 'required|max:20',
 						'customer_name' => 'required|max:255',
@@ -171,7 +171,7 @@ class CustomerController extends Controller
 						$cus = DB::select("
 							select customer_id
 							from customer
-							where customer_code = ?
+							where customer_code = '?'
 						",array($i['customer_code']));
 						if (empty($cus)) {
 							$new_cus = new Customer;
@@ -349,4 +349,151 @@ class CustomerController extends Controller
 		}
 		return response()->json($item);
 	}
+	public function update(Request $request)
+	{
+		$errors = array();
+		try {
+			$item = Customer::findOrFail($request->customer_id);
+		} catch (ModelNotFoundException $e) {
+			return response()->json(['status' => 404, 'data' => 'Customer not found.']);
+		}
+		$errors_validator = [];
+		$validator = Validator::make([
+			'customer_code' => $request->customer_code,
+			'customer_name' => $request->customer_name,
+			'customer_type' => $request->customer_type,
+			'industry_class' => $request->industry_class,
+			'is_active' => $request->is_active
+		], [
+			'customer_code' => 'required',
+			'customer_name' => 'required',
+			'customer_type' => 'required',
+			'industry_class' => 'required',
+			'is_active' => 'required|integer'
+		]);
+
+		if($validator->fails()) {
+			$errors_validator[] = $validator->errors();
+			return response()->json(['status' => 400, 'errors' => $errors_validator]);
+		}
+
+		$update_cus = Customer::find($request->customer_id);
+		$update_cus->customer_name = $request->customer_name;
+		$update_cus->customer_type = $request->customer_type;
+		$update_cus->industry_class = $request->industry_class;
+		$update_cus->is_active = $request->is_active;
+		$update_cus->updated_by = Auth::id();
+		try {
+			$update_cus->save();
+		} catch (Exception $e) {
+			$errors[] = ['customer_code' => $request->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+			return response()->json(['status' => 400, 'errors' => $errors]);
+		}
+		DB::table('customer_position')->where('customer_id', $request->customer_id)->delete();
+		if(!empty($request->customer_position)) {
+				
+				foreach ($request->customer_position as $value) {
+					$cp = new CustomerPosition;
+					$cp->customer_id = $request->customer_id;
+					$cp->position_code = $this->qdc_service->trim_text($value);
+					try {
+						$cp->save();
+					}catch (Exception $e) {
+						$errors[] = ['customer_code' => $request->customer_code, 'errors' => ['validate' => substr($e,0,254)]];
+					}
+
+				}
+		}
+
+		return response()->json(['status' => 200, 'errors' => $errors]);
+
+	}
+	public function export(Request $request)
+	{
+		set_time_limit(0);
+		ini_set('memory_limit', '6144M');
+		$customer_type = empty($request->customer_type) ? "" : "AND c.customer_type = '{$request->customer_type}'";
+		$industry_class = empty($request->industry_class) ? "" : "AND c.industry_class = '{$request->industry_class}'";
+		$customer_id = empty($request->customer_id) ? "" : "AND c.customer_id = '{$request->customer_id}'";
+
+		$items =DB::select("
+			SELECT 	c.customer_id, 
+					c.customer_code, 
+					c.customer_name, 
+					c.customer_type, 
+					c.industry_class,
+					cp.position_code,
+					c.is_active
+			FROM customer c
+			INNER JOIN customer_position cp on  c.customer_id = cp.customer_id
+			WHERE 1=1
+			".$customer_type."
+			".$industry_class."
+			".$customer_id."
+			ORDER BY c.customer_code
+		");
+
+		$groups = array();
+		foreach ($items as $item) {
+			$key = $item->customer_id;
+			if(!empty($key)){
+				if (!isset($groups[$key])) {
+					$groups[$key] = array(
+						'customer_code' => $item->customer_code, 
+						'customer_name' => $item->customer_name, 
+						'customer_type' => $item->customer_type,  
+						'industry_class' => $item->industry_class, 
+						'position_code' => $item->position_code, 
+						'is_active' => $item->is_active, 
+						'customer_position' => array($item->position_code)
+					);
+				} else {
+					$groups[$key]['customer_position'][] = $item->position_code;
+				}
+			}	
+			
+		}
+		
+		// Export File CSV
+    $delimiter = ",";
+		$filename = "import_customer.csv";
+		
+    //create a file pointer
+    $f = fopen('php://memory', 'w');
+    
+    //set column headers
+    $fields = array('customer_code', 'customer_name', 'customer_type','position_code[1]','position_code[2]','position_code[3]', 'industry_class', 'is_active');
+    fputcsv($f, $fields, $delimiter);
+    
+    foreach ($groups as $i) {
+				$lineData = array(
+				$i['customer_code'],
+				$i['customer_name'],
+				$i['customer_type'],
+				(!empty($i['customer_position'][0])? $i['customer_position'][0] : ""),
+				(!empty($i['customer_position'][1])? $i['customer_position'][1] : ""),
+				(!empty($i['customer_position'][2])? $i['customer_position'][2] : ""),
+				$i['industry_class'],
+				$i['is_active']
+				);				
+				fputcsv($f, $lineData, $delimiter);
+
+		}
+    //move back to beginning of file
+    fseek($f, 0);
+    
+		//set headers to download file rather than displayed
+		setlocale ( LC_ALL, 'Thai' );
+		echo "\xEF\xBB\xBF"; 
+		header('Content-Encoding: UTF-8');
+		header('Content-type: text/csv; charset=UTF-8');
+		header("Pragma: no-cache");
+		header("Expires: 0");
+    //header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="' . $filename . '";');
+    
+    //output all remaining data on a file pointer
+    fpassthru($f);
+
+    }
 }

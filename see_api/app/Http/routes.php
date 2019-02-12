@@ -458,6 +458,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('customer', 'PMTL\CustomerController@index');
 	Route::get('customer/{customer_id}', 'PMTL\CustomerController@show');
 	Route::post('customer/import', 'PMTL\CustomerController@import');
+	Route::post('customer/export','PMTL\CustomerController@export');
+	Route::patch('customer/{customer_id}', 'PMTL\CustomerController@update');
 
 	Route::get('employee_snap/list_level', 'AppraisalLevelController@index');
 	Route::get('employee_snap/auto_position', 'PMTL\ImportEmployeeSnapshotController@auto_position');
