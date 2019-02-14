@@ -37,7 +37,21 @@ class ImportEmployeeController extends Controller
 		$errors = array();
 		$newEmp = array();
 		foreach ($request->file() as $f) {
-			$items = Excel::selectSheets('import_employee_template')->load($f, function($reader){})->get();
+			// get file infomation
+			$fileInfo = Excel::load($f, function($reader){});
+			
+			// get sheet and load data
+			try {
+				$items = Excel::selectSheets('import_employee_template')->load($f, function($reader){})->get();
+			} catch (Exception $ex) {
+				return response()->json(['status' => 400, 'errors' => [[
+					'SheetName' => 'import_job_code', 
+					'errors' => ["load_error"=>['Import again with a ".xlsx" from Microsoft Excel or ".ods" from Libreoffice Calc.']]]]]);
+			}
+
+			// กรณีที่เป็นไฟล์ .ods จะมี Array ซ้อนอยู่อีกชั้นนึง เลยต้อทำการเลือกเอา array ที่เราจะใช้งานเท่านั้น
+			$items = ($fileInfo->format == 'OOCalc') ? $items[0]: $items;
+			
 			foreach ($items as $i) {
 
 				$validator = Validator::make($i->toArray(), [
