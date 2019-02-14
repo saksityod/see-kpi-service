@@ -1110,7 +1110,6 @@ class AdvanceSearchController extends Controller
             SELECT stage_id, to_action
             FROM appraisal_stage
             WHERE stage_id IN ({$stage})
-            AND {$request->flag} = 1
             AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
             AND (find_in_set('{$in}', assessor_see) OR assessor_see = 'all')
             AND (find_in_set('{$request->appraisal_form_id}', appraisal_form_id) OR appraisal_form_id = 'all')
@@ -1169,7 +1168,6 @@ class AdvanceSearchController extends Controller
                 SELECT stage_id, to_action
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
-                AND {$request->flag} = 1
                 AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
                 {$appraisal_form_id}
                 AND (find_in_set('{$request->appraisal_type_id}', appraisal_type_id) OR appraisal_type_id = 'all')
@@ -1185,7 +1183,6 @@ class AdvanceSearchController extends Controller
                 SELECT stage_id, to_action
                 FROM appraisal_stage
                 WHERE stage_id IN ({$stage})
-                AND {$request->flag} = 1
                 AND (find_in_set('{$empAuth->level_id}', level_id) OR find_in_set('{$orgAuth->level_id}', level_id) OR level_id = 'all')
                 AND (find_in_set('{$in}', assessor_see) OR assessor_see = 'all')
                 {$appraisal_form_id}
