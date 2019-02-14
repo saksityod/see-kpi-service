@@ -10,6 +10,7 @@ use App\AppraisalLevel;
 use App\Position;
 use App\Org;
 use App\Roles;
+use App\User;
 use App\JobFunction;
 
 use Auth;
@@ -175,7 +176,7 @@ class ImportEmployeeSnapshotController extends Controller
         $validator = Validator::make($request->all(), [
 			'emp_first_name' => 'required|max:100',
 			'emp_last_name' => 'required|max:100',
-			'email' => 'required|max:100',
+			'email' => 'required|email|max:100',
 			'job_function_id' => 'required|max:11',
 			'distributor_code' => 'required|max:20',
 			'distributor_name' => 'required|max:255',
@@ -207,9 +208,12 @@ class ImportEmployeeSnapshotController extends Controller
 		$errors = array();
 		$errors_validator = array();
 		$newEmp = array();
-		// $emp_update_date = array();
-		// $emp_update_code = array();
-		// $emp_update_position = array();
+		$validateoptionOrg = [];
+		$validateoptionPosition = [];
+		$validateoptionLevel = [];
+		$validateoptionJob = [];
+		$validateoptionFull = [];
+	
 
 		foreach ($request->file() as $f) {
 			$items = Excel::load($f, function($reader){})->get();
@@ -226,7 +230,7 @@ class ImportEmployeeSnapshotController extends Controller
 					'useraccountcode' => 'required|max:100',
 					'employeefirstname' => 'required|max:100',
 					'employeelastname' => 'required|max:100',
-					'employeeemail' => 'required|max:100',
+					'employeeemail' => 'required|email|max:100',
 					'line_manager' => 'required|max:255',
 					'dist_cd' => 'required|max:20',
 					'busnoperationsitedescription' => 'required|max:255',
@@ -261,38 +265,45 @@ class ImportEmployeeSnapshotController extends Controller
 				$job_function = DB::table('job_function')->where('job_function_id', $i->job_function_id)->first();
 
 				if(empty($org)) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Organization Code' => 'Organization Code not found']];
+					$validateoptionOrg = ['Level ID' => ['Organization Code not found']];
+					$validateoptionFull[] = "error";
 				} else {
 					$org_id = $org->org_id;
 				}
 
 				if(empty($position)) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Position' => 'Position not found']];
+					$validateoptionPosition = ['Level ID' => ['Position not found']];
+					$validateoptionFull[] = "error";
 				} else {
 					$position_id = $position->position_id;
 				}
 
 				if(empty($appraisal_level)) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Level ID' => 'Job Function ID not found']];
+					$validateoptionLevel = ['Level ID' => ['Level ID not found']];
+					$validateoptionFull[] = "error";
 				} else {
 					$level_id = $appraisal_level->level_id;
 					$role = Roles::select("roleId")->where("name" ,$appraisal_level->appraisal_level_name)->first();
 				}
 
 				if(empty($job_function)) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['Job Function ID' => 'Job Function ID not found']];
+					$validateoptionJob = ['Job Function ID' => ['Job Function ID not found']];
+					$validateoptionFull[] = "error";
 				} else {
 					$job_function_id = $job_function->job_function_id;
 				}
 
-				if ($validator->fails()) {
-					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => $validator->errors()];
-				}
+				$allItems = collect($validateoptionOrg);
+				$allItems = $allItems->merge($validateoptionLevel);
+				$allItems = $allItems->merge($validateoptionJob);
+				$allItems = $allItems->merge($validateoptionPosition);
 
-				if (!empty($errors_validator)) {
-		            return response()->json(['status' => 400, 'errors' => $errors_validator]);
-				} else {
+				if ($validator->fails()||!empty($validateoptionFull)) {
+					$errors_validator[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => collect($validator->errors())->merge($allItems)->all()];
+				}else {
 					$emp = Employee::where('emp_code', $i->useraccountcode)->first();
+					//search --> user in liferay
+					$userLiferay = User::where('screenName', $i->useraccountcode)->first();
 					if (empty($emp)) {
 						$emp = new Employee;
 						$emp->emp_code = $i->useraccountcode;
@@ -333,12 +344,15 @@ class ImportEmployeeSnapshotController extends Controller
 								try {
 									$emp_snap->save();
 									// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
-									$newEmp[] = [
-										"emp_code" => $i->useraccountcode, 
-										"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
-										"email" => $i->employeeemail,
-										"role_id" => $role->roleId
-									];
+									// เพิ่มเฉพาะในกรณีที่ยังไม่มี user ใน Liferay
+									if(empty($userLiferay)&&($i->is_active)==1){
+										$newEmp[] = [
+											"emp_code" => $i->useraccountcode, 
+											"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+											"email" => $i->employeeemail,
+											"role_id" => $role['roleId']
+										];
+									}
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -361,9 +375,16 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									// $emp_update_date[] = $emp_snap->start_date;
-									// $emp_update_code[] = $emp_snap->emp_code;
-									// $emp_update_position[] = $emp_snap->position_id;
+									// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+									// เพิ่มเฉพาะในกรณีที่ยังไม่มี user ใน Liferay
+									if(empty($userLiferay)&&($i->is_active)==1){
+										$newEmp[] = [
+											"emp_code" => $i->useraccountcode, 
+											"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+											"email" => $i->employeeemail,
+											"role_id" => $role['roleId']
+										];
+									}
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -406,9 +427,16 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									// $emp_update_date[] = $emp_snap->start_date;
-									// $emp_update_code[] = $emp_snap->emp_code;
-									// $emp_update_position[] = $emp_snap->position_id;
+									// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+									// เพิ่มเฉพาะในกรณีที่ยังไม่มี user ใน Liferay
+									if(empty($userLiferay)&&($i->is_active)==1){
+										$newEmp[] = [
+											"emp_code" => $i->useraccountcode, 
+											"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+											"email" => $i->employeeemail,
+											"role_id" => $role['roleId']
+										];
+									}
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -431,9 +459,16 @@ class ImportEmployeeSnapshotController extends Controller
 								$emp_snap->updated_by = Auth::id();
 								try {
 									$emp_snap->save();
-									// $emp_update_date[] = $emp_snap->start_date;
-									// $emp_update_code[] = $emp_snap->emp_code;
-									// $emp_update_position[] = $emp_snap->position_id;
+									// ส่งกลับไปให้ cliant เพื่อนำไปเพิ่ม User ใน Liferay //
+									// เพิ่มเฉพาะในกรณีที่ยังไม่มี user ใน Liferay
+									if(empty($userLiferay)&&($i->is_active)==1){
+										$newEmp[] = [
+											"emp_code" => $i->useraccountcode, 
+											"emp_name" => $i->employeefirstname." ".$i->employeelastname, 
+											"email" => $i->employeeemail,
+											"role_id" => $role['roleId']
+										];
+									}
 								} catch (Exception $e) {
 									$errors[] = ['UserAccountCode' => $i->useraccountcode, 'errors' => ['validate' => substr($e,0,254)]];
 								}
@@ -459,7 +494,7 @@ class ImportEmployeeSnapshotController extends Controller
 
 		}
 
-		return response()->json(['status' => 200, 'errors' => $errors, "emp"=>$newEmp]);
+		return response()->json(['status' => 200, 'errors' => collect($errors)->merge($errors_validator)->all(), "emp"=>$newEmp]);
 	}
 
 	public function export(Request $request) {
