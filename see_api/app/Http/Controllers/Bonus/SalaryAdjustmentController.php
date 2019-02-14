@@ -110,101 +110,6 @@ class SalaryAdjustmentController extends Controller
             	AND gr.appraisal_level_id = emp.level_id
             	AND emrj.adjust_result_score BETWEEN gr.begin_score and gr.end_score";
 
-        // ค่า total ของแต่ละ stucture ตาม form ของ parameter
-        /* $total_stucture = "
-            SELECT (CASE WHEN max(re.total_one) = 0 THEN (max(re.total_two)+max(re.total_three)) ELSE max(re.total_one) END) as total_one
-            , max(re.total_two) as total_two
-            , max(re.total_three) as total_three
-            , max(re.total_four) as total_four
-            , max(re.total_five) as total_five
-            , re.appraisal_form_id
-            FROM
-            (
-                SELECT apc.structure_id
-                , aps.seq_no
-                , apf.appraisal_form_id
-                , (CASE WHEN aps.seq_no = 101 THEN apc.weight_percent ELSE 0 END) as total_one
-                , (CASE WHEN aps.seq_no = 104 THEN apc.weight_percent ELSE 0 END) as total_two
-                , (CASE WHEN aps.seq_no = 105 THEN apc.weight_percent ELSE 0 END) as total_three
-                , (CASE WHEN aps.seq_no = 102 THEN apc.weight_percent ELSE 0 END) as total_four
-                , (CASE WHEN aps.seq_no = 103 THEN apc.weight_percent ELSE 0 END) as total_five
-                FROM appraisal_criteria apc
-                INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-                INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-                WHERE apf.is_raise = 1
-                AND apf.appraisal_form_id = ".$request->appraisal_form_id."
-            ) re"; */
-
-        /* หา structure_id ตาม form
-        $stringFormId = empty($request->appraisal_form_id) ? "" : " AND apf.appraisal_form_id = ".$request->appraisal_form_id."";
-        $stucture_form = "
-            SELECT apf.appraisal_form_id
-            , apc.appraisal_level_id
-            , apc.structure_id
-            , aps.seq_no
-            , apc.weight_percent
-            FROM appraisal_criteria apc
-            INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-            INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-            WHERE apf.is_raise = 1
-            ".$stringFormId."
-            GROUP BY apf.appraisal_form_id
-            , apc.appraisal_level_id
-            , apc.structure_id
-            , aps.seq_no"; */
-
-        // ---------- seq_no : stucture -----------
-        // 101 : ผลการประเมินค่างาน
-        // 102 : คะแนนผลงานปีที่ผ่านมา
-        // 103 : คะแนนความสามารถที่มีคุณค่าต่อองค์กร
-        // 104 : คะแนนความรู้
-        // 105 : คะแนนศักยภาพ
-
-        /* หาค่า score ของแต่ละ stucture และหา total score สำหรับ "ผลการประเมินค่างาน"
-        $score_stucture = "
-            SELECT result.emp_result_id
-            , result.period_id
-            , result.emp_id
-            , (CASE WHEN max(result.have_one) = 1 THEN max(result.one) ELSE (max(result.two)+max(result.three)) END) as one
-            , max(result.two) as two
-            , max(result.three) as three
-            , max(result.four) as four
-            , max(result.five) as five
-
-            , (CASE WHEN max(result.have_one_total) = 1 THEN max(result.one_total) ELSE (max(result.two_total)+max(result.three_total)) END) as one_total
-            FROM
-            (
-
-              SELECT re.structure_id
-              , re.emp_result_id
-              , re.period_id
-              , re.emp_id
-              , emp.level_id
-              , emp.appraisal_form_id
-              , re.weigh_score
-              , sr.seq_no
-              , (CASE WHEN sr.seq_no = 101 THEN 1 ELSE 0 END) as have_one
-              , (CASE WHEN sr.seq_no = 101 THEN re.weigh_score ELSE NULL END) as one
-              , (CASE WHEN sr.seq_no = 104 THEN re.weigh_score ELSE NULL END) as two
-              , (CASE WHEN sr.seq_no = 105 THEN re.weigh_score ELSE NULL END) as three
-              , (CASE WHEN sr.seq_no = 102 THEN re.weigh_score ELSE NULL END) as four
-              , (CASE WHEN sr.seq_no = 103 THEN re.weigh_score ELSE NULL END) as five
-
-              , (CASE WHEN sr.seq_no = 101 THEN 1 ELSE 0 END) as have_one_total
-              , (CASE WHEN sr.seq_no = 101 THEN sr.weight_percent ELSE NULL END) as one_total
-              , (CASE WHEN sr.seq_no = 104 THEN sr.weight_percent ELSE NULL END) as two_total
-							, (CASE WHEN sr.seq_no = 105 THEN sr.weight_percent ELSE NULL END) as three_total
-              FROM structure_result re
-              INNER JOIN emp_result emp ON re.emp_result_id = emp.emp_result_id
-              LEFT JOIN (".$stucture_form.") sr ON re.structure_id = sr.structure_id
-              AND emp.level_id = sr.appraisal_level_id
-              AND emp.appraisal_form_id = sr.appraisal_form_id
-
-            ) result
-            GROUP BY result.emp_result_id
-            , result.period_id
-            , result.emp_id"; */
-
         // หา org ภายใต้ user และดูว่า user คือ board หรือไม่? [กำหนด board : edit_flag = 1 นอกนั้นเป็น 0]
         $login = Auth::id();
         $user = DB::select("
@@ -365,10 +270,12 @@ class SalaryAdjustmentController extends Controller
             , aps.structure_name
             , aps.seq_no";
 
-        //หาค่า structure by record และคำนวณรายได้ปัจจุบัน
+        //หาค่า structure, structure แรก by record และคำนวณรายได้ปัจจุบัน
         foreach ($item as $i) {
+           // คำนวณรายได้ปัจจุบัน
            $i->total_now_salary = ($i->salary+$i->pqpi_amount+$i->fix_other_amount+$i->mpi_amount+$i->pi_amount+$i->var_other_amount);
 
+           //หาค่า structure และ total structure by record
            $Structure_result = DB::select("
               SELECT result.structure_id
               , result.structure_name
@@ -385,63 +292,30 @@ class SalaryAdjustmentController extends Controller
               	AND sr.period_id = ".$i->period_id."
               ORDER BY result.seq_no ASC");
 
-           $i->structure_result = $Structure_result;
-
-
-           /* foreach ($Structure as $struc) {
-                $score = DB::select("
-                    SELECT COALESCE(weigh_score,0) as score
-                    FROM structure_result
-                    WHERE structure_id = ".$struc->structure_id."
-                    AND emp_result_id = ".$i->emp_result_id."
-                    AND emp_id = ".$i->emp_id."
-                    AND period_id = ".$i->period_id." ");
-
-                $total_score = DB::select("
-                    SELECT COALESCE(weight_percent,0) as total_score
-                    FROM appraisal_criteria
-                    WHERE structure_id = ".$struc->structure_id."
-                    AND appraisal_form_id = ".$i->appraisal_form_id."
-                    AND appraisal_level_id = ".$i->level_id." ");
-
-                $Structure_result['score'] = $score[0]->score;
-                // $Structure_result->total_score = $total_score[0]->total_score;
-           }
-           */
-           // หาค่าที่ได้ และค่าเต็มของแต่ละ structure ตาม emp_result
-
-           /* $Structure_result = DB::select("
-              SELECT re.structure_id
-              , aps.structure_name
-              , aps.seq_no
-              , re.weigh_score as score
-              , sr.weight_percent as total_score
-              FROM structure_result re
-              INNER JOIN appraisal_structure aps ON re.structure_id = aps.structure_id
-              INNER JOIN emp_result emp ON re.emp_result_id = emp.emp_result_id
+           // หา structure แรก by record
+           $first_structure = DB::select("
+              SELECT apc.structure_id
+              FROM appraisal_criteria apc
+              INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
+              INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
               INNER JOIN (
-              		SELECT apf.appraisal_form_id
-              		, apc.appraisal_level_id
-              		, apc.structure_id
-              		, aps.seq_no
-              		, apc.weight_percent
-              		FROM appraisal_criteria apc
-              		INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-              		INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-              		WHERE apf.is_raise = 1
-              		AND apf.appraisal_form_id = ".$i->appraisal_form_id."
-              		AND apc.appraisal_level_id = ".$i->level_id."
-              		GROUP BY apf.appraisal_form_id
-              		, apc.appraisal_level_id
-              		, apc.structure_id
-              		, aps.seq_no
-              ) sr ON re.structure_id = sr.structure_id
-              AND emp.level_id = sr.appraisal_level_id
-              AND emp.appraisal_form_id = sr.appraisal_form_id
-              WHERE re.emp_result_id = ".$i->emp_result_id."
-              AND re.period_id = ".$i->period_id."
-              AND re.emp_id = ".$i->emp_id."
-              ORDER BY sr.seq_no ASC"); */
+                SELECT ai.structure_id
+                FROM emp_result emp
+                LEFT JOIN appraisal_item_result air ON emp.emp_result_id = air.emp_result_id
+                LEFT JOIN appraisal_item ai ON air.item_id = ai.item_id
+                LEFT JOIN org o ON emp.org_id = o.org_id
+                WHERE emp.emp_result_id = ".$i->emp_result_id."
+              	GROUP BY ai.structure_id
+              ) em ON em.structure_id = apc.structure_id
+              WHERE apf.is_raise = 1
+              AND apf.appraisal_form_id = ".$i->appraisal_form_id."
+              AND apc.appraisal_level_id = ".$i->level_id."
+              GROUP BY apc.structure_id
+              ORDER BY aps.seq_no ASC
+              LIMIT 1 ");
+
+          $i->first_structure_id = $first_structure[0]->structure_id;
+          $i->structure_result = $Structure_result;
 
         }
 
