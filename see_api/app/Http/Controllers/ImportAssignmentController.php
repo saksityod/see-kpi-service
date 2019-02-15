@@ -972,14 +972,28 @@ class ImportAssignmentController extends Controller
 
       // Get file from parameter
       foreach ($request->file() as $f) {
+        // get file infomation
+			  $fileInfo = Excel::load($f, function($reader){});
 
-        // Sheet to array
-        $sheetArr = Excel::load($f)->getSheetNames();
+        // Sheet to array **กรณีที่เป็นไฟล์ .ods จะสร้าง Sheet ที่ชื่อว่า "Worksheet" ซึ่งไม่ใช้งาน เลยต้องเอาออก
+        $sheetArr = array_diff(Excel::load($f)->getSheetNames(), ['Worksheet']);
 
         // Loop through all sheets
-        for ($i=0; $i < count($sheetArr); $i++) {
-          $sheets = Excel::selectSheets($sheetArr[$i])->load($f, function($reader){})->get();
+        for ($i=0; $i < count($sheetArr); $i++) { Log::info($sheetArr[$i].' : Start Sheet');
+          
+          // get sheet and load data
+          try {
+            $sheets = Excel::selectSheets($sheetArr[$i])->load($f, function($reader){})->get();
+          } catch (Exception $ex) {
+            return response()->json(['status' => 400, 'errors' => [[
+              'SheetName' => $sheetArr[$i],
+              'errors' => ["load_error"=>['Import again with a ".xlsx" from Microsoft Excel or ".ods" from Libreoffice Calc.']]]]]);
+          }
+
+          // กรณีที่เป็นไฟล์ .ods จะมี Array ซ้อนอยู่อีกชั้นนึง เลยต้อทำการเลือกเอา array ที่เราจะใช้งานเท่านั้น
+			    $sheets = ($fileInfo->format == 'OOCalc') ? $sheets[0]: $sheets;         
           $sheetError = false;
+
           DB::beginTransaction();
 
           // Loop through all rows
