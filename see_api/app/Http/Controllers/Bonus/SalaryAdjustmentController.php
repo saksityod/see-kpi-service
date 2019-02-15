@@ -166,9 +166,14 @@ class SalaryAdjustmentController extends Controller
             , from_base64(emp.mpi_amount) as mpi_amount
             , from_base64(emp.pi_amount) as pi_amount
             , from_base64(emp.var_other_amount) as var_other_amount
+            , from_base64(emp.adjust_new_s_amount) as new_salary
+            , from_base64(emp.adjust_new_pqpi_amount) as new_pqpi_amount
             -- , ((from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount))-round(((emp.total_point*60/stu.one_total)*emp.baht_per_point)*(90/100),-2)) as miss_over
             , emp.raise_amount as cal_standard
             , pe.appraisal_year
+            , ast.edit_flag
+            , emp.adjust_raise_s_amount
+            , emp.adjust_raise_pqpi_amount
             FROM emp_result emp
             LEFT JOIN employee em ON emp.emp_id = em.emp_id
             LEFT JOIN position po ON emp.position_id = po.position_id
@@ -179,6 +184,7 @@ class SalaryAdjustmentController extends Controller
             LEFT JOIN appraisal_period pe ON emp.period_id = pe.period_id
             LEFT JOIN (".$score_bu_coo_board.") emj ON emj.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$grade_score.") gr ON gr.emp_result_id = emp.emp_result_id
+            INNER JOIN appraisal_stage ast ON ast.stage_id = emp.stage_id
             WHERE emp.appraisal_type_id = 2";
 
 
@@ -329,26 +335,32 @@ class SalaryAdjustmentController extends Controller
         			'sum_total_now_salary' => $i->total_now_salary,
               'sum_salary' => $i->salary,
               'sum_pqpi_amount' => $i->pqpi_amount,
+              'sum_new_salary' => $i->new_salary,
+              'sum_new_pqpi_amount' => $i->new_pqpi_amount,
               'sum_fix_other_amount' => $i->fix_other_amount,
               'sum_mpi_amount' => $i->mpi_amount,
               'sum_pi_amount' => $i->pi_amount,
               'sum_var_other_amount' => $i->var_other_amount,
               'sum_cal_standard' => $i->cal_standard,
         			'count' => 1,
-              'edit_flag' => $user[0]->is_board,
+            //   'edit_flag' => $user[0]->is_board,
+                'edit_flag' => $i->edit_flag,
         		);
         	} else {
         		$groups[$key]['items'][] = $i;
             $groups[$key]['sum_total_now_salary'] += $i->total_now_salary;
             $groups[$key]['sum_salary'] += $i->salary;
             $groups[$key]['sum_pqpi_amount'] += $i->pqpi_amount;
+            $groups[$key]['sum_new_salary'] += $i->new_salary;
+            $groups[$key]['sum_new_pqpi_amount'] += $i->new_pqpi_amount;
             $groups[$key]['sum_fix_other_amount'] += $i->fix_other_amount;
             $groups[$key]['sum_mpi_amount'] += $i->mpi_amount;
             $groups[$key]['sum_pi_amount'] += $i->pi_amount;
             $groups[$key]['sum_var_other_amount'] += $i->var_other_amount;
             $groups[$key]['sum_cal_standard'] += $i->cal_standard;
         		$groups[$key]['count'] += 1;
-            $groups[$key]['edit_flag'] = $user[0]->is_board;
+            // $groups[$key]['edit_flag'] = $user[0]->is_board;
+            $groups[$key]['edit_flag'] = $i->edit_flag;
         	}
         }
         return response()->json($groups);
@@ -416,28 +428,35 @@ class SalaryAdjustmentController extends Controller
         $stage = AppraisalStage::find($request->stage_id);
 
         foreach ($request['detail'] as $d) {
-            if($stage->final_salary_flag==1) {
-                $empl = Employee::where('emp_id', $d['emp_id'])->first();
-                $empl->s_amount = base64_encode($d['salary']);
-                $empl->pqpi_amount = base64_encode($d['pqpi']);
-                $empl->updated_by = Auth::id();
-                try {
-                    $empl->save();
-                } catch (Exception $el) {
-                    $errors[] = substr($el, 254);
-                }
-            }
-
             $emp = EmpResult::find($d['emp_result_id']);
-            $emp->adjust_new_s_amount = base64_encode($d['salary']);
-            $emp->adjust_new_pqpi_amount = base64_encode($d['pqpi']);
+            $emp->adjust_raise_s_amount = $d['salary'];
+            $emp->adjust_raise_pqpi_amount = $d['pqpi'];
+
+            $sum_s_amount = (int)base64_decode($emp->s_amount) + (int)$d['salary'];
+            $sum_pqpi_amount = (int)base64_decode($emp->pqpi_amount) + (int)$d['pqpi'];
+
+            $emp->adjust_new_s_amount = base64_encode($sum_s_amount);
+            $emp->adjust_new_pqpi_amount = base64_encode($sum_pqpi_amount);
             $emp->stage_id = $request->stage_id;
             $emp->status = $stage->status;
             $emp->updated_by = Auth::id();
+            
             try {
                 $emp->save();
             } catch (Exception $em) {
                 $errors[] = substr($em, 254);
+            }
+
+            if($stage->final_salary_flag==1) {
+                try {
+                    Employee::where('emp_id', '=', $d['emp_id'])->update([
+                        's_amount' => $emp->adjust_new_s_amount, 
+                        'pqpi_amount' => $emp->adjust_new_pqpi_amount, 
+                        'updated_by' => Auth::id()
+                    ]);
+                } catch (Exception $el) {
+                    $errors[] = substr($el, 254);
+                }
             }
 
             $emp_stage = new EmpResultStage;
