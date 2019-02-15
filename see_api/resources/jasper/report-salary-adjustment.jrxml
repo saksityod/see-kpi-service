@@ -95,7 +95,7 @@ AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{par
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
 AND emr.appraisal_form_id in  ( $P!{param_from} ) ),2) as sum_new_s_amount
 , FORMAT(FROM_BASE64(emr.adjust_new_pqpi_amount),2) as new_pqpi_amount
-,concat(FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))),2),"%") as diff
+,concat(FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)))*100,2),"%") as diff
 , concat( FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
@@ -106,7 +106,7 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2),"%") as sum_diff
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2)*100,"%") as sum_diff
 , FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
 , FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),2) as newtotal
 , FORMAT((SELECT SUM((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
@@ -180,7 +180,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="org"/>
 	</field>
-	<field name="appraisal_year" class="java.lang.Integer">
+	<field name="appraisal_year" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="appraisal_year"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="appraisal_period"/>
 	</field>
@@ -479,16 +479,24 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 		<band splitType="Stretch"/>
 	</background>
 	<pageHeader>
-		<band height="10">
+		<band height="12">
 			<textField pattern="d MMMM yyyy">
-				<reportElement x="-19" y="-12" width="538" height="19" uuid="2520f57f-d340-4012-bb14-f225ac9aa76c"/>
+				<reportElement x="0" y="-12" width="420" height="19" uuid="2520f57f-d340-4012-bb14-f225ac9aa76c"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["รายงานสรุปข้อมูลปรับรายได้สำหรับพนักงานรายเดือน  ประจำปี "+$F{appraisal_year}+"  มีผล  "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["รายงานสรุปข้อมูลปรับรายได้สำหรับพนักงานรายเดือน  ประจำปี "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="519" y="-12" width="302" height="19" uuid="8a38e8c3-09a1-4bf2-845b-6b669f3c2eba"/>
+				<reportElement x="420" y="-12" width="60" height="19" uuid="aacaf6df-71c7-4483-8f87-bcde939312dd"/>
+				<box leftPadding="3"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(Integer.parseInt($F{appraisal_year})+543)+"  มีผล  "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="480" y="-12" width="322" height="19" uuid="8a38e8c3-09a1-4bf2-845b-6b669f3c2eba"/>
 				<box leftPadding="3"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="TH SarabunPSK" size="14" isBold="true"/>
