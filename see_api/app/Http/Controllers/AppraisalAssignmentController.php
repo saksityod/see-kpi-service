@@ -1794,6 +1794,7 @@ class AppraisalAssignmentController extends Controller
 	}
 	*/
 
+	/*
 	function find_derive($items, $appraisal_form, $period_id, $appraisal_type_id) {
 		$findDerive = DB::select("
 			SELECT ast.level_id, al.is_org, al.is_individual
@@ -1952,6 +1953,91 @@ class AppraisalAssignmentController extends Controller
 				}
 			}
 
+		}
+
+		return $items;
+	}
+	*/
+	
+	function find_derive($items, $appraisal_form, $period_id) {
+		foreach ($items as $key => $item) {
+			$items[$key]->assigned = 1;
+			$items[$key]->assigned_msg = '';
+				
+			$findDerive = DB::select("
+				SELECT ast.level_id, al.is_org, al.is_individual
+				FROM appraisal_structure ast
+				INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+				INNER JOIN appraisal_level al ON al.level_id = ast.level_id
+				WHERE ast.is_derive = 1
+				AND ac.appraisal_form_id = '{$appraisal_form}'
+				AND ac.appraisal_level_id = '{$item->level_id}'
+				GROUP BY ast.level_id
+			");
+
+			$isComplete = true;
+			foreach ($findDerive as $findDerives) {
+				if($isComplete==true) {
+					if((int)$findDerives->level_id!==(int)$item->level_id) {
+						if($findDerives->is_individual==1) {
+							$findChiefEmp = $this->advanSearch->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
+							if($findChiefEmp['emp_id']=='0') {
+								$items[$key]->assigned = 0;
+								$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								$isComplete = false;
+							} else {
+								$findEmpResult = DB::select("
+									SELECT er.emp_id
+									FROM emp_result er
+									INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+									WHERE er.period_id = '".$period_id."'
+									AND er.appraisal_form_id = '".$appraisal_form."'
+									AND er.emp_id = '".$findChiefEmp['emp_id']."'
+									AND ast.assignment_flag = 0
+								");
+
+								if(empty($findEmpResult)) {
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+									$isComplete = false;
+								} else {
+									$items[$key]->assigned_msg = 'Complete';
+									$items[$key]->chief_id_array[] = $findEmpResult[0]->emp_id;
+									$items[$key]->is_derive_check[] = 'emp';
+								}
+							}
+						} else if ($findDerives->is_org==1) {
+							$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+							if($findChiefEmp['org_id']=='0') {
+								$items[$key]->assigned = 0;
+								$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								$isComplete = false;
+							} else {
+								$findEmpResult = DB::select("
+									SELECT er.org_id
+									FROM emp_result er
+									INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+									WHERE er.period_id = '".$period_id."'
+									AND er.appraisal_form_id = '".$appraisal_form."'
+									AND er.org_id = '".$findChiefEmp['org_id']."'
+									AND er.emp_id IS NULL
+									AND ast.assignment_flag = 0
+								");
+
+								if(empty($findEmpResult)) {
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+									$isComplete = false;
+								} else {
+									$items[$key]->assigned_msg = 'Complete';
+									$items[$key]->org_id_array[] = $findEmpResult[0]->org_id;
+									$items[$key]->is_derive_check[] = 'org';
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		return $items;
