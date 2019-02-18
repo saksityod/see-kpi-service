@@ -1564,6 +1564,7 @@ class AppraisalAssignmentController extends Controller
 
 	}
 
+	/*
 	function find_derive($items, $appraisal_form, $period_id, $appraisal_type_id) {
 		// $findDerive = DB::select("
 		// 	SELECT DISTINCT ast.level_id, al.is_org, al.is_individual
@@ -1785,6 +1786,170 @@ class AppraisalAssignmentController extends Controller
 				    // 	}
 					// }
 			    }
+			}
+
+		}
+
+		return $items;
+	}
+	*/
+
+	function find_derive($items, $appraisal_form, $period_id, $appraisal_type_id) {
+		$findDerive = DB::select("
+			SELECT ast.level_id, al.is_org, al.is_individual
+			FROM appraisal_structure ast
+			INNER JOIN appraisal_criteria ac ON ac.structure_id = ast.structure_id
+			INNER JOIN appraisal_level al ON al.level_id = ast.level_id
+			WHERE ast.is_derive = 1
+			AND ac.appraisal_form_id = '{$appraisal_form}'
+			GROUP BY ast.level_id
+		");
+
+		// exit(json_encode(['data' => $findDerive]));
+
+		foreach ($items as $key => $item) { // loop พนักงาน หรือ organization
+			if(empty($findDerive)) {
+				// หากไม่มี is derive เลย ให้สามารถ assigned ได้ตามปกติ
+				$items[$key]->assigned = 1;
+			    $items[$key]->assigned_msg = '';
+			} else {
+				foreach ($findDerive as $findDerives) { // loop หา level is derive แต่ละอัน
+					if($findDerives->is_individual==1) { // ถ้า is_derive เป็นแบบ emp
+						$getLv = Employee::find($item->emp_code)['level_id'];
+						if($findDerives->level_id==$getLv) { 
+							if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+								// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+								$items[$key]->assigned = 0;
+								$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+							} else {
+								// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+								// และ level_emp ของ emp ที่เลือกตรงกับ level_emp ใน is_derive
+								// จึงเป็นการ derive ตัวเอง โดยการประเมินตนเอง
+								$items[$key]->assigned = 1;
+								$items[$key]->assigned_msg = '';
+							}
+						} else {
+							$findChiefEmp = $this->advanSearch->GetChiefEmpDeriveLevel($item->emp_code, $findDerives->level_id);
+							if ($findChiefEmp['have_derive']=='0') {
+								if(isset($items[$key]->assigned) && $items[$key]->assigned==1) {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									$items[$key]->assigned = 1;
+									$items[$key]->assigned_msg = '';
+								}
+							} else if($findChiefEmp['emp_id']=='0') {
+								//กรณี emp หาหัวหน้าที่ level_emp ตรงกับ derive ไม่เจอ แสดงว่า emp คนนี้ไม่ต้องไปเอา derive มา
+								if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+									$items[$key]->assigned = 1;
+									$items[$key]->assigned_msg = '';
+								}
+							} else {
+								$findEmpResult = DB::select("
+									SELECT er.emp_id
+									FROM emp_result er
+									INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+									WHERE er.period_id = '".$period_id."'
+									AND er.appraisal_form_id = '".$appraisal_form."'
+									AND er.emp_id = '".$findChiefEmp['emp_id']."'
+									AND ast.assignment_flag = 0
+								");
+
+								if(empty($findEmpResult)) {
+									// กรณี emp_result ของหัวหน้ายังไม่ผ่านหน้า assignment (ต้องผ่านทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+										// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+										$items[$key]->assigned = 0;
+										$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+									} else {
+										// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+										$items[$key]->assigned = 1;
+										$items[$key]->assigned_msg = 'Complete';
+										$items[$key]->chief_id_array[] = $findEmpResult[0]->emp_id;
+										$items[$key]->is_derive_check[] = 'emp';
+									}
+								}
+							}
+						}
+
+					} else if($findDerives->is_org==1) {
+						//หา parent org code ขึ้นไปเรื่อยๆว่ามีเลเวลตรงกับ is derive หรือไม่
+						$getLv = Org::find($item->org_id)->level_id;
+						if($findDerives->level_id==$getLv) {
+							//ถ้า level_org ของ org ที่เลือกตรงกับ level_org ใน is_derive แสดงว่า derive ตัวเอง
+							if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+								// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+								$items[$key]->assigned = 0;
+								$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+							} else {
+								// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+								$items[$key]->assigned = 1;
+								$items[$key]->assigned_msg = '';
+							}
+
+						} else {
+							$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
+							if ($findChiefEmp['have_derive']=='0') {
+								if(isset($items[$key]->assigned) && $items[$key]->assigned==1) {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									$items[$key]->assigned = 1;
+									$items[$key]->assigned_msg = '';
+								}
+							} else if($findChiefEmp['org_id']=='0') {
+								if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+									$items[$key]->assigned = 1;
+									$items[$key]->assigned_msg = '';
+								}
+							} else {
+								$findEmpResult = DB::select("
+									SELECT er.org_id
+									FROM emp_result er
+									INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+									WHERE er.period_id = '".$period_id."'
+									AND er.appraisal_form_id = '".$appraisal_form."'
+									AND (er.org_id = '".$findChiefEmp['org_id']."')
+									AND er.emp_id IS NULL
+									AND ast.assignment_flag = 0
+								");
+
+								if(empty($findEmpResult)) {
+									// กรณี emp_result ของหัวหน้ายังไม่ผ่านหน้า assignment (ต้องผ่านทุก derive)
+									$items[$key]->assigned = 0;
+									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+								} else {
+									if(isset($items[$key]->assigned) && $items[$key]->assigned==0) {
+										// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (แต่ยังไม่ครบทุก derive)
+										$items[$key]->assigned = 0;
+										$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
+									} else {
+										// กรณี emp_result ของหัวหน้าผ่านหน้า assignment (ผ่านทุก derive)
+										$items[$key]->assigned = 1;
+										$items[$key]->assigned_msg = 'Complete';
+										$items[$key]->org_id_array[] = $findEmpResult[0]->org_id;
+										$items[$key]->is_derive_check[] = 'org';
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 
 		}

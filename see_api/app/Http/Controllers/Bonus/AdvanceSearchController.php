@@ -318,6 +318,7 @@ class AdvanceSearchController extends Controller
          return $all_emp;
     }
 
+    /*
     function GetChiefEmpDeriveLevel($paramEmp, $paramDeriveLevel) {
         $chiefEmpId = 0;
         $chiefEmpCode = '';
@@ -400,6 +401,104 @@ class AdvanceSearchController extends Controller
                 }
             } else {
                 $curParentOrg = "0";
+            }
+        }
+
+        return ['org_id' => $parentOrgId, 'parent_org_code' => $parentOrgCode];
+    }
+    */
+
+    function GetChiefEmpDeriveLevel($paramEmp, $paramDeriveLevel) {
+        $haveDerive = "0";
+        $chiefEmpId = 0;
+        $chiefEmpCode = '';
+        $initChiefEmp = DB::table('employee')
+        ->select('chief_emp_code','level_id','emp_id')
+        ->where('emp_code', $paramEmp)
+        ->first();
+
+        // if($paramDeriveLevel==(int)$initChiefEmp[0]->level_id) {
+        //  return ['emp_id' => $initChiefEmp[0]->emp_id, 'chief_emp_code' => $initChiefEmp[0]->chief_emp_code];
+        // }
+
+        if(empty($initChiefEmp)) {
+            $curChiefEmp = null;
+        } else {
+            $curChiefEmp = $initChiefEmp->chief_emp_code;
+        }
+
+        while ($curChiefEmp != "0") {
+            $getChief = DB::table('employee')
+            ->select('emp_id', 'level_id', 'chief_emp_code')
+            ->where('emp_code', $curChiefEmp)
+            ->first();
+
+            if(! empty($getChief) ){
+                if($getChief->level_id == $paramDeriveLevel){ 
+                    $chiefEmpId = $getChief->emp_id;
+                    $chiefEmpCode = $getChief->chief_emp_code;
+                    $curChiefEmp = "0";
+                    $haveDerive = "1";
+                    //ถ้ามีหัวหน้ที่ level_emp ตรงกับ derive
+                } else {
+                    if($getChief->chief_emp_code != "0"){
+                        $curChiefEmp = $getChief->chief_emp_code;
+                    } else {
+                        $curChiefEmp = "0";
+                        $haveDerive = "0";
+                    }
+                }
+            } else {
+                $curChiefEmp = "0";
+                $haveDerive = "0";
+            }
+        }
+
+        return ['emp_id' => $chiefEmpId, 'chief_emp_code' => $chiefEmpCode, 'have_derive' => $haveDerive];
+    }
+
+    function GetParentOrgDeriveLevel($paramOrg, $paramDeriveLevel) {
+        $haveDerive = "0";
+        $parentOrgId = 0;
+        $parentOrgCode = '';
+        $initParentOrg = DB::table('org')
+        ->select('parent_org_code','level_id','org_id')
+        ->where('org_code', $paramOrg)
+        ->first();
+
+        // if($paramDeriveLevel==(int)$initParentOrg[0]->level_id) {
+        //  return ['org_id' => $initParentOrg[0]->org_id, 'parent_org_code' => $initParentOrg[0]->parent_org_code];
+        // }
+
+        if(empty($initParentOrg)) {
+            $curParentOrg = null;
+        } else {
+            $curParentOrg = $initParentOrg->parent_org_code;
+        }
+
+        while ($curParentOrg != "0") {
+            $getChief = DB::table('org')
+            ->select('org_id', 'level_id', 'parent_org_code')
+            ->where('org_code', $curParentOrg)
+            ->first();
+
+            if(!empty($getChief)) {
+                if($getChief->level_id == $paramDeriveLevel) {
+                    $parentOrgId = $getChief->org_id;
+                    $parentOrgCode = $getChief->parent_org_code;
+                    $curParentOrg = "0";
+                    $haveDerive = "1";
+                } else {
+                    if($getChief->parent_org_code != "0" || $getChief->parent_org_code != "") {
+                        $curParentOrg = $getChief->parent_org_code;
+                    } else {
+                        $curParentOrg = "0";
+                        $haveDerive = "0";
+                    }
+                }
+            } else {
+                $curParentOrg = "0";
+                $haveDerive = "0";
             }
         }
 
