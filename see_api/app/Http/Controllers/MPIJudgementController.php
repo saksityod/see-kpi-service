@@ -156,7 +156,7 @@ class MPIJudgementController extends Controller
           INNER JOIN org ON org.org_id = er.org_id
           INNER JOIN position pos ON pos.position_id = er.position_id
           INNER JOIN appraisal_stage sta ON sta.stage_id = er.stage_id
-          INNER JOIN (".$score_bu_coo.") score ON score.emp_result_id = er.emp_result_id
+          LEFT JOIN (".$score_bu_coo.") score ON score.emp_result_id = er.emp_result_id
           WHERE er.period_id = '{$request->period_id}'
           ".$qryFormId ."
           ".$qryEmpLevel."
