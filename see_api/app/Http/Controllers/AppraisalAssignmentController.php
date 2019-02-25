@@ -2008,31 +2008,30 @@ class AppraisalAssignmentController extends Controller
 							}
 						} else if ($findDerives->is_org==1) {
 							$findChiefEmp = $this->advanSearch->GetParentOrgDeriveLevel($item->org_code, $findDerives->level_id);
-							if($findChiefEmp['org_id']=='0') {
+							$findEmpResult = DB::select("
+								SELECT er.org_id
+								FROM emp_result er
+								INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
+								INNER JOIN org o ON o.org_id = er.org_id
+								WHERE er.period_id = '".$period_id."'
+								AND er.appraisal_form_id = '".$appraisal_form."'
+								AND (er.org_id = '".$findChiefEmp['org_id']."' OR o.org_code = '".$item->org_code."')
+								AND er.emp_id IS NULL
+								AND ast.assignment_flag = 0
+							");
+							/*
+								$findChiefEmp['org_id'] คือหาเลเวลที่เป็น derive ขึ้นไปตามหน่วยงานว่ามีไหม ถ้าไม่มีจะ เป็น 0 
+								$item->org_code คือ กรณีที่ derive เป็นระดับเดียวกับข้อมูลที่ assign มา
+							*/
+
+							if(empty($findEmpResult)) {
 								$items[$key]->assigned = 0;
 								$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
 								$isComplete = false;
 							} else {
-								$findEmpResult = DB::select("
-									SELECT er.org_id
-									FROM emp_result er
-									INNER JOIN appraisal_stage ast ON ast.stage_id = er.stage_id
-									WHERE er.period_id = '".$period_id."'
-									AND er.appraisal_form_id = '".$appraisal_form."'
-									AND er.org_id = '".$findChiefEmp['org_id']."'
-									AND er.emp_id IS NULL
-									AND ast.assignment_flag = 0
-								");
-
-								if(empty($findEmpResult)) {
-									$items[$key]->assigned = 0;
-									$items[$key]->assigned_msg = 'Cannot Assign because Derive is not Complete';
-									$isComplete = false;
-								} else {
-									$items[$key]->assigned_msg = 'Complete';
-									$items[$key]->org_id_array[] = $findEmpResult[0]->org_id;
-									$items[$key]->is_derive_check[] = 'org';
-								}
+								$items[$key]->assigned_msg = 'Complete';
+								$items[$key]->org_id_array[] = $findEmpResult[0]->org_id;
+								$items[$key]->is_derive_check[] = 'org';
 							}
 						}
 					}
