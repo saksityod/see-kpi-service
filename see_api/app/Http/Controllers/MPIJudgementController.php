@@ -175,7 +175,7 @@ class MPIJudgementController extends Controller
             SELECT (CASE WHEN o.level_id = le.level_bu THEN 1 ELSE 0 END) as is_bu
             , (CASE WHEN o.level_id = le.level_coo THEN 1 ELSE 0 END) as is_coo
             , em.emp_id
-						, em.level_id
+						, o.level_id
             FROM employee em
             INNER JOIN org o ON em.org_id = o.org_id
             CROSS JOIN (".$level_bu_coo_board.") le
@@ -208,6 +208,7 @@ class MPIJudgementController extends Controller
 
     public function update(Request $request)
     {
+
         if(empty($request['data'])) {
             return response()->json([
                 'status' => 400,
@@ -240,6 +241,8 @@ class MPIJudgementController extends Controller
             WHERE emp_result_id = ".$data['emp_result_id']."
             AND judge_id = ".$data['user_id']."
             AND org_level_id = ".$data['user_level_id']." ");
+
+          // return response()->json($check_data);
 
           if(empty($check_data)){ // กรณีที่ไม่มีข้อมูลตาม key ให้ทำการ insert
             try {
