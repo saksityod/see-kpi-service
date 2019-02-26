@@ -84,8 +84,23 @@ class MPIJudgementController extends Controller
           LEFT JOIN appraisal_level le ON l.parent_id = le.level_id
           WHERE l.is_start_cal_bonus = 1";
 
-        // หาค่า score, grade ของระดับ bu และ coo (ตาม level)
         $score_bu_coo = "
+          SELECT emrj.org_level_id
+          , emrj.emp_result_id
+          , emrj.adjust_result_score
+          , (CASE WHEN emrj.org_level_id = l.level_bu THEN emrj.adjust_result_score ELSE NULL END) as score_bu
+          , (CASE WHEN emrj.org_level_id = l.level_coo THEN emrj.adjust_result_score ELSE NULL END) as score_coo
+          FROM emp_result_judgement emrj
+          INNER JOIN (SELECT org_level_id, emp_result_id, max(created_dttm) as max_dttm
+              FROM emp_result_judgement
+              GROUP BY org_level_id, emp_result_id) dttm ON dttm.org_level_id = emrj.org_level_id
+              AND dttm.emp_result_id = emrj.emp_result_id
+              AND dttm.max_dttm = emrj.created_dttm
+          INNER JOIN (".$level_bu_coo_board.") l ON emrj.org_level_id = l.level_bu
+          OR emrj.org_level_id = l.level_coo";
+
+        // หาค่า score, grade ของระดับ bu และ coo (ตาม level)
+        $grade_bu_coo = "
           SELECT result.emp_result_id
           , max(result.score_bu) as score_bu
           , max(result.score_coo) as score_coo
@@ -96,27 +111,22 @@ class MPIJudgementController extends Controller
 						WHERE g.appraisal_form_id = er.appraisal_form_id
 						AND g.appraisal_level_id = er.level_id
 						AND max(result.score_bu) BETWEEN g.begin_score and g.end_score ) as grade_bu
+          , ( SELECT g.salary_raise_amount
+            FROM appraisal_grade g
+            WHERE g.appraisal_form_id = er.appraisal_form_id
+            AND g.appraisal_level_id = er.level_id
+            AND max(result.score_bu) BETWEEN g.begin_score and g.end_score ) as amount_bu
 					, ( SELECT g.grade
 						FROM appraisal_grade g
 						WHERE g.appraisal_form_id = er.appraisal_form_id
 						AND g.appraisal_level_id = er.level_id
 						AND max(result.score_coo) BETWEEN g.begin_score and g.end_score ) as grade_coo
-          FROM
-          (
-              SELECT emrj.org_level_id
-              , emrj.emp_result_id
-              , emrj.adjust_result_score
-              , (CASE WHEN emrj.org_level_id = l.level_bu THEN emrj.adjust_result_score ELSE NULL END) as score_bu
-              , (CASE WHEN emrj.org_level_id = l.level_coo THEN emrj.adjust_result_score ELSE NULL END) as score_coo
-              FROM emp_result_judgement emrj
-              INNER JOIN (SELECT org_level_id, emp_result_id, max(created_dttm) as max_dttm
-									FROM emp_result_judgement
-									GROUP BY org_level_id, emp_result_id) dttm ON dttm.org_level_id = emrj.org_level_id
-									AND dttm.emp_result_id = emrj.emp_result_id
-									AND dttm.max_dttm = emrj.created_dttm
-              INNER JOIN (".$level_bu_coo_board.") l ON emrj.org_level_id = l.level_bu
-              OR emrj.org_level_id = l.level_coo
-          ) result
+          , ( SELECT g.salary_raise_amount
+            FROM appraisal_grade g
+            WHERE g.appraisal_form_id = er.appraisal_form_id
+            AND g.appraisal_level_id = er.level_id
+            AND max(result.score_coo) BETWEEN g.begin_score and g.end_score ) as amount_coo
+          FROM (".$score_bu_coo.") result
           INNER JOIN emp_result er ON result.emp_result_id = er.emp_result_id
           GROUP BY result.emp_result_id ";
 
@@ -130,7 +140,7 @@ class MPIJudgementController extends Controller
           , org.org_name
           , pos.position_name
           , er.status
-          , IF(
+          /* , IF(
           		IFNULL(CAST(FROM_BASE64(er.net_s_amount) AS DECIMAL(10,2)),0)=0,
           			IF(
           				IFNULL(CAST(FROM_BASE64(er.s_amount) AS DECIMAL(10,2)),0)=0,
@@ -138,17 +148,24 @@ class MPIJudgementController extends Controller
           				CAST(FROM_BASE64(er.s_amount) AS DECIMAL(10,2))
           			),
           		CAST(FROM_BASE64(er.net_s_amount) AS DECIMAL(10,2))
-          	) AS s_amount
+          	) AS s_amount */
           , er.result_score as score_manager
           , ( SELECT g.grade
             FROM appraisal_grade g
             WHERE g.appraisal_form_id = er.appraisal_form_id
             AND g.appraisal_level_id = er.level_id
             AND er.result_score BETWEEN g.begin_score and g.end_score ) as grade_manager
+          , ( SELECT g.salary_raise_amount
+            FROM appraisal_grade g
+            WHERE g.appraisal_form_id = er.appraisal_form_id
+            AND g.appraisal_level_id = er.level_id
+            AND er.result_score BETWEEN g.begin_score and g.end_score ) as amount_manager
           , score.score_bu
           , score.grade_bu
+          , score.amount_bu
           , score.score_coo
           , score.grade_coo
+          , score.amount_coo
           , sta.edit_flag
           FROM emp_result er
           INNER JOIN employee e ON e.emp_id = er.emp_id
@@ -156,7 +173,7 @@ class MPIJudgementController extends Controller
           INNER JOIN org ON org.org_id = er.org_id
           INNER JOIN position pos ON pos.position_id = er.position_id
           INNER JOIN appraisal_stage sta ON sta.stage_id = er.stage_id
-          LEFT JOIN (".$score_bu_coo.") score ON score.emp_result_id = er.emp_result_id
+          LEFT JOIN (".$grade_bu_coo.") score ON score.emp_result_id = er.emp_result_id
           WHERE er.period_id = '{$request->period_id}'
           ".$qryFormId ."
           ".$qryEmpLevel."
