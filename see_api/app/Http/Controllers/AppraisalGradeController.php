@@ -72,10 +72,10 @@ class AppraisalGradeController extends Controller
 
 		$qinput = array();
 
-		if ($config->raise_type == 1) {
+		// if ($config->raise_type == 1) {
 			$query = "
 			SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade,
-				a.begin_score, a.end_score, ifnull(a.salary_raise_amount, '') salary_raise_amount,
+				a.begin_score, a.end_score, ifnull(if(a.raise_type=1, a.salary_raise_amount, if(a.raise_type=2, a.salary_raise_percent, a.salary_raise_step)),'') salary_raise_amount,
 				a.is_active, a.appraisal_form_id, f.appraisal_form_name
 			FROM appraisal_grade a
 			LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
@@ -83,29 +83,29 @@ class AppraisalGradeController extends Controller
 			WHERE 1=1
 			and f.is_active = 1
 			";
-		} else if($config->raise_type == 2) {
-			$query = "
-			SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade,
-				a.begin_score, a.end_score, ifnull(a.salary_raise_percent, '') salary_raise_amount,
-				a.is_active, a.appraisal_form_id, f.appraisal_form_name
-			FROM appraisal_grade a
-			LEFT OUTER JOIN appraisal_level b on a.appraisal_level_id = b.level_id
-			LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
-			WHERE 1=1
-			and f.is_active = 1
-			";
-		} else if($config->raise_type == 3) {
-			$query = "
-				SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade,
-					a.begin_score, a.end_score, ifnull(a.salary_raise_step, '') salary_raise_amount,
-					a.is_active, a.appraisal_form_id, f.appraisal_form_name
-				FROM appraisal_grade a
-				LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
-				LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
-				WHERE 1=1
-				and f.is_active = 1
-			";
-		}
+		// } else if($config->raise_type == 2) {
+		// 	$query = "
+		// 	SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade,
+		// 		a.begin_score, a.end_score, ifnull(a.salary_raise_percent, '') salary_raise_amount,
+		// 		a.is_active, a.appraisal_form_id, f.appraisal_form_name
+		// 	FROM appraisal_grade a
+		// 	LEFT OUTER JOIN appraisal_level b on a.appraisal_level_id = b.level_id
+		// 	LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
+		// 	WHERE 1=1
+		// 	and f.is_active = 1
+		// 	";
+		// } else if($config->raise_type == 3) {
+		// 	$query = "
+		// 		SELECT a.grade_id, a.appraisal_level_id, b.appraisal_level_name, a.grade,
+		// 			a.begin_score, a.end_score, ifnull(a.salary_raise_step, '') salary_raise_amount,
+		// 			a.is_active, a.appraisal_form_id, f.appraisal_form_name
+		// 		FROM appraisal_grade a
+		// 		LEFT OUTER JOIN appraisal_level b ON a.appraisal_level_id = b.level_id
+		// 		LEFT OUTER JOIN appraisal_form f ON f.appraisal_form_id = a.appraisal_form_id
+		// 		WHERE 1=1
+		// 		and f.is_active = 1
+		// 	";
+		// }
 
 		empty($request->appraisal_form_id) ?: ($query .= " AND a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 		empty($request->appraisal_level_id) ?: ($query .= " AND a.appraisal_level_id = ? " AND $qinput[] = $request->appraisal_level_id);
