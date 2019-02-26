@@ -259,13 +259,31 @@ class MPIJudgementController extends Controller
             AND judge_id = ".$data['user_id']."
             AND org_level_id = ".$data['user_level_id']." ");
 
+        // หา grade, amount สำหรับ score ที่ทำการ insert, update
+         $grade_amount = DB::select("
+            SELECT em.appraisal_form_id
+            , em.level_id
+            , ( SELECT g.grade
+              FROM appraisal_grade g
+              WHERE g.appraisal_form_id = em.appraisal_form_id
+              AND g.appraisal_level_id = em.level_id
+              AND ".$data['score']." BETWEEN g.begin_score and g.end_score ) as grade
+            , ( SELECT to_base64(g.salary_raise_amount)
+              FROM appraisal_grade g
+              WHERE g.appraisal_form_id = em.appraisal_form_id
+              AND g.appraisal_level_id = em.level_id
+              AND ".$data['score']." BETWEEN g.begin_score and g.end_score ) as amount
+            FROM emp_result em
+            WHERE em.emp_result_id = ".$data['emp_result_id']." ");
+
           // return response()->json($check_data);
 
           if(empty($check_data)){ // กรณีที่ไม่มีข้อมูลตาม key ให้ทำการ insert
             try {
               $insert = DB::select("
-                INSERT INTO emp_result_judgement (emp_result_id, judge_id, org_level_id, adjust_result_score, created_by, created_dttm)
-                VALUES (".$data['emp_result_id'].", ".$data['user_id'].", ".$data['user_level_id'].", ".$data['score'].", '".$login."', '".$now."')");
+                INSERT INTO emp_result_judgement (emp_result_id, judge_id, org_level_id, adjust_result_score, adjust_grade, adjust_amount, created_by, created_dttm)
+                VALUES (".$data['emp_result_id'].", ".$data['user_id'].", ".$data['user_level_id'].", ".$data['score'].", '".$grade_amount[0]->grade."', '".$grade_amount[0]->amount."'
+                , '".$login."', '".$now."')");
             } catch (ModelNotFoundException $e) {
               return response()->json(['status' => 400, 'data' => "insert data false."]);
             }
@@ -273,7 +291,9 @@ class MPIJudgementController extends Controller
             try {
               $update = DB::select("
                 UPDATE emp_result_judgement
-                SET adjust_result_score = ".$data['score']."
+                SET adjust_result_score = ".$data['score'].",
+                adjust_grade = '".$grade_amount[0]->grade."',
+                adjust_amount = '".$grade_amount[0]->amount."'
                 WHERE emp_result_id = ".$data['emp_result_id']."
                 AND judge_id = ".$data['user_id']."
                 AND org_level_id = ".$data['user_level_id']." ");
