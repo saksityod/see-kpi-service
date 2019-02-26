@@ -195,17 +195,17 @@ class AppraisalGradeController extends Controller
 
 				$item->appraisal_level_id = $vel;
 				$item->is_active = ($request->is_active == 'on') ? true : false;
-				if ($config->raise_type == 1) {
+				if ($request->raise_type == 1) {
 					$item->salary_raise_amount = $request->salary_raise_amount;
 					$item->salary_raise_percent = null;
 					$item->salary_raise_step = null;
 					$item->structure_id = null;
-				} elseif ($config->raise_type == 2) {
+				} elseif ($request->raise_type == 2) {
 					$item->salary_raise_amount = null;
 					$item->salary_raise_percent = $request->salary_raise_amount;
 					$item->salary_raise_step = null;
 					$item->structure_id = null;
-				}elseif ($config->raise_type == 3) {
+				}elseif ($request->raise_type == 3) {
 					$item->salary_raise_amount = null;
 					$item->salary_raise_percent = null;
 					$item->salary_raise_step = $request->salary_raise_amount;
@@ -245,9 +245,9 @@ class AppraisalGradeController extends Controller
 
 		try {
 			$item = AppraisalGrade::findOrFail($grade_id);
-			if($config->raise_type==2) {
+			if($item['raise_type']==2) {
 				$item->salary_raise_amount = $item->salary_raise_percent;
-			} elseif($config->raise_type==3) {
+			} elseif($item['raise_type']==3) {
 				$item->salary_raise_amount = $item->salary_raise_step;
 				$item->structure_id = ($item->structure_id === null) ? 0 : $item->structure_id;
 			}
@@ -314,17 +314,17 @@ class AppraisalGradeController extends Controller
 			$item->fill($request->except(['salary_raise_amount', 'structure_id', 'appraisal_level_id', 'is_active']));
 			$item->appraisal_level_id = $request->appraisal_level_id[0];
 			$item->is_active = ($request->is_active == 'on') ? true : false;
-			if ($config->raise_type == 1) {
+			if ($request->raise_type == 1) {
 				$item->salary_raise_amount = $request->salary_raise_amount;
 				$item->salary_raise_percent = null;
 				$item->salary_raise_step = null;
 				$item->structure_id = null;
-			} elseif ($config->raise_type == 2) {
+			} elseif ($request->raise_type == 2) {
 				$item->salary_raise_amount = null;
 				$item->salary_raise_percent = $request->salary_raise_amount;
 				$item->salary_raise_step = null;
 				$item->structure_id = null;
-			}elseif ($config->raise_type == 3) {
+			}elseif ($request->raise_type == 3) {
 				$item->salary_raise_amount = null;
 				$item->salary_raise_percent = null;
 				$item->salary_raise_step = $request->salary_raise_amount;

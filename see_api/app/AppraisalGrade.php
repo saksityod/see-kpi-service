@@ -20,6 +20,6 @@ class AppraisalGrade extends Model
 	
 	//public $timestamps = false;
 	//protected $guarded = array();
-	protected $fillable = array('appraisal_form_id', 'appraisal_level_id','grade','begin_score','end_score','salary_raise_amount','salary_raise_percent','structure_id','is_judgement','is_active');
+	protected $fillable = array('appraisal_form_id', 'appraisal_level_id','grade','begin_score','end_score','salary_raise_amount','salary_raise_percent','structure_id','is_judgement','raise_type','is_active');
 	protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 }
