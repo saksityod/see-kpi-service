@@ -199,10 +199,12 @@ class MPIJudgementController extends Controller
             WHERE em.emp_code = '".$login."'");
 
         foreach ($item as $i) {
-            $i->is_bu = $user[0]->is_bu;
-            $i->is_coo = $user[0]->is_coo;
-            $i->user_emp_id = $user[0]->emp_id;
-            $i->user_level_id = $user[0]->level_id;
+          foreach ($user as $u) {
+            $i->is_bu = $u->is_bu;
+            $i->is_coo = $u->is_coo;
+            $i->user_emp_id = $u->emp_id;
+            $i->user_level_id = $u->level_id;
+          }
         }
 
         empty($request->page) ? $page = 1 : $page = $request->page;
@@ -276,38 +278,44 @@ class MPIJudgementController extends Controller
             FROM emp_result em
             WHERE em.emp_result_id = ".$data['emp_result_id']." ");
 
-          // return response()->json($check_data);
-
-          if(empty($check_data)){ // กรณีที่ไม่มีข้อมูลตาม key ให้ทำการ insert
-            try {
-              $insert = DB::select("
-                INSERT INTO emp_result_judgement (emp_result_id, judge_id, org_level_id, adjust_result_score, adjust_grade, adjust_amount, created_by, created_dttm)
-                VALUES (".$data['emp_result_id'].", ".$data['user_id'].", ".$data['user_level_id'].", ".$data['score'].", '".$grade_amount[0]->grade."', '".$grade_amount[0]->amount."'
-                , '".$login."', '".$now."')");
-            } catch (ModelNotFoundException $e) {
-              return response()->json(['status' => 400, 'data' => "insert data false."]);
-            }
-          } else { // กรณีที่มีข้อมูลตาม key ให้ทำการ update
-            try {
-              $update = DB::select("
-                UPDATE emp_result_judgement
-                SET adjust_result_score = ".$data['score'].",
-                adjust_grade = '".$grade_amount[0]->grade."',
-                adjust_amount = '".$grade_amount[0]->amount."'
-                WHERE emp_result_id = ".$data['emp_result_id']."
-                AND judge_id = ".$data['user_id']."
-                AND org_level_id = ".$data['user_level_id']." ");
-            } catch (ModelNotFoundException $e) {
-              return response()->json(['status' => 400, 'data' => "update data false."]);
-            }
+          if (empty($grade_amount)){
+              return response()->json(['status' => 400, 'data' => "not have data emp_result."]);
           }
 
-          if($request->confirm_flag == "1"){
-              $empResult->stage_id = $request->stage_id;
-              $empResult->status = AppraisalStage::find($request->stage_id)->status;
-          }
-          $empResult->save();
+          foreach ($grade_amount as $ga) {
 
+            if(empty($check_data)){ // กรณีที่ไม่มีข้อมูลตาม key ให้ทำการ insert
+              try {
+                $insert = DB::select("
+                  INSERT INTO emp_result_judgement (emp_result_id, judge_id, org_level_id, adjust_result_score, adjust_grade, adjust_amount, created_by, created_dttm)
+                  VALUES (".$data['emp_result_id'].", ".$data['user_id'].", ".$data['user_level_id']."
+                  , ".$data['score'].", '".$ga->grade."', '".$ga->amount."'
+                  , '".$login."', '".$now."')");
+              } catch (ModelNotFoundException $e) {
+                return response()->json(['status' => 400, 'data' => "insert data false."]);
+              }
+            } else { // กรณีที่มีข้อมูลตาม key ให้ทำการ update
+              try {
+                $update = DB::select("
+                  UPDATE emp_result_judgement
+                  SET adjust_result_score = ".$data['score'].",
+                  adjust_grade = '".$ga->grade."',
+                  adjust_amount = '".$ga->amount."'
+                  WHERE emp_result_id = ".$data['emp_result_id']."
+                  AND judge_id = ".$data['user_id']."
+                  AND org_level_id = ".$data['user_level_id']." ");
+              } catch (ModelNotFoundException $e) {
+                return response()->json(['status' => 400, 'data' => "update data false."]);
+              }
+            }
+
+            if($request->confirm_flag == "1"){
+                $empResult->stage_id = $request->stage_id;
+                $empResult->status = AppraisalStage::find($request->stage_id)->status;
+            }
+            $empResult->save();
+
+          } // end foreach $grade_amount
         } // end foreach ($request->data)
 
         return response()->json(['status' => 200, 'data' => "Saved Successfully"]);
