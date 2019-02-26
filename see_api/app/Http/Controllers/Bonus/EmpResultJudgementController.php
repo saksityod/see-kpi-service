@@ -13,6 +13,7 @@ use App\EmpResultStage;
 use App\AppraisalForm;
 use App\AppraisalPeriod;
 use App\SystemConfiguration;
+use App\AppraisalGrade;
 
 use Auth;
 use DB;
@@ -739,23 +740,29 @@ class EmpResultJudgementController extends Controller
         $authId = Auth::id();
         $curDateTime = date('Y-m-d H:i:s');
 
-        // get period infomation
+        /** get period infomation */
         try {
 			$periodInfo = AppraisalPeriod::FindOrFail($periodId);
 		} catch(ModelNotFoundException $e) {
 			return response()->json(["status"=>404, "data"=>"Salary Appraisal Period not found."]);
         }
 
-        // คำนวณเกรดให้กับ emp
+        /** คำนวณเกรดให้กับ emp */
         $calgrade = $this->GradeCalculateWithAppraisalForm($periodInfo, $empResulId);
         if ($calgrade->status == 404) {
             return response()->json(["status"=>$calgrade->status, "data"=>$calgrade->data]);
         }
 
-        // get Raise Type : 1="Fix Amount", 2="Percentage", 3="Salary Structure Table"
-        $raiseType = SystemConfiguration::first()->raise_type;
-        // return response()->json(["status"=>404, "data"=>$raiseType]);
-        // update salary by Raise Type
+        /** get Raise Type : 1="Fix Amount", 2="Percentage", 3="Salary Structure Table" */
+        // $raiseType = SystemConfiguration::first()->raise_type;
+        try {
+			$empResult = EmpResult::FindOrFail($empResulId);
+		} catch(ModelNotFoundException $e) {
+			return response()->json(["status"=>404, "data"=>"Emp Result not found (emp_result_id:{$empResulId})."]);
+        }
+        $raiseType = AppraisalGrade::find($empResult->salary_grade_id)->raise_type;
+
+        /** update salary by Raise Type */
         if ($raiseType == 1) {
             try{
                 $salaryUpdate = DB::update("
