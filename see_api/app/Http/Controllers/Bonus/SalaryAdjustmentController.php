@@ -49,7 +49,7 @@ class SalaryAdjustmentController extends Controller
             , is_raise
             FROM appraisal_form
             WHERE is_raise = 1
-			AND is_active = 1
+			      AND is_active = 1
             ORDER BY appraisal_form_id ASC");
 
         return response()->json($form);
@@ -145,21 +145,12 @@ class SalaryAdjustmentController extends Controller
             , emp.capability_point
             , emp.total_point
             , emp.baht_per_point
-            -- , stu.one
-            -- , stu.two
-            -- , stu.three
-            -- , stu.four
-            -- , stu.five
             , emp.result_score as score_manager
             , emj.score_bu
             , emj.score_coo
             , emj.score_board
             , gr.adjust_result_score as score_for_grade
             , gr.grade
-            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(90/100),-2) as total_percent
-            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(65/100),-2) as fix_percent
-            -- , round(((emp.total_point*stu.one/stu.one_total)*emp.baht_per_point)*(25/100),-2) as var_percent
-            -- , (from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount)) as total_now_salary
             , from_base64(emp.s_amount) as salary
             , from_base64(emp.pqpi_amount) as pqpi_amount
             , from_base64(emp.fix_other_amount) as fix_other_amount
@@ -168,7 +159,6 @@ class SalaryAdjustmentController extends Controller
             , from_base64(emp.var_other_amount) as var_other_amount
             , from_base64(emp.adjust_new_s_amount) as new_salary
             , from_base64(emp.adjust_new_pqpi_amount) as new_pqpi_amount
-            -- , ((from_base64(emp.s_amount)+from_base64(emp.pqpi_amount)+from_base64(emp.fix_other_amount)+from_base64(emp.mpi_amount)+from_base64(emp.pi_amount)+from_base64(emp.var_other_amount))-round(((emp.total_point*60/stu.one_total)*emp.baht_per_point)*(90/100),-2)) as miss_over
             , emp.raise_amount as cal_standard
             , pe.appraisal_year
             , ast.edit_flag
@@ -180,7 +170,6 @@ class SalaryAdjustmentController extends Controller
             LEFT JOIN appraisal_level le ON emp.level_id = le.level_id
             LEFT JOIN org o ON emp.org_id = o.org_id
             LEFT JOIN appraisal_form fo ON emp.appraisal_form_id = fo.appraisal_form_id
-            LEFT JOIN appraisal_structure st ON emp.appraisal_form_id = st.form_id
             LEFT JOIN appraisal_period pe ON emp.period_id = pe.period_id
             LEFT JOIN (".$score_bu_coo_board.") emj ON emj.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$grade_score.") gr ON gr.emp_result_id = emp.emp_result_id
@@ -197,8 +186,6 @@ class SalaryAdjustmentController extends Controller
         $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
 
         $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.level_id = '{$request->emp_level}' OR find_in_set(emp.level_id, '{$gue_emp_level}'))";
-        $qryStructureEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (apc.appraisal_level_id = '{$request->emp_level}' OR find_in_set(apc.appraisal_level_id, '{$gue_emp_level}'))";
-
         $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (o.level_id = '{$request->org_level}' OR find_in_set(o.level_id, '{$gue_org_level}'))";
         $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
 
@@ -226,9 +213,6 @@ class SalaryAdjustmentController extends Controller
 
         $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
         $qryFormId = empty($request->appraisal_form_id) ? "" : " AND emp.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
-        $qryStructureFormId = empty($request->appraisal_form_id) ? "" : " AND apf.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
-        // $qryFormId = empty($request->appraisal_form_id) ? "": " AND emp.appraisal_form_id = {$request->appraisal_form_id}";
-        // $qryStructureFormId = empty($request->appraisal_form_id) ? "": " AND apf.appraisal_form_id = {$request->appraisal_form_id}";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 
         // select ข้อมูล
@@ -246,33 +230,24 @@ class SalaryAdjustmentController extends Controller
           , le.seq_no ASC
           , em.emp_code ASC");
 
-        // structure ทั้งหมดที่จะต้องแสดงตาม parameter form, level [แสดงเฉพาะที่มีใน emp_result และถูกกำหนดใน appraisal_criteria]
+        // structure ทั้งหมดที่จะต้องแสดงตาม parameter ทั้งหมด [แสดงเฉพาะที่มีใน emp_result]
         $Structure = "
-            SELECT apc.structure_id
+            SELECT aps.structure_id
             , aps.structure_name
             , aps.seq_no
-            FROM appraisal_criteria apc
-            INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-            INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-            INNER JOIN (
-              SELECT ai.structure_id
-              FROM emp_result emp
-              LEFT JOIN appraisal_item_result air ON emp.emp_result_id = air.emp_result_id
-              LEFT JOIN appraisal_item ai ON air.item_id = ai.item_id
-              LEFT JOIN org o ON emp.org_id = o.org_id
-              WHERE emp.period_id = ".$request->period_id."
-              ".$qryFormId."
-              ".$qryEmpLevel."
-              ".$qryOrgLevel."
-              ".$qryOrgId."
-              ".$qryEmpId."
-              ".$qryPositionId."
-              ".$qryStageId."
-            ) em ON em.structure_id = apc.structure_id
-            WHERE apf.is_raise = 1
-            ".$qryStructureFormId."
-            ".$qryStructureEmpLevel."
-            GROUP BY apc.structure_id
+            FROM emp_result emp
+            INNER JOIN structure_result str ON str.emp_result_id = emp.emp_result_id
+            INNER JOIN appraisal_structure aps ON str.structure_id = aps.structure_id
+            LEFT JOIN org o ON emp.org_id = o.org_id
+            WHERE emp.period_id = ".$request->period_id."
+            ".$qryFormId."
+            ".$qryEmpLevel."
+            ".$qryOrgLevel."
+            ".$qryOrgId."
+            ".$qryEmpId."
+            ".$qryPositionId."
+            ".$qryStageId."
+            GROUP BY aps.structure_id
             , aps.structure_name
             , aps.seq_no";
 
@@ -281,46 +256,52 @@ class SalaryAdjustmentController extends Controller
            // คำนวณรายได้ปัจจุบัน
            $i->total_now_salary = ($i->salary+$i->pqpi_amount+$i->fix_other_amount+$i->mpi_amount+$i->pi_amount+$i->var_other_amount);
 
+           $total_score = "
+              SELECT max(air.weight_percent) as weight_percent
+              , emp.emp_result_id
+              , aps.structure_id
+              FROM emp_result emp
+              INNER JOIN appraisal_item_result air ON emp.emp_result_id = air.emp_result_id
+              INNER JOIN appraisal_item ai ON air.item_id = ai.item_id
+              INNER JOIN appraisal_structure aps ON ai.structure_id = aps.structure_id
+              GROUP BY emp.emp_result_id
+              , aps.structure_id ";
+
            //หาค่า structure และ total structure by record
            $Structure_result = DB::select("
               SELECT result.structure_id
               , result.structure_name
               , result.seq_no
               , COALESCE(sr.weigh_score,0) as score
-              , COALESCE(ac.weight_percent,0) as total_score
+              , COALESCE(ts.weight_percent,0) as total_score
               FROM (".$Structure.") result
-              LEFT JOIN appraisal_criteria ac ON ac.structure_id = result.structure_id
-              	AND ac.appraisal_form_id = ".$i->appraisal_form_id."
-              	AND ac.appraisal_level_id = ".$i->level_id."
               LEFT JOIN structure_result sr ON sr.structure_id = result.structure_id
               	AND sr.emp_result_id = ".$i->emp_result_id."
                 AND sr.emp_id = ".$i->emp_id."
               	AND sr.period_id = ".$i->period_id."
-              ORDER BY result.seq_no ASC");
+              LEFT JOIN (".$total_score.") ts ON ts.structure_id = result.structure_id
+                AND ts.emp_result_id = ".$i->emp_result_id."
+              ORDER BY result.seq_no ASC ");
 
            // หา structure แรก by record
            $first_structure = DB::select("
-              SELECT apc.structure_id
-              FROM appraisal_criteria apc
-              INNER JOIN appraisal_form apf ON apc.appraisal_form_id = apf.appraisal_form_id
-              INNER JOIN appraisal_structure aps ON apc.structure_id = aps.structure_id
-              INNER JOIN (
-                SELECT ai.structure_id
-                FROM emp_result emp
-                LEFT JOIN appraisal_item_result air ON emp.emp_result_id = air.emp_result_id
-                LEFT JOIN appraisal_item ai ON air.item_id = ai.item_id
-                LEFT JOIN org o ON emp.org_id = o.org_id
-                WHERE emp.emp_result_id = ".$i->emp_result_id."
-              	GROUP BY ai.structure_id
-              ) em ON em.structure_id = apc.structure_id
-              WHERE apf.is_raise = 1
-              AND apf.appraisal_form_id = ".$i->appraisal_form_id."
-              AND apc.appraisal_level_id = ".$i->level_id."
-              GROUP BY apc.structure_id
+              SELECT aps.structure_id
+              , aps.structure_name
+              , aps.seq_no
+              FROM emp_result emp
+              INNER JOIN structure_result str ON str.emp_result_id = emp.emp_result_id
+              INNER JOIN appraisal_structure aps ON str.structure_id = aps.structure_id
+              WHERE emp.emp_result_id = ".$i->emp_result_id."
+              GROUP BY aps.structure_id
+              , aps.structure_name
+              , aps.seq_no
               ORDER BY aps.seq_no ASC
               LIMIT 1 ");
 
-          $i->first_structure_id = $first_structure[0]->structure_id;
+          foreach ($first_structure as $first) {
+             $i->first_structure_id = $first->structure_id;
+          }
+
           $i->structure_result = $Structure_result;
 
         }
@@ -440,7 +421,7 @@ class SalaryAdjustmentController extends Controller
             $emp->stage_id = $request->stage_id;
             $emp->status = $stage->status;
             $emp->updated_by = Auth::id();
-            
+
             try {
                 $emp->save();
             } catch (Exception $em) {
@@ -450,8 +431,8 @@ class SalaryAdjustmentController extends Controller
             if($stage->final_salary_flag==1) {
                 try {
                     Employee::where('emp_id', '=', $d['emp_id'])->update([
-                        's_amount' => $emp->adjust_new_s_amount, 
-                        'pqpi_amount' => $emp->adjust_new_pqpi_amount, 
+                        's_amount' => $emp->adjust_new_s_amount,
+                        'pqpi_amount' => $emp->adjust_new_pqpi_amount,
                         'updated_by' => Auth::id()
                     ]);
                 } catch (Exception $el) {
