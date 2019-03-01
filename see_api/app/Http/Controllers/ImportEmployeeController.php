@@ -39,19 +39,19 @@ class ImportEmployeeController extends Controller
 		foreach ($request->file() as $f) {
 			// get file infomation
 			$fileInfo = Excel::load($f, function($reader){});
-			
+			DB::beginTransaction();
 			// get sheet and load data
 			try {
 				$items = Excel::selectSheets('import_employee_template')->load($f, function($reader){})->get();
 			} catch (Exception $ex) {
 				return response()->json(['status' => 400, 'errors' => [[
-					'SheetName' => 'import_job_code', 
+					'SheetName' => 'import_job_code',
 					'errors' => ["load_error"=>['Import again with a ".xlsx" from Microsoft Excel or ".ods" from Libreoffice Calc.']]]]]);
 			}
 
 			// กรณีที่เป็นไฟล์ .ods จะมี Array ซ้อนอยู่อีกชั้นนึง เลยต้อทำการเลือกเอา array ที่เราจะใช้งานเท่านั้น
 			$items = ($fileInfo->format == 'OOCalc') ? $items[0]: $items;
-			
+
 			foreach ($items as $i) {
 
 				$validator = Validator::make($i->toArray(), [
@@ -145,11 +145,25 @@ class ImportEmployeeController extends Controller
 					}
 				}
 			}
+
+			$count_user = Employee::where('is_active', 1)->count();
+			$empAssign = config("session.license_assign");
+			if ($count_user > $empAssign){
+				DB::rollback();
+				return response()->json(['status' => 400
+				, 'errors' => [[
+						'ข้อมูลพนักงานที่นำเข้าเกินจำนวน License ที่ซื้ออยู่ '.$empAssign.' คน ' => 'ติดต่อพนักงานขาย หากต้องการซื้อจำนวน License เพิ่ม',
+						'errors' => null]],
+					'emp' => $newEmp ]);
+			}else {
+				DB::commit();
+			}
+
 		}
 
 		// License Verification //
 		try{
-			$empAssign = config("session.license_assign");
+			// $empAssign = config("session.license_assign");
 			if((!empty($empAssign))&&$empAssign!=0){
 				$mail = new MailController();
 				$result = $mail->LicenseVerification();
@@ -433,6 +447,8 @@ class ImportEmployeeController extends Controller
 				$item->s_amount = base64_encode($request->s_amount);
 			}
 
+			DB::beginTransaction();
+
 			$item->emp_code = $request->emp_code;
 			$item->emp_name = $request->emp_name;
 			$item->working_start_date = $request->working_start_date;
@@ -458,6 +474,18 @@ class ImportEmployeeController extends Controller
 
 			$item->updated_by = Auth::id();
 			$item->save();
+
+			$count_user = Employee::where('is_active', 1)->count();
+			$empAssign = config("session.license_assign");
+			if ($count_user > $empAssign){
+				DB::rollback();
+				$error = '{"limit_license":["ข้อมูลพนักงานเกินจำนวน License ที่ซื้ออยู่ '.$empAssign.' คน ติดต่อพนักงานขาย หากต้องการซื้อจำนวน License เพิ่ม"]}';
+				$error = json_decode($error);
+				return response()->json(['status' => 400, 'data' => $error]);
+			}else {
+				DB::commit();
+			}
+
 		}
 
 		return response()->json(['status' => 200, 'data' => $item]);
