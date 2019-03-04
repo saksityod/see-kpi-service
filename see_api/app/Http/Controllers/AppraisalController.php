@@ -935,10 +935,15 @@ class AppraisalController extends Controller
 
 		if ($all_emp[0]->count_no > 0) {
 			if($request->appraisal_type_id==2) {
-				if(empty($request->org_id)) {
-						$orgQueryStr = "";
+				if($request->only_subordinate==1) {
+					$emp_code = Auth::id();
+					$orgQueryStr = "AND find_in_set(b.chief_emp_code, '{$emp_code}') ";
 				} else {
-						$orgQueryStr = "AND (o.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+					if(empty($request->org_id)) {
+							$orgQueryStr = "";
+					} else {
+							$orgQueryStr = "AND (o.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+					}
 				}
 
 				$query = "
@@ -1097,12 +1102,17 @@ class AppraisalController extends Controller
 			*/
 
 			if ($request->appraisal_type_id == 2) {
-				$employee = Employee::find(Auth::id());
-				if(empty($request->org_id)) {
-						$gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
-						$orgQueryStr = "AND (b.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				$emp_code = Auth::id();
+				if($request->only_subordinate==1) {
+					$orgQueryStr = "AND find_in_set(b.chief_emp_code, '{$emp_code}') ";
 				} else {
-						$orgQueryStr = "AND (b.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+					$employee = Employee::find(Auth::id());
+					if(empty($request->org_id)) {
+							$gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+							$orgQueryStr = "AND (b.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+					} else {
+							$orgQueryStr = "AND (b.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+					}
 				}
 
 				$query = "
