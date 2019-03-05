@@ -191,10 +191,12 @@ class MPIJudgementController extends Controller
         $user = DB::select("
             SELECT (CASE WHEN o.level_id = le.level_bu THEN 1 ELSE 0 END) as is_bu
             , (CASE WHEN o.level_id = le.level_coo THEN 1 ELSE 0 END) as is_coo
+            , le.is_all_employee
             , em.emp_id
 						, o.level_id
             FROM employee em
             INNER JOIN org o ON em.org_id = o.org_id
+            INNER JOIN appraisal_level le ON o.level_id = le.level_id
             CROSS JOIN (".$level_bu_coo_board.") le
             WHERE em.emp_code = '".$login."'");
 
@@ -202,9 +204,29 @@ class MPIJudgementController extends Controller
           foreach ($user as $u) {
             $i->is_bu = $u->is_bu;
             $i->is_coo = $u->is_coo;
+            $i->is_admin = $u->is_all_employee;
             $i->user_emp_id = $u->emp_id;
             $i->user_level_id = $u->level_id;
           }
+
+          //หากค่าของ bu ไม่มี ให้แสดงค่าของ Mgr. แทน
+          if (empty($i->score_bu)){
+            $i->score_bu = $i->score_manager;
+            $i->grade_bu = $i->grade_manager;
+            $i->amount_bu = $i->amount_manager;
+          }
+
+          //หากค่าของ coo ไม่มี ให้แสดงค่าของ bu แทน แต่หาก bu ไม่มีก็ให้แสดงค่าของ Mgr. แทน
+          if (empty($i->score_coo) && !empty($i->score_bu)){
+            $i->score_coo = $i->score_bu;
+            $i->grade_coo = $i->grade_bu;
+            $i->amount_coo = $i->amount_bu;
+          } else if (empty($i->score_coo) && empty($i->score_bu)){
+            $i->score_coo = $i->score_manager;
+            $i->grade_coo = $i->grade_manager;
+            $i->amount_coo = $i->amount_manager;
+          }
+
         }
 
         empty($request->page) ? $page = 1 : $page = $request->page;
