@@ -395,7 +395,19 @@ class AppraisalGroupController extends Controller
 		        $hd->grade = (empty($grade->grade) ? null : $grade->grade);
 		      }
 		      return $hd;
-		    });
+				});
+		
+		$employee = DB::table('employee')
+    ->join('org', 'org.org_id', '=', 'employee.org_id')
+    ->select('employee.level_id AS level_emp', 'org.level_id AS level_org')
+    ->where('emp_code', Auth::id())
+		->first();
+		
+		if($head[0]->appraisal_type_id==1) {
+			$level_id = $employee->level_org;
+		} else {
+			$level_id = $employee->level_emp;
+		}
 		    
 		if($head[0]->emp_code==Auth::id()) {
 			$items = DB::select("
@@ -406,6 +418,8 @@ class AppraisalGroupController extends Controller
 					a.weigh_score as weigh_score_swc, a.weigh_score as weigh_score_awc
 					, ".$allow_input_actual." as allow_input_actual 
 					, c.is_no_raise_value
+					, c.is_derive
+					, if(c.level_id={$level_id}, 1, 0) edit_derive
 				from appraisal_item_result a
 				left outer join appraisal_item b on a.item_id = b.item_id
 				left outer join appraisal_structure c on b.structure_id = c.structure_id
@@ -467,6 +481,8 @@ class AppraisalGroupController extends Controller
 					air.weigh_score as weigh_score_swc, air.weigh_score as weigh_score_awc
 					, 1 as allow_input_actual
 					, str.is_no_raise_value
+					, str.is_derive
+					, if(str.level_id={$level_id}, 1, 0) edit_derive
 				FROM appraisal_item_result air
 				INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
 				LEFT OUTER JOIN appraisal_structure str ON ai.structure_id = str.structure_id
