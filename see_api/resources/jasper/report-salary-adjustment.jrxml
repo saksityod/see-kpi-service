@@ -543,7 +543,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="25" y="0" width="55" height="42" backcolor="#B8B8B8" uuid="70044e45-dae4-42f8-8aa2-3bc3daeb7093"/>
+				<reportElement mode="Opaque" x="25" y="0" width="76" height="42" backcolor="#B8B8B8" uuid="70044e45-dae4-42f8-8aa2-3bc3daeb7093"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</box>
@@ -584,7 +584,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[รายได้ใหม่]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="80" y="0" width="25" height="42" backcolor="#B8B8B8" uuid="3a7a127a-4a21-401d-aa8f-b3029a65d11b"/>
+				<reportElement mode="Opaque" x="101" y="0" width="26" height="42" backcolor="#B8B8B8" uuid="3a7a127a-4a21-401d-aa8f-b3029a65d11b"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</box>
@@ -655,7 +655,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[salary]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="187" y="0" width="60" height="42" backcolor="#B8B8B8" uuid="ec34b963-420b-448a-9ced-38d1f16251f2"/>
+				<reportElement mode="Opaque" x="187" y="0" width="85" height="42" backcolor="#B8B8B8" uuid="ec34b963-420b-448a-9ced-38d1f16251f2"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</box>
@@ -665,7 +665,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Position]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="105" y="0" width="47" height="42" backcolor="#B8B8B8" uuid="29bb250a-89c4-45ca-98ce-432b07de9516"/>
+				<reportElement mode="Opaque" x="127" y="0" width="60" height="42" backcolor="#B8B8B8" uuid="29bb250a-89c4-45ca-98ce-432b07de9516"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</box>
@@ -757,27 +757,6 @@ Code]]></text>
 				<text><![CDATA[% Diff]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="152" y="0" width="35" height="42" backcolor="#B8B8B8" uuid="0f13d916-c67d-43ae-a2d7-50abdac2da0b"/>
-				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Form]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="247" y="0" width="25" height="42" backcolor="#B8B8B8" uuid="38a2d524-171a-4846-8abd-a9ba21a20443"/>
-				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Job 
-Code]]></text>
-			</staticText>
-			<staticText>
 				<reportElement mode="Opaque" x="722" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="67f64de5-0738-44fd-8522-b073323a8aff"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
@@ -824,7 +803,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="105" y="0" width="47" height="15" uuid="5300d902-0350-41f9-98ed-bec5a91dfac8">
+				<reportElement stretchType="RelativeToBandHeight" x="127" y="0" width="60" height="15" uuid="5300d902-0350-41f9-98ed-bec5a91dfac8">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
@@ -836,7 +815,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="80" y="0" width="25" height="15" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
+				<reportElement stretchType="RelativeToBandHeight" x="101" y="0" width="26" height="15" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box>
@@ -848,7 +827,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{appraisal_level_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="25" y="0" width="55" height="15" uuid="33297ad5-0722-4377-aa68-490dba044fe7">
+				<reportElement stretchType="RelativeToBandHeight" x="25" y="0" width="76" height="15" uuid="33297ad5-0722-4377-aa68-490dba044fe7">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
@@ -1004,7 +983,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{new_s_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="187" y="0" width="60" height="15" uuid="8b27a87c-0017-406c-ba2c-155a671d4f82">
+				<reportElement stretchType="RelativeToBandHeight" x="187" y="0" width="85" height="15" uuid="8b27a87c-0017-406c-ba2c-155a671d4f82">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
@@ -1014,30 +993,6 @@ Code]]></text>
 					<font fontName="TH SarabunPSK" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="152" y="0" width="35" height="15" uuid="e48c62fe-266a-4a01-8857-a4c6c361976d">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
-					<font fontName="TH SarabunPSK" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{appraisal_form_name}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="247" y="0" width="25" height="15" uuid="d2c3f9f9-e0e0-4f63-b1b7-1f56a39a0b45">
-					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
-				</reportElement>
-				<box leftPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
-				</box>
-				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
-					<font fontName="TH SarabunPSK" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{job_code}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="762" y="0" width="40" height="15" uuid="3fc7d2ab-31a2-4220-b1b1-ecb630c558aa">
