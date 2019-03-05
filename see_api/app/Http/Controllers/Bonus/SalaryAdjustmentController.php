@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Bonus;
 
 use Illuminate\Http\Request;
 
-use App\EmpResultJudgement;
 use App\Employee;
 use App\EmpResult;
 use App\AppraisalStage;
@@ -13,9 +12,7 @@ use App\EmpResultStage;
 use Validator;
 use DB;
 use Auth;
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Bonus\AdvanceSearchController;
 
 class SalaryAdjustmentController extends Controller
@@ -418,8 +415,12 @@ class SalaryAdjustmentController extends Controller
 
             $emp->adjust_new_s_amount = base64_encode($sum_s_amount);
             $emp->adjust_new_pqpi_amount = base64_encode($sum_pqpi_amount);
-            $emp->stage_id = $request->stage_id;
-            $emp->status = $stage->status;
+
+            if($request->stage_id!=999) { //stage_id is 999 not update stage
+                $emp->stage_id = $request->stage_id;
+                $emp->status = $stage->status;
+            }
+
             $emp->updated_by = Auth::id();
 
             try {
@@ -428,27 +429,29 @@ class SalaryAdjustmentController extends Controller
                 $errors[] = substr($em, 254);
             }
 
-            if($stage->final_salary_flag==1) {
-                try {
-                    Employee::where('emp_id', '=', $d['emp_id'])->update([
-                        's_amount' => $emp->adjust_new_s_amount,
-                        'pqpi_amount' => $emp->adjust_new_pqpi_amount,
-                        'updated_by' => Auth::id()
-                    ]);
-                } catch (Exception $el) {
-                    $errors[] = substr($el, 254);
+            if($request->stage_id!=999) { //stage_id is 999 not update stage
+                if($stage->final_salary_flag==1) {
+                    try {
+                        Employee::where('emp_id', '=', $d['emp_id'])->update([
+                            's_amount' => $emp->adjust_new_s_amount,
+                            'pqpi_amount' => $emp->adjust_new_pqpi_amount,
+                            'updated_by' => Auth::id()
+                        ]);
+                    } catch (Exception $el) {
+                        $errors[] = substr($el, 254);
+                    }
                 }
-            }
 
-            $emp_stage = new EmpResultStage;
-            $emp_stage->emp_result_id = $d['emp_result_id'];
-            $emp_stage->stage_id = $request->stage_id;
-            $emp_stage->created_by = Auth::id();
-            $emp_stage->updated_by = Auth::id();
-            try {
-                $emp_stage->save();
-            } catch (Exception $et) {
-                $errors[] = substr($et, 254);
+                $emp_stage = new EmpResultStage;
+                $emp_stage->emp_result_id = $d['emp_result_id'];
+                $emp_stage->stage_id = $request->stage_id;
+                $emp_stage->created_by = Auth::id();
+                $emp_stage->updated_by = Auth::id();
+                try {
+                    $emp_stage->save();
+                } catch (Exception $et) {
+                    $errors[] = substr($et, 254);
+                }
             }
         }
 
