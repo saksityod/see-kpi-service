@@ -33,7 +33,7 @@
  CASE WHEN ISNULL(ej.adjust_result_score) THEN er.result_score ELSE ej.adjust_result_score END as score,
  -- CASE WHEN ISNULL(ej.adjust_grade) THEN er.grade ELSE ej.adjust_result_score END as grade,
  ej.adjust_grade as grade,
- CASE WHEN ISNULL(ej.adjust_amount) THEN FROM_BASE64(er.mpi_amount)  ELSE FROM_BASE64(ej.adjust_amount) END as amount
+FORMAT( CASE WHEN ISNULL(ej.adjust_amount) THEN FROM_BASE64(er.mpi_amount)  ELSE FROM_BASE64(ej.adjust_amount) END,2) as amount
 FROM emp_result er
 INNER JOIN appraisal_form af ON er.appraisal_form_id = af.appraisal_form_id
 INNER JOIN employee e ON er.emp_id = e.emp_id
@@ -310,7 +310,7 @@ Order by o.org_id,l.seq_no ,e.emp_code]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grade}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement stretchType="RelativeToBandHeight" x="800" y="0" width="70" height="30" uuid="8a8093a1-1968-48a2-bfd3-6f22e66869e9">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
