@@ -927,11 +927,11 @@ class AppraisalController extends Controller
 		// end กรอง organization ที่อยู่ภายใต้
 
 		//AA360 = ให้แสดงผลข้อมูลหลังจากหน้า Appraisal360
-        if($request->stage_id=='AA360') {
-            $stageQueryStr = " AND (f.emp_result_judgement_flag = 1 OR f.bonus_appraisal_flag = 1 OR f.salary_adjustment_flag = 1 OR f.bonus_adjustment_flag = 1 OR f.mpi_judgement_flag = 1)";
-        } else {
-            $stageQueryStr = " And a.stage_id = '{$request->stage_id}'";
-        }
+    if($request->stage_id=='AA360') {
+    	$stageQueryStr = " AND (f.emp_result_judgement_flag = 1 OR f.bonus_appraisal_flag = 1 OR f.salary_adjustment_flag = 1 OR f.bonus_adjustment_flag = 1 OR f.mpi_judgement_flag = 1)";
+    } else {
+    	$stageQueryStr = " And a.stage_id = '{$request->stage_id}'";
+    }
 
 		if ($all_emp[0]->count_no > 0) {
 			if($request->appraisal_type_id==2) {
@@ -976,6 +976,12 @@ class AppraisalController extends Controller
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 
 			} else {
+				if(empty($request->org_id)) {
+					$orgQueryStr = "";
+				} else {
+						$orgQueryStr = "AND (o.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				}
+
 				$query = "
 					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
@@ -992,18 +998,21 @@ class AppraisalController extends Controller
 					left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
+					".$orgLevelQueryStr."
+					".$orgQueryStr."
+					".$stageQueryStr."
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
-				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
-				empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
+				// empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
+				// empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
 				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
-				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
-				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				// empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
+				// empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				// empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
-				empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
+				// empty($request->stage_id) ?: ($query .= " And a.stage_id = ? " AND $qinput[] = $request->stage_id);
 			}
 
 			/*
@@ -1152,6 +1161,13 @@ class AppraisalController extends Controller
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
 
 			} else {
+				$employee = Employee::find(Auth::id());
+				if(empty($request->org_id)) {
+					$gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+					$orgQueryStr = "AND (b.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				} else {
+					$orgQueryStr = "AND (b.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+				}
 
 				$query = "
 					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
@@ -1168,16 +1184,19 @@ class AppraisalController extends Controller
 					left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
+					".$orgLevelQueryStr."
+					".$orgQueryStr."
+					".$stageQueryStr."
 				";
 
 				empty($request->appraisal_year) ?: ($query .= " and g.appraisal_year = ? " AND $qinput[] = $request->appraisal_year);
 				empty($request->period_no) ?: ($query .= " and g.period_id = ? " AND $qinput[] = $request->period_no);
-				empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
-				empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
+				// empty($request->level_id) ?: ($query .= " and a.level_id = ? " AND $qinput[] = $request->level_id);
+				// empty($request->level_id_org) ?: ($query .= " and o.level_id = ? " AND $qinput[] = $request->level_id_org);
 				empty($request->appraisal_type_id) ?: ($query .= " and a.appraisal_type_id = ? " AND $qinput[] = $request->appraisal_type_id);
-				empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
-				empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
-				empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
+				// empty($request->org_id) ?: ($query .= " and a.org_id = ? " AND $qinput[] = $request->org_id);
+				// empty($request->position_id) ?: ($query .= " and a.position_id = ? " AND $qinput[] = $request->position_id);
+				// empty($request->emp_id) ?: ($query .= " And a.emp_id = ? " AND $qinput[] = $request->emp_id);
 				empty($request->appraisal_form_id) ?: ($query .= " And a.appraisal_form_id = ? " AND $qinput[] = $request->appraisal_form_id);
 
 				$items = DB::select($query. " order by period_id,emp_code,org_code  asc ", $qinput);
