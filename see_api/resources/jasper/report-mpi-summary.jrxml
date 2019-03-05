@@ -31,7 +31,8 @@
  af.appraisal_form_name form_name,
  ap.appraisal_period_desc period_desc,
  CASE WHEN ISNULL(ej.adjust_result_score) THEN er.result_score ELSE ej.adjust_result_score END as score,
- CASE WHEN ISNULL(ej.adjust_grade) THEN er.grade ELSE ej.adjust_result_score END as grade,
+ -- CASE WHEN ISNULL(ej.adjust_grade) THEN er.grade ELSE ej.adjust_result_score END as grade,
+ ej.adjust_grade as grade,
  CASE WHEN ISNULL(ej.adjust_amount) THEN FROM_BASE64(er.mpi_amount)  ELSE FROM_BASE64(ej.adjust_amount) END as amount
 FROM emp_result er
 INNER JOIN appraisal_form af ON er.appraisal_form_id = af.appraisal_form_id
@@ -41,7 +42,7 @@ INNER JOIN org o ON er.org_id = o.org_id
 INNER JOIN appraisal_level l ON er.level_id = l.level_id
 INNER JOIN appraisal_period ap on er.period_id = ap.period_id
 LEFT JOIN emp_result_judgement ej ON ej.emp_result_id = er.emp_result_id
-WHERE  af.is_raise = 1
+WHERE  af.is_mpi= 1
 AND ap.appraisal_year = $P{param_year}     -- 2018
 AND er.period_id =  $P{param_period}    -- 1
 AND (er.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
@@ -86,8 +87,9 @@ Order by o.org_id,l.seq_no ,e.emp_code]]>
 	</field>
 	<field name="grade" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="grade"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="emp_result_judgement"/>
 	</field>
-	<field name="amount" class="java.lang.Double">
+	<field name="amount" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="amount"/>
 	</field>
 	<group name="Group1"/>
