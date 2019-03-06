@@ -70,8 +70,8 @@ class MPIJudgementController extends Controller
         }
 
         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
-        $qryPositionId = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
-        $qryStageId = empty($request->stage_id) ? "": " AND er.stage_id = '{$request->stage_id}'";
+        $qryPositionId = empty($request->position_id) ? " AND er.position_id IN (null)" : " AND er.position_id IN (".implode(',', $request->position_id).")";
+        $qryStageId = empty($request->stage_id) ? " AND er.stage_id = null ": " AND er.stage_id = '{$request->stage_id}'";
         $qryFormId = empty($request->appraisal_form) ? "": " AND er.appraisal_form_id = '{$request->appraisal_form}'";
         //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
 

@@ -154,7 +154,7 @@ class ImportEmployeeController extends Controller
 				, 'errors' => [[
 						'ข้อมูลพนักงานที่นำเข้าเกินจำนวน License ที่ซื้ออยู่ '.$empAssign.' คน ' => 'ติดต่อพนักงานขาย หากต้องการซื้อจำนวน License เพิ่ม',
 						'errors' => null]],
-					'emp' => $newEmp ]);
+					'emp' => [] ]);
 			}else {
 				DB::commit();
 			}
