@@ -283,6 +283,9 @@ class MPIJudgementController extends Controller
             AND judge_id = ".$data['user_id']."
             AND org_level_id = ".$data['user_level_id']." ");
 
+        //user is bu, coo
+        if ($data['user_admin'] == 0) {
+
         // หา grade, amount สำหรับ score ที่ทำการ insert, update
          $grade_amount = DB::select("
             SELECT em.appraisal_form_id
@@ -338,9 +341,22 @@ class MPIJudgementController extends Controller
             $empResult->save();
 
           } // end foreach $grade_amount
+
+        //user is admin
+        } else if ($data['user_admin'] == 1) {
+
+          if($request->confirm_flag == "1"){
+              $empResult->stage_id = $request->stage_id;
+              $empResult->status = AppraisalStage::find($request->stage_id)->status;
+          }
+          $empResult->save();
+        }
+
         } // end foreach ($request->data)
 
-        return response()->json(['status' => 200, 'data' => "Saved Successfully"]);
+          return response()->json(['status' => 200, 'data' => "Saved Successfully"]);
     }
+
+
 
 }
