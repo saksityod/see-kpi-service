@@ -1111,9 +1111,9 @@ class AdvanceSearchController extends Controller
         if(empty($request->emp_id)) {
             $empIdQryStr = "";
         } else {
-            //$request->emp_id is emp_code
-            $employee_id = Employee::find($request->emp_id)->emp_id;
-            $empIdQryStr = " AND er.emp_id = '{$employee_id}'";
+            //$request->emp_id is emp_code or is emp_id
+            $employee_id = Employee::find($request->emp_id)['emp_id'];
+            $empIdQryStr = " AND (er.emp_id = '{$request->emp_id}' OR er.emp_id = '{$employee_id}')";
         }
         
         if(gettype($request->position_id) == 'string'){ // Position String
