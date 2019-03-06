@@ -175,21 +175,14 @@ class AppraisalGradeController extends Controller
 				or ? between begin_score and end_score
 				or ? between end_score and begin_score)
 			", array($request->appraisal_form_id, $vel, $request->begin_score, $request->begin_score, $request->end_score, $request->end_score));
-
+			
+			if (!empty($range_check)) {
+				$errors['overlap'][] = 'The level '.$range_check[0]->appraisal_level_name. ' has already been taken.';//$range_check;
+			}
 
 			if ($validator->fails()) {
-				$errors = $validator->errors()->toArray();
-				if (!empty($range_check)) {
-					$errors['overlap'][] = 'The level '.$range_check[0]->appraisal_level_name. ' has already been taken.';//$range_check;
-				}
-				//return response()->json(['status' => 400, 'data' => $errors ,'error1234']);
-				
+				return response()->json(['status' => 400, 'data' => $validator->errors()]);
 			} else {
-				if (!empty($range_check)) {
-					$errors['overlap'][] = "The level ".$range_check[0]->appraisal_level_name. " has already been taken.";//$range_check;
-					//return response()->json(['status' => 400, 'data' => $errors]);
-				}
-
 				$item = new AppraisalGrade;
 				$item->fill($request->except(['salary_raise_amount', 'structure_id', 'appraisal_level_id', 'is_active']));
 
