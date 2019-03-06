@@ -2864,6 +2864,7 @@ class AppraisalAssignmentController extends Controller
 								$aitem->position_id = $position_id;
 								$aitem->item_id = $i['item_id'];
 								$aitem->item_name = $i['item_name'];
+								$aitem->actual_value = empty($i['actual_value']) ? 0 : $i['actual_value'];
 								$aitem->target_value = $i['target_value'];
 								$aitem->weight_percent = $i['weight_percent'];
 								array_key_exists('score0', $i) ? $aitem->score0 = $i['score0'] : null;
@@ -3163,6 +3164,7 @@ class AppraisalAssignmentController extends Controller
 							$aitem->level_id = $level_id;
 							$aitem->item_id = $i['item_id'];
 							$aitem->item_name = $i['item_name'];
+							$aitem->actual_value = empty($i['actual_value']) ? 0 : $i['actual_value'];
 							$aitem->target_value = $i['target_value'];
 							$aitem->weight_percent = $i['weight_percent'];
 							array_key_exists('score0', $i) ? $aitem->score0 = $i['score0'] : null;
