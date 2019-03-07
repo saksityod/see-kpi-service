@@ -210,18 +210,18 @@ class MPIJudgementController extends Controller
           }
 
           //หากค่าของ bu ไม่มี ให้แสดงค่าของ Mgr. แทน
-          if (empty($i->score_bu)){
+          if (empty($i->score_bu) && $i->is_bu == 1){
             $i->score_bu = $i->score_manager;
             $i->grade_bu = $i->grade_manager;
             $i->amount_bu = $i->amount_manager;
           }
 
           //หากค่าของ coo ไม่มี ให้แสดงค่าของ bu แทน แต่หาก bu ไม่มีก็ให้แสดงค่าของ Mgr. แทน
-          if (empty($i->score_coo) && !empty($i->score_bu)){
+          if (empty($i->score_coo) && !empty($i->score_bu) && $i->is_coo == 1){
             $i->score_coo = $i->score_bu;
             $i->grade_coo = $i->grade_bu;
             $i->amount_coo = $i->amount_bu;
-          } else if (empty($i->score_coo) && empty($i->score_bu)){
+          } else if (empty($i->score_coo) && empty($i->score_bu) && $i->is_coo == 1){
             $i->score_coo = $i->score_manager;
             $i->grade_coo = $i->grade_manager;
             $i->amount_coo = $i->amount_manager;
