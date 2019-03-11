@@ -648,8 +648,11 @@ class ImportAssignmentController extends Controller
           Excel::create($fileName, function($excel) use ($itemList) {
 
             foreach ($itemList as $key => $group) {
+              $sheetName = $key;
+              $sheetName =  (mb_strlen($sheetName, 'UTF-8') > 31) ? mb_substr($sheetName,0,31, 'UTF-8') : $sheetName;
+              $sheetName = str_replace(array(':', '\\', '/', '?', '*', '[', ']'), ',', $sheetName);
 
-              $excel->sheet($key, function($sheet) use ($key, $itemList){
+              $excel->sheet($sheetName, function($sheet) use ($key, $itemList){
                 // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
                 $sheet->fromArray($itemList[$key], null, 'A1', true);
               });
@@ -927,8 +930,11 @@ class ImportAssignmentController extends Controller
            Excel::create($fileName, function($excel) use ($itemList) {
 
              foreach ($itemList as $key => $group) {
+              $sheetName = $key;
+              $sheetName =  (mb_strlen($sheetName, 'UTF-8') > 31) ? mb_substr($sheetName,0,31, 'UTF-8') : $sheetName;
+              $sheetName = str_replace(array(':', '\\', '/', '?', '*', '[', ']'), ',', $sheetName);
 
-               $excel->sheet($key, function($sheet) use ($key, $itemList){
+               $excel->sheet($sheetName, function($sheet) use ($key, $itemList){
                 // Inside the sheet closure --> fromArray($source, $nullValue, $startCell, $strictNullComparison, $headingGeneration)
                 $sheet->fromArray($itemList[$key], null, 'A1', true);
                });
