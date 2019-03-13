@@ -592,7 +592,8 @@ class EmpResultJudgementController extends Controller
         } else {
             if(empty($request->org_id)) {
                 $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
-                $orgQueryStr = "AND find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}')";
+                // $orgQueryStr = "AND find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}')";
+                $orgQueryStr = "AND (emp.org_id = '{$employee->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}') )";
             } else {
                 $orgQueryStr = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(emp.org_code, '{$gueOrgCodeByOrgId}'))";
             }
