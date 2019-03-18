@@ -32,6 +32,7 @@ class MPIJudgementController extends Controller
           , is_mpi
           FROM appraisal_form
           WHERE is_mpi = 1
+          AND is_active = 1
           ORDER BY appraisal_form_id ASC");
 
         return response()->json($form);

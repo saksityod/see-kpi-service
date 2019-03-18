@@ -650,6 +650,7 @@ class AdvanceSearchController extends Controller
     {
         $forms = DB::table('appraisal_form')->select('appraisal_form_id', 'appraisal_form_name')
             ->where('is_mpi', 1)
+            ->where('is_active', 1)
             ->get();
         return response()->json($forms);
     }
