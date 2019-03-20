@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-section-subreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="85dc9a31-2f9f-4c3e-b36e-340e30351bb2">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -948,7 +948,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					</crosstabCell>
 				</crosstab>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="0" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="103ec174-d815-451d-b4ea-6c2a60b4606f">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="180" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="103ec174-d815-451d-b4ea-6c2a60b4606f">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -957,7 +957,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["emp: "+$F{emp_snapshot_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="130" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="87aaa257-7ccf-4586-a5ee-247bf44133cd">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="310" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="87aaa257-7ccf-4586-a5ee-247bf44133cd">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -966,7 +966,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["asses: "+$F{assessor_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="250" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="e9c1f629-ea3f-4eae-ba2d-7614eed6c00c">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="430" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="e9c1f629-ea3f-4eae-ba2d-7614eed6c00c">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -975,7 +975,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["sec: "+$F{section_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="500" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="ca275211-ae8d-4d14-ba6b-422171dcd6ab">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="680" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="ca275211-ae8d-4d14-ba6b-422171dcd6ab">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -984,7 +984,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["qusetion: "+$F{question_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="380" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="08a2b867-144b-4a30-86e7-48a9073bee73">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="560" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="08a2b867-144b-4a30-86e7-48a9073bee73">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -992,10 +992,19 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					</textElement>
 					<textFieldExpression><![CDATA["parent: "+$F{parent_question_id}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement style="Crosstab_CT" mode="Transparent" x="0" y="20" width="180" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="cae7d995-b13a-4130-9313-a1eab086057b">
+						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="BrowalliaUPC" size="22"/>
+					</textElement>
+					<textFieldExpression><![CDATA["console log : "]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 	</group>
 	<background>
-		<band splitType="Stretch"/>
+		<band height="45" splitType="Stretch"/>
 	</background>
 </jasperReport>

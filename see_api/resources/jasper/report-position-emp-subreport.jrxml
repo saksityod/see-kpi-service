@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
@@ -184,7 +184,7 @@ GROUP BY e.emp_snapshot_id]]>
 		</field>
 	</subDataset>
 	<subDataset name="query-header-detail" uuid="9583ef3e-9d22-42fe-8f70-c332d99f0f4a">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="635"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="355"/>
@@ -219,7 +219,7 @@ FROM (
 	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
 	INNER JOIN ( 
 		SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
-		sqp.question_name parent_question_name, sqp.pass_score , sqp.answer_type_id
+		sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
 		FROM question sq 
 		LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
 	) q ON qdd.question_id = q.question_id 
@@ -367,7 +367,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
@@ -449,7 +449,7 @@ CROSS JOIN (
 			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
 			FROM question sq
 			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
-			WHERE sqp.pass_score > 0
+		    WHERE sqp.pass_score > 0
 		) q ON qdd.question_id = q.question_id 
 		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
@@ -1068,9 +1068,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="230">
+			<band height="50">
 				<crosstab ignoreWidth="true">
-					<reportElement x="0" y="0" width="800" height="30" uuid="1fc9bc8d-a34d-4dae-8cec-7dc5c51f8789">
+					<reportElement x="0" y="0" width="800" height="30" isRemoveLineWhenBlank="true" uuid="1fc9bc8d-a34d-4dae-8cec-7dc5c51f8789">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 2_CH"/>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab 2_CG"/>
@@ -1171,7 +1171,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</measure>
 					<crosstabCell width="80" height="30">
 						<cellContents mode="Opaque" style="Crosstab 2_CD">
-							<textField>
+							<textField isBlankWhenNull="true">
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="abf9028d-701b-4e57-ba6b-39ee3f27d3b9"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
@@ -1183,7 +1183,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</crosstabCell>
 					<crosstabCell width="80" height="30" columnTotalGroup="questionaire_date">
 						<cellContents mode="Opaque" style="Crosstab 2_CT">
-							<textField>
+							<textField isBlankWhenNull="true">
 								<reportElement x="0" y="0" width="80" height="30" forecolor="#FFFFFF" uuid="6eba1f5c-7e73-4ee6-80e9-6e9100337ca0"/>
 								<textElement textAlignment="Right" verticalAlignment="Middle">
 									<font fontName="BrowalliaUPC" size="16" isBold="true"/>
@@ -1219,7 +1219,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</crosstabCell>
 				</crosstab>
 				<subreport>
-					<reportElement x="-20" y="40" width="820" height="190" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
+					<reportElement x="-20" y="30" width="842" height="20" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
 					<subreportParameter name="param_assessor">
 						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -1244,10 +1244,10 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 	<group name="section-id-group">
 		<groupExpression><![CDATA[$F{section_id}]]></groupExpression>
 		<groupHeader>
-			<band height="60">
+			<band height="40">
 				<printWhenExpression><![CDATA[$F{section_id}!=null ? true : false]]></printWhenExpression>
 				<subreport>
-					<reportElement x="-20" y="20" width="820" height="40" isRemoveLineWhenBlank="true" uuid="de366172-5718-4da8-ad0a-547c88dc86dc"/>
+					<reportElement x="-20" y="20" width="842" height="20" isRemoveLineWhenBlank="true" uuid="de366172-5718-4da8-ad0a-547c88dc86dc"/>
 					<subreportParameter name="param_assessor">
 						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 					</subreportParameter>
