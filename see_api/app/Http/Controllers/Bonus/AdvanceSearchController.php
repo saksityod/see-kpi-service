@@ -1078,6 +1078,110 @@ class AdvanceSearchController extends Controller
         return response()->json($status);
     }
 
+    // public function StatusList(Request $request)
+    // {
+    //     if(empty($request->flag)) {
+    //         return response()->json(['status' => 400, 'data' => 'Parameter flag is required']);
+    //     }
+
+    //     $empAuth = $this->empAuth();
+
+    //     //hard code ไว้ กรณีหาคนที่เข้ามาว่าอยู่ระดับไหนใน assessor_group
+    //     if($empAuth->is_hr==1) {
+    //         $in = 5; //คือ hr
+    //     } else {
+    //         $in = 1; //หัวหน้าของพนักงาน
+    //     }
+
+    //     $flag = "ast.".$request->flag." = 1";
+
+    //     // set parameter in sql where clause
+    //     if(empty($request->appraisal_type_id)){
+    //         $appraisalTypeQryStr = " ";
+    //         $stageTypeQryStr = " ";
+    //     } else {
+    //         $appraisalTypeQryStr = " AND er.appraisal_type_id = '{$request->appraisal_type_id}'";
+    //         $stageTypeQryStr = " AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')";
+    //     }
+    //     $empLevelQryStr = empty($request->emp_level) ? " ": " AND er.level_id = '{$request->emp_level}'";
+    //     $orgLevelQryStr = empty($request->org_level) ? " ": " AND org.level_id = '{$request->org_level}'";
+    //     $orgIdQryStr = empty($request->org_id) ? " ": " AND er.org_id = '{$request->org_id}'";
+    //     $appraisalYearQryStr = empty($request->appraisal_year) ? " ": " AND ap.appraisal_year = '{$request->appraisal_year}'";
+    //     $periodIdQryStr = empty($request->period_id) ? " ": " AND er.period_id = '{$request->period_id}'";
+
+    //     if(empty($request->emp_id)) {
+    //         $empIdQryStr = "";
+    //     } else {
+    //         //$request->emp_id is emp_code or is emp_id
+    //         $employee_id = Employee::find($request->emp_id)['emp_id'];
+    //         $empIdQryStr = " AND (er.emp_id = '{$request->emp_id}' OR er.emp_id = '{$employee_id}')";
+    //     }
+        
+    //     if(gettype($request->position_id) == 'string'){ // Position String
+    //         $positionIdQryStr = empty($request->position_id) ? " ": " AND er.position_id = '{$request->position_id}'";
+    //     } else { // Position Array or Object
+    //         $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
+    //         $positionIdQryStr = empty($request->position_id) ? "" : " AND er.position_id IN (".implode(',', $request->position_id).")";
+    //     }
+
+    //     if(empty($request->appraisal_form_id)){
+    //         $appraisalFormQryStr = " ";
+    //         $stageFormQryStr = " ";
+    //     } else {
+    //         // set appraisal form classified by value type (array or string)
+    //         if(gettype($request->appraisal_form_id) == 'string'){
+    //             $appraisalFormQryStr = " AND er.appraisal_form_id = '{$request->appraisal_form_id}'";
+    //             $stageFormQryStr = " AND (find_in_set('{$request->appraisal_form_id}', ast.appraisal_form_id) OR ast.appraisal_form_id = 'all')";
+    //         } else {
+    //             $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
+    //             $appraisalFormQryStr = " AND er.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
+    //             // เนื่องจาก appraisal form ส่งค่ามาเป็น array เพื่อนำไปหาใน appraisal_stage (comma string) เลยจำเป็นต้องทำการสร้างหลายเงื่อนไข
+    //             $stageFormQryStr = " AND (";
+    //             foreach ($request->appraisal_form_id as $key => $value) {
+    //                 if ($key == 0) {
+    //                     $stageFormQryStr .= "find_in_set('{$value}', er.appraisal_form_id)";
+    //                 } else {
+    //                     $stageFormQryStr .= " OR find_in_set('{$value}', er.appraisal_form_id)";
+    //                 }
+    //             }
+    //             $stageFormQryStr .= " OR er.appraisal_form_id = 'all')";
+    //         }
+    //     }
+
+    //     // get status from db
+	   //  $status = DB::select("
+	   //      SELECT ast.stage_id, ast.status
+	   //      FROM appraisal_stage ast
+    //         INNER JOIN emp_result er ON er.stage_id = ast.stage_id
+    //         LEFT OUTER JOIN org ON org.org_id = er.org_id
+    //         LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
+	   //      WHERE {$flag}
+    //         AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
+    //         {$stageFormQryStr}
+    //         {$stageTypeQryStr}
+    //         AND ast.stage_id IN(
+    //             SELECT er.stage_id
+    //             FROM emp_result er
+    //             LEFT OUTER JOIN org ON org.org_id = er.org_id
+    //             LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
+    //             WHERE 1 = 1
+    //             {$appraisalFormQryStr}
+    //             {$appraisalTypeQryStr}
+    //             {$empLevelQryStr}
+    //             {$orgLevelQryStr}
+    //             {$orgIdQryStr}
+    //             {$appraisalYearQryStr}
+    //             {$periodIdQryStr}
+    //             {$empIdQryStr}
+    //             {$positionIdQryStr}
+    //         )
+	   //      GROUP BY ast.stage_id
+	   //      ORDER BY ast.stage_id
+    //     ");
+        
+    //     return response()->json($status);
+    // }
+
     public function StatusList(Request $request)
     {
         if(empty($request->flag)) {
@@ -1103,19 +1207,45 @@ class AdvanceSearchController extends Controller
             $appraisalTypeQryStr = " AND er.appraisal_type_id = '{$request->appraisal_type_id}'";
             $stageTypeQryStr = " AND (find_in_set('{$request->appraisal_type_id}', ast.appraisal_type_id) OR ast.appraisal_type_id = 'all')";
         }
-        $empLevelQryStr = empty($request->emp_level) ? " ": " AND er.level_id = '{$request->emp_level}'";
-        $orgLevelQryStr = empty($request->org_level) ? " ": " AND org.level_id = '{$request->org_level}'";
-        $orgIdQryStr = empty($request->org_id) ? " ": " AND er.org_id = '{$request->org_id}'";
-        $appraisalYearQryStr = empty($request->appraisal_year) ? " ": " AND ap.appraisal_year = '{$request->appraisal_year}'";
-        $periodIdQryStr = empty($request->period_id) ? " ": " AND er.period_id = '{$request->period_id}'";
+
+        $gue_emp_level = empty($request->emp_level) ? '' : $this->GetallUnderLevel($request->emp_level);
+        $empLevelQryStr = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (er.level_id = '{$request->emp_level}' OR find_in_set(er.level_id, '{$gue_emp_level}'))";
+
+        $gue_org_level = empty($request->org_level) ? '' : $this->GetallUnderLevel($request->org_level);
+        $orgLevelQryStr = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (org.level_id = '{$request->org_level}' OR find_in_set(org.level_id, '{$gue_org_level}'))";
 
         if(empty($request->emp_id)) {
             $empIdQryStr = "";
         } else {
-            //$request->emp_id is emp_code or is emp_id
-            $employee_id = Employee::find($request->emp_id)['emp_id'];
-            $empIdQryStr = " AND (er.emp_id = '{$request->emp_id}' OR er.emp_id = '{$employee_id}')";
+            if($request->flag=='assignment_flag') {
+                //เนื่องจากหน้า assignment ส่ง emp_code ขี้เกียจไปแก้ฟ้อนเลยต้องหา gen emp_id ที่นี่
+                $request->emp_id = Employee::find($request->emp_id)['emp_id'];
+            }
+            $gueOrgCodeByEmpId = $this->GetallUnderEmpByOrg($request->emp_id);
+            $empIdQryStr = empty($gueOrgCodeByEmpId) ? "AND er.emp_id = '{$request->emp_id}' " : " AND (er.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
         }
+        
+        $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->GetallUnderOrgByOrg($request->org_id);
+
+        $all_emp = $this->isAll();
+        if ($all_emp[0]->count_no > 0) {
+            if(empty($request->org_id)) {
+                $orgIdQryStr = "";
+            } else {
+                $orgIdQryStr = "AND (er.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))";
+            }
+        } else {
+            if(empty($request->org_id)) {
+                $employee = Employee::find(Auth::id());
+                $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
+                $orgIdQryStr = "AND (er.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}') )";
+            } else {
+                $orgIdQryStr = "AND (er.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))";
+            }
+        }
+
+        $appraisalYearQryStr = empty($request->appraisal_year) ? " ": " AND ap.appraisal_year = '{$request->appraisal_year}'";
+        $periodIdQryStr = empty($request->period_id) ? " ": " AND er.period_id = '{$request->period_id}'";
         
         if(gettype($request->position_id) == 'string'){ // Position String
             $positionIdQryStr = empty($request->position_id) ? " ": " AND er.position_id = '{$request->position_id}'";
@@ -1149,13 +1279,13 @@ class AdvanceSearchController extends Controller
         }
 
         // get status from db
-	    $status = DB::select("
-	        SELECT ast.stage_id, ast.status
-	        FROM appraisal_stage ast
+        $status = DB::select("
+            SELECT ast.stage_id, ast.status
+            FROM appraisal_stage ast
             INNER JOIN emp_result er ON er.stage_id = ast.stage_id
             LEFT OUTER JOIN org ON org.org_id = er.org_id
             LEFT OUTER JOIN appraisal_period ap ON ap.period_id = er.period_id
-	        WHERE {$flag}
+            WHERE {$flag}
             AND (find_in_set('{$in}', ast.assessor_see) OR ast.assessor_see = 'all')
             {$stageFormQryStr}
             {$stageTypeQryStr}
@@ -1175,8 +1305,8 @@ class AdvanceSearchController extends Controller
                 {$empIdQryStr}
                 {$positionIdQryStr}
             )
-	        GROUP BY ast.stage_id
-	        ORDER BY ast.stage_id
+            GROUP BY ast.stage_id
+            ORDER BY ast.stage_id
         ");
         
         return response()->json($status);
