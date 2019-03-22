@@ -766,9 +766,14 @@ class QuestionaireController extends Controller
 		try {
 			if(empty($item->parent_question_id)) { // ถ้าเป็น sub section จะทำการหาคำถามและคำตอบแล้วลบ
 				$sub_question_array_id = $this->get_question_by_parent($question_id);
-				$answer_array_id = $this->get_answer_by_question($sub_question_array_id);
-				DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
-				DB::table("question")->whereIn("question_id", $sub_question_array_id)->delete();
+				if(empty($sub_question_array_id)){
+					$answer_array_id = $this->get_answer_by_question($question_id);
+					DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
+				}else{
+					$answer_array_id = $this->get_answer_by_question($sub_question_array_id);
+					DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
+					DB::table("question")->whereIn("question_id", $sub_question_array_id)->delete();
+				}
 			} else { // ถ้าเป็น question จะทำการหาคำตอบแล้วลบ
 				$answer_array_id = $this->get_answer_by_question($question_id);
 				DB::table("answer")->whereIn("answer_id", $answer_array_id)->delete();
