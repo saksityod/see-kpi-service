@@ -522,6 +522,15 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@show');
 	Route::patch('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@update');
 
+	// Job Function //
+	Route::get('job_function', 'JobFunctionController@index');
+	Route::get('job_function/list', 'JobFunctionController@al_list');
+	Route::post('job_function', 'JobFunctionController@store');
+	Route::get('job_function/{job_function_id}', 'JobFunctionController@show');
+	Route::patch('job_function/{job_function_id}', 'JobFunctionController@update');
+	Route::delete('job_function/{job_function_id}', 'JobFunctionController@destroy');
+
+
 	Route::get('auto_update', 'PMTL\QuestionaireDataController@auto_update');
 	
 	Route::get('404', ['as' => 'notfound', function () {

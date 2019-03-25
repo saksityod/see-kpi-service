@@ -14,6 +14,8 @@ class JobFunction extends Model
     
     protected $table = 'job_function';
     protected $primaryKey = 'job_function_id';
-    public $incrementing = false;
-	public $timestamps = false;
+    public $incrementing = true;
+    public $timestamps = false;
+    protected $fillable = array('job_function_id','job_function_name','is_evaluated,is_headcount');
+	
 }
