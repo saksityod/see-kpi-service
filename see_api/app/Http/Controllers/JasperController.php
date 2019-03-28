@@ -183,7 +183,7 @@ class JasperController extends Controller
         if(!empty($data_param)){
             $params = json_decode($data_param, true);
             $params['param_user'] = Auth::id();
-
+            
             if(empty($params['param_employee'])) {
                 $all_emp = $this->qdc_service->all_emp();
                 if ($all_emp[0]->count_no > 0) {
@@ -204,14 +204,14 @@ class JasperController extends Controller
             Log::info(' from POST');
             Log::info($params);
         }
-        
-        // set subreport path //
-        if(!empty($request->subreport_bundle)){
-            if($request->subreport_bundle == "1"){
-                $params['subreport_path'] =  base_path("resources/jasper");
-            }
-        }
-        
+		
+		// set subreport path //
+		if(!empty($request->subreport_bundle)){
+			if($request->subreport_bundle == "1"){
+				$params['subreport_path'] =  base_path("resources/jasper");
+			}
+		}
+		
         /*
         $params1 = json_decode($request->getContent(), true);
         Log::info($params1);
@@ -225,8 +225,14 @@ class JasperController extends Controller
         //shell_exec('java -jar '.base_path('resources/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
         //shell_exec('java -jar '.base_path('vendor/cossou/jasperphp/src/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
         //shell_exec('java -jar '.base_path('vendor/imake/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
-
-     if(!empty($used_connection) && $used_connection == '1') {
+    
+    if(!empty($request->json_name)) { // if dataset type json #004
+        $PathFileJson = base_path("resources/generate/").$request->json_name.".json";
+        $command .= " -t json";
+        $command .= " --data-file ".$PathFileJson;
+        $command .= " --json-query=";
+    }
+    else if(!empty($used_connection) && $used_connection == '1') { // if dataset type database
          if (!empty($db_connection) && strlen(trim($db_connection)) > 0) {
              $command .= " -t " . $db_connection;
          }
@@ -245,7 +251,7 @@ class JasperController extends Controller
          if (!empty($db_port) && strlen(trim($db_port)) > 0) {
              $command .= " --db-port " . $db_port;
          }
-     }
+    }
 
         $ignore_param = ['template_name','template_format','used_connection','inline'];
         if ( !empty($params) ) {
@@ -261,23 +267,29 @@ class JasperController extends Controller
         $pathToFile = base_path('resources/generate/'.$name_gen.'.'.$template_format);
 
         $content_type = 'application/pdf';
-        if($template_format == 'xls')
+        if($template_format == 'xlsx' || $template_format == 'xls')
             $content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         $headers = array(
             'Content-Type: '.$content_type,
         );
 
         $name = $template_name.'.'.$template_format;
-        //return $name; 
+		//return $name; 
         //return response()->download($pathToFile)->deleteFileAfterSend(true);
         //return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
          //$response->header('X-Frame-Options', 'SAMEORIGIN',false);
         if($is_inline == '1' && $template_format == 'pdf' ) {
             $content = file_get_contents($pathToFile);
+            if(!empty($request->json_name)){ // if dataset type json --> delete json file
+                File::delete($PathFileJson);
+            }
             File::delete($pathToFile);
             return FacadeResponse::make($content, 200,
                 array('content-type' => 'application/pdf', 'Content-Disposition' => 'inline;  filename= ' .$name));
         }else{
+            if(!empty($request->json_name)){ // if dataset type json --> delete json file
+                File::delete($PathFileJson);
+            }
             return  response()->download($pathToFile, $name, $headers)->deleteFileAfterSend(true);
         }
     }
