@@ -15,6 +15,7 @@ use DB;
 use Auth;
 use File;
 use Excel;
+use DateTime;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Bonus\AdvanceSearchController;
 
@@ -221,10 +222,10 @@ class SalaryAdjustmentController extends Controller
             , emp.capability_point
             , emp.total_point
             , emp.baht_per_point
-            , emp.result_score as score_manager
-            , emj.score_bu
-            , emj.score_coo
-            , emj.score_board
+            , COALESCE(emp.result_score, 0) as score_manager
+            , COALESCE(emj.score_bu, 0) as score_bu
+            , COALESCE(emj.score_coo, 0) as score_coo
+            , COALESCE(emj.score_board, 0) as score_board
             , lsa.adjust_result_score as last_score_adjust
             , from_base64(emp.s_amount) as salary
             , from_base64(emp.pqpi_amount) as pqpi_amount
@@ -240,6 +241,8 @@ class SalaryAdjustmentController extends Controller
             , ast.edit_flag
             , emp.adjust_raise_s_amount
             , emp.adjust_raise_pqpi_amount
+            , 0 as percent_diff
+            , 0 as total_now_salary_new
             FROM emp_result emp
             LEFT JOIN employee em ON emp.emp_id = em.emp_id
             LEFT JOIN position po ON emp.position_id = po.position_id
@@ -547,9 +550,32 @@ class SalaryAdjustmentController extends Controller
             $empJust = EmpResultJudgement::where('emp_result_id', '=',  $d['emp_result_id'])
                       ->where('judge_id', '=', $user->emp_id)
                       ->where('org_level_id', '=', $user->level_id)
-                      ->update([
-                        'adjust_grade' => $d['grade']
-                      ]);
+                      ->get();
+
+            if(count($empJust) > 0){
+              $empJustUpdate = EmpResultJudgement::where('emp_result_id', '=',  $d['emp_result_id'])
+                        ->where('judge_id', '=', $user->emp_id)
+                        ->where('org_level_id', '=', $user->level_id)
+                        ->update([
+                          'adjust_grade' => $d['grade'],
+                          'adjust_result_score' => $d['score_adjust']
+                        ]);
+
+            } else if (count($empJust) == 0){
+              $now = new DateTime();
+              $date = $now->format('Y-m-d H:i:s');
+
+              $empResult = new EmpResultJudgement;
+              $empResult->emp_result_id = $d['emp_result_id'];
+              $empResult->judge_id = $user->emp_id;
+              $empResult->org_level_id = $user->level_id;
+              $empResult->adjust_result_score = $d['score_adjust'];
+              $empResult->adjust_grade = $d['grade'];
+              $empResult->created_by = Auth::id();
+              $empResult->created_dttm = $date;
+              $empResult->save();
+            }
+
 
             if($request->stage_id != 999 && $request->calculate_flag == 0) { //stage_id is 999 not update stage
                 if($stage->final_salary_flag==1) {
