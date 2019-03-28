@@ -91,6 +91,7 @@ class AppraisalFormController extends Controller
 			'is_bonus' => 'required|boolean',
 			'is_active' => 'required|boolean',
 			'is_raise' => 'required|boolean',
+			'is_job_evaluation' => 'required|boolean',
 			'is_mpi' => 'required|boolean',
 		]);
 
