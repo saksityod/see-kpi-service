@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\PMTL;
 
 use App\JobFunction;
 
@@ -23,7 +23,7 @@ class JobFunctionController extends Controller
 
 	   $this->middleware('jwt.auth');
 	}
-
+	
 	public function index(Request $request)
 	{
 		empty($request->job_function_id) ? $job_function = "" : $job_function = " and job_function_id = " . $request->job_function_id . " ";
@@ -51,7 +51,7 @@ class JobFunctionController extends Controller
 		$validator = Validator::make($request->all(), [
 			'job_function_name' => 'required|unique:job_function',
 			'is_evaluated' => 'required|integer',
-			'is_headcount' => 'required|integer',
+			'is_show_report' => 'required|integer',
 		]);
 
 		if ($validator->fails()) {
@@ -59,7 +59,8 @@ class JobFunctionController extends Controller
 		} else {
 			$item = new JobFunction;
 			$item->fill($request->all());
-			$item->is_headcount = $request->is_headcount;
+			$item->is_show_report = $request->is_show_report;
+			$item->updated_by = Auth::id();
 			$item->save();
 		}
 
@@ -88,14 +89,15 @@ class JobFunctionController extends Controller
 		$validator = Validator::make($request->all(), [
 			'job_function_name' => 'required|max:255|unique:job_function,job_function_name,' . $job_function_id . ',job_function_id',
 			'is_evaluated' => 'required|integer',
-			'is_headcount' => 'required|integer',
+			'is_show_report' => 'required|integer',
 		]);
 
 		if ($validator->fails()) {
 			return response()->json(['status' => 400, 'data' => $validator->errors()]);
 		} else {
 			$item->fill($request->all());
-			$item->is_headcount = $request->is_headcount;
+			$item->is_show_report = $request->is_show_report;
+			$item->updated_by = Auth::id();
 			$item->save();
 		}
 

@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class JobFunction extends Model
+class HeadCount extends Model
 {
      /**
      * The table associated with the model.
@@ -13,13 +13,13 @@ class JobFunction extends Model
      */
     const CREATED_AT = 'created_dttm';
 	const UPDATED_AT = 'updated_dttm';	
-    protected $table = 'job_function';
-    protected $primaryKey = 'job_function_id';
+    protected $table = 'head_count';
+    protected $primaryKey = 'head_count_id';
     public $incrementing = true;
     //public $timestamps = false;
     protected $guarded = array();
 
-    protected $fillable = array('job_function_id','job_function_name','is_evaluated,is_show_report');
-    protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
+    //protected $fillable = array('valid_date','position_id','job_function_id,head_count,');
+    //protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 	
 }

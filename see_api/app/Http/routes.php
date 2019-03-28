@@ -523,13 +523,22 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('vsm_employee/{emp_snapshot_id}', 'PMTL\VsmEmployeeController@update');
 
 	// Job Function //
-	Route::get('job_function', 'JobFunctionController@index');
-	Route::get('job_function/list', 'JobFunctionController@al_list');
-	Route::post('job_function', 'JobFunctionController@store');
-	Route::get('job_function/{job_function_id}', 'JobFunctionController@show');
-	Route::patch('job_function/{job_function_id}', 'JobFunctionController@update');
-	Route::delete('job_function/{job_function_id}', 'JobFunctionController@destroy');
+	Route::get('job_function', 'PMTL\JobFunctionController@index');
+	Route::get('job_function/list', 'PMTL\JobFunctionController@al_list');
+	Route::post('job_function', 'PMTL\JobFunctionController@store');
+	Route::get('job_function/{job_function_id}', 'PMTL\JobFunctionController@show');
+	Route::patch('job_function/{job_function_id}', 'PMTL\JobFunctionController@update');
+	Route::delete('job_function/{job_function_id}', 'PMTL\JobFunctionController@destroy');
 
+	// Head Count //
+	Route::get('head_count', 'PMTL\HeadCountController@index');
+	Route::post('head_count', 'PMTL\HeadCountController@store');
+	Route::get('head_count/list_job_function', 'PMTL\HeadCountController@jf_list');
+	Route::post('head_count/auto', 'PMTL\HeadCountController@auto');
+	Route::post('head_count/import', 'PMTL\HeadCountController@import');
+	Route::get('head_count/{head_count_id}', 'PMTL\HeadCountController@show');
+	Route::patch('head_count/{head_count_id}', 'PMTL\HeadCountController@update');
+	Route::delete('head_count/{head_count_id}', 'PMTL\HeadCountController@destroy');
 
 	Route::get('auto_update', 'PMTL\QuestionaireDataController@auto_update');
 	
