@@ -577,7 +577,7 @@ class SalaryAdjustmentController extends Controller
             }
 
 
-            if($request->stage_id != 999 && $request->calculate_flag == 0) { //stage_id is 999 not update stage
+            if($request->stage_id != 999) { //stage_id is 999 not update stage
                 if($stage->final_salary_flag==1) {
                     try {
                         Employee::where('emp_id', '=', $d['emp_id'])->update([
@@ -590,15 +590,17 @@ class SalaryAdjustmentController extends Controller
                     }
                 }
 
-                $emp_stage = new EmpResultStage;
-                $emp_stage->emp_result_id = $d['emp_result_id'];
-                $emp_stage->stage_id = $request->stage_id;
-                $emp_stage->created_by = Auth::id();
-                $emp_stage->updated_by = Auth::id();
-                try {
-                    $emp_stage->save();
-                } catch (Exception $et) {
-                    $errors[] = substr($et, 254);
+                if($request->calculate_flag == 0) {
+                  $emp_stage = new EmpResultStage;
+                  $emp_stage->emp_result_id = $d['emp_result_id'];
+                  $emp_stage->stage_id = $request->stage_id;
+                  $emp_stage->created_by = Auth::id();
+                  $emp_stage->updated_by = Auth::id();
+                  try {
+                      $emp_stage->save();
+                  } catch (Exception $et) {
+                      $errors[] = substr($et, 254);
+                  }
                 }
             }
         }
