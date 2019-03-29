@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="summary-head" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Empty" uuid="f45b8231-2931-49fb-82f8-8d5d5f9eedf6">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -12,8 +12,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="463"/>
-	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="523"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="553"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="433"/>
 	<parameter name="param_data_header_id" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT
@@ -28,8 +28,10 @@
 	head.total_score, 
 	head.pass_score pass_score,
 	-- IFNULL(ROUND((head.full_score/head.total_score)*100.00, 2), 0) percent_score,
-	IFNULL(ROUND((head.total_score*100)/head.full_score, 2), 0) percent_score,
-	IF((head.total_score/head.full_score)*100.00 >= head.pass_score, 1, 0) AS is_pass
+		(CASE WHEN que.pass_score_type="percentage" THEN IFNULL(ROUND((head.total_score*100)/head.full_score, 2), 0) ELSE head.total_score END )percent_score,
+	IF((head.total_score/head.full_score)*100.00 >= head.pass_score, 1, 0) AS is_pass,
+	IF( head.total_score >= head.pass_score, 1, 0) AS is_passscore,
+	que.pass_score_type
 FROM questionaire_data_header head 
 INNER JOIN questionaire que ON que.questionaire_id = head.questionaire_id
 INNER JOIN employee_snapshot emp ON emp.emp_snapshot_id = head.emp_snapshot_id
@@ -82,6 +84,13 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 	</field>
 	<field name="is_pass" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="is_pass"/>
+	</field>
+	<field name="is_passscore" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="is_passscore"/>
+	</field>
+	<field name="pass_score_type" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="pass_score_type"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
 	</field>
 	<detail>
 		<band height="121">
@@ -188,7 +197,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="BrowalliaUPC" size="20" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pass_score_type}=="percentage"? IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน"):IF($F{is_passscore}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
 			</textField>
 			<rectangle>
 				<reportElement mode="Transparent" x="600" y="91" width="50" height="10" forecolor="#FFFFFF" uuid="148e69c3-56d8-4e06-9b74-28c6c8db72a2"/>
@@ -197,7 +206,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				</graphicElement>
 			</rectangle>
 			<textField>
-				<reportElement x="600" y="101" width="198" height="20" forecolor="#353535" uuid="3528b044-62c5-491f-adee-a10f6c1b00ff"/>
+				<reportElement x="598" y="101" width="206" height="20" forecolor="#353535" uuid="3528b044-62c5-491f-adee-a10f6c1b00ff"/>
 				<box leftPadding="5">
 					<pen lineWidth="0.25"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -208,7 +217,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pass_score_type}=="percentage"? "% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)":"คะแนนที่ได้ "+$F{percent_score}+"  (ผ่านเกณฑ์  "+$F{pass_score}+" คะแนน)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Opaque" x="0" y="0" width="804" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="948e7e2a-9e16-49e2-8384-0c59cb51c26b"/>
