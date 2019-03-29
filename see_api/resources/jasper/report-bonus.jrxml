@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas-production"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -26,6 +26,11 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
+	<style name="Table 1_TD" mode="Opaque" backcolor="#DCE6F1">
+		<box>
+			<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+		</box>
+	</style>
 	<style name="Table 1_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -35,7 +40,7 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="Table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+	<style name="Table 2_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -44,12 +49,7 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="Table 1_TD" mode="Opaque" backcolor="#DCE6F1">
-		<box>
-			<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
-		</box>
-	</style>
-	<style name="Table 2_TH" mode="Opaque" backcolor="#F0F8FF">
+	<style name="Table 1_CH" mode="Opaque" backcolor="#BFE1FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
@@ -225,7 +225,7 @@
 	</subDataset>
 	<subDataset name="table_total_org_3" uuid="20fd4f27-adf6-42ce-a7e3-f5f45560eca3">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_countemp" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -245,7 +245,7 @@
     , round(AVG(coo),2) as  coo
     , round(AVG(Board),2)  as  Board
     , (CASE WHEN 2 =  $P{param_countemp} 
-    	THEN (select bonus_score from org_result_judgement where org_id = $P{param_org_mid}  )
+    	THEN o.bonus_score
     	ELSE (case when AVG(Board) IS NOT NULL THEN SUM(Net_Salary)*AVG(Board)
       when AVG(coo) IS NOT NULL THEN SUM(Net_Salary)*AVG(coo)
       when AVG(phck_bu) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_bu)
@@ -328,7 +328,8 @@ where emp.org_id in ($P!{param_org_id})
 				and pe.appraisal_year =  $P{param_year} 
 				and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
 				and emp.appraisal_type_id = 2
-				 order by em.emp_code asc)d]]>
+				 order by em.emp_code asc)d
+	cross join (select bonus_score from org_result_judgement where org_id = $P{param_org_mid}  ) as o]]>
 		</queryString>
 		<field name="BU" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="BU"/>
@@ -372,7 +373,7 @@ where emp.org_id in ($P!{param_org_id})
 	</subDataset>
 	<subDataset name="table_org_bu" uuid="178a6f41-4f35-4aeb-8e0d-f2951a129350">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas5"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_countemp" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
@@ -396,7 +397,7 @@ where emp.org_id in ($P!{param_org_id})
       when AVG(phck_bu) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_bu)
       when AVG(phck_manager) IS NOT NULL THEN SUM(Net_Salary)*AVG(phck_manager)
       ELSE SUM(Net_Salary) END) as  bonus_score  */
-    , (select bonus_score from org_result_judgement where org_id =  $P{param_org_bu} ) as  bonus_score
+    ,  o.bonus_score as  bonus_score
     , SUM(b_amount) as b_amount
     , SUM(adjust_b_amount) as adjust_b_amount
 FROM
@@ -473,7 +474,8 @@ where emp.org_id in ($P!{param_org_id})
 				and pe.appraisal_year =  $P{param_year} 
 				and (emp.appraisal_form_id = $P{param_form}  OR '' = $P{param_form}  OR  ISNULL( $P{param_form} ) = 1 )
 				and emp.appraisal_type_id = 2
-				 order by em.emp_code asc)d]]>
+				 order by em.emp_code asc)d
+cross join (select bonus_score from org_result_judgement where org_id =  $P{param_org_bu} ) as o]]>
 		</queryString>
 		<field name="BU" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="BU"/>
@@ -507,6 +509,7 @@ where emp.org_id in ($P!{param_org_id})
 		</field>
 		<field name="bonus_score" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="bonus_score"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="org_result_judgement"/>
 		</field>
 		<field name="b_amount" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
@@ -517,7 +520,7 @@ where emp.org_id in ($P!{param_org_id})
 	</subDataset>
 	<subDataset name="grandtotal" uuid="0408dd33-e04b-4fc5-9912-01b2b68ffa92">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
 		<parameter name="param_org_id" class="java.lang.String"/>
 		<parameter name="param_period" class="java.lang.String"/>
 		<parameter name="param_form" class="java.lang.String"/>
@@ -537,13 +540,13 @@ and pe.appraisal_year =   $P{param_year}
 and (emp.appraisal_form_id = $P{param_form}  OR '' =  $P{param_form}   OR  ISNULL(  $P{param_form} ) = 1 )
 and emp.appraisal_type_id = 2]]>
 		</queryString>
-		<field name="Basic_Salary" class="java.math.BigDecimal">
+		<field name="Basic_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Basic_Salary"/>
 		</field>
-		<field name="Net_Salary" class="java.math.BigDecimal">
+		<field name="Net_Salary" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="Net_Salary"/>
 		</field>
-		<field name="b_amount" class="java.math.BigDecimal">
+		<field name="b_amount" class="java.lang.Double">
 			<property name="com.jaspersoft.studio.field.label" value="b_amount"/>
 		</field>
 		<field name="b_rate" class="java.math.BigDecimal">
