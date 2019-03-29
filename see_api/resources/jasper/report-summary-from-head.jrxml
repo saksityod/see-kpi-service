@@ -197,7 +197,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="BrowalliaUPC" size="20" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{pass_score_type}=="percentage"? IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน"):IF($F{is_passscore}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{pass_score_type}.equalsIgnoreCase("percentage"))? IF($F{is_pass}==1, "ผ่าน", "ไม่ผ่าน"):IF($F{is_passscore}==1, "ผ่าน", "ไม่ผ่าน")]]></textFieldExpression>
 			</textField>
 			<rectangle>
 				<reportElement mode="Transparent" x="600" y="91" width="50" height="10" forecolor="#FFFFFF" uuid="148e69c3-56d8-4e06-9b74-28c6c8db72a2"/>
@@ -217,7 +217,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{pass_score_type}=="percentage"? "% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)":"คะแนนที่ได้ "+$F{percent_score}+"  (ผ่านเกณฑ์  "+$F{pass_score}+" คะแนน)"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{pass_score_type}.equalsIgnoreCase("percentage"))? "% ที่ได้ "+$F{percent_score}+"%  (ผ่านเกณฑ์  "+$F{pass_score}+"%)":"คะแนนที่ได้ "+$F{percent_score}+"  (ผ่านเกณฑ์  "+$F{pass_score}+" คะแนน)"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement mode="Opaque" x="0" y="0" width="804" height="30" forecolor="#FFFFFF" backcolor="#3B5998" uuid="948e7e2a-9e16-49e2-8384-0c59cb51c26b"/>
