@@ -188,11 +188,13 @@ class QuestionaireController extends Controller
 		$validator = Validator::make([
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
+			'pass_score_type' => $request->pass_score_type,
 			'pass_score' => $request->pass_score,
 			'is_active' => $request->is_active
 		], [
 			'questionaire_name' => 'required|max:255|unique:questionaire,questionaire_name',
 			'questionaire_type_id' => 'required|integer',
+			'pass_score_type' => 'required',
 			'pass_score' => 'required|between:0,99.99',
 			'is_active' => 'required|integer'
 		]);
@@ -305,6 +307,7 @@ class QuestionaireController extends Controller
 		$qn = new Questionaire;
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->pass_score_type = $request->pass_score_type;
 		$qn->pass_score = $request->pass_score;
 		$qn->is_active = $request->is_active;
 		$qn->created_by = Auth::id();
@@ -402,11 +405,13 @@ class QuestionaireController extends Controller
 		$validator = Validator::make([
 			'questionaire_name' => $request->questionaire_name,
 			'questionaire_type_id' => $request->questionaire_type_id,
+			'pass_score_type' => $request->pass_score_type,
 			'pass_score' => $request->pass_score,
 			'is_active' => $request->is_active
 		], [
 			'questionaire_name' => 'required|max:255|unique:questionaire,questionaire_name,'.$request->questionaire_id.',questionaire_id',
 			'questionaire_type_id' => 'required|integer',
+			'pass_score_type' => 'required',
 			'pass_score' => 'required|between:0,99.99',
 			'is_active' => 'required|integer'
 		]);
@@ -520,6 +525,7 @@ class QuestionaireController extends Controller
 		$qn = Questionaire::find($request->questionaire_id);
 		$qn->questionaire_name = $request->questionaire_name;
 		$qn->questionaire_type_id = $request->questionaire_type_id;
+		$qn->pass_score_type = $request->pass_score_type;
 		$qn->pass_score = $request->pass_score;
 		$qn->is_active = $request->is_active;
 		$qn->updated_by = Auth::id();
