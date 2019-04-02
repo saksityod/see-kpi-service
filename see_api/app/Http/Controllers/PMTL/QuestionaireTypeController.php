@@ -134,37 +134,47 @@ class QuestionaireTypeController extends Controller
 
 		$errors = [];
 		$errors_validator = [];
-		foreach ($request['data'] as $key => $value) {
-			$validator = Validator::make([
-				'job_function_id' => $value['job_function_id'],
-				'questionaire_id' => $value['questionaire_id']
-			], [
-				'job_function_id' => 'required|integer',
-				'questionaire_id' => 'required|integer',
-			]);
-
-			if($validator->fails()) {
-				$errors_validator[] = $validator->errors();
+		if(!empty($request['data'])) {
+			foreach ($request['data'] as $key => $value) {
+				$validator = Validator::make([
+					'job_function_id' => $value['job_function_id'],
+					'questionaire_id' => $value['questionaire_id']
+				], [
+					'job_function_id' => 'required|integer',
+					'questionaire_id' => 'required|integer',
+				]);
+	
+				if($validator->fails()) {
+					$errors_validator[] = $validator->errors();
+				}
 			}
-		}
-
-		if(!empty($errors_validator)) {
-			return response()->json(['status' => 400, 'errors' => $errors_validator]);
-		}
-
-		QuestionaireAuthorize::where("questionaire_type_id", $id)->delete();
-
-		foreach ($request['data'] as $key => $value) {
-			$qt = new QuestionaireAuthorize;
-			$qt->questionaire_type_id = $id;
-			$qt->job_function_id = $value['job_function_id'];
-			$qt->questionaire_id = $value['questionaire_id'];
+	
+			if(!empty($errors_validator)) {
+				return response()->json(['status' => 400, 'errors' => $errors_validator]);
+			}
+	
+			QuestionaireAuthorize::where("questionaire_type_id", $id)->delete();
+	
+			foreach ($request['data'] as $key => $value) {
+				$qt = new QuestionaireAuthorize;
+				$qt->questionaire_type_id = $id;
+				$qt->job_function_id = $value['job_function_id'];
+				$qt->questionaire_id = $value['questionaire_id'];
+				try {
+					$qt->save();
+				} catch (Exception $e) {
+					$errors[] = ['QuestionaireType' => substr($e, 0, 255)];
+				}
+			}
+		}else{
+			
 			try {
-				$qt->save();
+				QuestionaireAuthorize::where("questionaire_type_id", $id)->delete();
 			} catch (Exception $e) {
-				$errors[] = ['QuestionaireType' => substr($e, 0, 255)];
+				return response()->json(['status' => 404, 'data' => $e->errorInfo]); 
 			}
 		}
+		
 
 		return response()->json(['status' => 200, 'errors' => $errors]);
 	}
