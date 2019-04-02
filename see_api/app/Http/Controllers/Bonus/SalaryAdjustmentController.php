@@ -399,6 +399,9 @@ class SalaryAdjustmentController extends Controller
               , grade
               , begin_score
               , end_score
+              , raise_type
+              , salary_raise_amount
+              , salary_raise_percent
               FROM appraisal_grade
               WHERE appraisal_form_id = ".$i->appraisal_form_id."
               AND appraisal_level_id = ".$i->level_id."
