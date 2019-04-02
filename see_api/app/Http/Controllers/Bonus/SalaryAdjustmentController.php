@@ -362,6 +362,19 @@ class SalaryAdjustmentController extends Controller
            // คำนวณรายได้ปัจจุบัน
            $i->total_now_salary = ($i->salary+$i->pqpi_amount+$i->fix_other_amount+$i->mpi_amount+$i->pi_amount+$i->var_other_amount);
 
+           // หาคะแนนล่าสุด by record
+           if ($i->score_board != 0){
+             $i->score_last = $i->score_board;
+           }else if ($i->score_board == 0 && $i->score_coo != 0){
+             $i->score_last = $i->score_coo;
+           }else if ($i->score_board == 0 && $i->score_coo == 0 && $i->score_bu != 0){
+             $i->score_last = $i->score_bu;
+           }else if ($i->score_board == 0 && $i->score_coo == 0 && $i->score_bu == 0 && $i->score_manager != 0){
+             $i->score_last = $i->score_manager;
+           }else {
+             $i->score_last = 0;
+           }
+
            //หาค่า structure และ total structure by record
            $Structure_result = DB::select("
               SELECT result.structure_id
