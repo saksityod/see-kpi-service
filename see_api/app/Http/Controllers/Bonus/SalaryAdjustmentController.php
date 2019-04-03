@@ -549,7 +549,7 @@ class SalaryAdjustmentController extends Controller
             $emp->adjust_new_s_amount = base64_encode($sum_s_amount);
             $emp->adjust_new_pqpi_amount = base64_encode($sum_pqpi_amount);
 
-            if($request->stage_id != 999 && $request->calculate_flag == 0) { //stage_id is 999 not update stage
+            if($request->calculate_flag == 0) {
                 $emp->stage_id = $request->stage_id;
                 $emp->status = $stage->status;
             }
@@ -592,8 +592,6 @@ class SalaryAdjustmentController extends Controller
               $empResult->save();
             }
 
-
-            if($request->stage_id != 999) { //stage_id is 999 not update stage
                 if($stage->final_salary_flag==1) {
                     try {
                         Employee::where('emp_id', '=', $d['emp_id'])->update([
@@ -618,7 +616,6 @@ class SalaryAdjustmentController extends Controller
                       $errors[] = substr($et, 254);
                   }
                 }
-            }
         }
 
         if(empty($errors)) {
