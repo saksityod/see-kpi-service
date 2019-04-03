@@ -573,7 +573,7 @@ class SalaryAdjustmentController extends Controller
                         ->where('judge_id', '=', $user->emp_id)
                         ->where('org_level_id', '=', $user->level_id)
                         ->update([
-                          'adjust_grade' => $d['grade'],
+                          'adjust_grade' => (empty($d['grade']) ? '' : $d['grade']),
                           'adjust_result_score' => $d['score_adjust']
                         ]);
 
