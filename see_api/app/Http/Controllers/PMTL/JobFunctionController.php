@@ -59,6 +59,7 @@ class JobFunctionController extends Controller
 		} else {
 			$item = new JobFunction;
 			$item->fill($request->all());
+			$item->is_evaluated = $request->is_evaluated;
 			$item->is_show_report = $request->is_show_report;
 			$item->updated_by = Auth::id();
 			$item->save();
@@ -96,6 +97,7 @@ class JobFunctionController extends Controller
 			return response()->json(['status' => 400, 'data' => $validator->errors()]);
 		} else {
 			$item->fill($request->all());
+			$item->is_evaluated = $request->is_evaluated;
 			$item->is_show_report = $request->is_show_report;
 			$item->updated_by = Auth::id();
 			$item->save();
