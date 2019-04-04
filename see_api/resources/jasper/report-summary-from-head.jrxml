@@ -93,7 +93,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
 	</field>
 	<detail>
-		<band height="121">
+		<band height="143">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<textField>
 				<reportElement x="0" y="31" width="300" height="30" forecolor="#353535" uuid="5688376d-7516-4825-be05-02b285e77e8e"/>
@@ -110,7 +110,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textFieldExpression><![CDATA["วันที่ :  "+DATEFORMAT($F{questionaire_date}, "dd/MM/yyyy")]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="61" width="300" height="30" forecolor="#353535" uuid="f10f77a0-e01f-47f0-9a7f-e658d31afc76"/>
+				<reportElement x="0" y="61" width="300" height="49" forecolor="#353535" uuid="f10f77a0-e01f-47f0-9a7f-e658d31afc76"/>
 				<box leftPadding="5">
 					<pen lineWidth="0.25"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -138,7 +138,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textFieldExpression><![CDATA["ชื่อผู้แทนจำหน่าย :  "+$F{distributor_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="300" y="61" width="350" height="30" forecolor="#353535" uuid="c28790dd-2437-4a97-a8bd-5c157c8c009b"/>
+				<reportElement x="300" y="61" width="350" height="49" forecolor="#353535" uuid="c28790dd-2437-4a97-a8bd-5c157c8c009b"/>
 				<box leftPadding="5">
 					<pen lineWidth="0.25"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -152,7 +152,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textFieldExpression><![CDATA["ชื่อผู้ทำการประเมิน :  "+$F{assessor_name}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="91" width="300" height="30" forecolor="#353535" uuid="e438b29c-5125-478a-8139-2171194d6d6d"/>
+				<reportElement x="0" y="110" width="300" height="30" forecolor="#353535" uuid="e438b29c-5125-478a-8139-2171194d6d6d"/>
 				<box leftPadding="5">
 					<pen lineWidth="0.25"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -166,7 +166,7 @@ WHERE head.data_header_id =  $P{param_data_header_id}]]>
 				<textFieldExpression><![CDATA["รหัสพนักงานขาย :  "+$F{position_code}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="300" y="91" width="300" height="30" forecolor="#353535" uuid="f25644a9-7422-4202-aa83-45d5fa5cb857"/>
+				<reportElement x="300" y="110" width="300" height="30" forecolor="#353535" uuid="f25644a9-7422-4202-aa83-45d5fa5cb857"/>
 				<box leftPadding="5">
 					<pen lineWidth="0.25"/>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
