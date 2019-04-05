@@ -429,13 +429,12 @@ class SalaryAdjustmentController extends Controller
             $i->is_board = $u->is_board;
           }
 
-          // คำนวนเกรดตามคะแนนของแต่ละ user ที่เข้าสู่ระบบ
+          // คำนวนเกรดตามคะแนนล่าสุดที่ใช้แสดง (ดูตั้งแต่ Mgr., BU., COO, Board
           if ($i->is_board == 0){   // user : coo
             $i->score_board = 0;
-            $grade = DB::select($grade_score_user, array($i->appraisal_form_id, $i->level_id, $i->score_coo));
-          }else if ($i->is_board == 1){   // user : board
-            $grade = DB::select($grade_score_user, array($i->appraisal_form_id, $i->level_id, $i->score_board));
           }
+		  $grade = DB::select($grade_score_user, array($i->appraisal_form_id, $i->level_id, $i->score_last));
+		  
 
           // คำนวนค่า z-score by record
           if($std==0) {
