@@ -392,7 +392,8 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('report/emp_list_level','ReportController@emp_list_level');
 	Route::get('report/org_list_individual','ReportController@org_list_individual');
 	Route::get('report/org_individual','ReportController@org_individual');
-
+	Route::get('FSF_HC/report','PMTL\FSF_HC_ReportController@index');
+	
 	// Import Assignment //
 	Route::get('import_assignment/level_list', 'ImportAssignmentController@level_list');
 	Route::get('import_assignment/org_list', 'ImportAssignmentController@org_list');

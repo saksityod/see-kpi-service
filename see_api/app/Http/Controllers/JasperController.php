@@ -145,6 +145,7 @@ class JasperController extends Controller
     {
         $name_gen = md5(uniqid(rand(), true));
         $template_name = $request->template_name;
+        $path_jasper = $request->path_jasper;
         $template_format = $request->template_format;
         $used_connection = $request->used_connection;
         $is_inline = $request->inline;
@@ -184,7 +185,8 @@ class JasperController extends Controller
             $params = json_decode($data_param, true);
             $params['param_user'] = Auth::id();
             
-            if(empty($params['param_employee'])) {
+            // รายงานที่ใช้ ASM-by-TSE-Report ,Operation-Tracking-Report ,report-position
+            if(empty($params['param_employee'])&&($template_name =="ASM-by-TSE-Report"||$template_name =="Operation-Tracking-Report"||$template_name =="report-position")) {
                 $all_emp = $this->qdc_service->all_emp();
                 if ($all_emp[0]->count_no > 0) {
                     $params['param_employee'] = 999999999;
@@ -220,7 +222,7 @@ class JasperController extends Controller
         $params = $params1;
         Log::info($params);
         */
-        $command = 'java -jar '.base_path('jasperStarter/lib/jasperstarter.jar').'  pr '.base_path('resources/jasper/'.$template_name.'.jasper')
+        $command = 'java -jar '.base_path('jasperStarter/lib/jasperstarter.jar').'  pr '.base_path('resources/jasper/'.$path_jasper.$template_name.'.jasper')
             .'  -f '.$template_format.'  -o '.base_path('resources/generate/'.$name_gen);
         //shell_exec('java -jar '.base_path('resources/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
         //shell_exec('java -jar '.base_path('vendor/cossou/jasperphp/src/JasperStarter/lib/jasperstarter.jar').'  pr /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest.jasper  -f pdf  -o /Users/imake/WORK/PROJECT/GJ/Jasper/jasper_service_api/resources/jasper/CherryTest2');
