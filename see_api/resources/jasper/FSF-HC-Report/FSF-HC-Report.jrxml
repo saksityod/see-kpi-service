@@ -3,6 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="FSF-HC-Report" pageWidth="1191" pageHeight="842" orientation="Landscape" whenNoDataType="NoPages" columnWidth="1151" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isIgnorePagination="true" uuid="01c84420-64f7-4025-ae40-0631698c1c18">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fsf_hc"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -216,8 +217,8 @@
 								<pen lineWidth="0.25" lineStyle="Solid"/>
 							</box>
 							<staticText>
-								<reportElement style="Crosstab 1_CH" mode="Opaque" x="0" y="0" width="60" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="e2bf7748-e5a2-4ff0-a583-121c5de44457"/>
-								<box leftPadding="10">
+								<reportElement style="Crosstab 1_CH" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="60" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="e2bf7748-e5a2-4ff0-a583-121c5de44457"/>
+								<box topPadding="0" leftPadding="10" bottomPadding="0">
 									<pen lineWidth="0.25" lineStyle="Dotted"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -226,8 +227,8 @@
 								<text><![CDATA[Position ]]></text>
 							</staticText>
 							<staticText>
-								<reportElement style="Crosstab 1_CH" mode="Opaque" x="60" y="0" width="190" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="f819c55d-7a9a-4a53-b243-a320eadb4fb3"/>
-								<box leftPadding="10">
+								<reportElement style="Crosstab 1_CH" stretchType="RelativeToBandHeight" mode="Opaque" x="60" y="0" width="190" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="f819c55d-7a9a-4a53-b243-a320eadb4fb3"/>
+								<box topPadding="0" leftPadding="10" bottomPadding="0">
 									<pen lineWidth="0.25" lineStyle="Dotted"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
@@ -247,7 +248,7 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField>
-									<reportElement x="0" y="0" width="60" height="20" uuid="dc544383-efb0-4eb2-8b69-e2b43fdf5c61"/>
+									<reportElement x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="dc544383-efb0-4eb2-8b69-e2b43fdf5c61"/>
 									<textElement textAlignment="Center">
 										<font fontName="TH SarabunPSK" size="14"/>
 									</textElement>
@@ -281,7 +282,7 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="190" height="20" isRemoveLineWhenBlank="true" uuid="8dba4a54-620b-4120-8475-3957e350a893"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="190" height="20" isRemoveLineWhenBlank="true" backcolor="#D9E1F2" uuid="8dba4a54-620b-4120-8475-3957e350a893"/>
 									<box leftPadding="10"/>
 									<textElement textAlignment="Left">
 										<font fontName="TH SarabunPSK" size="14"/>
@@ -310,7 +311,8 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-									<reportElement style="Crosstab group" mode="Opaque" x="0" y="0" width="60" height="20" isPrintWhenDetailOverflows="true" uuid="c95a5ee4-c595-4fd7-ae1c-579c14e67d56"/>
+									<reportElement style="Crosstab group" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="60" height="20" isPrintWhenDetailOverflows="true" uuid="c95a5ee4-c595-4fd7-ae1c-579c14e67d56"/>
+									<box topPadding="5" leftPadding="5" bottomPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Center">
 										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
 									</textElement>
@@ -337,9 +339,10 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField>
-									<reportElement mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#FFFFFF" uuid="f86ac272-9084-4066-aedf-b1221fa8e622"/>
+									<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="f86ac272-9084-4066-aedf-b1221fa8e622"/>
+									<box topPadding="0" bottomPadding="0" rightPadding="5"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="TH SarabunPSK" size="14" isBold="false"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{job_function_name}]]></textFieldExpression>
 								</textField>
@@ -377,9 +380,10 @@
 							<box>
 								<pen lineWidth="0.25" lineStyle="Solid"/>
 							</box>
-							<textField>
+							<textField isBlankWhenNull="true">
 								<reportElement style="N/A" x="0" y="0" width="60" height="20" uuid="da342c3a-154e-4ba2-aa1c-4e62b84ff641"/>
-								<textElement textAlignment="Center">
+								<box rightPadding="5"/>
+								<textElement textAlignment="Right">
 									<font fontName="TH SarabunPSK" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{head_count_str_MEASURE}]]></textFieldExpression>
@@ -393,12 +397,11 @@
 							</box>
 							<textField>
 								<reportElement x="0" y="0" width="60" height="20" forecolor="#FFFFFF" uuid="ca511657-f421-4c55-a98d-8474b84b57dd"/>
-								<textElement textAlignment="Center">
+								<box rightPadding="5"/>
+								<textElement textAlignment="Right">
 									<font fontName="TH SarabunPSK" size="14"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($V{group_colume_id_if}!=2)? 
-(($V{head_count_int} == 0)? "N/A" : $V{head_count_int})
-:$V{sum_percent_coverage}]]></textFieldExpression>
+								<textFieldExpression><![CDATA[$V{sum_percent_coverage}]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabCell>

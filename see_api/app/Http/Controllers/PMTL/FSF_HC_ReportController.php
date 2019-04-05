@@ -37,45 +37,56 @@ class FSF_HC_ReportController extends Controller
 
         $param_questionaire_type_id = json_decode($request->questionaire_type_id); // "1,2";
 
-        $type_by_emp = "
-            SELECT snap.emp_snapshot_id,
-            qt.questionaire_type_id,
-            qt.questionaire_type
-            FROM employee_snapshot snap
-            INNER JOIN questionaire_data_header qdh ON qdh.assessor_id = snap.emp_snapshot_id
-            INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
-            INNER JOIN questionaire_type qt ON qt.questionaire_type_id = q.questionaire_type_id
-            WHERE FIND_IN_SET(q.questionaire_type_id, '".$param_questionaire_type_id."')
-            AND snap.start_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
-            GROUP BY q.questionaire_type_id, snap.emp_snapshot_id
-            ";
-
-        $job_function ="
-          SELECT snap.emp_snapshot_id,
-          CONCAT( snap.emp_first_name, ' ', snap.emp_last_name ) AS emp_name,
-          po.position_id,
-          po.position_code,
-          job.job_function_id,
-          job.job_function_name,
-          emp.questionaire_type_id,
-          emp.questionaire_type,
-          h.head_count
+        // search emp, position by head_count
+        $emp_position = "
+          SELECT snap.emp_snapshot_id
+          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name ) AS emp_name
+          , po.position_id
+          , po.position_code
           FROM head_count h
-          INNER JOIN employee_snapshot snap ON ( h.job_function_id = snap.job_function_id
-              AND h.position_id = snap.position_id
-              AND snap.start_date = (
-                  SELECT max( e.start_date )
-                  FROM employee_snapshot e
-                  WHERE e.position_id = snap.position_id
-                  AND e.start_date <= h.valid_date
-              )
-              AND snap.level_id = 4 )
-          INNER JOIN position po ON h.position_id = po.position_id
-          INNER JOIN (".$type_by_emp.") emp ON snap.emp_snapshot_id = emp.emp_snapshot_id
-          CROSS JOIN ( SELECT job_function_id, job_function_name FROM job_function WHERE is_show_report = 1 ) job
+          INNER JOIN employee_snapshot snap ON (
+          	h.position_id = snap.position_id
+          	AND snap.start_date = (
+          		SELECT max( e.start_date )
+          		FROM employee_snapshot e
+          		WHERE e.position_id = snap.position_id
+          		AND e.start_date <= h.valid_date
+          	)
+          	AND snap.level_id = 4 )
+          LEFT JOIN position po ON h.position_id = po.position_id
           WHERE h.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
-          ORDER BY po.position_id ,snap.emp_snapshot_id ,job_function_id desc
-          ";
+          GROUP BY snap.emp_snapshot_id
+          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name )
+          , po.position_id
+          , po.position_code";
+
+         // job_function and type (all)
+         $job_type = "
+            SELECT j.job_function_id
+            , j.job_function_name
+            , t.questionaire_type_id
+            , t.questionaire_type
+            FROM job_function j
+            CROSS JOIN questionaire_type t
+            WHERE j.is_show_report = 1
+            AND FIND_IN_SET(t.questionaire_type_id,'".$param_questionaire_type_id."')";
+
+        // get head_count (value) by position, job_function
+        $job_head_count = "
+          SELECT emp.emp_snapshot_id
+          , emp.emp_name
+          , emp.position_id
+          , emp.position_code
+          , job.job_function_id
+          , job.job_function_name
+          , job.questionaire_type_id
+          , job.questionaire_type
+          , hc.head_count
+          FROM (".$emp_position.") emp
+          CROSS JOIN (".$job_type.") job
+          LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id
+            AND hc.position_id = emp.position_id";
+
 
         // Information ชุดที่ 1
         $totalHeadCount = DB::select("
@@ -87,8 +98,8 @@ class FSF_HC_ReportController extends Controller
                 main.job_function_id,
                 main.questionaire_type_id,
                 main.questionaire_type,
-                COALESCE(head.head_count,'N/A') AS head_count_str,
-                COALESCE(head.head_count,0) AS head_count_int,
+                COALESCE(main.head_count,'N/A') AS head_count_str,
+                main.head_count AS head_count_int,
                 'Total Head Count' AS group_colume,
                 0 AS group_colume_id,
                 '".$date_start."' as start_date,
@@ -97,11 +108,8 @@ class FSF_HC_ReportController extends Controller
                 0 as under_emp,
                 0 as sum_percent_coverage
             FROM (
-              ".$job_function."
+              ".$job_head_count."
             ) main
-            LEFT JOIN (SELECT * FROM head_count) head
-                ON main.position_id = head.position_id
-                AND main.job_function_id = head.job_function_id
             ORDER BY main.questionaire_type_id ,main.job_function_id
         ");
 
@@ -125,12 +133,9 @@ class FSF_HC_ReportController extends Controller
                 0 as under_emp,
                 0 as sum_percent_coverage
             FROM (
-                ".$job_function."
+                ".$job_head_count."
             ) main
-            LEFT JOIN (SELECT * FROM head_count) head
-                ON main.position_id = head.position_id
-                AND main.job_function_id = head.job_function_id
-                ORDER BY main.questionaire_type_id ,main.job_function_id
+            ORDER BY main.questionaire_type_id ,main.job_function_id
             "
         );
 
@@ -143,7 +148,7 @@ class FSF_HC_ReportController extends Controller
             $level_under_emp = DB::select("
                 SELECT emp_snapshot_id
                 , level_id
-                , (CASE WHEN level_id = 2 THEN 'assessor_id' ELSE 'emp_snapshot_id' END) as emp_questionaire
+                , (CASE WHEN level_id != 2 THEN 'assessor_id' ELSE 'emp_snapshot_id' END) as emp_questionaire
                 FROM employee_snapshot
                 WHERE FIND_IN_SET(emp_snapshot_id, '".$exe->under_emp."')
                 AND job_function_id = ".$exe->job_function_id." ");
@@ -167,7 +172,7 @@ class FSF_HC_ReportController extends Controller
                }
             }
 
-            $exe->head_count_int = $count_int;
+            $exe->head_count_int = ($count_int == 0)? null : $count_int;
             $exe->head_count_str = ($count_int == 0)? "N/A" : $count_int;
 
        }
@@ -182,8 +187,8 @@ class FSF_HC_ReportController extends Controller
                main.job_function_id,
                main.questionaire_type_id,
                main.questionaire_type,
-               COALESCE(head.head_count,'N/A') AS head_count_str,
-               COALESCE(head.head_count,0) AS head_count_int,
+               COALESCE(main.head_count,'N/A') AS head_count_str,
+               main.head_count AS head_count_int,
                '% Coverage' AS group_colume,
                2 AS group_colume_id,
                '".$date_start."' as start_date,
@@ -192,13 +197,11 @@ class FSF_HC_ReportController extends Controller
                0 as under_emp,
                0 as sum_percent_coverage
            FROM (
-             ".$job_function."
+             ".$job_head_count."
            ) main
-           LEFT JOIN (SELECT * FROM head_count) head
-               ON main.position_id = head.position_id
-               AND main.job_function_id = head.job_function_id
            ORDER BY main.questionaire_type_id ,main.job_function_id
        ");
+
 
        // Information 1 + Information 2
        $result = array_merge($totalHeadCount,$actualExecution);
@@ -210,53 +213,82 @@ class FSF_HC_ReportController extends Controller
           $key_type = $re->questionaire_type;
           $key_job = $re->job_function_name;
 
+          // array(sum_count_int) = sum total , array(check_num) = ตรวจสอบข้อมูล N/A
           if (!isset($groups[$key_group][$key_type][$key_job])) {
-            $groups[$key_group][$key_type][$key_job] = array(
-              'sum_count_int' => $re->head_count_int
-            );
+            $groups[$key_group][$key_type][$key_job]['sum_count_int'] = $re->head_count_int;
+            $groups[$key_group][$key_type][$key_job]['check_num'] = (($re->head_count_str == "N/A")? 0 : 1);
           } else {
             $groups[$key_group][$key_type][$key_job]['sum_count_int'] += $re->head_count_int;
+            $groups[$key_group][$key_type][$key_job]['check_num'] += (($re->head_count_str == "N/A")? 0 : 1);
           }
+      }
+
+      // result sum data to (Information 1,2) และเช็คข้อมูลที่เป็น N/A
+      foreach ($result as $re) {
+        // ปรับตัวเลขในรูปแบบ #,##0
+        $re->head_count_str = ($re->head_count_str != "N/A") ? number_format((float)$re->head_count_str, 0, '', ',') : $re->head_count_str;
+
+        $sum_total = $groups[$re->group_colume][$re->questionaire_type][$re->job_function_name]['sum_count_int'];
+        $type_total = $groups[$re->group_colume][$re->questionaire_type][$re->job_function_name]['check_num'];
+
+        // ปรับตัวเลขในรูปแบบ #,##0
+        $re->sum_percent_coverage = ($type_total == 0)? "N/A" : number_format((float)$sum_total, 0, '', ',');
       }
 
 
        // Manage Information ชุดที่ 3
        foreach ($percentCoverage as $pc) {
           // คำนวน % by record เฉพาะค่าที่ไม่เท่ากับ 0 (เพราะถ้าหากเป็นค่า 0 จะหาค่าไม่ได้)
-          if($pc->head_count_int != 0){
+          if($pc->head_count_int != 0 || $pc->head_count_str != "N/A"){
             foreach ($actualExecution as $ae) {
                 if($pc->position_code == $ae->position_code && $pc->position_id == $ae->position_id
                   && $pc->emp_snapshot_id == $ae->emp_snapshot_id && $pc->job_function_id == $ae->job_function_id
                   && $pc->questionaire_type_id == $ae->questionaire_type_id){
 
                     // คำนวน % เฉพาะค่าที่ไม่เท่ากับ 0 (เพราะถ้าหากเป็นค่า 0 ผลการหา % ก็จะได้ 0)
-                    if($ae->head_count_int != 0){
-                        // calculate % (Information 1 / Information 2) [number to float 2 degree]
+                    if($ae->head_count_int != 0 && $ae->head_count_str != "N/A"){
+                        // calculate % (Information 1 / Information 2) [number to float 2 degree, #,##0.00]
                         $percent = ($ae->head_count_int*100)/$pc->head_count_int;
-                        $percent = number_format((float)$percent, 2, '.', '');
+                        $percent = number_format((float)$percent, 2, '.', ',');
 
                         $pc->head_count_int = $percent;
                         $pc->head_count_str = $percent."%";
-                    }else if ($ae->head_count_int == 0){
-                        $pc->head_count_int = "0.00";
+                    }else if ($ae->head_count_int == 0 && $ae->head_count_str != "N/A"){
+                        $pc->head_count_int = 0.00;
+                        $pc->head_count_str = "0.00%";
+                    }else if ($ae->head_count_str == "N/A"){
+                        $pc->head_count_int = null;
                         $pc->head_count_str = "N/A";
                     }
 
                 }
 
             }
-          }// end if คำนวน % by record
+          } else if ($pc->head_count_int == 0 || $pc->head_count_str == "N/A") { // กรณีที่ข้อมูลเป็น 0 หรือ null ให้แทนค่าได้เลย เนื่องจากคำนวน % ไม่ได้
+            $pc->head_count_int = null;
+            $pc->head_count_str = "N/A";
+          }
+          // end if คำนวน % by record
+
 
           // คำนวน % ของ total (โดยใช้ข้อมูลจาก total Information 1,2)
           $sum_info_head = $groups['Total Head Count'][$pc->questionaire_type][$pc->job_function_name]['sum_count_int'];  // Information 1
           $sum_info_actual = $groups['Actual Execution'][$pc->questionaire_type][$pc->job_function_name]['sum_count_int'];  // Information 2
 
-          if($sum_info_head != 0 && $sum_info_actual != 0){
+          $type_info_head = $groups['Total Head Count'][$pc->questionaire_type][$pc->job_function_name]['check_num']; // type N/A Information 1
+          $type_info_actual = $groups['Actual Execution'][$pc->questionaire_type][$pc->job_function_name]['check_num']; // type N/A Information 2
+
+          if($sum_info_head != 0 && $type_info_head != 0
+            && $sum_info_actual != 0 && $type_info_actual != 0){
+
             $percent_info = ($sum_info_actual*100)/$sum_info_head;
-            $percent_info = number_format((float)$percent_info, 2, '.', '');
+            $percent_info = number_format((float)$percent_info, 2, '.', ',');
+
             $pc->sum_percent_coverage = $percent_info."%";
-          }else if ($sum_info_head == 0 || $sum_info_actual == 0){
+          }else if ($sum_info_head == 0 || $type_info_head == 0 || $type_info_actual == 0){
             $pc->sum_percent_coverage = "N/A";
+          }else if ($sum_info_actual == 0){
+            $pc->sum_percent_coverage = "0.00%";
           }
           // end คำนวน % ของ total
 
