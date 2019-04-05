@@ -46,7 +46,7 @@ class ImportJobCodeController extends Controller
 
 		$qfooter = " ORDER BY job_code ";
 
-        $items = DB::select($query . $qfooter, $qinput);
+		$items = collect(DB::select($query . $qfooter, $qinput))->sortBy('job_code')->values()->all();
 
 		// Get the current page from the url if it's not set default to 1
 		empty($request->page) ? $page = 1 : $page = $request->page;
