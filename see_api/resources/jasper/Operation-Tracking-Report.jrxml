@@ -50,7 +50,7 @@
 		</box>
 	</style>
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="800"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="186"/>
@@ -294,7 +294,7 @@ LEFT JOIN (
   , (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know 
   FROM questionaire_data_header qdh 
   INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-  -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+  INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
   INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
   INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
   INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
@@ -317,14 +317,14 @@ AND (qnt.questionaire_type_id =  $P{param_questionaire_type}   OR '' =  $P{param
   , qdh.assessor_id 
   , qdh.emp_snapshot_id 
   , qdh.questionaire_date 
-  , q.parent_question_id 
-  , pq.question_name 
+ --  , q.parent_question_id 
+ --  , pq.question_name 
  ) num 
  GROUP BY num.questionaire_type_id 
  , num.assessor_id 
- , num.parent_question_id 
+--  , num.parent_question_id 
 ) res ON res.questionaire_type_id = qnt.questionaire_type_id 
-AND res.parent_question_id = q.parent_question_id
+-- AND res.parent_question_id = q.parent_question_id
 AND res.assessor_id = qdh.assessor_id
 INNER JOIN (
 SELECT qnt.questionaire_type_id 
