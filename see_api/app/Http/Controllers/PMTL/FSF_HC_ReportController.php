@@ -81,11 +81,20 @@ class FSF_HC_ReportController extends Controller
           , job.job_function_name
           , job.questionaire_type_id
           , job.questionaire_type
-          , hc.head_count
+          , SUM(hc.head_count) as head_count
           FROM (".$emp_position.") emp
           CROSS JOIN (".$job_type.") job
           LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id
-            AND hc.position_id = emp.position_id";
+            AND hc.position_id = emp.position_id
+		  WHERE hc.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
+		  GROUP BY emp.emp_snapshot_id
+          , emp.emp_name
+          , emp.position_id
+          , emp.position_code
+          , job.job_function_id
+          , job.job_function_name
+          , job.questionaire_type_id
+          , job.questionaire_type";
 
 
         // Information ชุดที่ 1
@@ -239,7 +248,7 @@ class FSF_HC_ReportController extends Controller
        // Manage Information ชุดที่ 3
        foreach ($percentCoverage as $pc) {
           // คำนวน % by record เฉพาะค่าที่ไม่เท่ากับ 0 (เพราะถ้าหากเป็นค่า 0 จะหาค่าไม่ได้)
-          if($pc->head_count_int != 0 || $pc->head_count_str != "N/A"){
+          if($pc->head_count_int != 0 && $pc->head_count_str != "N/A"){
             foreach ($actualExecution as $ae) {
                 if($pc->position_code == $ae->position_code && $pc->position_id == $ae->position_id
                   && $pc->emp_snapshot_id == $ae->emp_snapshot_id && $pc->job_function_id == $ae->job_function_id
@@ -302,7 +311,7 @@ class FSF_HC_ReportController extends Controller
 
        //return response()->json($result);
 
-
+		
         // ส่วนท้าย ทำการนำข้อมูลใส่ไฟล์ Json และส่งชื่อไฟล์ที่สร้างกลับไปยัง Front
         $now = new DateTime();
         $date = $now->format('Y-m-d_H-i-s');
