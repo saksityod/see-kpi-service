@@ -280,7 +280,7 @@ class SalaryAdjustmentController extends Controller
         } else {
             if(empty($request->org_id)) {
                 $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
-                $qryOrgId = "AND find_in_set(o.org_code, '{$gueOrgCodeByOrgId}')";
+                $qryOrgId = "AND (emp.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}') )";
             } else {
                 $qryOrgId = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
             }

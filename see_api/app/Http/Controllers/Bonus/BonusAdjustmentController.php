@@ -57,7 +57,7 @@ class BonusAdjustmentController extends Controller
         } else {
             if(empty($request->org_id)) {
                 $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
-                $qryOrgId = "AND find_in_set(org.org_code, '{$gueOrgCodeByOrgId}')";
+                $qryOrgId = "AND (er.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}') )";
             } else {
                 $qryOrgId = "AND (er.org_id = '{$request->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}'))";
             }
