@@ -278,19 +278,19 @@ class HeadCountController extends Controller
 				
 	}
 	
-	public function destroy($position_id)
+	public function destroy($head_count_id)
 	{
 		try {
-			$item = Position::findOrFail($position_id);
+			$item = HeadCount::findOrFail($head_count_id);
 		} catch (ModelNotFoundException $e) {
-			return response()->json(['status' => 404, 'data' => 'Position not found.']);
+			return response()->json(['status' => 404, 'data' => 'Head Count not found.']);
 		}	
 
 		try {
 			$item->delete();
 		} catch (Exception $e) {
 			if ($e->errorInfo[1] == 1451) {
-				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Position is in use.']);
+				return response()->json(['status' => 400, 'data' => 'Cannot delete because this Head Count is in use.']);
 			} else {
 				return response()->json($e->errorInfo);
 			}
@@ -298,7 +298,7 @@ class HeadCountController extends Controller
 		
 		return response()->json(['status' => 200]);
 		
-	}	
+	}		
 
 	function between_date_search($start_date, $end_date) {
         if(empty($start_date) && empty($end_date)) {
