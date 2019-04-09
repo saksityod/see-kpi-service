@@ -52,8 +52,8 @@
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="800"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="186"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="471"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="515"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
 		<parameter name="param_questionaire_type" class="java.lang.String"/>
@@ -89,13 +89,13 @@
 , per.percent_all
 
 FROM questionaire_data_header qdh
-INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
-INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-INNER JOIN question q ON qdd.question_id = q.question_id
-INNER JOIN question pq ON q.parent_question_id = pq.question_id
+LEFT JOIN question q ON qdd.question_id = q.question_id
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id
 INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 LEFT JOIN position po ON emp.position_id = po.position_id
 INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
@@ -118,24 +118,24 @@ LEFT JOIN (
 	, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
 		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
 	FROM questionaire_data_header qdh
-	INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+	LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 	-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
-	INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+	LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-	INNER JOIN question q ON qdd.question_id = q.question_id
-	INNER JOIN question pq ON q.parent_question_id = pq.question_id
+	LEFT JOIN question q ON qdd.question_id = q.question_id
+	LEFT JOIN question pq ON q.parent_question_id = pq.question_id
 	INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 	LEFT JOIN position po ON emp.position_id = po.position_id
 	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 	WHERE q.answer_type_id != 7
-	-- AND pq.pass_score > 0
+	 -- AND pq.pass_score > 0
 	AND qdh.data_stage_id >=3
-	AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
-	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}   ) = 1 ) 
-	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
-	AND (qnt.questionaire_type_id = $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+	AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+	AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
 	GROUP BY qnt.questionaire_type_id
 	, qnt.questionaire_type
 	, qdh.assessor_id
@@ -144,11 +144,11 @@ LEFT JOIN (
 	, qdh.emp_snapshot_id
 	, po_tse.position_code
 	, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
-	, q.parent_question_id
+	-- , q.parent_question_id
 	, pq.question_name
 ) total ON total.assessor_id = qdh.assessor_id
 AND total.emp_snapshot_id = qdh.emp_snapshot_id
-AND total.parent_question_id = q.parent_question_id
+-- AND total.parent_question_id = q.parent_question_id
 AND total.questionaire_type_id = qnt.questionaire_type_id
 LEFT JOIN (
 	SELECT rr.questionaire_type_id
@@ -172,24 +172,24 @@ LEFT JOIN (
 			, COUNT(distinct qdd.customer_id) AS num_cus
 			, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
 	FROM questionaire_data_header qdh
-			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+			LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 			INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
-			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+			LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 			INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 			INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-			INNER JOIN question q ON qdd.question_id = q.question_id
-			INNER JOIN question pq ON q.parent_question_id = pq.question_id
+			LEFT JOIN question q ON qdd.question_id = q.question_id
+			LEFT JOIN question pq ON q.parent_question_id = pq.question_id
 			INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 			LEFT JOIN position po ON emp.position_id = po.position_id
 			INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 			LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 			WHERE q.answer_type_id != 7
-			-- AND pq.pass_score > 0
-			 AND qdh.data_stage_id >= 3
-			AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
-			AND (qdh.assessor_id =  $P{param_assessor}   OR '' = $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
-			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
-			AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' = $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+			 -- AND pq.pass_score > 0
+				AND qdh.data_stage_id >=3
+			AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+			AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+			AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
 	group by qnt.questionaire_type_id
 			, qnt.questionaire_type
 			, qdh.data_header_id
@@ -235,25 +235,25 @@ LEFT JOIN (
 		, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
 		, COALESCE(ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2),0) AS percent
 		FROM questionaire_data_header qdh
-		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+		LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 		-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
-		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+		LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
 		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-		INNER JOIN question q ON qdd.question_id = q.question_id
-		INNER JOIN question pq ON q.parent_question_id = pq.question_id
+		LEFT JOIN question q ON qdd.question_id = q.question_id
+		LEFT JOIN question pq ON q.parent_question_id = pq.question_id
 		INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 		LEFT JOIN position po ON emp.position_id = po.position_id
 		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
 		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 		WHERE q.answer_type_id != 7
-		-- AND pq.pass_score > 0
-		 AND qdh.data_stage_id >=3
-		AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}   , "%d/%m/%Y")
-		AND (qdh.assessor_id = $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   
-		AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee}   )
-		AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
-		GROUP BY qnt.questionaire_type_id
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+GROUP BY qnt.questionaire_type_id
 		, qnt.questionaire_type
 		, qdh.data_header_id
 		, qdh.assessor_id
@@ -263,15 +263,15 @@ LEFT JOIN (
 		, po_tse.position_code
 		, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
 		, qdh.questionaire_date
-		, q.parent_question_id
-		, pq.question_name
+		-- , q.parent_question_id
+		-- , pq.question_name
 	) re
 	GROUP BY re.questionaire_type_id
 	, re.assessor_id
 	, re.emp_snapshot_id
-	, re.parent_question_id
+	-- , re.parent_question_id
 ) result ON result.questionaire_type_id = qnt.questionaire_type_id
-AND result.parent_question_id = q.parent_question_id
+-- AND result.parent_question_id = q.parent_question_id
 AND result.assessor_id = qdh.assessor_id
 AND result.emp_snapshot_id = qdh.emp_snapshot_id
 LEFT JOIN ( 
@@ -293,32 +293,31 @@ LEFT JOIN (
   , COUNT(distinct qdd.customer_id) AS num_cus 
   , (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know 
   FROM questionaire_data_header qdh 
-  INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-  INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
-  INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+  LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+  -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+  LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
   INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
   INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
-  INNER JOIN question q ON qdd.question_id = q.question_id 
-  INNER JOIN question pq ON q.parent_question_id = pq.question_id 
+  LEFT JOIN question q ON qdd.question_id = q.question_id 
+  LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
   INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
   LEFT JOIN position po ON emp.position_id = po.position_id 
   INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
  LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
-  WHERE q.answer_type_id != 7 
- --  AND pq.pass_score > 0
-  	AND qdh.data_stage_id >=3
-AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
-AND (qdh.assessor_id =   $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
-AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' = $P{param_employee} )
-AND (qnt.questionaire_type_id =  $P{param_questionaire_type}   OR '' =  $P{param_questionaire_type}   OR  ISNULL( $P{param_questionaire_type}   ) = 1 )
+  WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
   GROUP BY qnt.questionaire_type_id 
   , qdh.data_header_id
   , qnt.questionaire_type 
   , qdh.assessor_id 
   , qdh.emp_snapshot_id 
   , qdh.questionaire_date 
-  , q.section_id
---   , q.parent_question_id 
+  -- , q.parent_question_id 
 --   , pq.question_name 
  ) num 
  GROUP BY num.questionaire_type_id 
@@ -335,13 +334,13 @@ SELECT qnt.questionaire_type_id
 , COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
 		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent_all
 FROM questionaire_data_header qdh 
-INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
-INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
 INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
 INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
-INNER JOIN question q ON qdd.question_id = q.question_id 
-INNER JOIN question pq ON q.parent_question_id = pq.question_id 
+LEFT JOIN question q ON qdd.question_id = q.question_id 
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
 INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
 LEFT JOIN position po ON emp.position_id = po.position_id 
 
@@ -357,13 +356,12 @@ GROUP BY qnt.questionaire_type_id
 , qdh.assessor_id 
 , po.position_code 
 , CONCAT(emp.emp_first_name,' ',emp.emp_last_name) 
-, q.parent_question_id 
+-- , q.parent_question_id 
 , pq.question_name  
 ORDER BY qnt.questionaire_type_id ASC, q.parent_question_id ASC, qdh.assessor_id ASC
 ) as per ON per.questionaire_type_id = qnt.questionaire_type_id 
-AND per.parent_question_id = q.parent_question_id
+-- AND per.parent_question_id = q.parent_question_id
 AND per.assessor_id = qdh.assessor_id
-
 
 WHERE q.answer_type_id != 7
  -- AND pq.pass_score > 0
@@ -384,8 +382,8 @@ GROUP BY qnt.questionaire_type_id
 , po_tse.position_code
 , CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
 , qdh.questionaire_date
-, q.parent_question_id
-, pq.question_name
+-- , q.parent_question_id
+-- , pq.question_name
 ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire_date ASC, q.parent_question_id ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
@@ -484,46 +482,11 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="param_job_function" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT qdh.assessor_id 
-, po.position_code 
-, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor 
-FROM questionaire_data_header qdh 
-INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
-INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
-INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
-INNER JOIN question q ON qdd.question_id = q.question_id 
-INNER JOIN question pq ON q.parent_question_id = pq.question_id 
-INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
-INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
-LEFT JOIN position po ON emp.position_id = po.position_id 
-WHERE q.answer_type_id != 7 
-AND pq.pass_score > 0
-	AND qdh.data_stage_id >=3
-AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}  , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  , "%d/%m/%Y")
-AND (qdh.assessor_id =   $P{param_assessor}  OR '' = $P{param_assessor}  OR  ISNULL(  $P{param_assessor}  ) = 1 )   -- qdh.assessor_id = 2176
-AND (qdh.emp_snapshot_id in($P!{param_employee} ) OR   '999999999' = $P{param_employee} )
-AND (qnt.questionaire_type_id = $P{param_questionaire_type}  OR '' =  $P{param_questionaire_type}  OR  ISNULL(  $P{param_questionaire_type}  ) = 1 )
-GROUP BY qdh.assessor_id 
-, po.position_code 
-, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) 
-ORDER BY qdh.assessor_id ASC]]>
+		<![CDATA[SELECT 1]]>
 	</queryString>
-	<field name="assessor_id" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="assessor_id"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	<field name="1" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="1"/>
 	</field>
-	<field name="position_code" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="position_code"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
-	</field>
-	<field name="name_assessor" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name_assessor"/>
-	</field>
-	<group name="assessor_id" isStartNewPage="true">
-		<groupExpression><![CDATA[$F{assessor_id}]]></groupExpression>
-	</group>
-	<group name="Group1" keepTogether="true"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -715,7 +678,7 @@ ORDER BY qdh.assessor_id ASC]]>
 						<cellContents mode="Opaque" style="Crosstab 1_CT">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 							<textField>
-								<reportElement mode="Opaque" x="0" y="0" width="145" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="42605c7e-17a1-4dfb-91a6-99e7aec8e546"/>
+								<reportElement mode="Opaque" x="0" y="0" width="180" height="30" forecolor="#FFFFFF" backcolor="#005FB3" uuid="42605c7e-17a1-4dfb-91a6-99e7aec8e546"/>
 								<box leftPadding="5"/>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
 									<font fontName="BrowalliaUPC" size="18" isBold="true"/>
@@ -735,7 +698,7 @@ ORDER BY qdh.assessor_id ASC]]>
 					<crosstabColumnHeader>
 						<cellContents mode="Opaque" style="Crosstab_CH">
 							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
-							<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 								<reportElement x="0" y="0" width="40" height="140" uuid="c19bff93-c9ce-4aee-a81b-574447d40034"/>
 								<box bottomPadding="3"/>
 								<textElement verticalAlignment="Top" rotation="Left">
@@ -856,7 +819,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<textElement textAlignment="Right">
 								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$V{percent}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[($V{question_name}== null) ? null:$V{percent}]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -934,7 +897,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<textElement textAlignment="Right">
 								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$V{percent_all}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[($V{question_name}== null )? null :$V{percent_all}]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
@@ -994,7 +957,7 @@ ORDER BY qdh.assessor_id ASC]]>
 							<textElement textAlignment="Right">
 								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$V{percent_by_total}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[($V{question_name}== null) ? null:$V{percent_by_total}]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
