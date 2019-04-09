@@ -184,14 +184,14 @@
 				<textField>
 					<reportElement x="0" y="0" width="310" height="20" uuid="5bd982c3-5f07-41c6-bb74-5e16dd1dac2c"/>
 					<textElement verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+						<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA["FSF HC -"+$F{questionaire_type}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="0" y="20" width="310" height="20" uuid="face37e9-4cce-4c6d-afb9-48fcc19684e2"/>
 					<textElement verticalAlignment="Middle">
-						<font fontName="TH SarabunPSK" size="14"/>
+						<font fontName="BrowalliaUPC" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Date From "+$F{start_date} +"  Date To "+$F{end_date}]]></textFieldExpression>
 				</textField>
@@ -222,7 +222,7 @@
 									<pen lineWidth="0.25" lineStyle="Dotted"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 								</textElement>
 								<text><![CDATA[Position ]]></text>
 							</staticText>
@@ -232,7 +232,7 @@
 									<pen lineWidth="0.25" lineStyle="Dotted"/>
 								</box>
 								<textElement textAlignment="Left" verticalAlignment="Middle">
-									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 								</textElement>
 								<text><![CDATA[Name/ Last Name]]></text>
 							</staticText>
@@ -250,7 +250,7 @@
 								<textField>
 									<reportElement x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="dc544383-efb0-4eb2-8b69-e2b43fdf5c61"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="14"/>
+										<font fontName="BrowalliaUPC" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{position_code}]]></textFieldExpression>
 								</textField>
@@ -265,7 +265,7 @@
 									<reportElement x="0" y="0" width="250" height="20" forecolor="#FFFFFF" uuid="547c9a03-cec0-4d53-88ff-bfd019331908"/>
 									<box leftPadding="10"/>
 									<textElement textAlignment="Left">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 									</textElement>
 									<text><![CDATA[Total Thailand]]></text>
 								</staticText>
@@ -285,7 +285,7 @@
 									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="190" height="20" isRemoveLineWhenBlank="true" backcolor="#D9E1F2" uuid="8dba4a54-620b-4120-8475-3957e350a893"/>
 									<box leftPadding="10"/>
 									<textElement textAlignment="Left">
-										<font fontName="TH SarabunPSK" size="14"/>
+										<font fontName="BrowalliaUPC" size="14"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{emp_name}]]></textFieldExpression>
 								</textField>
@@ -314,7 +314,7 @@
 									<reportElement style="Crosstab group" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="60" height="20" isPrintWhenDetailOverflows="true" uuid="c95a5ee4-c595-4fd7-ae1c-579c14e67d56"/>
 									<box topPadding="5" leftPadding="5" bottomPadding="5" rightPadding="5"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<font fontName="BrowalliaUPC" size="14" isBold="true"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{group_colume}]]></textFieldExpression>
 								</textField>
@@ -342,7 +342,7 @@
 									<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="f86ac272-9084-4066-aedf-b1221fa8e622"/>
 									<box topPadding="0" bottomPadding="0" rightPadding="5"/>
 									<textElement textAlignment="Center">
-										<font fontName="TH SarabunPSK" size="14" isBold="false"/>
+										<font fontName="BrowalliaUPC" size="14" isBold="false"/>
 									</textElement>
 									<textFieldExpression><![CDATA[$V{job_function_name}]]></textFieldExpression>
 								</textField>
@@ -384,7 +384,7 @@
 								<reportElement style="N/A" x="0" y="0" width="60" height="20" uuid="da342c3a-154e-4ba2-aa1c-4e62b84ff641"/>
 								<box rightPadding="5"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{head_count_str_MEASURE}]]></textFieldExpression>
 							</textField>
@@ -399,7 +399,7 @@
 								<reportElement x="0" y="0" width="60" height="20" forecolor="#FFFFFF" uuid="ca511657-f421-4c55-a98d-8474b84b57dd"/>
 								<box rightPadding="5"/>
 								<textElement textAlignment="Right">
-									<font fontName="TH SarabunPSK" size="14"/>
+									<font fontName="BrowalliaUPC" size="14"/>
 								</textElement>
 								<textFieldExpression><![CDATA[$V{sum_percent_coverage}]]></textFieldExpression>
 							</textField>
