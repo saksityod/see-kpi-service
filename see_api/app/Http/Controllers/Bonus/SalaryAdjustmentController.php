@@ -253,7 +253,9 @@ class SalaryAdjustmentController extends Controller
             LEFT JOIN (".$score_bu_coo_board.") emj ON emj.emp_result_id = emp.emp_result_id
             LEFT JOIN (".$last_score_adjust.") lsa ON lsa.emp_result_id = emp.emp_result_id
             INNER JOIN appraisal_stage ast ON ast.stage_id = emp.stage_id
-            WHERE emp.appraisal_type_id = 2";
+            WHERE emp.appraisal_type_id = 2
+			AND em.is_active = 1
+			AND fo.is_active = 1";
             //LEFT JOIN (".$grade_score.") gr ON gr.emp_result_id = emp.emp_result_id || [gr.grade, gr.adjust_result_score as score_for_grade]
 
 
