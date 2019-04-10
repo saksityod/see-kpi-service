@@ -696,7 +696,8 @@ class QuestionaireDataController extends Controller
                      WHERE am.emp_snapshot_id = '{$this->get_emp_snapshot()->emp_snapshot_id}'
                     ) chief_emp_name,
                     p.position_code,
-                    es.emp_code
+                    es.emp_code,
+                    es.start_date
             FROM employee_snapshot es
             INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
             INNER JOIN position p ON p.position_id = es.position_id
@@ -707,6 +708,13 @@ class QuestionaireDataController extends Controller
                 OR p.position_code LIKE '%{$emp_name}%'
                 OR es.emp_code LIKE '%{$emp_name}%'
             ) AND jf.is_evaluated = 1
+            AND es.start_date = (
+                SELECT max( e.start_date )
+                FROM employee_snapshot e
+                WHERE e.position_id = es.position_id
+                AND e.emp_code = es.emp_code
+                AND e.start_date <= '".$request->date."'
+            )
             LIMIT 10
         ");
 
@@ -1036,7 +1044,12 @@ class QuestionaireDataController extends Controller
             AND qa.questionaire_type_id = '{$request->questionaire_type_id}'
             ");
 
-        $head = $head[0];
+        
+        try {
+            $head = $head[0];
+        } catch (Exception $e) {
+            return response()->json(['status' => 404, 'data' => 'Questionaire not found.']);
+        }
 
         $sub_items = DB::select("
             SELECT section_id, section_name, is_cust_search, is_show_report, report_url
