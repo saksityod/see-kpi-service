@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-salary-adjustment" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="0" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -108,7 +108,7 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2)*100,"%") as sum_diff
+AND emr.appraisal_form_id in  ( $P!{param_from} ))*100,2),"%") as sum_diff
 , FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),0) as sum_new_pqpi_amount
 , FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),0) as newtotal
 , FORMAT((SELECT SUM((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
