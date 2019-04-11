@@ -394,7 +394,7 @@ FROM (
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(distinct qdd.customer_id) as count_cus
 		, COALESCE(
-		case when qn.pass_score = 'percentage' 
+		case when qn.pass_score_type = "percentage" 
 		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
 		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
@@ -443,7 +443,7 @@ CROSS JOIN (
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(distinct qdd.customer_id) as count_cus
 		, COALESCE(
-		case when qn.pass_score = 'percentage' 
+		case when qn.pass_score_type = "percentage" 
 		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
 		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
