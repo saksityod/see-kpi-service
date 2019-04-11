@@ -26,7 +26,7 @@ class FSF_HC_ReportController extends Controller
     {
         $this->middleware('jwt.auth');
     }
-
+    
     public function index(Request $request)
     {
         $date_start = $request->date_start; // "01/01/2019"
@@ -36,7 +36,7 @@ class FSF_HC_ReportController extends Controller
         $param_date_end = date_format(date_create_from_format('d/m/Y', $date_end), 'Y-m-d'); // "2019-01-31"
 
         $param_questionaire_type_id = json_decode($request->questionaire_type_id); // "1,2";
-
+		
         // search emp, position by head_count
         $emp_position = "
           SELECT snap.emp_snapshot_id
@@ -86,15 +86,15 @@ class FSF_HC_ReportController extends Controller
           CROSS JOIN (".$job_type.") job
           LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id
             AND hc.position_id = emp.position_id
-		  WHERE hc.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
-		  GROUP BY emp.emp_snapshot_id
-          , emp.emp_name
-          , emp.position_id
-          , emp.position_code
-          , job.job_function_id
-          , job.job_function_name
-          , job.questionaire_type_id
-          , job.questionaire_type";
+          WHERE hc.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
+          GROUP BY emp.emp_snapshot_id
+              , emp.emp_name
+              , emp.position_id
+              , emp.position_code
+              , job.job_function_id
+              , job.job_function_name
+              , job.questionaire_type_id
+              , job.questionaire_type";
 
 
         // Information ชุดที่ 1
@@ -151,7 +151,7 @@ class FSF_HC_ReportController extends Controller
         // Manage Information ชุดที่ 2
         foreach ($actualExecution as $exe) {
             // หาลูกน้องภายใต้ตัวเองทั้งหมด
-            $exe->under_emp = $this->GetAllEmpCodeUnder($exe->emp_snapshot_id);
+            $exe->under_emp = $this->GetAllEmpCodeUnder($exe->emp_snapshot_id, $param_date_start, $param_date_end);
 
             // หา (assessor_id || emp_snapshot_id) ตาม level และใช้ emp ตาม job_function by record [level_id = 2 :: FF]
             $level_under_emp = DB::select("
@@ -311,7 +311,7 @@ class FSF_HC_ReportController extends Controller
 
        //return response()->json($result);
 
-		
+
         // ส่วนท้าย ทำการนำข้อมูลใส่ไฟล์ Json และส่งชื่อไฟล์ที่สร้างกลับไปยัง Front
         $now = new DateTime();
         $date = $now->format('Y-m-d_H-i-s');
@@ -328,7 +328,7 @@ class FSF_HC_ReportController extends Controller
 
       }
 
-      public function GetAllEmpCodeUnder($emp_snapshot_id)
+      public function GetAllEmpCodeUnder($emp_snapshot_id, $start_date, $end_date)
       {
         $emp_code = DB::select("SELECT emp_code
             FROM employee_snapshot
@@ -347,6 +347,8 @@ class FSF_HC_ReportController extends Controller
             FROM employee_snapshot
             WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
             AND chief_emp_code != ''
+			AND start_date BETWEEN '".$start_date."' AND '".$end_date."'
+			GROUP BY emp_code
           ");
 
           if(empty($emp)) {
@@ -365,12 +367,23 @@ class FSF_HC_ReportController extends Controller
         }// end else
 
         $place_parent = $place_parent.$parent; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
+		
+		// ลูกน้องที่ต้องการจะต้องมี start_date มากที่สุด ตาม parameter date
+		$MaxDateEmp = "
+			SELECT emp_code, max(start_date) as max_date
+			FROM employee_snapshot
+			WHERE FIND_IN_SET(emp_code,'".$place_parent."')
+			AND emp_snapshot_id != ".$emp_snapshot_id."
+			AND start_date BETWEEN '".$start_date."' AND '".$end_date."'
+			GROUP BY emp_code";
 
-        // นำ emp_code ไปหา emp_snapshot_id (ไม่เอาตัวเอง) และเอาเฉพาะลูกน้องที่มี job_function.is_show_report = 1
+        // นำ emp_code ไปหา emp_snapshot_id (ไม่เอาตัวเอง) และเอาเฉพาะลูกน้องคนที่มีวันที่มากที่สุดตาม parameter date และเอาเฉพาะลูกน้องที่มี job_function.is_show_report = 1
         $AllempID = DB::select("
-          SELECT distinct em.emp_snapshot_id
+          SELECT em.emp_snapshot_id
           FROM employee_snapshot em
           INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
+		  INNER JOIN (".$MaxDateEmp.") md ON md.emp_code = em.emp_code
+			AND md.max_date = em.start_date
           WHERE FIND_IN_SET(em.emp_code,'".$place_parent."')
           AND em.emp_snapshot_id != ".$emp_snapshot_id."
           AND jf.is_show_report = 1
