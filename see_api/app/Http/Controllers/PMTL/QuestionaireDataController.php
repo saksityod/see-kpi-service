@@ -390,100 +390,148 @@ class QuestionaireDataController extends Controller
     }
 
     function calculate_score($data_header_id) {
-        $cal_score = DB::select("
-            SELECT SUM(count_customer) count_customer,
-                SUM(score) score,
-                SUM(full_score) full_score,
-                SUM(count_question) count_question,
-                SUM(sum_applicable) sum_applicable
-            FROM (
-                SELECT  COUNT(DISTINCT customer_id) count_customer, 
-                        SUM(qdd.score) score, 
-                         (
+        $score_type = DB::select("
+            SELECT q.pass_score_type
+            FROM questionaire_data_header qd
+            INNER JOIN questionaire q on q.questionaire_id = qd.questionaire_id
+            WHERE qd.data_header_id = '{$data_header_id}'
+            ");
+        if(!empty($score_type) && $score_type[0]->pass_score_type == "percentage") {
+            $cal_score = DB::select("
+                SELECT SUM(count_customer) count_customer,
+                    SUM(score) score,
+                    SUM(full_score) full_score,
+                    SUM(count_question) count_question,
+                    SUM(sum_applicable) sum_applicable
+                FROM (
+                    SELECT  COUNT(DISTINCT customer_id) count_customer, 
+                            SUM(qdd.score) score, 
+                            (
+                                    SELECT SUM(qdd.full_score)
+                                    FROM questionaire_data_detail qdd
+                                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                                    INNER JOIN question q ON q.question_id = qdd.question_id
+                                    INNER JOIN question qq ON qq.question_id = q.parent_question_id 
+                                    WHERE qs.is_cust_search = 1
+                                    AND qdd.data_header_id = '{$data_header_id}'
+                                    AND qq.pass_score > 0
+                                    AND qq.answer_type_id != 7
+                            ) full_score,
+                            COUNT(DISTINCT qdd.question_id) count_question,
+                            (
                                 SELECT SUM(qdd.full_score)
                                 FROM questionaire_data_detail qdd
                                 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
                                 INNER JOIN question q ON q.question_id = qdd.question_id
                                 INNER JOIN question qq ON qq.question_id = q.parent_question_id 
                                 WHERE qs.is_cust_search = 1
+                                AND qdd.is_not_applicable = 1
                                 AND qdd.data_header_id = '{$data_header_id}'
                                 AND qq.pass_score > 0
                                 AND qq.answer_type_id != 7
-                        ) full_score,
-                        COUNT(DISTINCT qdd.question_id) count_question,
-                        (
-                            SELECT SUM(qdd.full_score)
-                            FROM questionaire_data_detail qdd
-                            INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-                            INNER JOIN question q ON q.question_id = qdd.question_id
-                            INNER JOIN question qq ON qq.question_id = q.parent_question_id 
-                            WHERE qs.is_cust_search = 1
-                            AND qdd.is_not_applicable = 1
-                            AND qdd.data_header_id = '{$data_header_id}'
-                            AND qq.pass_score > 0
-                            AND qq.answer_type_id != 7
-                        ) sum_applicable
-                FROM questionaire_data_detail qdd
-                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-                INNER JOIN question q ON q.question_id = qdd.question_id
-                INNER JOIN question qq ON qq.question_id = q.parent_question_id
-                WHERE qs.is_cust_search = 1
-                AND qdd.is_not_applicable = 0
-                AND qdd.data_header_id = '{$data_header_id}'
-                AND qq.pass_score > 0
-                AND qq.answer_type_id != 7
-            UNION All
-                SELECT  COUNT(DISTINCT customer_id) count_customer, 
-                        SUM(qdd.score) score, 
-                        (
-                                SELECT SUM(qdd.full_score)
-                                FROM questionaire_data_detail qdd
-                                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-                                INNER JOIN question q ON q.question_id = qdd.question_id
-                                WHERE qs.is_cust_search = 1
-                                AND qdd.data_header_id = '{$data_header_id}'
-                                AND q.pass_score > 0
-                                AND q.answer_type_id != 7
-                        ) full_score,
-                        COUNT(DISTINCT qdd.question_id) count_question,
-                        (
-                                SELECT SUM(qdd.full_score)
-                                FROM questionaire_data_detail qdd
-                                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-                                INNER JOIN question q ON q.question_id = qdd.question_id
-                                WHERE qs.is_cust_search = 1
-                                AND qdd.is_not_applicable = 1
-                                AND qdd.data_header_id = '{$data_header_id}'
-                                AND q.pass_score > 0
-                                AND q.answer_type_id != 7
-                        ) sum_applicable
-                FROM questionaire_data_detail qdd
-                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
-                INNER JOIN question q ON q.question_id = qdd.question_id
-                WHERE qs.is_cust_search = 1
-                AND qdd.is_not_applicable = 0
-                AND qdd.data_header_id = '{$data_header_id}'
-                AND q.pass_score > 0
-                AND q.answer_type_id != 7
-            )d1
-        ");
+                            ) sum_applicable
+                    FROM questionaire_data_detail qdd
+                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                    INNER JOIN question q ON q.question_id = qdd.question_id
+                    INNER JOIN question qq ON qq.question_id = q.parent_question_id
+                    WHERE qs.is_cust_search = 1
+                    AND qdd.is_not_applicable = 0
+                    AND qdd.data_header_id = '{$data_header_id}'
+                    AND qq.pass_score > 0
+                    AND qq.answer_type_id != 7
+                UNION All
+                    SELECT  COUNT(DISTINCT customer_id) count_customer, 
+                            SUM(qdd.score) score, 
+                            (
+                                    SELECT SUM(qdd.full_score)
+                                    FROM questionaire_data_detail qdd
+                                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                                    INNER JOIN question q ON q.question_id = qdd.question_id
+                                    WHERE qs.is_cust_search = 1
+                                    AND qdd.data_header_id = '{$data_header_id}'
+                                    AND q.pass_score > 0
+                                    AND q.answer_type_id != 7
+                            ) full_score,
+                            COUNT(DISTINCT qdd.question_id) count_question,
+                            (
+                                    SELECT SUM(qdd.full_score)
+                                    FROM questionaire_data_detail qdd
+                                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                                    INNER JOIN question q ON q.question_id = qdd.question_id
+                                    WHERE qs.is_cust_search = 1
+                                    AND qdd.is_not_applicable = 1
+                                    AND qdd.data_header_id = '{$data_header_id}'
+                                    AND q.pass_score > 0
+                                    AND q.answer_type_id != 7
+                            ) sum_applicable
+                    FROM questionaire_data_detail qdd
+                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                    INNER JOIN question q ON q.question_id = qdd.question_id
+                    WHERE qs.is_cust_search = 1
+                    AND qdd.is_not_applicable = 0
+                    AND qdd.data_header_id = '{$data_header_id}'
+                    AND q.pass_score > 0
+                    AND q.answer_type_id != 7
+                )d1
+            ");
 
-        if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
-            && !empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score)) {
+            if(!empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score) 
+                && !empty($cal_score[0]->full_score) && !empty($cal_score[0]->full_score)) {
 
-            $total = $cal_score[0]->full_score - $cal_score[0]->sum_applicable;
-            $full_score = $total / $cal_score[0]->count_customer;
-            $total_score = $cal_score[0]->score / $cal_score[0]->count_customer;
+                $total = $cal_score[0]->full_score - $cal_score[0]->sum_applicable;
+                $full_score = $total / $cal_score[0]->count_customer;
+                $total_score = $cal_score[0]->score / $cal_score[0]->count_customer;
 
-            $items = QuestionaireDataHeader::select("full_score", "total_score")
-                    ->where("data_header_id", $data_header_id)->first();
-            $full_score = $full_score + $items->full_score;
-            $total_score = $total_score + $items->total_score;
+                $items = QuestionaireDataHeader::select("full_score", "total_score")
+                        ->where("data_header_id", $data_header_id)->first();
+                $full_score = $full_score + $items->full_score;
+                $total_score = $total_score + $items->total_score;
 
-        } else {
+            } else {
+                $full_score = null;
+                $total_score = null;
+            }
+
+        }else if(!empty($score_type) && $score_type[0]->pass_score_type == "score"){
+            $cal_score = DB::select("
+                SELECT 
+                    sum(score) score,
+                    sum(full_score) full_score
+                FROM
+                    (SELECT  
+                        COALESCE(sum(qdd.score)/COUNT(qdd.customer_id),0) as  score ,
+                        MAX(qdd.full_score) as full_score
+                    FROM questionaire_data_detail qdd
+                    INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                    INNER JOIN question q ON q.question_id = qdd.question_id
+                    INNER JOIN question qq ON qq.question_id = q.parent_question_id
+                    WHERE qs.is_cust_search = 1
+                    AND qdd.is_not_applicable = 0
+                    AND qdd.data_header_id = '789'
+                    AND qq.pass_score > 0
+                    AND qq.answer_type_id != 7
+                    GROUP BY q.question_id
+                    ) d
+            ");
+            if(!empty($cal_score)) {
+
+                $full_score = $cal_score[0]->score;
+                $total_score = $cal_score[0]->full_score ;
+
+                $items = QuestionaireDataHeader::select("full_score", "total_score")
+                        ->where("data_header_id", $data_header_id)->first();
+                $full_score = $full_score + $items->full_score;
+                $total_score = $total_score + $items->total_score;
+
+            } else {
+                $full_score = null;
+                $total_score = null;
+            }
+        }else{
             $full_score = null;
             $total_score = null;
         }
+        
 
         return ['full_score' => $full_score, 'total_score' => $total_score];
     }
