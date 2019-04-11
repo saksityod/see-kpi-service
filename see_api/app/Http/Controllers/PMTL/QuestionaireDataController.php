@@ -501,7 +501,7 @@ class QuestionaireDataController extends Controller
                     sum(full_score) full_score
                 FROM
                     (SELECT  
-                        COALESCE(sum(qdd.score)/COUNT(qdd.customer_id),0) as  score ,
+                        COALESCE(ROUND(sum(qdd.score)/COUNT(qdd.customer_id),2),0) as  score ,
                         MAX(qdd.full_score) as full_score
                     FROM questionaire_data_detail qdd
                     INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
