@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-salary-adjustment" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="0" uuid="6b32a11b-fc54-457c-9570-b93c118eb87a">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -12,6 +12,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="1000"/>
 	<parameter name="param_year" class="java.lang.String"/>
 	<parameter name="param_org_id" class="java.lang.String"/>
 	<parameter name="param_period" class="java.lang.String"/>
@@ -52,49 +54,49 @@
 , ap.appraisal_period_desc
 , af.appraisal_form_name
 , p.job_code
-, FORMAT(FROM_BASE64(emr.s_amount) ,2)as salary
+, FORMAT(FROM_BASE64(emr.s_amount) ,0)as salary
 , FORMAT((SELECT SUM(FROM_BASE64(emr.s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position}) AND emr.period_id =  $P{param_period}    
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_salary
-, FORMAT(FROM_BASE64(emr.pqpi_amount),2) as pqpi_amount
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_salary
+, FORMAT(FROM_BASE64(emr.pqpi_amount),0) as pqpi_amount
 , FORMAT((SELECT SUM(FROM_BASE64(emr.pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pqpi
-, FORMAT(FROM_BASE64(emr.mpi_amount),2) as pmi_amount
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_pqpi
+, FORMAT(FROM_BASE64(emr.mpi_amount),0) as pmi_amount
 , FORMAT((SELECT SUM(FROM_BASE64(emr.mpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pmi
-, FORMAT(FROM_BASE64(emr.pi_amount),2) as pi_amount
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_pmi
+, FORMAT(FROM_BASE64(emr.pi_amount),0) as pi_amount
 , FORMAT((SELECT SUM(FROM_BASE64(emr.pi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_pi
-, FORMAT((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),2) as total
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_pi
+, FORMAT((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),0) as total
 , FORMAT((SELECT SUM((FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_total
-, FORMAT(FROM_BASE64(emr.adjust_new_s_amount),2) as  new_s_amount
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_total
+, FORMAT(FROM_BASE64(emr.adjust_new_s_amount),0) as  new_s_amount
 , FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_s_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} ) ),2) as sum_new_s_amount
-, FORMAT(FROM_BASE64(emr.adjust_new_pqpi_amount),2) as new_pqpi_amount
+AND emr.appraisal_form_id in  ( $P!{param_from} ) ),0) as sum_new_s_amount
+, FORMAT(FROM_BASE64(emr.adjust_new_pqpi_amount),0) as new_pqpi_amount
 ,concat(FORMAT(((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount)/(FROM_BASE64(emr.s_amount)+FROM_BASE64(emr.pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)))*100,2),"%") as diff
 , concat( FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
@@ -106,36 +108,36 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2)*100,"%") as sum_diff
-, FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),2) as sum_new_pqpi_amount
-, FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),2) as newtotal
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0)*100,"%") as sum_diff
+, FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),0) as sum_new_pqpi_amount
+, FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),0) as newtotal
 , FORMAT((SELECT SUM((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_newtotal
-, FORMAT(emr.adjust_raise_s_amount,2) as raise_salary
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_newtotal
+, FORMAT(emr.adjust_raise_s_amount,0) as raise_salary
 , FORMAT((SELECT SUM(emr.adjust_raise_s_amount ) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_raise_salary
-, FORMAT(emr.adjust_raise_pqpi_amount,2) as raise_pqpi
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_raise_salary
+, FORMAT(emr.adjust_raise_pqpi_amount,0) as raise_pqpi
 , FORMAT((SELECT SUM(emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_raise_pqpi
-, FORMAT((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount),2) as total_raise
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_raise_pqpi
+, FORMAT((emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount),0) as total_raise
 , FORMAT((SELECT SUM(emr.adjust_raise_s_amount+emr.adjust_raise_pqpi_amount) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
 AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNULL( $P{param_level_emp} )=1)
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),2) as sum_total_raise
+AND emr.appraisal_form_id in  ( $P!{param_from} )),0) as sum_total_raise
 
 FROM emp_result emr
 INNER JOIN employee e ON e.emp_id = emr.emp_id
@@ -297,7 +299,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -309,7 +311,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -321,7 +323,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -333,7 +335,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -345,7 +347,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -357,7 +359,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -369,7 +371,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -381,7 +383,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -393,7 +395,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -405,7 +407,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -417,7 +419,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -425,11 +427,11 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 					<textFieldExpression><![CDATA[$F{sum_salary}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00#;(#,##0.00#-)" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="202" y="0" width="70" height="15" backcolor="#7AB8FF" uuid="b52bcb16-29d0-42bf-a7ef-a414671ebe27">
+					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="200" y="0" width="72" height="15" backcolor="#7AB8FF" uuid="b52bcb16-29d0-42bf-a7ef-a414671ebe27">
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -441,7 +443,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -453,7 +455,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -465,7 +467,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 						<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 					</reportElement>
 					<box leftPadding="0" rightPadding="3">
-						<pen lineWidth="0.5" lineStyle="Dashed"/>
+						<pen lineWidth="0.5" lineStyle="Solid"/>
 					</box>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="TH SarabunPSK" size="9" isBold="true"/>
@@ -523,9 +525,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 	<columnHeader>
 		<band height="42" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="272" y="14" width="40" height="28" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="65891609-c61e-4db7-8367-8c653381d1cc"/>
+				<reportElement mode="Opaque" x="272" y="14" width="40" height="28" forecolor="#000000" backcolor="#99A9CF" uuid="65891609-c61e-4db7-8367-8c653381d1cc"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -533,9 +535,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="602" y="14" width="40" height="28" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="adb454df-834f-4e14-b89d-5a61cb57323c"/>
+				<reportElement mode="Opaque" x="602" y="14" width="40" height="28" forecolor="#000000" backcolor="#99A9CF" uuid="adb454df-834f-4e14-b89d-5a61cb57323c"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -543,9 +545,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="25" y="0" width="76" height="42" backcolor="#B8B8B8" uuid="70044e45-dae4-42f8-8aa2-3bc3daeb7093"/>
+				<reportElement mode="Opaque" x="50" y="0" width="64" height="42" backcolor="#B8B8B8" uuid="70044e45-dae4-42f8-8aa2-3bc3daeb7093"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -555,7 +557,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="472" y="14" width="36" height="28" backcolor="#A2BCF1" uuid="f0e5c1cb-dfe6-4bc2-bf3b-d294b65d69c1"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -566,7 +568,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="682" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="7285639b-118a-456e-afca-b7def129904d"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -574,9 +576,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[P-QPI]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="602" y="0" width="200" height="14" forecolor="#FFFFFF" backcolor="#3B5998" uuid="e2df9c0e-e54b-40dc-92c8-41819d9fb0c7"/>
+				<reportElement mode="Opaque" x="602" y="0" width="200" height="14" forecolor="#000000" backcolor="#5F7DC2" uuid="e2df9c0e-e54b-40dc-92c8-41819d9fb0c7"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -584,9 +586,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[รายได้ใหม่]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="101" y="0" width="26" height="42" backcolor="#B8B8B8" uuid="3a7a127a-4a21-401d-aa8f-b3029a65d11b"/>
+				<reportElement mode="Opaque" x="114" y="0" width="26" height="42" backcolor="#B8B8B8" uuid="3a7a127a-4a21-401d-aa8f-b3029a65d11b"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -596,7 +598,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="352" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="4e8f1591-7ec7-4e76-8bd8-a9218bb1ee2c"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -606,7 +608,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="508" y="14" width="34" height="28" backcolor="#A2BCF1" uuid="68cdd8a4-ca40-4bc5-a89f-646335ab59ef"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -617,7 +619,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="432" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="f94a8ebc-725e-48c3-b366-1684046e05b9"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -625,9 +627,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[PI]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="272" y="0" width="200" height="14" forecolor="#FFFFFF" backcolor="#3B5998" uuid="1f32188a-1071-4dcb-8840-e8b1a8bb3852"/>
+				<reportElement mode="Opaque" x="272" y="0" width="200" height="14" forecolor="#000000" backcolor="#5F7DC2" uuid="1f32188a-1071-4dcb-8840-e8b1a8bb3852"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -637,7 +639,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="392" y="14" width="80" height="14" backcolor="#A2BCF1" uuid="0728eb7b-069b-48b8-afbb-0999d7b2a631"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -647,7 +649,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="642" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="a63cc1c1-afd1-4106-bc54-dc88ca78203f"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -655,9 +657,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[salary]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="187" y="0" width="85" height="42" backcolor="#B8B8B8" uuid="ec34b963-420b-448a-9ced-38d1f16251f2"/>
+				<reportElement mode="Opaque" x="200" y="0" width="72" height="42" backcolor="#B8B8B8" uuid="ec34b963-420b-448a-9ced-38d1f16251f2"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -665,9 +667,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Position]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="127" y="0" width="60" height="42" backcolor="#B8B8B8" uuid="29bb250a-89c4-45ca-98ce-432b07de9516"/>
+				<reportElement mode="Opaque" x="140" y="0" width="60" height="42" backcolor="#B8B8B8" uuid="29bb250a-89c4-45ca-98ce-432b07de9516"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -677,7 +679,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="312" y="14" width="80" height="14" backcolor="#A2BCF1" uuid="aad96bbb-0ea7-4f11-b98b-5eadcd237a9c"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -687,7 +689,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 			<staticText>
 				<reportElement mode="Opaque" x="392" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="2b7ec224-051d-4132-98a8-5cc34a57a053"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -695,9 +697,9 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[MPI]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="0" width="25" height="42" backcolor="#B8B8B8" uuid="9b480d8f-46ab-4f96-a0e5-32f7e283935b"/>
+				<reportElement mode="Opaque" x="20" y="0" width="30" height="42" backcolor="#B8B8B8" uuid="9b480d8f-46ab-4f96-a0e5-32f7e283935b"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -708,7 +710,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="642" y="14" width="80" height="14" backcolor="#A2BCF1" uuid="5df8a683-a86b-41e1-8fff-f516be546ce5"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -718,7 +720,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="312" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="7949f779-1707-443f-94db-d019036b80f5"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -728,7 +730,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="542" y="14" width="35" height="28" backcolor="#A2BCF1" uuid="2ea86cbb-3f96-4432-ac6c-7bbed3d1290b"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -737,9 +739,9 @@ Code]]></text>
  P QPI]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="472" y="0" width="130" height="14" forecolor="#FFFFFF" backcolor="#3B5998" uuid="40254ed4-eb60-4de1-a38b-fe4a7f48565f"/>
+				<reportElement mode="Opaque" x="472" y="0" width="130" height="14" forecolor="#000000" backcolor="#5F7DC2" uuid="40254ed4-eb60-4de1-a38b-fe4a7f48565f"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -749,7 +751,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="577" y="14" width="25" height="28" backcolor="#A2BCF1" uuid="2ee012f7-7f7b-4de7-ba50-951bcef64aa9"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -759,7 +761,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="722" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="67f64de5-0738-44fd-8522-b073323a8aff"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -769,7 +771,7 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="762" y="28" width="40" height="14" backcolor="#A2BCF1" uuid="934d312a-cf8c-4e32-bc05-326b2dd6eb82"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
@@ -779,23 +781,33 @@ Code]]></text>
 			<staticText>
 				<reportElement mode="Opaque" x="722" y="14" width="80" height="14" backcolor="#A2BCF1" uuid="6baa4ce9-3557-43be-a7cd-4bc6002c16c4"/>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[VAR 25%]]></text>
 			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="20" height="42" backcolor="#B8B8B8" uuid="c0ca40e4-eb23-4cc1-9a26-df33bb808b56"/>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font fontName="TH SarabunPSK" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No.]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="15" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="25" height="15" uuid="9e2b189d-fa45-404c-845c-5eb0c9f7c818">
+				<reportElement stretchType="RelativeToBandHeight" x="20" y="0" width="30" height="15" uuid="9e2b189d-fa45-404c-845c-5eb0c9f7c818">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -803,11 +815,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{emp_code}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="127" y="0" width="60" height="15" uuid="5300d902-0350-41f9-98ed-bec5a91dfac8">
+				<reportElement stretchType="RelativeToBandHeight" x="140" y="0" width="60" height="15" uuid="5300d902-0350-41f9-98ed-bec5a91dfac8">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -815,11 +827,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="101" y="0" width="26" height="15" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
+				<reportElement stretchType="RelativeToBandHeight" x="114" y="0" width="26" height="15" uuid="a84a5cc9-566c-4501-bf28-7ca74e3eff0c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box>
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -827,11 +839,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{appraisal_level_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="25" y="0" width="76" height="15" uuid="33297ad5-0722-4377-aa68-490dba044fe7">
+				<reportElement stretchType="RelativeToBandHeight" x="50" y="0" width="64" height="15" uuid="33297ad5-0722-4377-aa68-490dba044fe7">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -839,11 +851,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{emp_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="432" y="0" width="40" height="15" uuid="4c20951d-6a1b-4a59-8a4f-4bc4e1077609">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="432" y="0" width="40" height="15" backcolor="#E3FFD6" uuid="4c20951d-6a1b-4a59-8a4f-4bc4e1077609">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -851,11 +863,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{pi_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="352" y="0" width="40" height="15" uuid="15e05a5a-165a-4802-b3f6-e52f002c9552">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="352" y="0" width="40" height="15" backcolor="#E3FFD6" uuid="15e05a5a-165a-4802-b3f6-e52f002c9552">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -863,11 +875,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{pqpi_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="392" y="0" width="40" height="15" uuid="ba9eec2e-67f5-4e9e-be4e-1eaf4b9f71d7">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="392" y="0" width="40" height="15" backcolor="#E3FFD6" uuid="ba9eec2e-67f5-4e9e-be4e-1eaf4b9f71d7">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -875,11 +887,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{pmi_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="312" y="0" width="40" height="15" uuid="9e8bfaba-c528-4e85-862c-44f4c32bcf2f">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="312" y="0" width="40" height="15" backcolor="#E3FFD6" uuid="9e8bfaba-c528-4e85-862c-44f4c32bcf2f">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -887,11 +899,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{salary}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="272" y="0" width="40" height="15" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="1d0d8384-0f19-4d9d-bf9b-f1912a4dbb88">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="272" y="0" width="40" height="15" forecolor="#000000" backcolor="#99A9CF" uuid="1d0d8384-0f19-4d9d-bf9b-f1912a4dbb88">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -903,7 +915,7 @@ Code]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -911,11 +923,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{total_raise}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="542" y="0" width="35" height="15" uuid="38c35126-d2a1-47e7-809f-34692e607574">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="542" y="0" width="35" height="15" backcolor="#FBFFD6" uuid="38c35126-d2a1-47e7-809f-34692e607574">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -923,11 +935,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{raise_pqpi}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="508" y="0" width="34" height="15" uuid="c06d870a-d077-408d-8a93-4038ce3a9af1">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="508" y="0" width="34" height="15" backcolor="#FBFFD6" uuid="c06d870a-d077-408d-8a93-4038ce3a9af1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -939,7 +951,7 @@ Code]]></text>
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -947,11 +959,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{diff}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="602" y="0" width="40" height="15" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="83fa9741-5acd-4924-8f77-90a541529872">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="602" y="0" width="40" height="15" forecolor="#000000" backcolor="#99A9CF" uuid="83fa9741-5acd-4924-8f77-90a541529872">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed" lineColor="#000000"/>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -959,11 +971,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{newtotal}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="682" y="0" width="40" height="15" uuid="26164435-e38b-4895-9794-dcf33adc742c">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="682" y="0" width="40" height="15" backcolor="#FFEDED" uuid="26164435-e38b-4895-9794-dcf33adc742c">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -971,11 +983,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{new_pqpi_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="642" y="0" width="40" height="15" uuid="fce2d4c2-f44e-487a-9227-0b0e26689b1b">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="642" y="0" width="40" height="15" backcolor="#FFEDED" uuid="fce2d4c2-f44e-487a-9227-0b0e26689b1b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -983,11 +995,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{new_s_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="187" y="0" width="85" height="15" uuid="8b27a87c-0017-406c-ba2c-155a671d4f82">
+				<reportElement stretchType="RelativeToBandHeight" x="200" y="0" width="72" height="15" uuid="8b27a87c-0017-406c-ba2c-155a671d4f82">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -995,11 +1007,11 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{position_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="762" y="0" width="40" height="15" uuid="3fc7d2ab-31a2-4220-b1b1-ecb630c558aa">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="762" y="0" width="40" height="15" backcolor="#FFEDED" uuid="3fc7d2ab-31a2-4220-b1b1-ecb630c558aa">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
@@ -1007,21 +1019,34 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{pi_amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="722" y="0" width="40" height="15" uuid="9b533253-8f51-4dd1-9040-b2d1f0ffdb9f">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="722" y="0" width="40" height="15" backcolor="#FFEDED" uuid="9b533253-8f51-4dd1-9040-b2d1f0ffdb9f">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
-					<pen lineWidth="0.5" lineStyle="Dashed"/>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="TH SarabunPSK" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pmi_amount}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="20" height="15" uuid="dcce6d55-7136-4072-a185-735b6b5746b7">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
+					<font fontName="TH SarabunPSK" size="9"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="50">
+		<band height="40">
 			<staticText>
 				<reportElement x="440" y="5" width="322" height="14" uuid="dc3738c1-33a4-42d4-a34e-3aef08e19ab6"/>
 				<textElement textAlignment="Right">
