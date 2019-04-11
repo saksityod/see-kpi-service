@@ -108,7 +108,7 @@ AND (emr.level_id =  $P{param_level_emp}  OR '' =  $P{param_level_emp}  OR ISNUL
 AND (o.level_id = $P{param_level_org}  OR '' =  $P{param_level_org} OR ISNULL($P{param_level_org} )=1)
 AND (emr.org_id = $P{param_org_id}  OR '' =  $P{param_org_id}  OR ISNULL( $P{param_org_id} )=1)
 AND (emr.emp_id = $P{param_emp}  OR '' = $P{param_emp}  OR ISNULL( $P{param_emp} )=1)
-AND emr.appraisal_form_id in  ( $P!{param_from} )),0)*100,"%") as sum_diff
+AND emr.appraisal_form_id in  ( $P!{param_from} )),2)*100,"%") as sum_diff
 , FORMAT((SELECT SUM(FROM_BASE64(emr.adjust_new_pqpi_amount)) FROM emp_result emr where emr.position_id in ( $P!{param_position})),0) as sum_new_pqpi_amount
 , FORMAT((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount)),0) as newtotal
 , FORMAT((SELECT SUM((FROM_BASE64(emr.adjust_new_s_amount)+FROM_BASE64(emr.adjust_new_pqpi_amount)+FROM_BASE64(emr.mpi_amount)+FROM_BASE64(emr.pi_amount))) FROM emp_result emr where emr.position_id in ( $P!{param_position})AND emr.period_id =  $P{param_period}    -- 1
@@ -525,7 +525,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 	<columnHeader>
 		<band height="42" splitType="Stretch">
 			<staticText>
-				<reportElement mode="Opaque" x="272" y="14" width="40" height="28" forecolor="#000000" backcolor="#99A9CF" uuid="65891609-c61e-4db7-8367-8c653381d1cc"/>
+				<reportElement mode="Opaque" x="272" y="14" width="40" height="28" forecolor="#000000" backcolor="#C5D0E8" uuid="65891609-c61e-4db7-8367-8c653381d1cc"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
@@ -535,7 +535,7 @@ ORDER BY o.org_code ASC, le.seq_no ASC, e.emp_code ASC]]>
 				<text><![CDATA[Total]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="602" y="14" width="40" height="28" forecolor="#000000" backcolor="#99A9CF" uuid="adb454df-834f-4e14-b89d-5a61cb57323c"/>
+				<reportElement mode="Opaque" x="602" y="14" width="40" height="28" forecolor="#000000" backcolor="#C5D0E8" uuid="adb454df-834f-4e14-b89d-5a61cb57323c"/>
 				<box>
 					<pen lineWidth="0.5" lineStyle="Solid"/>
 				</box>
@@ -899,7 +899,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{salary}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="272" y="0" width="40" height="15" forecolor="#000000" backcolor="#99A9CF" uuid="1d0d8384-0f19-4d9d-bf9b-f1912a4dbb88">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="272" y="0" width="40" height="15" forecolor="#000000" backcolor="#C5D0E8" uuid="1d0d8384-0f19-4d9d-bf9b-f1912a4dbb88">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
@@ -923,7 +923,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{total_raise}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="542" y="0" width="35" height="15" backcolor="#FBFFD6" uuid="38c35126-d2a1-47e7-809f-34692e607574">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="542" y="0" width="35" height="15" backcolor="#ED8585" uuid="38c35126-d2a1-47e7-809f-34692e607574">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
@@ -935,7 +935,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{raise_pqpi}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="508" y="0" width="34" height="15" backcolor="#FBFFD6" uuid="c06d870a-d077-408d-8a93-4038ce3a9af1">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="508" y="0" width="34" height="15" backcolor="#ED8585" uuid="c06d870a-d077-408d-8a93-4038ce3a9af1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
@@ -959,7 +959,7 @@ Code]]></text>
 				<textFieldExpression><![CDATA[$F{diff}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="602" y="0" width="40" height="15" forecolor="#000000" backcolor="#99A9CF" uuid="83fa9741-5acd-4924-8f77-90a541529872">
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="602" y="0" width="40" height="15" forecolor="#000000" backcolor="#C5D0E8" uuid="83fa9741-5acd-4924-8f77-90a541529872">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dbbc532c-66cf-4726-b35f-60e020a95f4d"/>
 				</reportElement>
 				<box leftPadding="0" rightPadding="3">
