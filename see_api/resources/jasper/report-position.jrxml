@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="9ca9d851-6728-447d-b9e1-91ccd1b54823">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9ca9d851-6728-447d-b9e1-91ccd1b54823">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
@@ -129,24 +129,36 @@ ORDER BY p.position_code]]>
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="param_employee" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT es.emp_snapshot_id,p.position_code  FROM employee_snapshot es
-INNER JOIN position p on p.position_id = es.position_id
-WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_employee})]]>
+		<![CDATA[SELECT
+	es.emp_snapshot_id,
+	es.emp_code,
+	p.position_code 
+FROM
+	employee_snapshot es
+	INNER JOIN position p ON p.position_id = es.position_id 
+WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_employee})
+ORDER BY
+	p.position_code,
+	es.emp_code]]>
 	</queryString>
 	<field name="emp_snapshot_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+	</field>
+	<field name="emp_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_code"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
 	</field>
 	<field name="position_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="position_code"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
 	</field>
-	<group name="emp" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="20">
+	<group name="emp" isStartNewPage="true" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="106">
 		<groupExpression><![CDATA[$F{emp_snapshot_id}]]></groupExpression>
 		<groupHeader>
-			<band height="119">
+			<band height="105">
 				<componentElement>
-					<reportElement x="1" y="0" width="800" height="105" uuid="bd53d9fb-3806-4641-bf5d-40b107bc321f">
+					<reportElement x="0" y="0" width="800" height="105" isRemoveLineWhenBlank="true" uuid="bd53d9fb-3806-4641-bf5d-40b107bc321f">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.table.style.table_header" value="Table 1_TH"/>
 						<property name="com.jaspersoft.studio.table.style.column_header" value="Table 1_CH"/>
@@ -235,9 +247,9 @@ WHERE (emp_snapshot_id in( $P!{param_employee} ) OR '999999999' =  $P{param_empl
 		<band splitType="Stretch"/>
 	</background>
 	<detail>
-		<band height="106">
+		<band height="30">
 			<subreport>
-				<reportElement x="-20" y="0" width="842" height="85" uuid="aef6398c-1bdc-4672-aec0-9fd17a22009d"/>
+				<reportElement x="-20" y="0" width="842" height="30" isRemoveLineWhenBlank="true" uuid="aef6398c-1bdc-4672-aec0-9fd17a22009d"/>
 				<subreportParameter name="param_assessor">
 					<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 				</subreportParameter>

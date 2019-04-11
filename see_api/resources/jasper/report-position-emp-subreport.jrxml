@@ -612,95 +612,9 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 	<group name="group-emp-snapshot-id" keepTogether="true">
 		<groupExpression><![CDATA[$F{emp_snapshot_id}]]></groupExpression>
 		<groupHeader>
-			<band height="122">
-				<printWhenExpression><![CDATA[null !=null ? true : false]]></printWhenExpression>
-				<componentElement>
-					<reportElement mode="Transparent" x="0" y="0" width="560" height="110" uuid="dc5b7dc1-7df3-46b2-8903-2b5837f19f50">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
-						<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
-						<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
-						<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
-					</reportElement>
-					<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-						<datasetRun subDataset="query-header" uuid="a7443b0a-d034-4d2b-8ba4-05b0e4c46085">
-							<datasetParameter name="param_assessor">
-								<datasetParameterExpression><![CDATA[$F{assessor_id}]]></datasetParameterExpression>
-							</datasetParameter>
-							<datasetParameter name="param_questionaire_type">
-								<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
-							</datasetParameter>
-							<datasetParameter name="param_date_start">
-								<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
-							</datasetParameter>
-							<datasetParameter name="param_date_end">
-								<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
-							</datasetParameter>
-							<datasetParameter name="param_employee">
-								<datasetParameterExpression><![CDATA[$F{emp_snapshot_id}]]></datasetParameterExpression>
-							</datasetParameter>
-							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-						</datasetRun>
-						<jr:column width="800" uuid="8b3c8d8a-2479-4d6d-849b-207f045562c0">
-							<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
-							<jr:detailCell height="110">
-								<box>
-									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-								</box>
-								<textField isStretchWithOverflow="true">
-									<reportElement mode="Transparent" x="0" y="0" width="800" height="29" forecolor="#000000" backcolor="#F0F0F0" uuid="c3cce173-7872-463d-8b6a-cad033660c82"/>
-									<box>
-										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									</box>
-									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
-										<paragraph leftIndent="10" rightIndent="10"/>
-									</textElement>
-									<textFieldExpression><![CDATA["ตำแหน่ง:  "+ (( $F{appraisal_level_name}== null ) ? "-" : $F{appraisal_level_name})+"          ประเภท:  "+  (( $F{questionaire_type} == null ) ? "-" : $F{questionaire_type} )]]></textFieldExpression>
-								</textField>
-								<textField isStretchWithOverflow="true">
-									<reportElement mode="Transparent" x="0" y="29" width="800" height="27" forecolor="#000000" backcolor="#F0F0F0" uuid="6f6e7b50-18ea-45b0-9118-f62a6a5e60b2"/>
-									<box>
-										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-									</box>
-									<textElement textAlignment="Left" verticalAlignment="Middle">
-										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
-										<paragraph leftIndent="10" rightIndent="10"/>
-									</textElement>
-									<textFieldExpression><![CDATA["ระยะเวลา: "+$F{date_start}+" - "+$F{date_end}]]></textFieldExpression>
-								</textField>
-								<textField isStretchWithOverflow="true">
-									<reportElement x="0" y="56" width="800" height="27" uuid="4e6b3144-27bd-4f2c-a5fa-7a253139b787"/>
-									<textElement>
-										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
-										<paragraph leftIndent="10"/>
-									</textElement>
-									<textFieldExpression><![CDATA["ชื่อ: "+ (( $F{emp_name} == null ) ? "-" : $F{emp_name} )+"     รหัสตำแหน่ง:  "+  (( $F{position_code} == null ) ? "-" : $F{position_code} )]]></textFieldExpression>
-								</textField>
-								<textField isStretchWithOverflow="true">
-									<reportElement x="0" y="83" width="800" height="27" uuid="d71972db-765b-49fb-9bed-ebfcf0fb157b"/>
-									<textElement>
-										<font fontName="BrowalliaUPC" size="18" isBold="false"/>
-										<paragraph leftIndent="10"/>
-									</textElement>
-									<textFieldExpression><![CDATA["หัวหน้าปัจจุบัน:  "+(( $F{chief_emp_name} == null ) ? "-" : $F{chief_emp_name})+"          รหัสตำแหน่ง:  "+(( $F{chief_position} == null ) ? "-" : $F{chief_position} )]]></textFieldExpression>
-								</textField>
-							</jr:detailCell>
-						</jr:column>
-					</jr:table>
-				</componentElement>
-			</band>
 			<band height="180">
 				<crosstab ignoreWidth="true">
-					<reportElement x="0" y="0" width="800" height="180" uuid="b2787902-3b95-4dfb-9219-6f9428d7d936">
+					<reportElement x="0" y="0" width="800" height="180" isRemoveLineWhenBlank="true" uuid="b2787902-3b95-4dfb-9219-6f9428d7d936">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -1219,7 +1133,7 @@ ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]
 					</crosstabCell>
 				</crosstab>
 				<subreport>
-					<reportElement x="-20" y="30" width="842" height="20" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
+					<reportElement x="-20" y="30" width="842" height="20" isRemoveLineWhenBlank="true" uuid="f58d2eb5-0160-4ebb-ac73-67ef4735a56e"/>
 					<subreportParameter name="param_assessor">
 						<subreportParameterExpression><![CDATA[$P{param_assessor}]]></subreportParameterExpression>
 					</subreportParameter>

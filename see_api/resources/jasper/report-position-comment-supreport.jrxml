@@ -239,14 +239,14 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qdd.sect
 	<group name="section-group" isReprintHeaderOnEachPage="true" keepTogether="true">
 		<groupExpression><![CDATA[$F{section_id}]]></groupExpression>
 		<groupHeader>
-			<band height="25">
+			<band height="30">
 				<textField>
-					<reportElement stretchType="RelativeToBandHeight" mode="Transparent" x="0" y="0" width="800" height="25" forecolor="#000000" backcolor="#146BB9" uuid="c2171b0b-e109-4032-b661-4ca8c2453b0f"/>
+					<reportElement stretchType="RelativeToBandHeight" mode="Transparent" x="0" y="0" width="800" height="30" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#146BB9" uuid="c2171b0b-e109-4032-b661-4ca8c2453b0f"/>
 					<box>
 						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
 					</box>
-					<textElement verticalAlignment="Top">
-						<font fontName="BrowalliaUPC" size="19" isBold="true"/>
+					<textElement verticalAlignment="Bottom">
+						<font fontName="BrowalliaUPC" size="16" isBold="true"/>
 						<paragraph leftIndent="5" spacingBefore="2"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{section_name}]]></textFieldExpression>

@@ -619,7 +619,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 			<band height="20">
 				<printWhenExpression><![CDATA[$F{parent_question_id}!=null ? true : false]]></printWhenExpression>
 				<crosstab ignoreWidth="true">
-					<reportElement x="0" y="0" width="800" height="20" uuid="a50999ae-0982-492f-9537-9f1e91bd40f9">
+					<reportElement x="0" y="0" width="800" height="20" isRemoveLineWhenBlank="true" uuid="a50999ae-0982-492f-9537-9f1e91bd40f9">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -786,7 +786,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 			<band height="50">
 				<printWhenExpression><![CDATA[$F{question_id}!=null ? true : false]]></printWhenExpression>
 				<crosstab ignoreWidth="true">
-					<reportElement x="0" y="0" width="800" height="20" uuid="0e969335-1795-4bdd-a3b5-dc8cf221ac8e">
+					<reportElement x="0" y="0" width="800" height="20" isRemoveLineWhenBlank="true" uuid="0e969335-1795-4bdd-a3b5-dc8cf221ac8e">
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab 1_CH"/>
 						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab 1_CG"/>
@@ -1004,7 +1004,4 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 			</band>
 		</groupHeader>
 	</group>
-	<background>
-		<band height="45" splitType="Stretch"/>
-	</background>
 </jasperReport>

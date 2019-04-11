@@ -1788,6 +1788,9 @@ class QuestionaireDataController extends Controller
 
     // Report
     public function auto_emp_report(Request $request) {
+        $request->start_date = $this->format_date($request->start_date);
+        $request->end_date = $this->format_date($request->end_date);
+
         $emp_name = $this->concat_emp_first_last_code($request->emp_name);
         $all_emp = $this->all_emp();
         $in_emp = $this->get_tree_emp(Auth::id());
@@ -1803,6 +1806,7 @@ class QuestionaireDataController extends Controller
                     FROM employee_snapshot
                     WHERE is_active = 1
                     AND es.emp_code = emp_code
+                    AND ( start_date <= '".$request->start_date."' OR start_date <= '".$request->end_date."')
                 ) AND (
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
@@ -1823,6 +1827,7 @@ class QuestionaireDataController extends Controller
                     FROM employee_snapshot
                     WHERE is_active = 1
                     AND es.emp_code = emp_code
+                    AND ( start_date <= '".$request->start_date."' OR start_date <= '".$request->end_date."' )
                 ) AND (
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
