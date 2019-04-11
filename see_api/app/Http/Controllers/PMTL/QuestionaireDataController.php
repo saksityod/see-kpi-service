@@ -19,6 +19,7 @@ use Auth;
 use DB;
 use File;
 use Validator;
+use Log;
 use Excel;
 use Mail;
 use Config;
@@ -396,6 +397,7 @@ class QuestionaireDataController extends Controller
             INNER JOIN questionaire q on q.questionaire_id = qd.questionaire_id
             WHERE qd.data_header_id = '{$data_header_id}'
             ");
+        //Log::info('pass_score_type ['.$score_type[0]->pass_score_type.']');
         if(!empty($score_type) && $score_type[0]->pass_score_type == "percentage") {
             $cal_score = DB::select("
                 SELECT SUM(count_customer) count_customer,
@@ -515,13 +517,15 @@ class QuestionaireDataController extends Controller
             ");
             if(!empty($cal_score)) {
 
-                $full_score = $cal_score[0]->score;
-                $total_score = $cal_score[0]->full_score ;
-
+                $full_score = $cal_score[0]->full_score;
+                $total_score = $cal_score[0]->score ;
+                
                 $items = QuestionaireDataHeader::select("full_score", "total_score")
                         ->where("data_header_id", $data_header_id)->first();
+                
                 $full_score = $full_score + $items->full_score;
                 $total_score = $total_score + $items->total_score;
+                
 
             } else {
                 $full_score = null;
