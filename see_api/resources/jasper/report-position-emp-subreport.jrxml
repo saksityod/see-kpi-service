@@ -389,12 +389,18 @@ FROM (
 		SELECT qdh.questionaire_date
 		, es.emp_snapshot_id 
 		, qn.questionaire_type_id
-		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
+		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_full_score
+		, count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as count_perant_score
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as perant_percent
+		, COALESCE(
+		case when qn.pass_score = 'percentage' 
+		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
+			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+		end
+			,0) as perant_percent
 		, qdh.assessor_id
 		, qs.is_cust_search 
 		, ay.answer_type_id
@@ -436,9 +442,14 @@ CROSS JOIN (
 		SELECT SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as perant_percent
+		, COALESCE(
+		case when qn.pass_score = 'percentage' 
+		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
+			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+		end
+		,0) as perant_percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 

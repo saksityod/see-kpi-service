@@ -76,8 +76,10 @@
 		</box>
 	</style>
 	<subDataset name="query-parent" uuid="7087a54f-3fe7-489b-a009-836f3c3549d9">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="204"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="791"/>
 		<parameter name="param_assessor" class="java.lang.String"/>
 		<parameter name="param_section" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
@@ -88,24 +90,24 @@
 		<queryString>
 			<![CDATA[-- parent
 SELECT
-qdh.data_header_id,
-qdh.questionaire_id,
-qdh.questionaire_date,
-qdh.emp_snapshot_id,
-qdh.assessor_id,
-qs.section_id,
-qs.section_name
-, q.parent_question_id
-, q.parent_question_name
-, parent.perant_percent as perant_each_percent
-, result.perant_percent as result_perant_percent
-, result.perant_percent as perant_percent
-, result.perant_percent as result
-, p.position_code as position_code_snapshot
-, p_ass.position_code as position_code_assessor
-, es.region
+	qdh.data_header_id
+	, qdh.questionaire_id
+	, qdh.questionaire_date
+	, qdh.emp_snapshot_id
+	, qdh.assessor_id
+	, qs.section_id
+	, qs.section_name
+	, q.parent_question_id
+	, q.parent_question_name
+	, parent.perant_percent as perant_each_percent
+	, result.perant_percent as result_perant_percent
+	, result.perant_percent as perant_percent
+	, result.perant_percent as result
+	, p.position_code as position_code_snapshot
+	, p_ass.position_code as position_code_assessor
+	, es.region
 FROM
-questionaire_data_header AS qdh
+	questionaire_data_header AS qdh
 INNER JOIN questionaire_section qs ON qdh.questionaire_id = qs.questionaire_id
 LEFT JOIN ( 
 			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
@@ -127,18 +129,25 @@ LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_
 LEFT JOIN (
 		SELECT qn.questionaire_type_id, qnt.questionaire_type
 		, qn.questionaire_id, qn.questionaire_name
-		, qdd.section_id, qs.section_name, 
-		q.parent_question_id, q.parent_question_name 
+		, qdd.section_id, qs.section_name
+		, q.parent_question_id, q.parent_question_name 
 		, qdh.questionaire_date
 		, es.emp_snapshot_id
 		, es.region
 		, qdh.assessor_id
-		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
+		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_full_score
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
+		, count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as count_perant_score
 		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as perant_percent
+		, COALESCE( 
+				case when qn.pass_score = 'percentage' 
+				then (ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+					SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)) 
+				else (ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)
+					/ count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)) * 100) / MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)
+					,2)) 
+				end 
+		,0) as perant_percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -154,7 +163,7 @@ LEFT JOIN (
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id 
 		WHERE qdh.emp_snapshot_id =  $P{param_employee} 
 		AND qdh.questionaire_date
-			between STR_TO_DATE ( $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
+			BETWEEN STR_TO_DATE ( $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =   $P{param_questionaire_type} 
 		AND qs.section_id =   $P{param_section} 
 		AND ay.answer_type_id != 7
@@ -170,15 +179,20 @@ LEFT JOIN (
 		, es.region
 		, qdh.assessor_id
 ) parent ON parent.parent_question_id = q.parent_question_id
-AND parent.questionaire_date = qdh.questionaire_date
-AND parent.region = es.region
-AND parent.emp_snapshot_id = qdh.emp_snapshot_id
-AND parent.assessor_id = qdh.assessor_id
+	AND parent.questionaire_date = qdh.questionaire_date
+	AND parent.region = es.region
+	AND parent.emp_snapshot_id = qdh.emp_snapshot_id
+	AND parent.assessor_id = qdh.assessor_id
 LEFT JOIN (
 	SELECT q.parent_question_id, q.parent_question_name 
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as perant_percent
+		, COALESCE(
+			case when qn.pass_score = 'percentage'
+			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+			else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/
+				count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/ max(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+			end 
+	,0) as perant_percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -194,7 +208,7 @@ LEFT JOIN (
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
 		WHERE qdh.emp_snapshot_id =   $P{param_employee} 
 		AND qdh.questionaire_date
-			between STR_TO_DATE (  $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
+			BETWEEN STR_TO_DATE (  $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
 		AND qnt.questionaire_type_id =   $P{param_questionaire_type} 
 		AND qs.section_id =   $P{param_section} 
 		AND ay.answer_type_id != 7
@@ -204,14 +218,14 @@ LEFT JOIN (
 		GROUP BY q.parent_question_id, q.parent_question_name 
 ) result ON result.parent_question_id = q.parent_question_id
 WHERE qdh.emp_snapshot_id =  $P{param_employee} 
-AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
-AND qs.section_id = $P{param_section} 
-AND qdh.data_stage_id IN (3,4)
-AND ay.answer_type_id != 7
-and q.parent_question_id =  $P{param_parent_question_id} 
-AND qnt.questionaire_type_id =   $P{param_questionaire_type}
-AND qdh.questionaire_date 
-		between STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
+	AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
+	AND qs.section_id = $P{param_section} 
+	AND qdh.data_stage_id IN (3,4)
+	AND ay.answer_type_id != 7
+	and q.parent_question_id =  $P{param_parent_question_id} 
+	AND qnt.questionaire_type_id =   $P{param_questionaire_type}
+	AND qdh.questionaire_date 
+			BETWEEN STR_TO_DATE (  $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
 GROUP BY qdh.emp_snapshot_id, q.parent_question_id , DATE_FORMAT(qdh.questionaire_date, "%d %b %Y"), es.region, qdh.assessor_id
 ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.section_id ASC]]>
 		</queryString>
@@ -277,7 +291,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-question" uuid="c97587b1-baa9-45ce-aecc-205158a3f327">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
@@ -335,10 +349,16 @@ LEFT JOIN (
 		es.region, es.emp_snapshot_id
 		, qdh.questionaire_date 
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_score
-		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_full_score
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as percent
+		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_full_score
+		, COALESCE(
+			case when qn.pass_score = 'percentage'
+			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+			else
+				ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
+				max(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+			end
+		,0) as percent
 		, qdh.assessor_id
 		, qs.is_cust_search
 		, ay.answer_type_id
@@ -384,9 +404,14 @@ AND question.emp_snapshot_id = qdh.emp_snapshot_id
 AND question.assessor_id = qdh.assessor_id
 LEFT JOIN (
 	SELECT q.question_id, q.question_name
-		, COALESCE(ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)
-			,2),0) as percent
+		, COALESCE(
+		case when qn.pass_score = 'percentage'
+		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
+			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+			end
+		,0) as percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
