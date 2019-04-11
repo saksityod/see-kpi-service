@@ -26,7 +26,7 @@ class FSF_HC_ReportController extends Controller
     {
         $this->middleware('jwt.auth');
     }
-    
+
     public function index(Request $request)
     {
         $date_start = $request->date_start; // "01/01/2019"
@@ -36,29 +36,47 @@ class FSF_HC_ReportController extends Controller
         $param_date_end = date_format(date_create_from_format('d/m/Y', $date_end), 'Y-m-d'); // "2019-01-31"
 
         $param_questionaire_type_id = json_decode($request->questionaire_type_id); // "1,2";
-		
-        // search emp, position by head_count
+
+        // หา valid_date ที่มากที่สุดตาม parameter date
+        $MaxDateHeadCount = "
+            SELECT h.position_id
+          	, MAX(h.valid_date) AS max_valid_date
+          	FROM head_count h
+          	WHERE (h.valid_date <= '".$param_date_start."' OR h.valid_date <= '".$param_date_end."')
+          	GROUP BY h.position_id ";
+
+        // หา emp_snapshot_id ตาม emp_code, position_id, MAX(start_date) [ใช้ใน query : $emp_position **ทำงานด้วยตัวมันเองไม่ได้]
+        $emp_snapshot_id = "
+            SELECT e.emp_snapshot_id
+            FROM employee_snapshot e
+            WHERE e.emp_code = em.emp_code
+            AND e.position_id = em.position_id
+            AND e.start_date = MAX(em.start_date)
+            LIMIT 1";
+
+        /*
+		แสดง employee ที่มี MAX(start_date) โดย
+        - MAX(start_date) น้อยกว่าหรือเท่ากับ MAX(valid_date) ตาม position_id
+        - MAX(start_date) จะต้องตาม parameter date
+        */
         $emp_position = "
-          SELECT snap.emp_snapshot_id
-          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name ) AS emp_name
-          , po.position_id
-          , po.position_code
-          FROM head_count h
-          INNER JOIN employee_snapshot snap ON (
-          	h.position_id = snap.position_id
-          	AND snap.start_date = (
-          		SELECT max( e.start_date )
-          		FROM employee_snapshot e
-          		WHERE e.position_id = snap.position_id
-          		AND e.start_date <= h.valid_date
-          	)
-          	AND snap.level_id = 4 )
-          LEFT JOIN position po ON h.position_id = po.position_id
-          WHERE h.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
-          GROUP BY snap.emp_snapshot_id
-          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name )
-          , po.position_id
-          , po.position_code";
+            SELECT (".$emp_snapshot_id.") AS emp_snapshot_id
+            , em.emp_code
+            , CONCAT(em.emp_first_name,' ',em.emp_last_name) AS emp_name
+            , em.position_id
+            , po.position_code
+            , MAX(em.start_date) AS max_date
+            FROM employee_snapshot em
+            LEFT JOIN position po ON em.position_id = po.position_id
+            INNER JOIN (".$MaxDateHeadCount.") hc ON hc.position_id = em.position_id
+            	AND em.start_date <= hc.max_valid_date
+            WHERE em.level_id = 4
+            AND (em.start_date <= '".$param_date_start."' OR em.start_date <= '".$param_date_end."')
+            GROUP BY em.emp_code
+            , CONCAT(em.emp_first_name,' ',em.emp_last_name)
+            , em.position_id
+            , po.position_code ";
+
 
          // job_function and type (all)
          $job_type = "
@@ -71,7 +89,10 @@ class FSF_HC_ReportController extends Controller
             WHERE j.is_show_report = 1
             AND FIND_IN_SET(t.questionaire_type_id,'".$param_questionaire_type_id."')";
 
-        // get head_count (value) by position, job_function
+        /*
+        get head_count (value) by position, job_function
+		ข้อมูล head_count มานำแสดง จะเลือกตามวันที่ที่มากที่สุดของ valid_date ตาม parameter (เพื่อป้องกันการแสดงข้อมูลในอดีต)
+        */
         $job_head_count = "
           SELECT emp.emp_snapshot_id
           , emp.emp_name
@@ -81,20 +102,15 @@ class FSF_HC_ReportController extends Controller
           , job.job_function_name
           , job.questionaire_type_id
           , job.questionaire_type
-          , SUM(hc.head_count) as head_count
+          , (SELECT h.head_count
+            FROM head_count h
+            WHERE h.valid_date = emp.max_date
+            AND h.job_function_id = job.job_function_id
+            AND h.position_id = emp.position_id LIMIT 1) as head_count
           FROM (".$emp_position.") emp
           CROSS JOIN (".$job_type.") job
-          LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id
-            AND hc.position_id = emp.position_id
-          WHERE hc.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
-          GROUP BY emp.emp_snapshot_id
-              , emp.emp_name
-              , emp.position_id
-              , emp.position_code
-              , job.job_function_id
-              , job.job_function_name
-              , job.questionaire_type_id
-              , job.questionaire_type";
+          WHERE (emp.max_date <= '".$param_date_start."' OR emp.max_date <= '".$param_date_end."')";
+          // LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id AND hc.position_id = emp.position_id AND hc.valid_date = emp.max_date
 
 
         // Information ชุดที่ 1
@@ -185,6 +201,7 @@ class FSF_HC_ReportController extends Controller
             $exe->head_count_str = ($count_int == 0)? "N/A" : $count_int;
 
        }
+
 
        // Information ชุดที่ 3
        $percentCoverage = DB::select("
@@ -303,6 +320,7 @@ class FSF_HC_ReportController extends Controller
 
        }
 
+
        // Information 1 + Information 2 + Information 3  [Information 1 + Information 2 = $result]
        $result = array_merge($result,$percentCoverage);
 
@@ -342,13 +360,15 @@ class FSF_HC_ReportController extends Controller
           $parent = $o->emp_code.",";
         }
 
+        // ใส่ AND chief_emp_code != 'anuaeid' เพื่อไม่ให้ run ข้อมูลนานเกินไป เนื่องจากตัวเองเป็นหัวหน้าของตัวเอง
         while($have){
           $emp = DB::select("SELECT emp_code
             FROM employee_snapshot
             WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
             AND chief_emp_code != ''
-			AND start_date BETWEEN '".$start_date."' AND '".$end_date."'
-			GROUP BY emp_code
+            AND chief_emp_code != 'anuaeid'
+      			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
+      			GROUP BY emp_code
           ");
 
           if(empty($emp)) {
@@ -367,23 +387,23 @@ class FSF_HC_ReportController extends Controller
         }// end else
 
         $place_parent = $place_parent.$parent; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
-		
-		// ลูกน้องที่ต้องการจะต้องมี start_date มากที่สุด ตาม parameter date
-		$MaxDateEmp = "
-			SELECT emp_code, max(start_date) as max_date
-			FROM employee_snapshot
-			WHERE FIND_IN_SET(emp_code,'".$place_parent."')
-			AND emp_snapshot_id != ".$emp_snapshot_id."
-			AND start_date BETWEEN '".$start_date."' AND '".$end_date."'
-			GROUP BY emp_code";
+
+    		// ลูกน้องที่ต้องการจะต้องมี start_date ล่าสุด ตาม parameter date
+    		$MaxDateEmp = "
+    			SELECT emp_code, max(start_date) as max_date
+    			FROM employee_snapshot
+    			WHERE FIND_IN_SET(emp_code,'".$place_parent."')
+    			AND emp_snapshot_id != ".$emp_snapshot_id."
+    			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
+    			GROUP BY emp_code";
 
         // นำ emp_code ไปหา emp_snapshot_id (ไม่เอาตัวเอง) และเอาเฉพาะลูกน้องคนที่มีวันที่มากที่สุดตาม parameter date และเอาเฉพาะลูกน้องที่มี job_function.is_show_report = 1
         $AllempID = DB::select("
           SELECT em.emp_snapshot_id
           FROM employee_snapshot em
           INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
-		  INNER JOIN (".$MaxDateEmp.") md ON md.emp_code = em.emp_code
-			AND md.max_date = em.start_date
+		      INNER JOIN (".$MaxDateEmp.") md ON md.emp_code = em.emp_code
+			       AND md.max_date = em.start_date
           WHERE FIND_IN_SET(em.emp_code,'".$place_parent."')
           AND em.emp_snapshot_id != ".$emp_snapshot_id."
           AND jf.is_show_report = 1
@@ -451,6 +471,30 @@ class FSF_HC_ReportController extends Controller
         }
       }
       */
+
+
+      /* //search emp, position by head_count [sql by daris]
+         $emp_position = "
+          SELECT snap.emp_snapshot_id
+          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name ) AS emp_name
+          , po.position_id
+          , po.position_code
+          FROM head_count h
+          INNER JOIN employee_snapshot snap ON (
+            h.position_id = snap.position_id
+            AND snap.start_date = (
+              SELECT max( e.start_date )
+              FROM employee_snapshot e
+              WHERE e.position_id = snap.position_id
+              AND e.start_date <= h.valid_date
+            )
+            AND snap.level_id = 4 )
+          LEFT JOIN position po ON h.position_id = po.position_id
+          WHERE h.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
+          GROUP BY snap.emp_snapshot_id
+          , CONCAT( snap.emp_first_name, ' ', snap.emp_last_name )
+          , po.position_id
+          , po.position_code"; */
 
 
 }
