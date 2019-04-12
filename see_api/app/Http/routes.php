@@ -511,6 +511,7 @@ Route::group(['middleware' => 'cors'], function()
 	Route::patch('questionaire_type/manage/{id}', 'PMTL\QuestionaireTypeController@manage_update');
 
 	Route::get('questionaire_report/auto_emp_report', 'PMTL\QuestionaireDataController@auto_emp_report');
+	Route::get('questionaire_report/auto_emp_report2', 'PMTL\QuestionaireDataController@auto_emp_report2');
 	// Route::get('questionaire_report/auto_assessor_report', 'PMTL\QuestionaireDataController@auto_assessor_report');
 	Route::get('questionaire_report/list_assessor_report2', 'PMTL\QuestionaireDataController@list_assessor_report');
 	Route::get('questionaire_report/list_assessor_report', 'PMTL\QuestionaireDataController@list_assessor_transaction');

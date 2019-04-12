@@ -1841,94 +1841,162 @@ class QuestionaireDataController extends Controller
 
     // Report
     public function auto_emp_report(Request $request) {
-        $request->start_date = $this->format_date($request->start_date);
-        $request->end_date = $this->format_date($request->end_date);
 
         $emp_name = $this->concat_emp_first_last_code($request->emp_name);
+        $request->start_date = $this->format_date($request->start_date);
+        $request->end_date = $this->format_date($request->end_date);
+        $between_date = $this->between_date_search($request->start_date, $request->end_date);
+        
         $all_emp = $this->all_emp();
         $in_emp = $this->get_tree_emp(Auth::id());
 
         if ($all_emp[0]->count_no > 0) {
+            $assessor = "";
+            $emp_code_in = "";
+        } else {
+            $emp_code_in = "AND es.emp_code IN ({$in_emp})";
+            $assessor_id = $this->get_emp_snapshot();
+            $emp_snapshot_id_with_date = $this->get_emp_snapshot_id_with_date($request->start_date, $request->end_date);
+            $emp_snapshot_id_with_datee = empty($emp_snapshot_id_with_date[0]->emp_snapshot_id) ? "" : $emp_snapshot_id_with_date[0]->emp_snapshot_id;
+            $assessor = "AND (qdh.emp_snapshot_id = '{$emp_snapshot_id_with_datee}' OR qdh.assessor_id = '{$assessor_id->emp_snapshot_id}')";
+        }
+
             $items = DB::select("
-                SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+            SELECT * 
+            FROM
+                (SELECT es.emp_snapshot_id, 
+                        CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+                        es.position_id,
+                        p.position_code,
+                        es.emp_code,
+                        es.start_date
                 FROM employee_snapshot es
-                INNER JOIN position p ON p.position_id = es.position_id
-                INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-                WHERE es.start_date IN (
-                    SELECT MAX(start_date) start_date
-                    FROM employee_snapshot
-                    WHERE is_active = 1
-                    AND es.emp_code = emp_code
-                    AND ( start_date <= '".$request->start_date."' OR start_date <= '".$request->end_date."')
-                ) AND (
+                LEFT JOIN position p ON p.position_id = es.position_id
+                INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+                INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+                WHERE (
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
                     OR p.position_code LIKE '%{$emp_name}%'
                     OR es.emp_code LIKE '%{$emp_name}%'
-                ) AND jf.is_evaluated = 1
-                ORDER BY es.emp_first_name, es.emp_last_name
-                LIMIT 15
-            ");
+                )
+                AND (qn.questionaire_type_id = '{$request->questionaire_type_id}' OR '' = '{$request->questionaire_type_id}')
+                AND qdh.data_stage_id IN (3,4)
+                ".$emp_code_in."
+                ".$between_date."
+                ".$assessor."
+                GROUP BY es.emp_snapshot_id) d
+            WHERE d.start_date = (
+                        SELECT max( e.start_date )
+                        FROM (
+                                SELECT  es.emp_snapshot_id, 
+                                        CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+                                        es.position_id,
+                                        p.position_code,
+                                        es.emp_code,
+                                        es.start_date
+                                FROM employee_snapshot es
+                                LEFT JOIN position p ON p.position_id = es.position_id
+                                INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+                                INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+                                WHERE (
+                                    es.emp_first_name LIKE '%{$emp_name}%'
+                                    OR es.emp_last_name LIKE '%{$emp_name}%'
+                                    OR p.position_code LIKE '%{$emp_name}%'
+                                    OR es.emp_code LIKE '%{$emp_name}%'
+                                )
+                                AND ( qn.questionaire_type_id = '{$request->questionaire_type_id}' OR '' = '{$request->questionaire_type_id}')
+                                AND qdh.data_stage_id IN (3,4)
+                                ".$emp_code_in."
+                                ".$between_date."
+                                ".$assessor."
+                                GROUP BY es.emp_snapshot_id ) e
+                        WHERE e.position_id = d.position_id
+                        AND e.emp_code = d.emp_code
+                        AND e.start_date <= '".$request->end_date."'
+                    )
+            LIMIT 10
+        ");
+
+        return response()->json($items);
+    }
+
+    // Report
+    public function auto_emp_report2(Request $request) {
+
+        $emp_name = $this->concat_emp_first_last_code($request->emp_name);
+        $request->start_date = $this->format_date($request->start_date);
+        $request->end_date = $this->format_date($request->end_date);
+        $between_date = $this->between_date_search($request->start_date, $request->end_date);
+        
+        $all_emp = $this->all_emp();
+        $in_emp = $this->get_tree_emp(Auth::id());
+
+        if ($all_emp[0]->count_no > 0) {
+            $assessor = "";
+            $emp_code_in = "";
         } else {
+            $emp_code_in = "AND es.emp_code IN ({$in_emp})";
+            $assessor_id = $this->get_emp_snapshot();
+            $emp_snapshot_id_with_date = $this->get_emp_snapshot_id_with_date($request->start_date, $request->end_date);
+            $emp_snapshot_id_with_datee = empty($emp_snapshot_id_with_date[0]->emp_snapshot_id) ? "" : $emp_snapshot_id_with_date[0]->emp_snapshot_id;
+            $assessor = "AND (qdh.emp_snapshot_id = '{$emp_snapshot_id_with_datee}' OR qdh.assessor_id = '{$assessor_id->emp_snapshot_id}')";
+        }
+
             $items = DB::select("
-                SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
+            SELECT * 
+            FROM
+                (SELECT es.emp_snapshot_id, 
+                        CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+                        es.position_id,
+                        p.position_code,
+                        es.emp_code,
+                        es.start_date
                 FROM employee_snapshot es
-                INNER JOIN position p ON p.position_id = es.position_id
-                INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-                WHERE es.start_date IN (
-                    SELECT MAX(start_date) start_date
-                    FROM employee_snapshot
-                    WHERE is_active = 1
-                    AND es.emp_code = emp_code
-                    AND ( start_date <= '".$request->start_date."' OR start_date <= '".$request->end_date."' )
-                ) AND (
+                LEFT JOIN position p ON p.position_id = es.position_id
+                INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+                INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+                WHERE (
                     es.emp_first_name LIKE '%{$emp_name}%'
                     OR es.emp_last_name LIKE '%{$emp_name}%'
                     OR p.position_code LIKE '%{$emp_name}%'
+                    OR es.emp_code LIKE '%{$emp_name}%'
                 )
-                AND es.emp_code IN ({$in_emp})
-                AND jf.is_evaluated = 1
-                ORDER BY es.emp_first_name, es.emp_last_name
-                LIMIT 15
-            ");
-            // $emp_code = Auth::id();
-            // $emp_snap = $this->get_emp_snapshot();
-            // $level = AppraisalLevel::getLevelParentDown($emp_snap->level_id);
-            // $level_array = [];
-            // foreach ($level as $key => $value) {
-            //  array_push($level_array, $value['level_id']);
-            // }
-            // $level_array= implode(",",$level_array);
-
-            // $job_function = DB::table("job_function")->select("is_evaluated")->where("job_function_id", $emp_snap->job_function_id)->first();
-
-            // $query = "
-            //  SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name, ' ', es.emp_last_name, ' (',p.position_code,')') emp_name
-            //  FROM employee_snapshot es
-            //  INNER JOIN position p ON p.position_id = es.position_id
-            //  INNER JOIN job_function jf ON jf.job_function_id = es.job_function_id
-            //  WHERE es.start_date IN (
-            //      SELECT MAX(start_date) start_date
-            //      FROM employee_snapshot
-            //      WHERE is_active = 1
-            //      AND es.emp_snapshot_id = emp_snapshot_id
-            //  ) AND (
-            //      es.emp_first_name LIKE '%{$emp_name}%'
-            //      OR es.emp_last_name LIKE '%{$emp_name}%'
-            //      OR p.position_code LIKE '%{$emp_name}%'
-            //  ) AND jf.is_evaluated = 1 
-            // ";
-
-            // if($job_function->is_evaluated==1) {
-            //  $query .= "AND es.level_id IN ({$level_array}) AND es.emp_code = '{$emp_code}' ";
-            // } else {
-            //  $query .= "AND es.level_id IN ({$level_array}) ";
-            // }
-
-            // $query .= "ORDER BY es.emp_first_name, es.emp_last_name LIMIT 15";
-
-            // $items = DB::select($query);
-        }
+                AND (qn.questionaire_type_id = '{$request->questionaire_type_id}' OR '' = '{$request->questionaire_type_id}')
+                ".$emp_code_in."
+                ".$between_date."
+                ".$assessor."
+                GROUP BY es.emp_snapshot_id) d
+            WHERE d.start_date = (
+                        SELECT max( e.start_date )
+                        FROM (
+                                SELECT  es.emp_snapshot_id, 
+                                        CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
+                                        es.position_id,
+                                        p.position_code,
+                                        es.emp_code,
+                                        es.start_date
+                                FROM employee_snapshot es
+                                LEFT JOIN position p ON p.position_id = es.position_id
+                                INNER JOIN questionaire_data_header qdh ON qdh.emp_snapshot_id = es.emp_snapshot_id
+                                INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+                                WHERE (
+                                    es.emp_first_name LIKE '%{$emp_name}%'
+                                    OR es.emp_last_name LIKE '%{$emp_name}%'
+                                    OR p.position_code LIKE '%{$emp_name}%'
+                                    OR es.emp_code LIKE '%{$emp_name}%'
+                                )
+                                AND ( qn.questionaire_type_id = '{$request->questionaire_type_id}' OR '' = '{$request->questionaire_type_id}')
+                                ".$emp_code_in."
+                                ".$between_date."
+                                ".$assessor."
+                                GROUP BY es.emp_snapshot_id ) e
+                        WHERE e.position_id = d.position_id
+                        AND e.emp_code = d.emp_code
+                        AND e.start_date <= '".$request->end_date."'
+                    )
+            LIMIT 10
+        ");
 
         return response()->json($items);
     }
