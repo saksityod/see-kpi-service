@@ -366,7 +366,6 @@ class FSF_HC_ReportController extends Controller
             FROM employee_snapshot
             WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
             AND chief_emp_code != ''
-            AND chief_emp_code != 'anuaeid'
       			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
       			GROUP BY emp_code
           ");
