@@ -227,7 +227,7 @@
 								<text><![CDATA[Position ]]></text>
 							</staticText>
 							<staticText>
-								<reportElement style="Crosstab 1_CH" stretchType="RelativeToBandHeight" mode="Opaque" x="60" y="0" width="190" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="f819c55d-7a9a-4a53-b243-a320eadb4fb3"/>
+								<reportElement style="Crosstab 1_CH" stretchType="RelativeToBandHeight" mode="Opaque" x="60" y="0" width="250" height="40" forecolor="#FFFFFF" backcolor="#20639B" uuid="f819c55d-7a9a-4a53-b243-a320eadb4fb3"/>
 								<box topPadding="0" leftPadding="10" bottomPadding="0">
 									<pen lineWidth="0.25" lineStyle="Dotted"/>
 								</box>
@@ -248,7 +248,7 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField>
-									<reportElement x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="dc544383-efb0-4eb2-8b69-e2b43fdf5c61"/>
+									<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="60" height="20" backcolor="#D9E1F2" uuid="dc544383-efb0-4eb2-8b69-e2b43fdf5c61"/>
 									<textElement textAlignment="Center">
 										<font fontName="BrowalliaUPC" size="14"/>
 									</textElement>
@@ -262,7 +262,7 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<staticText>
-									<reportElement x="0" y="0" width="250" height="20" forecolor="#FFFFFF" uuid="547c9a03-cec0-4d53-88ff-bfd019331908"/>
+									<reportElement x="0" y="0" width="310" height="20" forecolor="#FFFFFF" uuid="547c9a03-cec0-4d53-88ff-bfd019331908"/>
 									<box leftPadding="10"/>
 									<textElement textAlignment="Left">
 										<font fontName="BrowalliaUPC" size="14" isBold="true"/>
@@ -272,7 +272,7 @@
 							</cellContents>
 						</crosstabTotalRowHeader>
 					</rowGroup>
-					<rowGroup name="emp_name" width="190">
+					<rowGroup name="emp_name" width="250">
 						<bucket class="java.lang.String">
 							<bucketExpression><![CDATA[$F{emp_name}]]></bucketExpression>
 						</bucket>
@@ -282,7 +282,7 @@
 									<pen lineWidth="0.25" lineStyle="Solid"/>
 								</box>
 								<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="190" height="20" isRemoveLineWhenBlank="true" backcolor="#D9E1F2" uuid="8dba4a54-620b-4120-8475-3957e350a893"/>
+									<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="250" height="20" isRemoveLineWhenBlank="true" backcolor="#D9E1F2" uuid="8dba4a54-620b-4120-8475-3957e350a893"/>
 									<box leftPadding="10"/>
 									<textElement textAlignment="Left">
 										<font fontName="BrowalliaUPC" size="14"/>
@@ -381,7 +381,7 @@
 								<pen lineWidth="0.25" lineStyle="Solid"/>
 							</box>
 							<textField isBlankWhenNull="true">
-								<reportElement style="N/A" x="0" y="0" width="60" height="20" uuid="da342c3a-154e-4ba2-aa1c-4e62b84ff641"/>
+								<reportElement style="N/A" stretchType="RelativeToTallestObject" x="0" y="0" width="60" height="20" uuid="da342c3a-154e-4ba2-aa1c-4e62b84ff641"/>
 								<box rightPadding="5"/>
 								<textElement textAlignment="Right">
 									<font fontName="BrowalliaUPC" size="14"/>

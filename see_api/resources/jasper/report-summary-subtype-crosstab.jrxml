@@ -185,11 +185,11 @@
 	</style>
 	<subDataset name="cosstab" uuid="b0818722-a87f-40a3-9a50-050600d40e64">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="322"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="667"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="346"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="640"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="48"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="938"/>
 		<parameter name="param_data_header_id" class="java.lang.Long"/>
 		<parameter name="param_section" class="java.lang.Integer"/>
 		<queryString language="SQL">
@@ -201,22 +201,31 @@
   , (CASE WHEN IFNULL(q.pass_score, 0) = 0 THEN "#990000" ELSE "#005FB3" END) as color_pass
  , re.num_question
  , (CASE WHEN qdd.is_not_applicable = 1 THEN "N/A" ELSE FORMAT(qdd.score,0) END) as score
- , (CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) as sumscore
+ , (CASE WHEN qu.pass_score_type="percentage" THEN(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) ELSE COALESCE(ROUND(qq.score,2),0) END) as sumscore
  , (CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) as sumscoretotal
  , re.score as parent_score
  ,  re.maxscore as parent_scoresum
  , re.full_score
  , re.maxfull_score
- , (case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as totalfull_score
- , (
+ , (CASE WHEN qu.pass_score_type="percentage" THEN(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) ELSE qq.s_full_score  END) as totalfull_score
+ , (CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) as p_sum
+, (
 		SELECT COUNT(1) FROM question
-		WHERE section_id =   $P{param_section} 
+		WHERE section_id =   $P{param_section}  
 		AND parent_question_id IS NOT NULL
   ) parent_question_all_cnt
+ , qu.pass_score_type
+ , qq.sum_score
+ , qq.s_full_score 
+ , ROUND(qq.score,2) as s_score
+ , qq.c_cus
+
+
 FROM questionaire_data_header qdh 
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 INNER JOIN question que ON que.question_id = qdd.question_id
+INNER JOIN questionaire qu ON qu.questionaire_id = qdh.questionaire_id
 INNER JOIN answer_type ant ON ant.answer_type_id = que.answer_type_id
 INNER JOIN (
  SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
@@ -248,16 +257,30 @@ LEFT JOIN (
 	INNER JOIN (SELECT parent_question_id, COUNT(question_id) as num_question
 		FROM question GROUP BY parent_question_id
 	) ques ON ques.parent_question_id = q.parent_question_id
-	 WHERE qdh.data_header_id =   $P{param_data_header_id} 
+	 WHERE qdh.data_header_id =    $P{param_data_header_id} 
 	GROUP BY qdd.section_id, qs.section_name
 	 , q.parent_question_id, q.parent_question_name
 	 , c.customer_id, c.customer_name
 	 , ques.num_question
 	, qdh.data_header_id
 ) re ON re.parent_question_id = q.parent_question_id AND re.customer_id = c.customer_id
+LEFT JOIN (SELECT  q.question_id ,sum(qdd.score) as sum_score,COUNT(qdd.customer_id) as c_cus,
+         COALESCE(sum(qdd.score)/COUNT(qdd.customer_id),0) as  score ,
+        MAX(qdd.full_score) as s_full_score,max(qdd.customer_id) as customer
+                FROM questionaire_data_detail qdd
+                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                INNER JOIN question q ON q.question_id = qdd.question_id
+                INNER JOIN question qq ON qq.question_id = q.parent_question_id
+                WHERE qs.is_cust_search = 1
+                AND qdd.is_not_applicable = 0
+                AND qdd.data_header_id =  $P{param_data_header_id} 
+                AND qq.pass_score > 0
+                AND qq.answer_type_id != 7
+        GROUP BY q.question_id) qq ON qq.question_id = qdd.question_id 
+        AND c.customer_id = qq.customer
 WHERE  que.answer_type_id != 7
-AND qdh.data_header_id = $P{param_data_header_id} 
-AND qdd.section_id =  $P{param_section} 
+AND qdh.data_header_id =  $P{param_data_header_id} 
+AND qdd.section_id =   $P{param_section} 
 ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c.customer_id]]>
 		</queryString>
 		<field name="section_id" class="java.lang.Integer">
@@ -334,8 +357,28 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 		<field name="totalfull_score" class="java.math.BigDecimal">
 			<property name="com.jaspersoft.studio.field.label" value="totalfull_score"/>
 		</field>
+		<field name="p_sum" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="p_sum"/>
+		</field>
 		<field name="parent_question_all_cnt" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="parent_question_all_cnt"/>
+		</field>
+		<field name="pass_score_type" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="pass_score_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
+		</field>
+		<field name="sum_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_score"/>
+		</field>
+		<field name="s_full_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="s_full_score"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_detail"/>
+		</field>
+		<field name="s_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="s_score"/>
+		</field>
+		<field name="c_cus" class="java.lang.Long">
+			<property name="com.jaspersoft.studio.field.label" value="c_cus"/>
 		</field>
 		<group name="section_id">
 			<groupExpression><![CDATA[$F{section_id}]]></groupExpression>
@@ -395,8 +438,8 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 	<subDataset name="total" uuid="4a15c0cf-4ee0-461b-b3f4-493a7b6be1bb">
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="83"/>
-		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="903"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="78"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="908"/>
 		<parameter name="param_data_header_id" class="java.lang.Long"/>
 		<parameter name="param_section" class="java.lang.Integer"/>
 		<queryString language="SQL">
@@ -407,22 +450,24 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
  , IFNULL(q.pass_score, 0) pass_score 
  , re.num_question
  , (CASE WHEN qdd.is_not_applicable = 1 THEN "N/A" ELSE FORMAT(qdd.score,0) END) as score
- , (CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) as sumscore
+ , (CASE WHEN qu.pass_score_type="percentage" THEN(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) ELSE COALESCE(ROUND(qq.score,2),0)  END) as sumscore
  , (CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE FORMAT(qdd.score,0) END) as sumscoretotal
  , re.score as parent_score
  ,  re.maxscore as parent_scoresum
  , re.full_score
  , re.maxfull_score
- , (case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as totalfull_score
+ , (CASE WHEN qu.pass_score_type="percentage" THEN(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) ELSE qq.s_full_score  END) as totalfull_score
  , (
 		SELECT COUNT(1) FROM question
-		WHERE section_id =    $P{param_section} 
+		WHERE section_id =     $P{param_section} 
 		AND parent_question_id IS NOT NULL
   ) parent_question_all_cnt
+ , qu.pass_score_type
 FROM questionaire_data_header qdh 
 INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
 INNER JOIN question que ON que.question_id = qdd.question_id
+INNER JOIN questionaire qu ON qu.questionaire_id = qdh.questionaire_id
 INNER JOIN answer_type ant ON ant.answer_type_id = que.answer_type_id
 INNER JOIN (
  SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
@@ -454,7 +499,7 @@ LEFT JOIN (
 	INNER JOIN (SELECT parent_question_id, COUNT(question_id) as num_question
 		FROM question GROUP BY parent_question_id
 	) ques ON ques.parent_question_id = q.parent_question_id
-	 WHERE qdh.data_header_id =   $P{param_data_header_id}  
+	 WHERE qdh.data_header_id =    $P{param_data_header_id} 
 	 AND q.pass_score > 0
 	GROUP BY qdd.section_id, qs.section_name
 	 , q.parent_question_id, q.parent_question_name
@@ -462,10 +507,24 @@ LEFT JOIN (
 	 , ques.num_question
 	, qdh.data_header_id
 ) re ON re.parent_question_id = q.parent_question_id AND re.customer_id = c.customer_id
+LEFT JOIN (SELECT  q.question_id ,sum(qdd.score) as sum_score,COUNT(qdd.customer_id) as c_cus,
+         COALESCE(sum(qdd.score)/COUNT(qdd.customer_id),0) as  score ,
+        MAX(qdd.full_score) as s_full_score,max(qdd.customer_id) as customer
+                FROM questionaire_data_detail qdd
+                INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+                INNER JOIN question q ON q.question_id = qdd.question_id
+                INNER JOIN question qq ON qq.question_id = q.parent_question_id
+                WHERE qs.is_cust_search = 1
+                AND qdd.is_not_applicable = 0
+                AND qdd.data_header_id =   $P{param_data_header_id} 
+                AND qq.pass_score > 0
+                AND qq.answer_type_id != 7
+        GROUP BY q.question_id) qq ON qq.question_id = qdd.question_id 
+        AND c.customer_id = qq.customer
 WHERE  que.answer_type_id != 7
 -- AND q.pass_score > 0
 AND qdh.data_header_id =  $P{param_data_header_id} 
-AND qdd.section_id =  $P{param_section} 
+AND qdd.section_id =   $P{param_section} 
 ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c.customer_id]]>
 		</queryString>
 		<field name="section_id" class="java.lang.Integer">
@@ -540,6 +599,10 @@ ORDER BY re.seq_no ASC, CONCAT(IFNULL(q.parent_question_id,0), q.seq_no) DESC, c
 		</field>
 		<field name="parent_question_all_cnt" class="java.lang.Long">
 			<property name="com.jaspersoft.studio.field.label" value="parent_question_all_cnt"/>
+		</field>
+		<field name="pass_score_type" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="pass_score_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire"/>
 		</field>
 	</subDataset>
 	<subDataset name="commentcust" uuid="3856e49f-000e-47bf-a36c-b2ee0b2db3e4">
@@ -1166,6 +1229,9 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 				<measure name="color_pass" class="java.lang.String">
 					<measureExpression><![CDATA[$F{color_pass}]]></measureExpression>
 				</measure>
+				<measure name="p_sum" class="java.math.BigDecimal" calculation="Sum">
+					<measureExpression><![CDATA[$F{p_sum}]]></measureExpression>
+				</measure>
 				<crosstabCell width="45" height="20">
 					<cellContents mode="Opaque" style="Crosstab 1_CD">
 						<textField isBlankWhenNull="true">
@@ -1195,7 +1261,7 @@ String.format("%.2f",(double)($V{sumscore}.doubleValue()/$V{totalfull_score}.dou
 							<textElement textAlignment="Center">
 								<font fontName="BrowalliaUPC" size="14"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$V{sumscore}]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$V{p_sum}]]></textFieldExpression>
 						</textField>
 					</cellContents>
 				</crosstabCell>
