@@ -509,7 +509,7 @@ class QuestionaireDataController extends Controller
                     INNER JOIN question qq ON qq.question_id = q.parent_question_id
                     WHERE qs.is_cust_search = 1
                     AND qdd.is_not_applicable = 0
-                    AND qdd.data_header_id = '789'
+                    AND qdd.data_header_id = '{$data_header_id}'
                     AND qq.pass_score > 0
                     AND qq.answer_type_id != 7
                     GROUP BY q.question_id
@@ -796,6 +796,7 @@ class QuestionaireDataController extends Controller
                 FROM employee_snapshot e
                 WHERE e.position_id = es.position_id
                 AND e.emp_code = es.emp_code
+                AND e.is_active = 1
                 AND e.start_date <= '".$request->date."'
             )
             LIMIT 10
