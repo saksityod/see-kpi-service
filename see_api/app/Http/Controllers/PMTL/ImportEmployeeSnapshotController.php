@@ -538,6 +538,27 @@ class ImportEmployeeSnapshotController extends Controller
 			".$org_id."
 		");
 
+		if(empty($emp_snap)) {
+			$emp_snap = DB::select("
+			SELECT
+				'' as 'Start Date',
+				'' as 'EmployeeId',
+				'' as 'UserAccountCode',
+				'' as 'EmployeeFirstName',
+				'' as 'EmployeeLastName',
+				'' as 'EmployeeEmail',
+				'' as 'Level ID',
+				'' as 'Job Function ID',
+				'' as 'Line Manager',
+				'' as 'Position',
+				'' as 'DIST_CD',
+				'' as 'BusnOperationSiteDescription',
+				'' as 'Region',
+				'' as 'Organization Code',
+				'' as 'Is Active'
+			");
+		}
+
 		$org = DB::select("
 			SELECT org_code 'Organization Code', org_name 'Organization Name'
 			FROM org
