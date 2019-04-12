@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
@@ -367,10 +367,12 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="274"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="719"/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
@@ -380,7 +382,11 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 			<![CDATA[SELECT re.emp_snapshot_id
 , re.questionaire_date
 , re.questionaire_type_id
-, re.perant_percent as total_each_date_parent
+, COALESCE((CASE WHEN re.pass_score_type = "percentage" 
+	THEN ROUND((SUM(re.sum_perant_score)*100)/SUM(re.sum_perant_full_score),2)
+	ELSE ROUND((SUM(re.sum_cal_score)*100)/SUM(re.sum_max_full_score),2)
+END),0) as total_each_date_parent
+-- , re.perant_percent as total_each_date_parent
 , total.perant_percent as total_date_parent
 , re.region
 , re.position_code_snapshot
@@ -389,18 +395,20 @@ FROM (
 		SELECT qdh.questionaire_date
 		, es.emp_snapshot_id 
 		, qn.questionaire_type_id
-		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_full_score
-		, count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as count_perant_score
-		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
+		, qn.pass_score_type
+		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score_num
+		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score_num
 		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE(
-		case when qn.pass_score_type = "percentage" 
-		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
-		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
-			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
-		end
-			,0) as perant_percent
+		, (CASE WHEN qs.is_cust_search = 1 
+			THEN SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)/COUNT(distinct qdd.customer_id)
+			ELSE SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) 
+		END) as sum_perant_full_score
+		, (CASE WHEN qs.is_cust_search = 1 
+			THEN SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/COUNT(distinct qdd.customer_id)
+			ELSE SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) 
+		END) as sum_perant_score
+		, SUM(f_sc.cal_score) as sum_cal_score
+		, SUM(f_sc.max_full_score) as sum_max_full_score
 		, qdh.assessor_id
 		, qs.is_cust_search 
 		, ay.answer_type_id
@@ -424,6 +432,18 @@ FROM (
 		LEFT JOIN position p ON es.position_id = p.position_id  -- position_snapshot_id
 		INNER JOIN employee_snapshot es_ass ON es_ass.emp_snapshot_id = qdh.assessor_id  -- snapshot_id
 		LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
+		LEFT JOIN (
+			SELECT data_header_id, section_id, question_id
+			, sum(score)
+			, count(case when is_not_applicable = 1 then null else score end) as count_score
+			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
+			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			FROM questionaire_data_detail 
+			GROUP BY data_header_id, section_id, question_id
+		) f_sc ON f_sc.data_header_id = qdd.data_header_id
+			AND f_sc.section_id = qdd.section_id
+			AND f_sc.question_id = qdd.question_id
+			AND (case when qs.is_cust_search = 0 then 0 else f_sc.max_cus end) = (case when qs.is_cust_search = 0 then 0 else qdd.customer_id end)
 		-- INNER JOIN customer c ON qdd.customer_id = c.customer_id 
 		WHERE es.emp_snapshot_id = $P{param_employee}
 		AND qdh.questionaire_date
@@ -437,41 +457,64 @@ FROM (
 		, qdh.assessor_id
 		, qdh.questionaire_date	 
 		, qn.questionaire_type_id
+		, qs.is_cust_search
 ) re 
 CROSS JOIN (
-		SELECT SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score
-		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
-		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE(
-		case when qn.pass_score_type = "percentage" 
-		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
-		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
-			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
-		end
-		,0) as perant_percent
-		FROM questionaire_data_header qdh 
-		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
-		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
-		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
-		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
-		INNER JOIN ( 
-			SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
-			sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
-			FROM question sq
-			LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
-		    WHERE sqp.pass_score > 0
-		) q ON qdd.question_id = q.question_id 
-		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
-		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
-		-- INNER JOIN customer c ON qdd.customer_id = c.customer_id
-		WHERE	es.emp_snapshot_id = $P{param_employee}
-		AND qdh.questionaire_date
-			between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
-		AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
-		AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
-		AND qdh.data_stage_id IN (3,4)
-		AND ay.answer_type_id != 7
+		SELECT COALESCE((CASE WHEN tol.pass_score_type = "percentage" 
+			THEN ROUND((SUM(tol.sum_perant_score)*100)/SUM(tol.sum_perant_full_score),2)
+			ELSE ROUND((SUM(tol.sum_cal_score)*100)/SUM(tol.sum_max_full_score),2)
+		END),0) as perant_percent
+		FROM (
+			SELECT SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_perant_full_score_num
+			, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score_num
+			, count(distinct qdd.customer_id) as count_cus
+			, (CASE WHEN qs.is_cust_search = 1 
+				THEN SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end)/COUNT(distinct qdd.customer_id)
+				ELSE SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) 
+			END) as sum_perant_full_score
+			, (CASE WHEN qs.is_cust_search = 1 
+				THEN SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/COUNT(distinct qdd.customer_id)
+				ELSE SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) 
+			END) as sum_perant_score
+			, SUM(f_sc.cal_score) as sum_cal_score
+			, SUM(f_sc.max_full_score) as sum_max_full_score
+			, qn.pass_score_type
+			FROM questionaire_data_header qdh 
+			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+			INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+			INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+			INNER JOIN ( 
+				SELECT sq.question_id, sq.question_name, sq.parent_question_id, 
+				sqp.question_name parent_question_name, sqp.pass_score , sq.answer_type_id
+				FROM question sq
+				LEFT OUTER JOIN question sqp ON sqp.question_id = sq.parent_question_id 
+			    WHERE sqp.pass_score > 0
+			) q ON qdd.question_id = q.question_id 
+			INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
+			INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+			LEFT JOIN (
+				SELECT data_header_id, section_id, question_id
+				, sum(score)
+				, count(case when is_not_applicable = 1 then null else score end) as count_score
+				, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
+				, max(full_score) as max_full_score, max(customer_id) as max_cus
+				FROM questionaire_data_detail 
+				GROUP BY data_header_id, section_id, question_id
+			) f_sc ON f_sc.data_header_id = qdd.data_header_id
+				AND f_sc.section_id = qdd.section_id
+				AND f_sc.question_id = qdd.question_id
+				AND (case when qs.is_cust_search = 0 then 0 else f_sc.max_cus end) = (case when qs.is_cust_search = 0 then 0 else qdd.customer_id end)
+			-- INNER JOIN customer c ON qdd.customer_id = c.customer_id
+			WHERE	es.emp_snapshot_id = $P{param_employee}
+			AND qdh.questionaire_date
+				between STR_TO_DATE ( $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE( $P{param_date_end} ,"%d/%m/%Y")
+			AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
+			AND (qdh.assessor_id =  $P{param_assessor}  OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 )
+			AND qdh.data_stage_id IN (3,4)
+			AND ay.answer_type_id != 7
+			GROUP BY qs.is_cust_search
+	) tol
 ) total
 ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]]>
 		</queryString>

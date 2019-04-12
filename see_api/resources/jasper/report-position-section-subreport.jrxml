@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-section-subreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="85dc9a31-2f9f-4c3e-b36e-340e30351bb2">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -76,7 +76,7 @@
 		</box>
 	</style>
 	<subDataset name="query-parent" uuid="7087a54f-3fe7-489b-a009-836f3c3549d9">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="204"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="791"/>
@@ -135,17 +135,15 @@ LEFT JOIN (
 		, es.emp_snapshot_id
 		, es.region
 		, qdh.assessor_id
-		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_full_score
+		, MAX(case when qdd.is_not_applicable = 1 then 0 else f_sc.max_full_score end) as sum_perant_full_score
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
-		, count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as count_perant_score
+		, count(case when qdd.is_not_applicable = 1 then null else qdd.score end) as count_perant_score
 		, count(distinct qdd.customer_id) as count_cus
 		, COALESCE( 
 				case when qn.pass_score_type = "percentage" 
 				then (ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 					SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)) 
-				else (ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)
-					/ count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)) * 100) / MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)
-					,2)) 
+				else (ROUND((SUM(f_sc.cal_score)*100)/SUM(f_sc.max_full_score),2)) 
 				end 
 		,0) as perant_percent
 		FROM questionaire_data_header qdh 
@@ -161,6 +159,18 @@ LEFT JOIN (
 		) q ON qdd.question_id = q.question_id 
 		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id 
+		LEFT JOIN (
+			SELECT data_header_id, section_id, question_id
+			, sum(score)
+			, count(case when is_not_applicable = 1 then null else score end) as count_score
+			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
+			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			FROM questionaire_data_detail 
+			GROUP BY data_header_id, section_id, question_id
+		) f_sc ON f_sc.data_header_id = qdd.data_header_id
+			AND f_sc.section_id = qdd.section_id
+			AND f_sc.question_id = qdd.question_id
+			AND (case when qs.is_cust_search = 0 then 0 else f_sc.max_cus end) = (case when qs.is_cust_search = 0 then 0 else qdd.customer_id end)
 		WHERE qdh.emp_snapshot_id =  $P{param_employee} 
 		AND qdh.questionaire_date
 			BETWEEN STR_TO_DATE ( $P{param_date_start}  ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
@@ -189,8 +199,7 @@ LEFT JOIN (
 			case when qn.pass_score_type = "percentage"
 			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
-			else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/
-				count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/ max(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+			else ROUND((SUM(f_sc.cal_score)*100)/SUM(f_sc.max_full_score),2)
 			end 
 	,0) as perant_percent
 		FROM questionaire_data_header qdh 
@@ -206,6 +215,18 @@ LEFT JOIN (
 		) q ON qdd.question_id = q.question_id 
 		INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id 
 		INNER JOIN answer_type as ay ON q.answer_type_id = ay.answer_type_id
+		LEFT JOIN (
+			SELECT data_header_id, section_id, question_id
+			, sum(score)
+			, count(case when is_not_applicable = 1 then null else score end) as count_score
+			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
+			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			FROM questionaire_data_detail 
+			GROUP BY data_header_id, section_id, question_id
+		) f_sc ON f_sc.data_header_id = qdd.data_header_id
+			AND f_sc.section_id = qdd.section_id
+			AND f_sc.question_id = qdd.question_id
+			AND (case when qs.is_cust_search = 0 then 0 else f_sc.max_cus end) = (case when qs.is_cust_search = 0 then 0 else qdd.customer_id end)
 		WHERE qdh.emp_snapshot_id =   $P{param_employee} 
 		AND qdh.questionaire_date
 			BETWEEN STR_TO_DATE (  $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
@@ -291,8 +312,10 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-question" uuid="c97587b1-baa9-45ce-aecc-205158a3f327">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="239"/>
+		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="754"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
@@ -349,14 +372,14 @@ LEFT JOIN (
 		es.region, es.emp_snapshot_id
 		, qdh.questionaire_date 
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_score
-		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_full_score
+		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_full_score
 		, COALESCE(
 			case when qn.pass_score_type = "percentage"
 			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
 			else
-				ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
-				max(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+				ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
+				max(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
 			end
 		,0) as percent
 		, qdh.assessor_id
@@ -402,14 +425,15 @@ AND question.questionaire_date = qdh.questionaire_date
 AND question.region = es.region
 AND question.emp_snapshot_id = qdh.emp_snapshot_id
 AND question.assessor_id = qdh.assessor_id
+
 LEFT JOIN (
 	SELECT q.question_id, q.question_name
 		, COALESCE(
 		case when qn.pass_score_type = "percentage"
 		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
-		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then 0 else qdd.score end))*100)/
-			MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.score end),2)
+		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
+			SUM(case when qdd.is_not_applicable = 1 then 0 else f_sc.max_full_score end),2)
 			end
 		,0) as percent
 		FROM questionaire_data_header qdh 
@@ -428,6 +452,15 @@ LEFT JOIN (
 		LEFT JOIN position p ON es.position_id = p.position_id  -- position_snapshot_id
 		INNER JOIN employee_snapshot es_ass ON es_ass.emp_snapshot_id = qdh.assessor_id  -- snapshot_id
 		LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
+		LEFT JOIN (
+			SELECT data_header_id, section_id, question_id
+			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			FROM questionaire_data_detail 
+			GROUP BY data_header_id, section_id, question_id
+		) f_sc ON f_sc.data_header_id = qdd.data_header_id
+			AND f_sc.section_id = qdd.section_id
+			AND f_sc.question_id = qdd.question_id
+			AND (case when qs.is_cust_search = 0 then 0 else f_sc.max_cus end) = (case when qs.is_cust_search = 0 then 0 else qdd.customer_id end)
 		WHERE qdh.emp_snapshot_id =  $P{param_employee} 
 		AND qdh.questionaire_date
 			between STR_TO_DATE (  $P{param_date_start} ,"%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}  ,"%d/%m/%Y")
@@ -440,6 +473,7 @@ LEFT JOIN (
 		AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
 		GROUP BY q.question_id, q.question_name
 ) result ON result.question_id = q.question_id
+
 WHERE qdh.emp_snapshot_id =  $P{param_employee} 
 AND qnt.questionaire_type_id =  $P{param_questionaire_type} 
 AND (qdh.assessor_id =  $P{param_assessor}   OR '' =  $P{param_assessor}  OR  ISNULL( $P{param_assessor} ) = 1 ) 
@@ -532,6 +566,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		, p.position_code
 		, qdh.questionaire_date 
 		, qdh.data_stage_id
+		, qdh.data_header_id 
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -636,6 +671,10 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 	</field>
 	<field name="data_stage_id" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="data_stage_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+	</field>
+	<field name="data_header_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="data_header_id"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
 	</field>
 	<group name="parent-group">
@@ -973,7 +1012,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					</crosstabCell>
 				</crosstab>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="180" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="103ec174-d815-451d-b4ea-6c2a60b4606f">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="225" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="103ec174-d815-451d-b4ea-6c2a60b4606f">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -982,7 +1021,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["emp: "+$F{emp_snapshot_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="310" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="87aaa257-7ccf-4586-a5ee-247bf44133cd">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="340" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="87aaa257-7ccf-4586-a5ee-247bf44133cd">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -991,7 +1030,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["asses: "+$F{assessor_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="430" y="20" width="130" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="e9c1f629-ea3f-4eae-ba2d-7614eed6c00c">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="455" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="e9c1f629-ea3f-4eae-ba2d-7614eed6c00c">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -1000,7 +1039,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["sec: "+$F{section_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="680" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="ca275211-ae8d-4d14-ba6b-422171dcd6ab">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="685" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="ca275211-ae8d-4d14-ba6b-422171dcd6ab">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -1009,7 +1048,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["qusetion: "+$F{question_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="560" y="20" width="120" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="08a2b867-144b-4a30-86e7-48a9073bee73">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="570" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="08a2b867-144b-4a30-86e7-48a9073bee73">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
@@ -1018,13 +1057,22 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 					<textFieldExpression><![CDATA["parent: "+$F{parent_question_id}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement style="Crosstab_CT" mode="Transparent" x="0" y="20" width="180" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="cae7d995-b13a-4130-9313-a1eab086057b">
+					<reportElement style="Crosstab_CT" mode="Transparent" x="0" y="20" width="110" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="cae7d995-b13a-4130-9313-a1eab086057b">
 						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
 					</reportElement>
 					<textElement>
 						<font fontName="BrowalliaUPC" size="22"/>
 					</textElement>
 					<textFieldExpression><![CDATA["console log : "]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="Crosstab_CT" mode="Transparent" x="110" y="20" width="115" height="30" isRemoveLineWhenBlank="true" forecolor="#FF0015" uuid="b2c5c95b-c60b-4d8c-9f31-084f024fc313">
+						<printWhenExpression><![CDATA[(null != null) ? true : false]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font fontName="BrowalliaUPC" size="22"/>
+					</textElement>
+					<textFieldExpression><![CDATA["head: "+$F{data_header_id}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
