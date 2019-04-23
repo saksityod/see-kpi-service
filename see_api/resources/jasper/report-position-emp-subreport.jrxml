@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="b247de07-88ee-40cd-9c51-57d876e54455">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
@@ -367,7 +367,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		</field>
 	</subDataset>
 	<subDataset name="query-total" uuid="035342f2-99ef-4fc4-be74-d902adebef5e">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="792"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="198"/>
@@ -437,7 +437,7 @@ FROM (
 			, sum(score)
 			, count(case when is_not_applicable = 1 then null else score end) as count_score
 			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
-			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			, max(case when is_not_applicable = 1 then null else full_score end) as max_full_score, max(customer_id) as max_cus
 			FROM questionaire_data_detail 
 			GROUP BY data_header_id, section_id, question_id
 		) f_sc ON f_sc.data_header_id = qdd.data_header_id
@@ -498,7 +498,7 @@ CROSS JOIN (
 				, sum(score)
 				, count(case when is_not_applicable = 1 then null else score end) as count_score
 				, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
-				, max(full_score) as max_full_score, max(customer_id) as max_cus
+				, max(case when is_not_applicable = 1 then null else full_score end) as max_full_score, max(customer_id) as max_cus
 				FROM questionaire_data_detail 
 				GROUP BY data_header_id, section_id, question_id
 			) f_sc ON f_sc.data_header_id = qdd.data_header_id
@@ -516,6 +516,7 @@ CROSS JOIN (
 			GROUP BY qs.is_cust_search
 	) tol
 ) total
+GROUP BY re.questionaire_date
 ORDER BY re.questionaire_date ASC ,re.position_code_snapshot ASC ,re.region ASC]]>
 		</queryString>
 		<field name="emp_snapshot_id" class="java.lang.Integer">

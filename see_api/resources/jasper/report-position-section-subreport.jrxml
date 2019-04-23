@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-position-section-subreport" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="85dc9a31-2f9f-4c3e-b36e-340e30351bb2">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -76,7 +76,7 @@
 		</box>
 	</style>
 	<subDataset name="query-parent" uuid="7087a54f-3fe7-489b-a009-836f3c3549d9">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="204"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="791"/>
@@ -139,13 +139,13 @@ LEFT JOIN (
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_perant_score
 		, count(case when qdd.is_not_applicable = 1 then null else qdd.score end) as count_perant_score
 		, count(distinct qdd.customer_id) as count_cus
-		, COALESCE( 
+		, ( 
 				case when qn.pass_score_type = "percentage" 
-				then (ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-					SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)) 
+				then (ROUND((SUM(case when qdd.is_not_applicable = 1 then null else qdd.score end)*100)/
+					SUM(case when qdd.is_not_applicable = 1 then null else qdd.full_score end),2)) 
 				else (ROUND((SUM(f_sc.cal_score)*100)/SUM(f_sc.max_full_score),2)) 
 				end 
-		,0) as perant_percent
+		) as perant_percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -164,7 +164,7 @@ LEFT JOIN (
 			, sum(score)
 			, count(case when is_not_applicable = 1 then null else score end) as count_score
 			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
-			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			, max(case when is_not_applicable = 1 then null else full_score end) as max_full_score, max(customer_id) as max_cus
 			FROM questionaire_data_detail 
 			GROUP BY data_header_id, section_id, question_id
 		) f_sc ON f_sc.data_header_id = qdd.data_header_id
@@ -195,13 +195,13 @@ LEFT JOIN (
 	AND parent.assessor_id = qdh.assessor_id
 LEFT JOIN (
 	SELECT q.parent_question_id, q.parent_question_name 
-		, COALESCE(
+		, (
 			case when qn.pass_score_type = "percentage"
 			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
 				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
 			else ROUND((SUM(f_sc.cal_score)*100)/SUM(f_sc.max_full_score),2)
 			end 
-	,0) as perant_percent
+	) as perant_percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -220,7 +220,7 @@ LEFT JOIN (
 			, sum(score)
 			, count(case when is_not_applicable = 1 then null else score end) as count_score
 			, (sum(score)/count(case when is_not_applicable = 1 then null else score end)) as cal_score
-			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			, max(case when is_not_applicable = 1 then null else full_score end) as max_full_score, max(customer_id) as max_cus
 			FROM questionaire_data_detail 
 			GROUP BY data_header_id, section_id, question_id
 		) f_sc ON f_sc.data_header_id = qdd.data_header_id
@@ -315,7 +315,7 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="239"/>
 		<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="754"/>
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<parameter name="param_employee" class="java.lang.String"/>
 		<parameter name="param_date_start" class="java.lang.String"/>
 		<parameter name="param_date_end" class="java.lang.String"/>
@@ -373,15 +373,15 @@ LEFT JOIN (
 		, qdh.questionaire_date 
 		, SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end) as sum_score
 		, MAX(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end) as sum_full_score
-		, COALESCE(
+		, (
 			case when qn.pass_score_type = "percentage"
-			then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-				SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+			then ROUND((SUM(case when qdd.is_not_applicable = 1 then null else qdd.score end)*100)/
+				SUM(case when qdd.is_not_applicable = 1 then null else qdd.full_score end),2)
 			else
-				ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
-				max(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
+				ROUND(((SUM(case when qdd.is_not_applicable = 1 then null else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
+				max(case when qdd.is_not_applicable = 1 then null else qdd.full_score end),2)
 			end
-		,0) as percent
+		) as percent
 		, qdh.assessor_id
 		, qs.is_cust_search
 		, ay.answer_type_id
@@ -428,14 +428,14 @@ AND question.assessor_id = qdh.assessor_id
 
 LEFT JOIN (
 	SELECT q.question_id, q.question_name
-		, COALESCE(
+		, (
 		case when qn.pass_score_type = "percentage"
-		then ROUND((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.full_score end),2)
-		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then 0 else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
-			SUM(case when qdd.is_not_applicable = 1 then 0 else f_sc.max_full_score end),2)
+		then ROUND((SUM(case when qdd.is_not_applicable = 1 then null else qdd.score end)*100)/
+			SUM(case when qdd.is_not_applicable = 1 then null else qdd.full_score end),2)
+		else ROUND(((SUM(case when qdd.is_not_applicable = 1 then null else qdd.score end)/count(case when qdd.is_not_applicable = 1 then null else qdd.score end))*100)/
+			SUM(f_sc.max_full_score),2)
 			end
-		,0) as percent
+		) as percent
 		FROM questionaire_data_header qdh 
 		INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
 		INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
@@ -454,7 +454,7 @@ LEFT JOIN (
 		LEFT JOIN position p_ass ON es_ass.position_id = p_ass.position_id  -- position_snapshot_id
 		LEFT JOIN (
 			SELECT data_header_id, section_id, question_id
-			, max(full_score) as max_full_score, max(customer_id) as max_cus
+			, max(case when is_not_applicable = 1 then null else full_score end) as max_full_score, max(customer_id) as max_cus
 			FROM questionaire_data_detail 
 			GROUP BY data_header_id, section_id, question_id
 		) f_sc ON f_sc.data_header_id = qdd.data_header_id
@@ -970,19 +970,19 @@ ORDER BY qdh.questionaire_date ASC ,p.position_code ASC ,es.region ASC ,qs.secti
 									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
-								<textFieldExpression><![CDATA[($V{question_percent_MEASURE}==null)? "0.00%": $V{question_percent_MEASURE}+"%"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[($V{question_percent_MEASURE}==null)? "N/A": $V{question_percent_MEASURE}+"%"]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabCell>
 					<crosstabCell width="80" height="20" columnTotalGroup="region">
 						<cellContents mode="Opaque" style="Crosstab 1_CT">
-							<textField>
+							<textField isBlankWhenNull="false">
 								<reportElement mode="Opaque" x="0" y="0" width="80" height="20" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#F0F8FF" uuid="ab2b3844-6bc7-4e5a-ad4f-a35c86ee0b8f"/>
 								<textElement textAlignment="Right">
 									<font fontName="BrowalliaUPC" size="16"/>
 									<paragraph leftIndent="0" rightIndent="5"/>
 								</textElement>
-								<textFieldExpression><![CDATA[$V{result}+"%"]]></textFieldExpression>
+								<textFieldExpression><![CDATA[($V{result}==null)? "N/A": $V{result}+"%"]]></textFieldExpression>
 							</textField>
 						</cellContents>
 					</crosstabCell>
