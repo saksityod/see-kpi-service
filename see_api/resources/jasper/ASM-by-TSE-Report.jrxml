@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asm_by_tse_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" whenResourceMissingType="Key" isIgnorePagination="true" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
@@ -149,7 +149,7 @@ FROM(
 		SELECT ss.parent_question_id
 		,ss.question_name
 		,SUM(SS.cus)
-		, max(ss.full_score) as full_score
+		, (CASE WHEN SS.is_cust_search=0 THEN sum(ss.full_score) ELSE MAX(SS.full_score) END ) as full_score
 		, (CASE WHEN SS.is_cust_search=0 THEN SUM(ss.sum_score) ELSE (CASE WHEN SUM(SS.cus) = 0 THEN 0 ELSE ROUND(SUM(ss.sum_score)/SUM(SS.cus),2) END)END) as sum_score
 		, SS.is_cust_search
 		, SS.questionaire_date
@@ -176,7 +176,7 @@ FROM(
 			AND (qdh.assessor_id =    $P{param_assessor}   OR '' =   $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
 			AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
-			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id
+			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
 		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id
 ) sscore
@@ -401,15 +401,17 @@ INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
 LEFT JOIN position po ON emp.position_id = po.position_id 
  LEFT JOIN (
 SELECT sscore.parent_question_id,sscore.questionaire_date, SUM(sscore.sum_score) as s_score, SUM(sscore.full_score)as s_fullscore ,ROUND(SUM(sscore.sum_score)*100/SUM(sscore.full_score),2) AS p_score
+, sscore.assessor_id
 FROM(
 		SELECT ss.parent_question_id
 		,ss.question_name
 		,SUM(SS.cus)
-		, max(ss.full_score) as full_score
+		, (CASE WHEN SS.is_cust_search=0 THEN sum(ss.full_score) ELSE MAX(SS.full_score) END ) as full_score
 		, (CASE WHEN SS.is_cust_search=0 THEN SUM(ss.sum_score) ELSE (CASE WHEN SUM(SS.cus) = 0 THEN 0 ELSE ROUND(SUM(ss.sum_score)/SUM(SS.cus),2) END)END) as sum_score
 		, SS.is_cust_search
 		, SS.questionaire_date
 		, ss.emp_snapshot_id
+		, ss.assessor_id
 		FROM(
 			SELECT 	q.parent_question_id
 			, q.question_name
@@ -419,6 +421,7 @@ FROM(
 			, qs.is_cust_search
 			, qdh.questionaire_date
 			, qdh.emp_snapshot_id
+			, qdh.assessor_id
 			FROM questionaire_data_header qdh
 			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -432,12 +435,13 @@ FROM(
 			AND (qdh.assessor_id =    $P{param_assessor}   OR '' =   $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
 			AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
-			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id
+			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
-		GROUP BY SS.parent_question_id , ss.question_name  ,ss.questionaire_date  ,SS.emp_snapshot_id
+		GROUP BY SS.parent_question_id , ss.question_name  ,ss.questionaire_date  ,SS.emp_snapshot_id,SS.assessor_id
 ) sscore
-GROUP BY sscore.parent_question_id   
+GROUP BY sscore.parent_question_id   , sscore.assessor_id
 )all_p_score on q.parent_question_id = all_p_score.parent_question_id
+AND qdh.assessor_id = all_p_score.assessor_id
 WHERE q.answer_type_id != 7
 AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}     , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
@@ -461,7 +465,7 @@ FROM(
 		SELECT ss.parent_question_id
 		,ss.question_name
 		,SUM(SS.cus)
-		, max(ss.full_score) as full_score
+		, (CASE WHEN SS.is_cust_search=0 THEN sum(ss.full_score) ELSE MAX(SS.full_score) END ) as full_score
 		, (CASE WHEN SS.is_cust_search=0 THEN SUM(ss.sum_score) ELSE (CASE WHEN SUM(SS.cus) = 0 THEN 0 ELSE ROUND(SUM(ss.sum_score)/SUM(SS.cus),2) END)END) as sum_score
 		, SS.is_cust_search
 		, SS.questionaire_date
@@ -488,7 +492,7 @@ FROM(
 			AND (qdh.assessor_id =    $P{param_assessor}   OR '' =   $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
 			AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
-			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id
+			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
 		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id
 ) sscore
@@ -1007,23 +1011,65 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				<crosstabCell width="0" height="20" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="40" height="0" rowTotalGroup="assessor_id">
+				<crosstabCell width="40" height="20" rowTotalGroup="questionaire_date">
+					<cellContents mode="Opaque" style="Crosstab_CG">
+						<textField isBlankWhenNull="true">
+							<reportElement x="0" y="0" width="40" height="20" uuid="de4d3ba6-6bed-4145-b6d6-9cefdd8658ac"/>
+							<box rightPadding="3"/>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[($V{question_name}== null) ? null:$V{percent_by_total}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="140" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CG">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<textField isBlankWhenNull="true">
+							<reportElement x="0" y="0" width="35" height="20" uuid="929fafc9-4b3d-43e0-9056-afe3d68d15b3"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{sum_num_from}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="35" y="0" width="35" height="20" uuid="90ed0beb-f226-4810-b8c3-e52bd7e14dc1"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{sum_num_cus}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="70" y="0" width="35" height="20" uuid="3f76563f-2dbb-4f1c-a82c-2344ebccd06e"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{sum_know}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement x="105" y="0" width="35" height="20" uuid="1f2c8ad0-a2ca-4b72-a507-890590495766"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[""]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
-				</crosstabCell>
-				<crosstabCell width="0" height="0" rowTotalGroup="assessor_id" columnTotalGroup="questionaire_type_id">
-					<cellContents mode="Opaque" style="Crosstab_CT"/>
-				</crosstabCell>
-				<crosstabCell width="140" height="0" rowTotalGroup="assessor_id" columnTotalGroup="parent_question_id">
-					<cellContents mode="Opaque" style="Crosstab_CT"/>
-				</crosstabCell>
-				<crosstabCell width="40" height="0" rowTotalGroup="job_function_id">
-					<cellContents mode="Opaque" style="Crosstab_CG"/>
-				</crosstabCell>
-				<crosstabCell width="0" height="0" rowTotalGroup="job_function_id" columnTotalGroup="questionaire_type_id">
-					<cellContents mode="Opaque" style="Crosstab_CT"/>
-				</crosstabCell>
-				<crosstabCell width="140" height="0" rowTotalGroup="job_function_id" columnTotalGroup="parent_question_id">
-					<cellContents mode="Opaque" style="Crosstab_CG"/>
 				</crosstabCell>
 				<crosstabCell width="40" height="20" rowTotalGroup="position_employee">
 					<cellContents mode="Opaque" style="Crosstab_CT">
@@ -1036,9 +1082,6 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 							<textFieldExpression><![CDATA[($V{question_name}== null )? null :$V{percent_all}]]></textFieldExpression>
 						</textField>
 					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="0" height="20" rowTotalGroup="position_employee" columnTotalGroup="questionaire_type_id">
-					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
 				<crosstabCell width="140" height="20" rowTotalGroup="position_employee" columnTotalGroup="parent_question_id">
 					<cellContents mode="Opaque" style="Crosstab_CT">
@@ -1085,65 +1128,26 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 						</textField>
 					</cellContents>
 				</crosstabCell>
-				<crosstabCell width="40" height="20" rowTotalGroup="questionaire_date">
-					<cellContents mode="Opaque" style="Crosstab_CG">
-						<textField isBlankWhenNull="true">
-							<reportElement x="0" y="0" width="40" height="20" uuid="de4d3ba6-6bed-4145-b6d6-9cefdd8658ac"/>
-							<box rightPadding="3"/>
-							<textElement textAlignment="Right">
-								<font fontName="BrowalliaUPC" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[($V{question_name}== null) ? null:$V{percent_by_total}]]></textFieldExpression>
-						</textField>
-					</cellContents>
-				</crosstabCell>
-				<crosstabCell width="0" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="questionaire_type_id">
+				<crosstabCell width="0" height="20" rowTotalGroup="position_employee" columnTotalGroup="questionaire_type_id">
 					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
-				<crosstabCell width="140" height="20" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
-					<cellContents mode="Opaque" style="Crosstab_CG">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
-						<textField isBlankWhenNull="true">
-							<reportElement x="0" y="0" width="35" height="20" uuid="929fafc9-4b3d-43e0-9056-afe3d68d15b3"/>
-							<box rightPadding="3">
-								<pen lineWidth="0.5"/>
-							</box>
-							<textElement textAlignment="Right">
-								<font fontName="BrowalliaUPC" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{sum_num_from}]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement x="35" y="0" width="35" height="20" uuid="90ed0beb-f226-4810-b8c3-e52bd7e14dc1"/>
-							<box rightPadding="3">
-								<pen lineWidth="0.5"/>
-							</box>
-							<textElement textAlignment="Right">
-								<font fontName="BrowalliaUPC" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{sum_num_cus}]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement x="70" y="0" width="35" height="20" uuid="3f76563f-2dbb-4f1c-a82c-2344ebccd06e"/>
-							<box rightPadding="3">
-								<pen lineWidth="0.5"/>
-							</box>
-							<textElement textAlignment="Right">
-								<font fontName="BrowalliaUPC" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$V{sum_know}]]></textFieldExpression>
-						</textField>
-						<textField isBlankWhenNull="true">
-							<reportElement x="105" y="0" width="35" height="20" uuid="1f2c8ad0-a2ca-4b72-a507-890590495766"/>
-							<box rightPadding="3">
-								<pen lineWidth="0.5"/>
-							</box>
-							<textElement textAlignment="Right">
-								<font fontName="BrowalliaUPC" size="14"/>
-							</textElement>
-							<textFieldExpression><![CDATA[""]]></textFieldExpression>
-						</textField>
-					</cellContents>
+				<crosstabCell width="40" height="0" rowTotalGroup="job_function_id">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="140" height="0" rowTotalGroup="job_function_id" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="job_function_id" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="40" height="0" rowTotalGroup="assessor_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="140" height="0" rowTotalGroup="assessor_id" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="assessor_id" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
 				</crosstabCell>
 			</crosstab>
 		</band>
