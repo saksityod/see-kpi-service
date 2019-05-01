@@ -44,6 +44,8 @@ class FSF_HC_ReportController extends Controller
           	FROM head_count h
           	WHERE (h.valid_date <= '".$param_date_start."' OR h.valid_date <= '".$param_date_end."')
           	GROUP BY h.position_id ";
+		
+		//return $param_questionaire_type_id;
 
         // หา emp_snapshot_id ตาม emp_code, position_id, MAX(start_date) [ใช้ใน query : $emp_position **ทำงานด้วยตัวมันเองไม่ได้]
         $emp_snapshot_id = "
@@ -71,6 +73,7 @@ class FSF_HC_ReportController extends Controller
             INNER JOIN (".$MaxDateHeadCount.") hc ON hc.position_id = em.position_id
             	AND em.start_date <= hc.max_valid_date
             WHERE em.level_id = 4
+			AND em.is_active = 1
             AND (em.start_date <= '".$param_date_start."' OR em.start_date <= '".$param_date_end."')
             GROUP BY em.emp_code
             , CONCAT(em.emp_first_name,' ',em.emp_last_name)
@@ -348,12 +351,15 @@ class FSF_HC_ReportController extends Controller
 
       public function GetAllEmpCodeUnder($emp_snapshot_id, $start_date, $end_date)
       {
+		
         $emp_code = DB::select("SELECT emp_code
             FROM employee_snapshot
             WHERE emp_snapshot_id = ".$emp_snapshot_id."");
 
         $parent = "";
+		$parent_id = "";
         $place_parent = "";
+		$place_parent_id = "";
         $have = true;
 
         foreach ($emp_code as $o) {
@@ -362,12 +368,34 @@ class FSF_HC_ReportController extends Controller
 
         // ใส่ AND chief_emp_code != 'anuaeid' เพื่อไม่ให้ run ข้อมูลนานเกินไป เนื่องจากตัวเองเป็นหัวหน้าของตัวเอง
         while($have){
-          $emp = DB::select("SELECT emp_code
+          /* 
+		  $emp = DB::select("SELECT emp_code
             FROM employee_snapshot
             WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
             AND chief_emp_code != ''
-      			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
-      			GROUP BY emp_code
+      		AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
+      		GROUP BY emp_code
+          "); 
+		  */
+		  
+		 
+		  // ลูกน้องที่ต้องการจะต้องมี start_date ล่าสุด ตาม parameter date
+    		$MaxDateEmp = "
+    			SELECT emp_code, max(start_date) as max_date
+    			FROM employee_snapshot
+    			WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
+				AND chief_emp_code != ''
+    			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
+    			GROUP BY emp_code";
+				
+		  $emp = DB::select("SELECT em.emp_code, em.emp_snapshot_id
+            FROM employee_snapshot em
+			INNER JOIN (".$MaxDateEmp.") m_em ON m_em.emp_code = em.emp_code
+				AND m_em.max_date = em.start_date
+            WHERE FIND_IN_SET(em.chief_emp_code,'".$parent."')
+            AND em.chief_emp_code != ''
+      		AND (em.start_date <= '".$start_date."' OR em.start_date <= '".$end_date."')
+      		GROUP BY em.emp_code, em.emp_snapshot_id
           ");
 
           if(empty($emp)) {
@@ -376,17 +404,22 @@ class FSF_HC_ReportController extends Controller
           }// end if
           else if (!empty($emp)){
             $place_parent = $place_parent.$parent; // เก็บ emp_code ก่อนหน้าไว้ใน $place_parent
+			$place_parent_id = $place_parent_id.$parent_id; // เก็บ emp_snapshot_id ก่อนหน้าไว้ใน $place_parent_id
             $parent = "";
+			$parent_id = "";
 
             foreach ($emp as $o) {
               $parent = $parent.$o->emp_code.",";
+			  $parent_id = $parent_id.$o->emp_snapshot_id.",";
               // ข้อมูล emp_code ล่าสุดที่ได้จาก Query
             }
           }
         }// end else
 
         $place_parent = $place_parent.$parent; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
+		$place_parent_id = $place_parent_id.$parent_id; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
 
+		/*
     		// ลูกน้องที่ต้องการจะต้องมี start_date ล่าสุด ตาม parameter date
     		$MaxDateEmp = "
     			SELECT emp_code, max(start_date) as max_date
@@ -395,16 +428,17 @@ class FSF_HC_ReportController extends Controller
     			AND emp_snapshot_id != ".$emp_snapshot_id."
     			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
     			GROUP BY emp_code";
-
+		
         // นำ emp_code ไปหา emp_snapshot_id (ไม่เอาตัวเอง) และเอาเฉพาะลูกน้องคนที่มีวันที่มากที่สุดตาม parameter date และเอาเฉพาะลูกน้องที่มี job_function.is_show_report = 1
         $AllempID = DB::select("
           SELECT em.emp_snapshot_id
           FROM employee_snapshot em
           INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
-		      INNER JOIN (".$MaxDateEmp.") md ON md.emp_code = em.emp_code
-			       AND md.max_date = em.start_date
+		  INNER JOIN (".$MaxDateEmp.") md ON md.emp_code = em.emp_code
+			AND md.max_date = em.start_date
           WHERE FIND_IN_SET(em.emp_code,'".$place_parent."')
           AND em.emp_snapshot_id != ".$emp_snapshot_id."
+		  AND em.is_active = 1
           AND jf.is_show_report = 1
         ");
 
@@ -412,8 +446,9 @@ class FSF_HC_ReportController extends Controller
         foreach ($AllempID as $empID) {
           $Allemp = $Allemp.$empID->emp_snapshot_id.",";
         }
-
-        return ($Allemp);
+		*/
+		
+        return ($place_parent_id);
 
 
         // ขั้นตอนหาค่า emp_snapshot_id ที่อยู่ภายใต้ emp_snapshot_id ที่ต้องการ (emp_snapshot_id ที่เป็นลูกหลานทั้งหมด)
