@@ -418,6 +418,14 @@ class FSF_HC_ReportController extends Controller
 
         $place_parent = $place_parent.$parent; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
 		$place_parent_id = $place_parent_id.$parent_id; // เก็บ emp_code ล่าสุดที่หา emp_code ต่อไปไม่เจอ
+		
+		$active_report = DB::select("
+			SELECT em.emp_snapshot_id
+			FROM employee_snapshot em
+			INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
+			WHERE FIND_IN_SET(em.emp_snapshot_id,'".$place_parent_id."')
+			AND em.is_active = 1
+			AND jf.is_show_report = 1 ");
 
 		/*
     		// ลูกน้องที่ต้องการจะต้องมี start_date ล่าสุด ตาม parameter date
@@ -441,14 +449,14 @@ class FSF_HC_ReportController extends Controller
 		  AND em.is_active = 1
           AND jf.is_show_report = 1
         ");
+		*/
 
         $Allemp = "";     // เก็บ emp_snapshot_id ในรูปแบบของ String
-        foreach ($AllempID as $empID) {
+        foreach ($active_report as $empID) {
           $Allemp = $Allemp.$empID->emp_snapshot_id.",";
         }
-		*/
 		
-        return ($place_parent_id);
+        return ($Allemp);
 
 
         // ขั้นตอนหาค่า emp_snapshot_id ที่อยู่ภายใต้ emp_snapshot_id ที่ต้องการ (emp_snapshot_id ที่เป็นลูกหลานทั้งหมด)
