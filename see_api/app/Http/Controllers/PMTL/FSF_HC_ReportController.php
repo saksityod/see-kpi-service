@@ -42,12 +42,13 @@ class FSF_HC_ReportController extends Controller
             SELECT h.position_id
           	, MAX(h.valid_date) AS max_valid_date
           	FROM head_count h
-          	WHERE (h.valid_date <= '".$param_date_start."' OR h.valid_date <= '".$param_date_end."')
+          	WHERE (h.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')
           	GROUP BY h.position_id ";
 		
-		//return $param_questionaire_type_id;
-
-        // หา emp_snapshot_id ตาม emp_code, position_id, MAX(start_date) [ใช้ใน query : $emp_position **ทำงานด้วยตัวมันเองไม่ได้]
+		// จากเดิม กวาดข้อมูลมาทั้งหมด (รวมตอนที่หาข้อมูลคนด้วย ทั้งหัวหน้าและลูกน้อง) (h.valid_date <= '".$param_date_start."' OR h.valid_date <= '".$param_date_end."')
+		
+		/*
+		หา emp_snapshot_id ตาม emp_code, position_id, MAX(start_date) [ใช้ใน query : $emp_position **ทำงานด้วยตัวมันเองไม่ได้]
         $emp_snapshot_id = "
             SELECT e.emp_snapshot_id
             FROM employee_snapshot e
@@ -55,12 +56,12 @@ class FSF_HC_ReportController extends Controller
             AND e.position_id = em.position_id
             AND e.start_date = MAX(em.start_date)
             LIMIT 1";
-
-        /*
+		
+        
 		แสดง employee ที่มี MAX(start_date) โดย
         - MAX(start_date) น้อยกว่าหรือเท่ากับ MAX(valid_date) ตาม position_id
         - MAX(start_date) จะต้องตาม parameter date
-        */
+        
         $emp_position = "
             SELECT (".$emp_snapshot_id.") AS emp_snapshot_id
             , em.emp_code
@@ -79,6 +80,45 @@ class FSF_HC_ReportController extends Controller
             , CONCAT(em.emp_first_name,' ',em.emp_last_name)
             , em.position_id
             , po.position_code ";
+		*/
+		
+		// หา emp ตาม position, level โดยเลือก max(date) ตาม parameter วันที่ [position->level->max(date by parameter)]
+		$emp_by_position = "
+			SELECT em.emp_snapshot_id
+			, em.emp_code
+			, em.emp_first_name
+			, em.emp_last_name
+			, em.start_date
+			, em.position_id
+			FROM employee_snapshot em
+			INNER JOIN (
+				SELECT position_id, max(start_date) as max_start_date
+				FROM employee_snapshot
+				WHERE level_id = 4
+				AND (start_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')
+				GROUP BY position_id
+			) emp ON em.position_id = emp.position_id
+			AND emp.max_start_date = em.start_date
+			WHERE level_id = 4
+			GROUP BY em.emp_snapshot_id
+			, em.emp_code
+			, em.emp_first_name
+			, em.emp_last_name
+			, em.start_date
+			, em.position_id";
+			
+		// เลือกคนที่ได้มาแล้วตาม position ภายใน head_count
+		$emp_position = "
+			SELECT employee.emp_snapshot_id
+			, employee.emp_code
+			, CONCAT(employee.emp_first_name,' ',employee.emp_last_name) AS emp_name
+			, employee.position_id
+			, po.position_code
+			, employee.start_date as max_date
+			FROM (".$emp_by_position.") employee 
+			LEFT JOIN position po ON employee.position_id = po.position_id
+			INNER JOIN (".$MaxDateHeadCount.") hc ON hc.position_id = employee.position_id
+				AND employee.start_date <= hc.max_valid_date";
 
 
          // job_function and type (all)
@@ -112,7 +152,7 @@ class FSF_HC_ReportController extends Controller
             AND h.position_id = emp.position_id LIMIT 1) as head_count
           FROM (".$emp_position.") emp
           CROSS JOIN (".$job_type.") job
-          WHERE (emp.max_date <= '".$param_date_start."' OR emp.max_date <= '".$param_date_end."')";
+          WHERE (emp.max_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')";
           // LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id AND hc.position_id = emp.position_id AND hc.valid_date = emp.max_date
 
 
@@ -385,7 +425,7 @@ class FSF_HC_ReportController extends Controller
     			FROM employee_snapshot
     			WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
 				AND chief_emp_code != ''
-    			AND (start_date <= '".$start_date."' OR start_date <= '".$end_date."')
+    			AND (start_date BETWEEN '".$start_date."' AND '".$end_date."')
     			GROUP BY emp_code";
 				
 		  $emp = DB::select("SELECT em.emp_code, em.emp_snapshot_id
@@ -394,7 +434,7 @@ class FSF_HC_ReportController extends Controller
 				AND m_em.max_date = em.start_date
             WHERE FIND_IN_SET(em.chief_emp_code,'".$parent."')
             AND em.chief_emp_code != ''
-      		AND (em.start_date <= '".$start_date."' OR em.start_date <= '".$end_date."')
+      		AND (em.start_date BETWEEN '".$start_date."' AND '".$end_date."')
       		GROUP BY em.emp_code, em.emp_snapshot_id
           ");
 
@@ -424,7 +464,6 @@ class FSF_HC_ReportController extends Controller
 			FROM employee_snapshot em
 			INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
 			WHERE FIND_IN_SET(em.emp_snapshot_id,'".$place_parent_id."')
-			AND em.is_active = 1
 			AND jf.is_show_report = 1 ");
 
 		/*
