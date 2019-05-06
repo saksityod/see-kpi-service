@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="asm_by_tse_report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" whenResourceMissingType="Key" isIgnorePagination="true" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
@@ -50,7 +50,7 @@
 		</box>
 	</style>
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="481"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="505"/>
@@ -77,7 +77,16 @@
 , rt.num_cus
 , rt.num_from
 , rt.know
-, IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0) percent_score
+
+, COALESCE(
+		CASE WHEN qn.pass_score_type = "percentage"
+		THEN IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0)
+		ELSE p_score_total.p_score
+		END
+		,0) AS percent_score
+		
+-- , p_score_total.p_score AS percent_score
+-- , IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0) percent_score
 , COALESCE(
 		CASE WHEN qn.pass_score_type = "percentage"
 		THEN ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
@@ -110,7 +119,8 @@ INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapsh
 INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
 LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
 LEFT JOIN (
- SELECT qnt.questionaire_type_id
+ SELECT 
+	 qnt.questionaire_type_id
  , qnt.questionaire_type
  , qdh.assessor_id
  , po.position_code AS position_assor
@@ -133,7 +143,6 @@ LEFT JOIN (
 		,0) AS percent
  FROM questionaire_data_header qdh
  LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
- -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
  LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
  INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
  INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
@@ -163,6 +172,7 @@ FROM(
 			, qs.is_cust_search
 			, qdh.questionaire_date
 			, qdh.emp_snapshot_id
+			, qdh.data_header_id
 			FROM questionaire_data_header qdh
 			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -178,7 +188,7 @@ FROM(
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
 			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
-		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id
+		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id,SS.data_header_id
 ) sscore
 GROUP BY sscore.parent_question_id  , sscore.emp_snapshot_id
 )total_p_score on q.parent_question_id = total_p_score.parent_question_id
@@ -412,6 +422,7 @@ FROM(
 		, SS.questionaire_date
 		, ss.emp_snapshot_id
 		, ss.assessor_id
+		, SS.data_header_id
 		FROM(
 			SELECT 	q.parent_question_id
 			, q.question_name
@@ -422,6 +433,7 @@ FROM(
 			, qdh.questionaire_date
 			, qdh.emp_snapshot_id
 			, qdh.assessor_id
+			, qdh.data_header_id
 			FROM questionaire_data_header qdh
 			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -437,7 +449,7 @@ FROM(
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
 			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
-		GROUP BY SS.parent_question_id , ss.question_name  ,ss.questionaire_date  ,SS.emp_snapshot_id,SS.assessor_id
+		GROUP BY SS.parent_question_id , ss.question_name  ,ss.questionaire_date  ,SS.emp_snapshot_id,SS.assessor_id ,SS.data_header_id
 ) sscore
 GROUP BY sscore.parent_question_id   , sscore.assessor_id
 )all_p_score on q.parent_question_id = all_p_score.parent_question_id
@@ -458,7 +470,7 @@ GROUP BY qnt.questionaire_type_id
 ORDER BY qnt.questionaire_type_id ASC, q.parent_question_id ASC, qdh.assessor_id ASC
 ) as per ON per.questionaire_type_id = qnt.questionaire_type_id 
 AND per.parent_question_id = q.parent_question_id
-AND per.assessor_id = qdh.assessor_id
+AND per.assessor_id = qdh.assessor_id 
 LEFT JOIN(
 SELECT sscore.parent_question_id,sscore.questionaire_date, SUM(sscore.sum_score) as s_score, SUM(sscore.full_score)as s_fullscore ,ROUND(SUM(sscore.sum_score)*100/SUM(sscore.full_score),2) AS p_score , sscore.emp_snapshot_id
 FROM(
@@ -479,6 +491,7 @@ FROM(
 			, qs.is_cust_search
 			, qdh.questionaire_date
 			, qdh.emp_snapshot_id
+			, qdh.data_header_id
 			FROM questionaire_data_header qdh
 			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
 			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
@@ -494,12 +507,53 @@ FROM(
 			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
 			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
 		)SS
-		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id
+		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id,SS.data_header_id
 ) sscore
 GROUP BY sscore.parent_question_id  , sscore.emp_snapshot_id ,sscore.questionaire_date
 ) p_score ON q.parent_question_id = p_score.parent_question_id
 AND qdh.questionaire_date = p_score.questionaire_date
 AND qdh.emp_snapshot_id = p_score.emp_snapshot_id
+LEFT JOIN(
+SELECT sscore.questionaire_date, SUM(sscore.sum_score) as s_score, SUM(sscore.full_score)as s_fullscore ,ROUND(SUM(sscore.sum_score)*100/SUM(sscore.full_score),2) AS p_score , sscore.emp_snapshot_id
+FROM(
+		SELECT ss.parent_question_id
+		,ss.question_name
+		,SUM(SS.cus)
+		, (CASE WHEN SS.is_cust_search=0 THEN sum(ss.full_score) ELSE MAX(SS.full_score) END ) as full_score
+		, (CASE WHEN SS.is_cust_search=0 THEN SUM(ss.sum_score) ELSE (CASE WHEN SUM(SS.cus) = 0 THEN 0 ELSE ROUND(SUM(ss.sum_score)/SUM(SS.cus),2) END)END) as sum_score
+		, SS.is_cust_search
+		, SS.questionaire_date
+		, ss.emp_snapshot_id
+		FROM(
+			SELECT 	q.parent_question_id
+			, q.question_name
+			, SUM(qdd.score) sum_score
+			, (CASE WHEN qdd.is_not_applicable= 1 THEN 0 ELSE COUNT(qdd.customer_id) END) cus 
+			, max(CASE WHEN qdd.is_not_applicable= 1 THEN 0 ELSE qdd.full_score END)as full_score
+			, qs.is_cust_search
+			, qdh.questionaire_date
+			, qdh.emp_snapshot_id
+			, qdh.data_header_id
+			FROM questionaire_data_header qdh
+			INNER JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+			INNER JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+			INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
+			INNER JOIN questionaire_type qnt ON qnt.questionaire_type_id = qn.questionaire_type_id
+			INNER JOIN question q ON q.question_id = qdd.question_id
+			LEFT JOIN customer c ON c.customer_id = qdd.customer_id
+			WHERE q.answer_type_id != 7
+			AND qdh.data_stage_id >=3
+			AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}     , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
+			AND (qdh.assessor_id =    $P{param_assessor}   OR '' =   $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )  
+			AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
+			AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{param_questionaire_type}      OR  ISNULL(  $P{param_questionaire_type}      ) = 1 )
+			GROUP BY q.question_id , qdd.customer_id,qdh.questionaire_date,qdh.emp_snapshot_id,qdh.data_header_id
+		)SS
+		GROUP BY SS.parent_question_id , ss.question_name ,ss.questionaire_date ,SS.emp_snapshot_id,SS.data_header_id
+) sscore
+GROUP BY sscore.emp_snapshot_id ,sscore.questionaire_date
+) p_score_total ON qdh.questionaire_date = p_score_total.questionaire_date
+AND qdh.emp_snapshot_id = p_score_total.emp_snapshot_id
 WHERE q.answer_type_id != 7
 AND qdh.data_stage_id >=3
 AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}     , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
@@ -509,7 +563,7 @@ AND (qnt.questionaire_type_id = $P{param_questionaire_type}      OR '' =   $P{pa
 AND (jb.job_function_id  = $P{param_job_function}    OR '' =   $P{param_job_function}   OR  ISNULL(   $P{param_job_function}   ) = 1 )
 GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
--- , qdh.data_header_id
+, qdh.data_header_id
 , qnt.questionaire_type
 , qdh.assessor_id
 , po.position_code
@@ -641,7 +695,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				<text><![CDATA[ASM by TSE Report]]></text>
 			</staticText>
 			<crosstab ignoreWidth="true">
-				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="920" height="229" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
+				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="800" height="229" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 					<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -787,7 +841,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</bucket>
 					<crosstabRowHeader>
 						<cellContents mode="Opaque" style="Crosstab_CH">
-							<textField pattern="d/M/yy">
+							<textField pattern="d/M/yyyy">
 								<reportElement x="0" y="0" width="98" height="20" uuid="983107cd-b59e-40c4-a134-294600bd5c7d"/>
 								<box leftPadding="3"/>
 								<textElement textAlignment="Left">
@@ -996,7 +1050,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 							</textElement>
 							<textFieldExpression><![CDATA[$V{know}]]></textFieldExpression>
 						</textField>
-						<textField isBlankWhenNull="true">
+						<textField pattern="#,##0.00" isBlankWhenNull="true">
 							<reportElement x="105" y="0" width="35" height="20" uuid="46618afe-f49f-4ad1-8d8f-448b957d6829"/>
 							<box rightPadding="3">
 								<pen lineWidth="0.5"/>
