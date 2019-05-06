@@ -36,13 +36,45 @@ class FSF_HC_ReportController extends Controller
         $param_date_end = date_format(date_create_from_format('d/m/Y', $date_end), 'Y-m-d'); // "2019-01-31"
 
         $param_questionaire_type_id = json_decode($request->questionaire_type_id); // "1,2";
+		
+		// ตรวจสอบ parameter start, end date ต้องมีเพียงแค่ 1 cycle เท่านั้น หากเกินให้ส่ง error กลับไป [ทำ parameter และวันที่เป็นตัวเลข]
+		//-----------------------------------------------------------------------------------------------//
+		$num_date_start = "CONCAT(YEAR('".$param_date_start."'), 
+			(CASE WHEN MONTH('".$param_date_start."') < 10 
+				THEN CONCAT(0,MONTH('".$param_date_start."')) 
+				ELSE MONTH('".$param_date_start."') END
+			))";
+		
+		$num_date_end = "CONCAT(YEAR('".$param_date_end."'), 
+			(CASE WHEN MONTH('".$param_date_end."') < 10 
+				THEN CONCAT(0,MONTH('".$param_date_end."')) 
+				ELSE MONTH('".$param_date_end."') END
+			))";
+		
+		$check_cycle = DB::select("
+			SELECT COUNT(DISTINCT valid_date) as num_cycle
+			FROM head_count
+			WHERE CONCAT(YEAR(valid_date), 
+				(CASE WHEN MONTH(valid_date) < 10 THEN CONCAT(0,MONTH(valid_date)) ELSE MONTH(valid_date) END)
+			) BETWEEN ".$num_date_start." AND ".$num_date_end." ");
+		
+		foreach ($check_cycle as $cc) {
+			if ($cc->num_cycle > 1){
+				return response()->json(['status' => 400, 'data' => 'Date can not more than one cycle!']);
+			}else if ($cc->num_cycle == 0){
+				return response()->json(['status' => 400, 'data' => "Don't have data by parameter!"]);
+			}
+		}
+		//-----------------------------------------------------------------------------------------------//
 
         // หา valid_date ที่มากที่สุดตาม parameter date
         $MaxDateHeadCount = "
             SELECT h.position_id
           	, MAX(h.valid_date) AS max_valid_date
           	FROM head_count h
-          	WHERE (h.valid_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')
+          	WHERE CONCAT(YEAR(h.valid_date), 
+				(CASE WHEN MONTH(h.valid_date) < 10 THEN CONCAT(0,MONTH(h.valid_date)) ELSE MONTH(h.valid_date) END)
+			) BETWEEN ".$num_date_start." AND ".$num_date_end."
           	GROUP BY h.position_id ";
 		
 		// จากเดิม กวาดข้อมูลมาทั้งหมด (รวมตอนที่หาข้อมูลคนด้วย ทั้งหัวหน้าและลูกน้อง) (h.valid_date <= '".$param_date_start."' OR h.valid_date <= '".$param_date_end."')
@@ -95,7 +127,9 @@ class FSF_HC_ReportController extends Controller
 				SELECT position_id, max(start_date) as max_start_date
 				FROM employee_snapshot
 				WHERE level_id = 4
-				AND (start_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')
+				AND (CONCAT(YEAR(start_date), 
+					(CASE WHEN MONTH(start_date) < 10 THEN CONCAT(0,MONTH(start_date)) ELSE MONTH(start_date) END)
+					) BETWEEN ".$num_date_start." AND ".$num_date_end.")
 				GROUP BY position_id
 			) emp ON em.position_id = emp.position_id
 			AND emp.max_start_date = em.start_date
@@ -152,7 +186,9 @@ class FSF_HC_ReportController extends Controller
             AND h.position_id = emp.position_id LIMIT 1) as head_count
           FROM (".$emp_position.") emp
           CROSS JOIN (".$job_type.") job
-          WHERE (emp.max_date BETWEEN '".$param_date_start."' AND '".$param_date_end."')";
+          WHERE (CONCAT(YEAR(emp.max_date), 
+			(CASE WHEN MONTH(emp.max_date) < 10 THEN CONCAT(0,MONTH(emp.max_date)) ELSE MONTH(emp.max_date) END)
+			) BETWEEN ".$num_date_start." AND ".$num_date_end.") ";
           // LEFT JOIN head_count hc ON hc.job_function_id = job.job_function_id AND hc.position_id = emp.position_id AND hc.valid_date = emp.max_date
 
 
@@ -391,7 +427,18 @@ class FSF_HC_ReportController extends Controller
 
       public function GetAllEmpCodeUnder($emp_snapshot_id, $start_date, $end_date)
       {
-		
+		$num_date_start = "CONCAT(YEAR('".$start_date."'), 
+			(CASE WHEN MONTH('".$start_date."') < 10 
+				THEN CONCAT(0,MONTH('".$start_date."')) 
+				ELSE MONTH('".$start_date."') END
+			))";
+			
+		$num_date_end = "CONCAT(YEAR('".$end_date."'), 
+			(CASE WHEN MONTH('".$end_date."') < 10 
+				THEN CONCAT(0,MONTH('".$end_date."')) 
+				ELSE MONTH('".$end_date."') END
+			))";
+			
         $emp_code = DB::select("SELECT emp_code
             FROM employee_snapshot
             WHERE emp_snapshot_id = ".$emp_snapshot_id."");
@@ -425,7 +472,9 @@ class FSF_HC_ReportController extends Controller
     			FROM employee_snapshot
     			WHERE FIND_IN_SET(chief_emp_code,'".$parent."')
 				AND chief_emp_code != ''
-    			AND (start_date BETWEEN '".$start_date."' AND '".$end_date."')
+    			AND (CONCAT(YEAR(start_date), 
+					(CASE WHEN MONTH(start_date) < 10 THEN CONCAT(0,MONTH(start_date)) ELSE MONTH(start_date) END)
+					) BETWEEN ".$num_date_start." AND ".$num_date_end.")
     			GROUP BY emp_code";
 				
 		  $emp = DB::select("SELECT em.emp_code, em.emp_snapshot_id
@@ -434,7 +483,9 @@ class FSF_HC_ReportController extends Controller
 				AND m_em.max_date = em.start_date
             WHERE FIND_IN_SET(em.chief_emp_code,'".$parent."')
             AND em.chief_emp_code != ''
-      		AND (em.start_date BETWEEN '".$start_date."' AND '".$end_date."')
+      		AND (CONCAT(YEAR(em.start_date), 
+				(CASE WHEN MONTH(em.start_date) < 10 THEN CONCAT(0,MONTH(em.start_date)) ELSE MONTH(em.start_date) END)
+				) BETWEEN ".$num_date_start." AND ".$num_date_end.")
       		GROUP BY em.emp_code, em.emp_snapshot_id
           ");
 
@@ -464,8 +515,16 @@ class FSF_HC_ReportController extends Controller
 			FROM employee_snapshot em
 			INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
 			WHERE FIND_IN_SET(em.emp_snapshot_id,'".$place_parent_id."')
+			AND em.emp_snapshot_id != ''
 			AND jf.is_show_report = 1 ");
 
+		$Allemp = "";     // เก็บ emp_snapshot_id ในรูปแบบของ String
+        foreach ($active_report as $empID) {
+          $Allemp = $Allemp.$empID->emp_snapshot_id.",";
+        }
+		
+        return ($Allemp);
+		
 		/*
     		// ลูกน้องที่ต้องการจะต้องมี start_date ล่าสุด ตาม parameter date
     		$MaxDateEmp = "
@@ -489,13 +548,6 @@ class FSF_HC_ReportController extends Controller
           AND jf.is_show_report = 1
         ");
 		*/
-
-        $Allemp = "";     // เก็บ emp_snapshot_id ในรูปแบบของ String
-        foreach ($active_report as $empID) {
-          $Allemp = $Allemp.$empID->emp_snapshot_id.",";
-        }
-		
-        return ($Allemp);
 
 
         // ขั้นตอนหาค่า emp_snapshot_id ที่อยู่ภายใต้ emp_snapshot_id ที่ต้องการ (emp_snapshot_id ที่เป็นลูกหลานทั้งหมด)
