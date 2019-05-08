@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Operation-Tracking-Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" whenResourceMissingType="Key" isIgnorePagination="true" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
@@ -50,7 +50,7 @@
 		</box>
 	</style>
 	<subDataset name="test " uuid="291d53dc-c8a9-4047-ae34-f4ae198a65c7">
-		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="800"/>
 		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="186"/>
@@ -384,7 +384,7 @@ GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
 -- , q.parent_question_id
 -- , pq.question_name
-ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire_date ASC, q.parent_question_id ASC]]>
+ORDER BY po.position_code ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
@@ -501,7 +501,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				<text><![CDATA[Operation Tracking Report ]]></text>
 			</staticText>
 			<crosstab ignoreWidth="true">
-				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="920" height="220" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
+				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="800" height="220" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 					<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
@@ -544,7 +544,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</cellContents>
 				</crosstabHeaderCell>
 				<rowGroup name="assessor_id" width="0" totalPosition="End">
-					<bucket class="java.lang.Integer">
+					<bucket order="None" class="java.lang.Integer">
 						<bucketExpression><![CDATA[$F{assessor_id}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -557,7 +557,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="job_function_id" width="0" totalPosition="End">
-					<bucket class="java.lang.Integer">
+					<bucket order="None" class="java.lang.Integer">
 						<bucketExpression><![CDATA[$F{job_function_id}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -578,7 +578,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="position_employee" width="322" totalPosition="Start">
-					<bucket class="java.lang.String">
+					<bucket order="None" class="java.lang.String">
 						<bucketExpression><![CDATA[$F{position_employee}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -625,7 +625,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="questionaire_date" width="0" totalPosition="Start">
-					<bucket class="java.sql.Date">
+					<bucket order="None" class="java.sql.Date">
 						<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>

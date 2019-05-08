@@ -574,7 +574,7 @@ GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
 , q.parent_question_id
 , pq.question_name
-ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot_id ASC, qdh.questionaire_date ASC, q.parent_question_id ASC]]>
+ORDER BY po.position_code ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
@@ -748,7 +748,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</cellContents>
 				</crosstabHeaderCell>
 				<rowGroup name="assessor_id" width="0" totalPosition="End">
-					<bucket class="java.lang.Integer">
+					<bucket order="None" class="java.lang.Integer">
 						<bucketExpression><![CDATA[$F{assessor_id}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -761,7 +761,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="job_function_id" width="0" totalPosition="End">
-					<bucket class="java.lang.Integer">
+					<bucket order="None" class="java.lang.Integer">
 						<bucketExpression><![CDATA[$F{job_function_id}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -782,7 +782,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="position_employee" width="252" totalPosition="Start">
-					<bucket class="java.lang.String">
+					<bucket order="None" class="java.lang.String">
 						<bucketExpression><![CDATA[$F{position_employee}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -836,7 +836,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 					</crosstabTotalRowHeader>
 				</rowGroup>
 				<rowGroup name="questionaire_date" width="98" totalPosition="Start">
-					<bucket class="java.sql.Date">
+					<bucket order="None" class="java.sql.Date">
 						<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
 					</bucket>
 					<crosstabRowHeader>
@@ -1007,7 +1007,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				</measure>
 				<crosstabCell width="40" height="20">
 					<cellContents mode="Opaque" style="Crosstab_CD">
-						<textField isBlankWhenNull="true">
+						<textField pattern="#,##0.00" isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="40" height="20" uuid="6189482f-1df6-461b-8dea-736cc959234b"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
@@ -1067,7 +1067,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				</crosstabCell>
 				<crosstabCell width="40" height="20" rowTotalGroup="questionaire_date">
 					<cellContents mode="Opaque" style="Crosstab_CG">
-						<textField isBlankWhenNull="true">
+						<textField pattern="#,##0.00" isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="40" height="20" uuid="de4d3ba6-6bed-4145-b6d6-9cefdd8658ac"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
@@ -1127,7 +1127,7 @@ ORDER BY emp.job_function_id ASC, qnt.questionaire_type_id ASC, qdh.emp_snapshot
 				</crosstabCell>
 				<crosstabCell width="40" height="20" rowTotalGroup="position_employee">
 					<cellContents mode="Opaque" style="Crosstab_CT">
-						<textField isBlankWhenNull="true">
+						<textField pattern="#,##0.00" isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="40" height="20" uuid="fbb71ec4-4104-4292-b31c-92508f2960bb"/>
 							<box rightPadding="3"/>
 							<textElement textAlignment="Right">
