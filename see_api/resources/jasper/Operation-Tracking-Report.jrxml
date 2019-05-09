@@ -384,7 +384,7 @@ GROUP BY qnt.questionaire_type_id
 , qdh.questionaire_date
 -- , q.parent_question_id
 -- , pq.question_name
-ORDER BY po.position_code ASC]]>
+ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 		</queryString>
 		<field name="questionaire_type_id" class="java.lang.Integer">
 			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
