@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Operation-Tracking-Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" whenResourceMissingType="Key" isIgnorePagination="true" uuid="908eb0cf-ba76-4a3d-97b6-7e0de5787f74">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="pmtl-test"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="false"/>
 	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
@@ -472,6 +472,854 @@ ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 			<property name="com.jaspersoft.studio.field.label" value="percent_all"/>
 		</field>
 	</subDataset>
+	<subDataset name="underline" uuid="7c223401-75dc-4641-808e-3aad3b34c0f1">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="373"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="616"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<parameter name="param_job_function" class="java.lang.String"/>
+		<parameter name="param_show_emp_flag" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT qnt.questionaire_type_id
+, qnt.questionaire_type
+, qdh.assessor_id
+, po.position_code AS position_assor
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+, qdh.emp_snapshot_id
+, po_tse.position_code AS position_employee
+, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+, qdh.questionaire_date
+, q.parent_question_id
+, pq.question_name
+, rt.num_cus
+, rt.num_from
+, rt.know
+, IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0) percent_score
+, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
+, total.percent AS percent_by_total
+, result.num_from AS sum_num_from
+, result.num_cus AS sum_num_cus
+, result.know AS sum_know
+, emp.job_function_id 
+, res.num_from  as n_form
+, res.num_cus as n_cus
+, res.know as n_know
+, per.percent_all
+
+FROM questionaire_data_header qdh
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+LEFT JOIN question q ON qdd.question_id = q.question_id
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+LEFT JOIN position po ON emp.position_id = po.position_id
+INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
+LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+LEFT JOIN (
+	SELECT qnt.questionaire_type_id
+	, qnt.questionaire_type
+	, qdh.assessor_id
+	, po.position_code AS position_assor
+	, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+	, qdh.emp_snapshot_id
+	, po_tse.position_code AS position_employee
+	, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+	, q.parent_question_id
+	, pq.question_name
+	, COUNT(distinct qdh.questionaire_id) AS num_from
+	, COUNT(distinct qdd.customer_id) AS num_cus
+	, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+	, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
+	FROM questionaire_data_header qdh
+	LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+	-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+	LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+	LEFT JOIN question q ON qdd.question_id = q.question_id
+	LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+	INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+	LEFT JOIN position po ON emp.position_id = po.position_id
+	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+	WHERE q.answer_type_id != 7
+	 -- AND pq.pass_score > 0
+	AND qdh.data_stage_id >=3
+	AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+	AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+	AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	GROUP BY qnt.questionaire_type_id
+	, qnt.questionaire_type
+	, qdh.assessor_id
+	, po.position_code
+	, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+	, qdh.emp_snapshot_id
+	, po_tse.position_code
+	, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+	-- , q.parent_question_id
+	, pq.question_name
+) total ON total.assessor_id = qdh.assessor_id
+AND total.emp_snapshot_id = qdh.emp_snapshot_id
+-- AND total.parent_question_id = q.parent_question_id
+AND total.questionaire_type_id = qnt.questionaire_type_id
+LEFT JOIN (
+	SELECT rr.questionaire_type_id
+	, rr.questionaire_type
+	, rr.assessor_id
+	, rr.emp_snapshot_id
+	, rr.position_code
+	, rr.questionaire_date
+	, SUM(rr.num_from) as num_from
+	, SUM(rr.num_cus) as num_cus
+	, SUM(rr.know) as know
+	FROM(
+		SELECT qnt.questionaire_type_id
+			, qnt.questionaire_type
+			, qdh.data_header_id
+			, qdh.assessor_id
+			, qdh.emp_snapshot_id
+			, po_tse.position_code
+			, qdh.questionaire_date
+			, COUNT(distinct qdh.questionaire_id) AS num_from
+			, COUNT(distinct qdd.customer_id) AS num_cus
+			, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+	FROM questionaire_data_header qdh
+			LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+			INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+			LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+			INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+			INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+			LEFT JOIN question q ON qdd.question_id = q.question_id
+			LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+			INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+			LEFT JOIN position po ON emp.position_id = po.position_id
+			INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+			LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+			WHERE q.answer_type_id != 7
+			 -- AND pq.pass_score > 0
+				AND qdh.data_stage_id >=3
+			AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+			AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+			AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	group by qnt.questionaire_type_id
+			, qnt.questionaire_type
+			, qdh.data_header_id
+			, qdh.assessor_id
+			, po.position_code
+			, qdh.emp_snapshot_id
+			, po_tse.position_code
+			, qdh.questionaire_date
+	) rr
+	GROUP BY rr.questionaire_type_id
+	, rr.questionaire_type
+	, rr.assessor_id
+	, rr.emp_snapshot_id
+	, rr.position_code
+	, rr.questionaire_date
+) rt ON rt.questionaire_type_id = qnt.questionaire_type_id
+AND rt.assessor_id = qdh.assessor_id
+AND rt.emp_snapshot_id = qdh.emp_snapshot_id
+AND rt.questionaire_date = qdh.questionaire_date
+LEFT JOIN (
+	SELECT re.questionaire_type_id
+	, re.assessor_id
+	, re.emp_snapshot_id
+	, re.parent_question_id
+	, SUM(re.num_from) AS num_from
+	, SUM(re.num_cus) AS num_cus
+	, SUM(re.know) AS know
+	FROM(
+	SELECT qnt.questionaire_type_id
+		, qnt.questionaire_type
+		, qdh.data_header_id
+		, qdh.assessor_id
+		, po.position_code AS position_assor
+		, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+		, qdh.emp_snapshot_id
+		, po_tse.position_code AS position_employee
+		, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+		, qdh.questionaire_date
+		, q.parent_question_id
+		, pq.question_name
+		, COUNT(distinct qdh.questionaire_id) AS num_from
+		, COUNT(distinct qdd.customer_id) AS num_cus
+		, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+		, COALESCE(ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2),0) AS percent
+		FROM questionaire_data_header qdh
+		LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+		-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+		LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+		LEFT JOIN question q ON qdd.question_id = q.question_id
+		LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+		INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+		LEFT JOIN position po ON emp.position_id = po.position_id
+		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+		WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+GROUP BY qnt.questionaire_type_id
+		, qnt.questionaire_type
+		, qdh.data_header_id
+		, qdh.assessor_id
+		, po.position_code
+		, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+		, qdh.emp_snapshot_id
+		, po_tse.position_code
+		, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+		, qdh.questionaire_date
+		-- , q.parent_question_id
+		-- , pq.question_name
+	) re
+	GROUP BY re.questionaire_type_id
+	, re.assessor_id
+	, re.emp_snapshot_id
+	-- , re.parent_question_id
+) result ON result.questionaire_type_id = qnt.questionaire_type_id
+-- AND result.parent_question_id = q.parent_question_id
+AND result.assessor_id = qdh.assessor_id
+AND result.emp_snapshot_id = qdh.emp_snapshot_id
+LEFT JOIN ( 
+ SELECT num.questionaire_type_id 
+ , num.assessor_id 
+ , num.parent_question_id 
+ , SUM(num.num_from) AS num_from 
+ , SUM(num.num_cus) AS num_cus 
+ , SUM(num.know) AS know 
+ FROM ( 
+  SELECT qnt.questionaire_type_id 
+  , qnt.questionaire_type 
+  , qdh.assessor_id 
+  , qdh.emp_snapshot_id 
+  , qdh.questionaire_date 
+  , q.parent_question_id 
+  , pq.question_name 
+  , COUNT(distinct qdh.questionaire_id) AS num_from 
+  , COUNT(distinct qdd.customer_id) AS num_cus 
+  , (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know 
+  FROM questionaire_data_header qdh 
+  LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+  -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+  LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+  INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
+  INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
+  LEFT JOIN question q ON qdd.question_id = q.question_id 
+  LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
+  INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
+  LEFT JOIN position po ON emp.position_id = po.position_id 
+  INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
+ LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
+  WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+  GROUP BY qnt.questionaire_type_id 
+  , qdh.data_header_id
+  , qnt.questionaire_type 
+  , qdh.assessor_id 
+  , qdh.emp_snapshot_id 
+  , qdh.questionaire_date 
+  -- , q.parent_question_id 
+--   , pq.question_name 
+ ) num 
+ GROUP BY num.questionaire_type_id 
+ , num.assessor_id 
+--  , num.parent_question_id 
+) res ON res.questionaire_type_id = qnt.questionaire_type_id 
+-- AND res.parent_question_id = q.parent_question_id
+AND res.assessor_id = qdh.assessor_id
+INNER JOIN (
+SELECT qnt.questionaire_type_id 
+, qnt.questionaire_type 
+, qdh.assessor_id 
+, q.parent_question_id
+, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent_all
+FROM questionaire_data_header qdh 
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
+INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
+LEFT JOIN question q ON qdd.question_id = q.question_id 
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
+INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
+LEFT JOIN position po ON emp.position_id = po.position_id 
+
+WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+GROUP BY qnt.questionaire_type_id 
+, qnt.questionaire_type 
+, qdh.assessor_id 
+, po.position_code 
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) 
+-- , q.parent_question_id 
+, pq.question_name  
+ORDER BY qnt.questionaire_type_id ASC, q.parent_question_id ASC, qdh.assessor_id ASC
+) as per ON per.questionaire_type_id = qnt.questionaire_type_id 
+-- AND per.parent_question_id = q.parent_question_id
+AND per.assessor_id = qdh.assessor_id
+
+WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =   $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )  
+AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
+AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' =   $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
+GROUP BY qnt.questionaire_type_id
+, qdh.questionaire_date
+-- , qdh.data_header_id
+, qnt.questionaire_type
+, qdh.assessor_id
+, po.position_code
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+, qdh.emp_snapshot_id
+, po_tse.position_code
+, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+, qdh.questionaire_date
+-- , q.parent_question_id
+-- , pq.question_name
+ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
+		</queryString>
+		<field name="questionaire_type_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+		</field>
+		<field name="questionaire_type" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+		</field>
+		<field name="assessor_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="assessor_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="position_assor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_assor"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="name_assessor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="name_assessor"/>
+		</field>
+		<field name="emp_snapshot_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="position_employee" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_employee"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="name_employee" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="name_employee"/>
+		</field>
+		<field name="questionaire_date" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="parent_question_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="parent_question_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="question_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="question_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="num_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_cus"/>
+		</field>
+		<field name="num_from" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_from"/>
+		</field>
+		<field name="know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="know"/>
+		</field>
+		<field name="percent_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_score"/>
+		</field>
+		<field name="percent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent"/>
+		</field>
+		<field name="percent_by_total" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_by_total"/>
+		</field>
+		<field name="sum_num_from" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_num_from"/>
+		</field>
+		<field name="sum_num_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_num_cus"/>
+		</field>
+		<field name="sum_know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_know"/>
+		</field>
+		<field name="job_function_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="job_function_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="n_form" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_form"/>
+		</field>
+		<field name="n_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_cus"/>
+		</field>
+		<field name="n_know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_know"/>
+		</field>
+		<field name="percent_all" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_all"/>
+		</field>
+	</subDataset>
+	<subDataset name="noUnderline" uuid="b2966c32-2506-4cf8-8ab6-c7ce1513f610">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="800"/>
+		<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="186"/>
+		<parameter name="param_date_start" class="java.lang.String"/>
+		<parameter name="param_date_end" class="java.lang.String"/>
+		<parameter name="param_questionaire_type" class="java.lang.String"/>
+		<parameter name="param_employee" class="java.lang.String"/>
+		<parameter name="param_assessor" class="java.lang.String"/>
+		<parameter name="param_job_function" class="java.lang.String"/>
+		<parameter name="param_show_emp_flag" class="java.lang.String"/>
+		<queryString>
+			<![CDATA[SELECT qnt.questionaire_type_id
+, qnt.questionaire_type
+, qdh.assessor_id
+, po.position_code AS position_assor
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+, qdh.emp_snapshot_id
+, po_tse.position_code AS position_employee
+, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+, qdh.questionaire_date
+, q.parent_question_id
+, pq.question_name
+, rt.num_cus
+, rt.num_from
+, rt.know
+, IFNULL(ROUND((qdh.total_score*100)/qdh.full_score, 2), 0) percent_score
+, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
+, total.percent AS percent_by_total
+, result.num_from AS sum_num_from
+, result.num_cus AS sum_num_cus
+, result.know AS sum_know
+, emp.job_function_id 
+, res.num_from  as n_form
+, res.num_cus as n_cus
+, res.know as n_know
+, per.percent_all
+
+FROM questionaire_data_header qdh
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+LEFT JOIN question q ON qdd.question_id = q.question_id
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+LEFT JOIN position po ON emp.position_id = po.position_id
+INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+INNER JOIN job_function jb ON jb.job_function_id = emp_tse.job_function_id
+LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+LEFT JOIN (
+	SELECT qnt.questionaire_type_id
+	, qnt.questionaire_type
+	, qdh.assessor_id
+	, po.position_code AS position_assor
+	, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+	, qdh.emp_snapshot_id
+	, po_tse.position_code AS position_employee
+	, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+	, q.parent_question_id
+	, pq.question_name
+	, COUNT(distinct qdh.questionaire_id) AS num_from
+	, COUNT(distinct qdd.customer_id) AS num_cus
+	, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+	, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent
+	FROM questionaire_data_header qdh
+	LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+	-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+	LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+	INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+	INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+	LEFT JOIN question q ON qdd.question_id = q.question_id
+	LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+	INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+	LEFT JOIN position po ON emp.position_id = po.position_id
+	INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+	LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+	WHERE q.answer_type_id != 7
+	 -- AND pq.pass_score > 0
+	AND qdh.data_stage_id >=3
+	AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+	AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+	AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+	AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	GROUP BY qnt.questionaire_type_id
+	, qnt.questionaire_type
+	, qdh.assessor_id
+	, po.position_code
+	, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+	, qdh.emp_snapshot_id
+	, po_tse.position_code
+	, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+	-- , q.parent_question_id
+	, pq.question_name
+) total ON total.assessor_id = qdh.assessor_id
+AND total.emp_snapshot_id = qdh.emp_snapshot_id
+-- AND total.parent_question_id = q.parent_question_id
+AND total.questionaire_type_id = qnt.questionaire_type_id
+LEFT JOIN (
+	SELECT rr.questionaire_type_id
+	, rr.questionaire_type
+	, rr.assessor_id
+	, rr.emp_snapshot_id
+	, rr.position_code
+	, rr.questionaire_date
+	, SUM(rr.num_from) as num_from
+	, SUM(rr.num_cus) as num_cus
+	, SUM(rr.know) as know
+	FROM(
+		SELECT qnt.questionaire_type_id
+			, qnt.questionaire_type
+			, qdh.data_header_id
+			, qdh.assessor_id
+			, qdh.emp_snapshot_id
+			, po_tse.position_code
+			, qdh.questionaire_date
+			, COUNT(distinct qdh.questionaire_id) AS num_from
+			, COUNT(distinct qdd.customer_id) AS num_cus
+			, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+	FROM questionaire_data_header qdh
+			LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+			INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+			LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+			INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+			INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+			LEFT JOIN question q ON qdd.question_id = q.question_id
+			LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+			INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+			LEFT JOIN position po ON emp.position_id = po.position_id
+			INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+			LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+			WHERE q.answer_type_id != 7
+			 -- AND pq.pass_score > 0
+				AND qdh.data_stage_id >=3
+			AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+			AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+			AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+			AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+	group by qnt.questionaire_type_id
+			, qnt.questionaire_type
+			, qdh.data_header_id
+			, qdh.assessor_id
+			, po.position_code
+			, qdh.emp_snapshot_id
+			, po_tse.position_code
+			, qdh.questionaire_date
+	) rr
+	GROUP BY rr.questionaire_type_id
+	, rr.questionaire_type
+	, rr.assessor_id
+	, rr.emp_snapshot_id
+	, rr.position_code
+	, rr.questionaire_date
+) rt ON rt.questionaire_type_id = qnt.questionaire_type_id
+AND rt.assessor_id = qdh.assessor_id
+AND rt.emp_snapshot_id = qdh.emp_snapshot_id
+AND rt.questionaire_date = qdh.questionaire_date
+LEFT JOIN (
+	SELECT re.questionaire_type_id
+	, re.assessor_id
+	, re.emp_snapshot_id
+	, re.parent_question_id
+	, SUM(re.num_from) AS num_from
+	, SUM(re.num_cus) AS num_cus
+	, SUM(re.know) AS know
+	FROM(
+	SELECT qnt.questionaire_type_id
+		, qnt.questionaire_type
+		, qdh.data_header_id
+		, qdh.assessor_id
+		, po.position_code AS position_assor
+		, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) AS name_assessor
+		, qdh.emp_snapshot_id
+		, po_tse.position_code AS position_employee
+		, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name) AS name_employee
+		, qdh.questionaire_date
+		, q.parent_question_id
+		, pq.question_name
+		, COUNT(distinct qdh.questionaire_id) AS num_from
+		, COUNT(distinct qdd.customer_id) AS num_cus
+		, (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know
+		, COALESCE(ROUND((SUM(qdd.score)*100)/SUM(qdd.full_score),2),0) AS percent
+		FROM questionaire_data_header qdh
+		LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id
+		-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id
+		LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id
+		INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+		INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id
+		LEFT JOIN question q ON qdd.question_id = q.question_id
+		LEFT JOIN question pq ON q.parent_question_id = pq.question_id
+		INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id
+		LEFT JOIN position po ON emp.position_id = po.position_id
+		INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id
+		LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id
+		WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+GROUP BY qnt.questionaire_type_id
+		, qnt.questionaire_type
+		, qdh.data_header_id
+		, qdh.assessor_id
+		, po.position_code
+		, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+		, qdh.emp_snapshot_id
+		, po_tse.position_code
+		, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+		, qdh.questionaire_date
+		-- , q.parent_question_id
+		-- , pq.question_name
+	) re
+	GROUP BY re.questionaire_type_id
+	, re.assessor_id
+	, re.emp_snapshot_id
+	-- , re.parent_question_id
+) result ON result.questionaire_type_id = qnt.questionaire_type_id
+-- AND result.parent_question_id = q.parent_question_id
+AND result.assessor_id = qdh.assessor_id
+AND result.emp_snapshot_id = qdh.emp_snapshot_id
+LEFT JOIN ( 
+ SELECT num.questionaire_type_id 
+ , num.assessor_id 
+ , num.parent_question_id 
+ , SUM(num.num_from) AS num_from 
+ , SUM(num.num_cus) AS num_cus 
+ , SUM(num.know) AS know 
+ FROM ( 
+  SELECT qnt.questionaire_type_id 
+  , qnt.questionaire_type 
+  , qdh.assessor_id 
+  , qdh.emp_snapshot_id 
+  , qdh.questionaire_date 
+  , q.parent_question_id 
+  , pq.question_name 
+  , COUNT(distinct qdh.questionaire_id) AS num_from 
+  , COUNT(distinct qdd.customer_id) AS num_cus 
+  , (CASE WHEN qdh.data_stage_id = 4 THEN 1 ELSE 0 END) AS know 
+  FROM questionaire_data_header qdh 
+  LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+  -- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+  LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+  INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
+  INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
+  LEFT JOIN question q ON qdd.question_id = q.question_id 
+  LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
+  INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
+  LEFT JOIN position po ON emp.position_id = po.position_id 
+  INNER JOIN employee_snapshot emp_tse ON qdh.emp_snapshot_id = emp_tse.emp_snapshot_id 
+ LEFT JOIN position po_tse ON emp_tse.position_id = po_tse.position_id 
+  WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+  GROUP BY qnt.questionaire_type_id 
+  , qdh.data_header_id
+  , qnt.questionaire_type 
+  , qdh.assessor_id 
+  , qdh.emp_snapshot_id 
+  , qdh.questionaire_date 
+  -- , q.parent_question_id 
+--   , pq.question_name 
+ ) num 
+ GROUP BY num.questionaire_type_id 
+ , num.assessor_id 
+--  , num.parent_question_id 
+) res ON res.questionaire_type_id = qnt.questionaire_type_id 
+-- AND res.parent_question_id = q.parent_question_id
+AND res.assessor_id = qdh.assessor_id
+INNER JOIN (
+SELECT qnt.questionaire_type_id 
+, qnt.questionaire_type 
+, qdh.assessor_id 
+, q.parent_question_id
+, COALESCE(ROUND((SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.score END)*100)
+		/SUM(CASE WHEN qdd.is_not_applicable = 1 THEN 0 ELSE qdd.full_score END),2),0) AS percent_all
+FROM questionaire_data_header qdh 
+LEFT JOIN questionaire_data_detail qdd ON qdd.data_header_id = qdh.data_header_id 
+-- INNER JOIN customer cus ON qdd.customer_id = cus.customer_id 
+LEFT JOIN questionaire_section qs ON qs.section_id = qdd.section_id 
+INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id 
+INNER JOIN questionaire_type qnt ON qn.questionaire_type_id = qnt.questionaire_type_id 
+LEFT JOIN question q ON qdd.question_id = q.question_id 
+LEFT JOIN question pq ON q.parent_question_id = pq.question_id 
+INNER JOIN employee_snapshot emp ON qdh.assessor_id = emp.emp_snapshot_id 
+LEFT JOIN position po ON emp.position_id = po.position_id 
+
+WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ 	AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE( $P{param_date_start}   , "%d/%m/%Y") and STR_TO_DATE( $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =  $P{param_assessor}    OR '' =  $P{param_assessor}    OR  ISNULL(  $P{param_assessor}    ) = 1 )   -- qdh.assessor_id = 2176
+AND (qdh.emp_snapshot_id in( $P!{param_employee}   ) OR   '999999999' =  $P{param_employee}   )
+AND (qnt.questionaire_type_id =  $P{param_questionaire_type}    OR '' =  $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+GROUP BY qnt.questionaire_type_id 
+, qnt.questionaire_type 
+, qdh.assessor_id 
+, po.position_code 
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name) 
+-- , q.parent_question_id 
+, pq.question_name  
+ORDER BY qnt.questionaire_type_id ASC, q.parent_question_id ASC, qdh.assessor_id ASC
+) as per ON per.questionaire_type_id = qnt.questionaire_type_id 
+-- AND per.parent_question_id = q.parent_question_id
+AND per.assessor_id = qdh.assessor_id
+
+WHERE q.answer_type_id != 7
+ -- AND pq.pass_score > 0
+ AND qdh.data_stage_id >=3
+AND qdh.questionaire_date between STR_TO_DATE(  $P{param_date_start}    , "%d/%m/%Y") and STR_TO_DATE(  $P{param_date_end}    , "%d/%m/%Y")
+AND (qdh.assessor_id =   $P{param_assessor}   OR '' =  $P{param_assessor}    OR  ISNULL( $P{param_assessor}    ) = 1 )  
+AND (qdh.emp_snapshot_id in( $P!{param_employee} ) OR   '999999999' = $P{param_employee}   )
+AND (qnt.questionaire_type_id = $P{param_questionaire_type}    OR '' =   $P{param_questionaire_type}    OR  ISNULL(  $P{param_questionaire_type}    ) = 1 )
+AND (jb.job_function_id  = $P{param_job_function}     OR '' =   $P{param_job_function}    OR  ISNULL(   $P{param_job_function}    ) = 1 )
+GROUP BY qnt.questionaire_type_id
+, qdh.questionaire_date
+-- , qdh.data_header_id
+, qnt.questionaire_type
+, qdh.assessor_id
+, po.position_code
+, CONCAT(emp.emp_first_name,' ',emp.emp_last_name)
+, qdh.emp_snapshot_id
+, po_tse.position_code
+, CONCAT(emp_tse.emp_first_name,' ',emp_tse.emp_last_name)
+, qdh.questionaire_date
+-- , q.parent_question_id
+-- , pq.question_name
+ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
+		</queryString>
+		<field name="questionaire_type_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+		</field>
+		<field name="questionaire_type" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_type"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_type"/>
+		</field>
+		<field name="assessor_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="assessor_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="position_assor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_assor"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="name_assessor" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="name_assessor"/>
+		</field>
+		<field name="emp_snapshot_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="position_employee" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="position_employee"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+		</field>
+		<field name="name_employee" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="name_employee"/>
+		</field>
+		<field name="questionaire_date" class="java.sql.Date">
+			<property name="com.jaspersoft.studio.field.label" value="questionaire_date"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="questionaire_data_header"/>
+		</field>
+		<field name="parent_question_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="parent_question_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="question_name" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="question_name"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="question"/>
+		</field>
+		<field name="num_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_cus"/>
+		</field>
+		<field name="num_from" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="num_from"/>
+		</field>
+		<field name="know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="know"/>
+		</field>
+		<field name="percent_score" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_score"/>
+		</field>
+		<field name="percent" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent"/>
+		</field>
+		<field name="percent_by_total" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_by_total"/>
+		</field>
+		<field name="sum_num_from" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_num_from"/>
+		</field>
+		<field name="sum_num_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_num_cus"/>
+		</field>
+		<field name="sum_know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="sum_know"/>
+		</field>
+		<field name="job_function_id" class="java.lang.Integer">
+			<property name="com.jaspersoft.studio.field.label" value="job_function_id"/>
+			<property name="com.jaspersoft.studio.field.tree.path" value="employee_snapshot"/>
+		</field>
+		<field name="n_form" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_form"/>
+		</field>
+		<field name="n_cus" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_cus"/>
+		</field>
+		<field name="n_know" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="n_know"/>
+		</field>
+		<field name="percent_all" class="java.math.BigDecimal">
+			<property name="com.jaspersoft.studio.field.label" value="percent_all"/>
+		</field>
+	</subDataset>
 	<parameter name="param_date_start" class="java.lang.String"/>
 	<parameter name="param_date_end" class="java.lang.String"/>
 	<parameter name="param_questionaire_type" class="java.lang.String"/>
@@ -481,6 +1329,7 @@ ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 	<parameter name="param_questionaire_date" class="java.lang.String"/>
 	<parameter name="param_user" class="java.lang.String"/>
 	<parameter name="param_job_function" class="java.lang.String"/>
+	<parameter name="param_show_emp_flag" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[SELECT 1]]>
 	</queryString>
@@ -501,17 +1350,18 @@ ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 				<text><![CDATA[Operation Tracking Report ]]></text>
 			</staticText>
 			<crosstab ignoreWidth="true">
-				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="800" height="220" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
+				<reportElement key="" isPrintRepeatedValues="false" x="0" y="50" width="800" height="220" isRemoveLineWhenBlank="true" uuid="e8843584-a1e6-4033-bfe0-45afe8f7352f">
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
 					<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
 					<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab_CT"/>
 					<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab_CD"/>
-					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="head1"/>
+					<printWhenExpression><![CDATA[$P{param_show_emp_flag}.equalsIgnoreCase("true") ? true : false]]></printWhenExpression>
 				</reportElement>
 				<crosstabDataset>
 					<dataset>
-						<datasetRun subDataset="test " uuid="9dcbbd3a-19bf-410e-b0e8-bb77ce5a15ff">
+						<datasetRun subDataset="underline" uuid="8de4d43b-2618-49bd-8207-4fed7896d57a">
 							<datasetParameter name="param_assessor">
 								<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
 							</datasetParameter>
@@ -529,6 +1379,9 @@ ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 							</datasetParameter>
 							<datasetParameter name="param_job_function">
 								<datasetParameterExpression><![CDATA[$P{param_job_function}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_show_emp_flag">
+								<datasetParameterExpression><![CDATA[$P{param_show_emp_flag}]]></datasetParameterExpression>
 							</datasetParameter>
 							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 						</datasetRun>
@@ -899,4 +1752,340 @@ ORDER BY po.position_code ASC , po_tse.position_code ASC]]>
 			</crosstab>
 		</band>
 	</columnHeader>
+	<detail>
+		<band height="210">
+			<crosstab ignoreWidth="true">
+				<reportElement key="" isPrintRepeatedValues="false" x="0" y="0" width="800" height="200" isRemoveLineWhenBlank="true" uuid="75a21be8-d90b-4628-8da6-475ab129997c">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
+					<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
+					<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab_CT"/>
+					<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab_CD"/>
+					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value="head2"/>
+					<printWhenExpression><![CDATA[$P{param_show_emp_flag}.equalsIgnoreCase("true") ? false : true]]></printWhenExpression>
+				</reportElement>
+				<crosstabDataset>
+					<dataset>
+						<datasetRun subDataset="noUnderline" uuid="8a4e90fc-9324-4a38-9cb7-bb5f80f6420e">
+							<datasetParameter name="param_assessor">
+								<datasetParameterExpression><![CDATA[$P{param_assessor}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_date_end">
+								<datasetParameterExpression><![CDATA[$P{param_date_end}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_date_start">
+								<datasetParameterExpression><![CDATA[$P{param_date_start}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_employee">
+								<datasetParameterExpression><![CDATA[$P{param_employee}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_questionaire_type">
+								<datasetParameterExpression><![CDATA[$P{param_questionaire_type}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_job_function">
+								<datasetParameterExpression><![CDATA[$P{param_job_function}]]></datasetParameterExpression>
+							</datasetParameter>
+							<datasetParameter name="param_show_emp_flag">
+								<datasetParameterExpression><![CDATA[$P{param_show_emp_flag}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+					</dataset>
+				</crosstabDataset>
+				<crosstabHeaderCell>
+					<cellContents mode="Opaque" style="Crosstab_CD">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+						<staticText>
+							<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="0" y="0" width="322" height="179" backcolor="#B9FAEF" uuid="57e386f1-33e5-4b64-9ee9-afe4c3ec533e"/>
+							<text><![CDATA[]]></text>
+						</staticText>
+					</cellContents>
+				</crosstabHeaderCell>
+				<rowGroup name="assessor_id" width="0" totalPosition="End">
+					<bucket order="None" class="java.lang.Integer">
+						<bucketExpression><![CDATA[$F{assessor_id}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CH">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+						</cellContents>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<rowGroup name="job_function_id" width="0" totalPosition="End">
+					<bucket order="None" class="java.lang.Integer">
+						<bucketExpression><![CDATA[$F{job_function_id}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CH">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="20" uuid="75e62184-56a7-490a-9887-3e410ad999ce"/>
+								<textFieldExpression><![CDATA[$V{job_function_id}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CG"/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<rowGroup name="position_employee" width="322" totalPosition="Start">
+					<bucket order="None" class="java.lang.String">
+						<bucketExpression><![CDATA[$F{position_employee}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CH">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+						</cellContents>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="69" height="20" uuid="2dd7bc18-24fb-4ad5-85ab-e9788f1c9a81"/>
+								<box leftPadding="3"/>
+								<textElement>
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{position_assor}]]></textFieldExpression>
+							</textField>
+							<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+								<reportElement stretchType="RelativeToBandHeight" x="70" y="0" width="252" height="20" uuid="0367b62b-879e-4788-844f-d7bdca7cc729"/>
+								<box leftPadding="3"/>
+								<textElement>
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{name_assessor}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<rowGroup name="questionaire_date" width="0" totalPosition="Start">
+					<bucket order="None" class="java.sql.Date">
+						<bucketExpression><![CDATA[$F{questionaire_date}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CH"/>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents mode="Opaque" style="Crosstab_CG"/>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<columnGroup name="questionaire_type_id" height="40" totalPosition="End">
+					<bucket class="java.lang.Long">
+						<bucketExpression><![CDATA[$F{questionaire_type_id}]]></bucketExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents mode="Opaque" style="Crosstab 1_CT">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+							<textField isStretchWithOverflow="true">
+								<reportElement mode="Opaque" x="0" y="0" width="138" height="40" forecolor="#FFFFFF" backcolor="#005FB3" uuid="557218ae-84fb-4e5d-a39b-db5f2b9f0cca"/>
+								<box leftPadding="5"/>
+								<textElement textAlignment="Left" verticalAlignment="Middle">
+									<font fontName="BrowalliaUPC" size="18" isBold="true"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{questionaire_type}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents mode="Opaque" style="Crosstab_CT"/>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<columnGroup name="parent_question_id" height="140" totalPosition="Start">
+					<bucket class="java.lang.Long">
+						<bucketExpression><![CDATA[$F{parent_question_id}]]></bucketExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents mode="Opaque" style="Crosstab_CH">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+						</cellContents>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+							<staticText>
+								<reportElement x="0" y="0" width="46" height="140" uuid="67f2346d-3381-4e87-95f6-9352d9ed97b5"/>
+								<box bottomPadding="3">
+									<pen lineWidth="0.5"/>
+								</box>
+								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<text><![CDATA[จำนวนฟอร์ม]]></text>
+							</staticText>
+							<staticText>
+								<reportElement key="" x="46" y="0" width="46" height="140" uuid="6a7afee8-dac7-45a5-8d59-a12803fd74f0"/>
+								<box bottomPadding="3">
+									<topPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<text><![CDATA[จำนวนร้าน]]></text>
+							</staticText>
+							<staticText>
+								<reportElement x="92" y="0" width="46" height="140" uuid="fcbfd5b1-14fc-4393-a7f6-8060afc1adb1"/>
+								<box bottomPadding="3">
+									<pen lineWidth="0.5"/>
+								</box>
+								<textElement textAlignment="Left" verticalAlignment="Middle" rotation="Left">
+									<font fontName="BrowalliaUPC" size="14"/>
+								</textElement>
+								<text><![CDATA[รับทราบแล้ว]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<measure name="questionaire_type" class="java.lang.String">
+					<measureExpression><![CDATA[$F{questionaire_type}]]></measureExpression>
+				</measure>
+				<measure name="question_name" class="java.lang.String">
+					<measureExpression><![CDATA[$F{question_name}]]></measureExpression>
+				</measure>
+				<measure name="name_assessor" class="java.lang.String">
+					<measureExpression><![CDATA[$F{name_assessor}]]></measureExpression>
+				</measure>
+				<measure name="position_assor" class="java.lang.String">
+					<measureExpression><![CDATA[$F{position_assor}]]></measureExpression>
+				</measure>
+				<measure name="name_employee" class="java.lang.String">
+					<measureExpression><![CDATA[$F{name_employee}]]></measureExpression>
+				</measure>
+				<measure name="num_cus" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{num_cus}]]></measureExpression>
+				</measure>
+				<measure name="num_from" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{num_from}]]></measureExpression>
+				</measure>
+				<measure name="know" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{know}]]></measureExpression>
+				</measure>
+				<measure name="percent" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{percent}]]></measureExpression>
+				</measure>
+				<measure name="sum_num_from" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{sum_num_from}]]></measureExpression>
+				</measure>
+				<measure name="sum_num_cus" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{sum_num_cus}]]></measureExpression>
+				</measure>
+				<measure name="sum_know" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{sum_know}]]></measureExpression>
+				</measure>
+				<measure name="percent_by_total" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{percent_by_total}]]></measureExpression>
+				</measure>
+				<measure name="n_form" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{n_form}]]></measureExpression>
+				</measure>
+				<measure name="n_cus" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{n_cus}]]></measureExpression>
+				</measure>
+				<measure name="n_know" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{n_know}]]></measureExpression>
+				</measure>
+				<measure name="percent_all" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{percent_all}]]></measureExpression>
+				</measure>
+				<measure name="percent_score" class="java.math.BigDecimal">
+					<measureExpression><![CDATA[$F{percent_score}]]></measureExpression>
+				</measure>
+				<crosstabCell width="0" height="0">
+					<cellContents mode="Opaque" style="Crosstab_CD"/>
+				</crosstabCell>
+				<crosstabCell width="138" height="0" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CG">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="assessor_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="assessor_id" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="138" height="0" rowTotalGroup="assessor_id" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="job_function_id">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="job_function_id" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="138" height="0" rowTotalGroup="job_function_id" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="20" rowTotalGroup="position_employee">
+					<cellContents mode="Opaque" style="Crosstab_CT">
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="20" uuid="2cfc74e6-095b-4f34-a5e9-dc400e40e947"/>
+							<box rightPadding="3"/>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{percent_all}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="20" rowTotalGroup="position_employee" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="138" height="20" rowTotalGroup="position_employee" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CT">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="46" height="20" uuid="56064c42-07d9-4e53-b5f3-4045f49a0689"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{n_form}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="46" y="0" width="46" height="20" uuid="95be7b20-3395-4c14-aeda-1534af30744d"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{n_cus}]]></textFieldExpression>
+						</textField>
+						<textField isBlankWhenNull="true">
+							<reportElement stretchType="RelativeToBandHeight" x="92" y="0" width="46" height="20" uuid="7d3d111d-ae5f-4463-8de1-7d62d9c29f80"/>
+							<box rightPadding="3">
+								<pen lineWidth="0.5"/>
+							</box>
+							<textElement textAlignment="Right">
+								<font fontName="BrowalliaUPC" size="14"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{n_know}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="questionaire_date">
+					<cellContents mode="Opaque" style="Crosstab_CG"/>
+				</crosstabCell>
+				<crosstabCell width="0" height="0" rowTotalGroup="questionaire_date" columnTotalGroup="questionaire_type_id">
+					<cellContents mode="Opaque" style="Crosstab_CT"/>
+				</crosstabCell>
+				<crosstabCell width="138" height="0" rowTotalGroup="questionaire_date" columnTotalGroup="parent_question_id">
+					<cellContents mode="Opaque" style="Crosstab_CG">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+					</cellContents>
+				</crosstabCell>
+			</crosstab>
+		</band>
+	</detail>
 </jasperReport>
