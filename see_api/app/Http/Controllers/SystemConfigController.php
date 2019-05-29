@@ -80,6 +80,7 @@ class SystemConfigController extends Controller
 			'theme_color' => 'required|max:15',
 			'email_reminder_flag' => 'boolean',
 			'show_grand_total_flag' => 'boolean',
+			'maintainance_period' => 'boolean',
 			'mail_driver' => 'max:50',
 			'mail_host' => 'max:50',
 			'mail_port' => 'max:50',
