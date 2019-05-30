@@ -26,12 +26,13 @@ class JobFunctionController extends Controller
 	
 	public function index(Request $request)
 	{
-		empty($request->job_function_id) ? $job_function = "" : $job_function = " and job_function_id = " . $request->job_function_id . " ";
+		empty($request->job_function_id) ? $job_function = "" : $job_function = " and j.job_function_id = " . $request->job_function_id . " ";
 		$items = DB::select("
 			SELECT * 
-			FROM job_function
+			FROM job_function j
+			LEFT JOIN job_function_group jg on j.job_function_group_id = jg.job_function_group_id
 			where 1=1 " . $job_function . "
-		    ORDER BY job_function_id
+		    ORDER BY j.job_function_id
 		");
 		return response()->json($items);
 	}
@@ -41,6 +42,16 @@ class JobFunctionController extends Controller
 		$items = DB::select("
 			SELECT j.job_function_id,j.job_function_name
 			FROM job_function AS j
+		");
+		return response()->json($items);
+	}
+
+	public function group_list()
+	{
+		$items = DB::select("
+		SELECT null job_function_group_id , '' job_function_group_name
+		UNION
+		SELECT job_function_group_id,job_function_group_name FROM job_function_group
 		");
 		return response()->json($items);
 	}
@@ -61,6 +72,11 @@ class JobFunctionController extends Controller
 			$item->fill($request->all());
 			$item->is_evaluated = $request->is_evaluated;
 			$item->is_show_report = $request->is_show_report;
+			if(empty($request->job_function_group_id)){
+				$item->job_function_group_id = null;
+			}else{
+				$item->job_function_group_id = $request->job_function_group_id;
+			}
 			$item->updated_by = Auth::id();
 			$item->save();
 		}
@@ -99,6 +115,11 @@ class JobFunctionController extends Controller
 			$item->fill($request->all());
 			$item->is_evaluated = $request->is_evaluated;
 			$item->is_show_report = $request->is_show_report;
+			if(empty($request->job_function_group_id)){
+				$item->job_function_group_id = null;
+			}else{
+				$item->job_function_group_id = $request->job_function_group_id;
+			}
 			$item->updated_by = Auth::id();
 			$item->save();
 		}

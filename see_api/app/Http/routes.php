@@ -9,14 +9,14 @@
 | It's a breeze. Simply tell Laravel the URIs it should respond to
 | and give it the controller to call when that URI is requested.
 |
-*/
+*//*
 if (isset($_SERVER['HTTP_ORIGIN'])) {
 	header('Access-Control-Allow-Credentials: true');
 	header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
 	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH');
 	header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Authorization, useXDomain, withCredentials');
 	header('Keep-Alive: off');
-}
+}*/
 // Route::get('/', function () {
     // return Response::json(array('hello' => 'hehe'));
 // });
@@ -498,9 +498,12 @@ Route::group(['middleware' => 'cors'], function()
 	Route::get('questionaire_data/assign_template/{data_header_id}', 'PMTL\QuestionaireDataController@assign_template');
 	Route::get('questionaire_data/generate_template', 'PMTL\QuestionaireDataController@generate_template');
 	Route::get('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@show');
+	Route::post('questionaire_data/maintainance_period', 'PMTL\QuestionaireDataController@get_maintainance_period');
 	Route::post('questionaire_data', 'PMTL\QuestionaireDataController@store');
 	Route::patch('questionaire_data', 'PMTL\QuestionaireDataController@update');
 	Route::delete('questionaire_data/{data_header_id}', 'PMTL\QuestionaireDataController@destroy');
+	
+	
 
 	Route::get('questionaire_type', 'PMTL\QuestionaireTypeController@index');
 	Route::get('questionaire_type/{id}', 'PMTL\QuestionaireTypeController@show');
@@ -527,6 +530,7 @@ Route::group(['middleware' => 'cors'], function()
 	// Job Function //
 	Route::get('job_function', 'PMTL\JobFunctionController@index');
 	Route::get('job_function/list', 'PMTL\JobFunctionController@al_list');
+	Route::get('job_function/group_list', 'PMTL\JobFunctionController@group_list');
 	Route::post('job_function', 'PMTL\JobFunctionController@store');
 	Route::get('job_function/{job_function_id}', 'PMTL\JobFunctionController@show');
 	Route::patch('job_function/{job_function_id}', 'PMTL\JobFunctionController@update');

@@ -205,7 +205,16 @@ class QuestionaireDataController extends Controller
         $item = DB::table("workflow_stage")->select("to_stage_id")->where("from_stage_id", $stage_id)->first();
         return $item;
     }
-
+    public function get_maintainance_period () {
+        
+        try {
+            $config = SystemConfiguration::firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['status' => 404, 'data' => 'System Configuration not found in DB.']);
+        }
+        return response()->json(['status' => 200, 'maintainance_period' => $config->maintainance_period]);
+        
+    }
     public function role_authorize_add() {
         $data = [];
         $level = $this->get_emp_snapshot();
@@ -216,7 +225,7 @@ class QuestionaireDataController extends Controller
                 ->where("level_id", $level->level_id)
                 ->where("stage_id", $default_stage_id)
                 ->first();
-
+         return response()->json(['status' => 200, 'add_flag' => $data->add_flag, 'errors' => []]);
         if(empty($data)) {
             return response()->json(['status' => 400, 'add_flag' => 0, 'errors' => 'Level not Assign to LevelStageAuthorize']);
         } else {
@@ -1067,13 +1076,15 @@ class QuestionaireDataController extends Controller
                         CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name,
                         ifnull(rsa.edit_flag, 0) edit_flag, 
                         ifnull(rsa.delete_flag, 0) delete_flag, 
-                        if(rsa.view_flag = 1 OR rsa.view_comment_flag = 1, 1, 0) view_flag
+                        if(rsa.view_flag = 1 OR rsa.view_comment_flag = 1, 1, 0) view_flag,
+                        s.maintainance_period
                 FROM questionaire_data_header qdh
                 INNER JOIN employee_snapshot es ON es.emp_snapshot_id = qdh.emp_snapshot_id
                 INNER JOIN position p ON p.position_id = es.position_id
                 INNER JOIN questionaire qn ON qn.questionaire_id = qdh.questionaire_id
                 LEFT JOIN level_stage_authorize rsa ON rsa.stage_id = qdh.data_stage_id 
                 ".$level."
+                CROSS JOIN system_config s
                 WHERE qdh.data_stage_id = '{$value->data_stage_id}'
                 AND qdh.data_header_id IN ({$header_id})
                 GROUP BY qdh.data_header_id

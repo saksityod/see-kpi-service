@@ -19,7 +19,7 @@ class JobFunction extends Model
     //public $timestamps = false;
     protected $guarded = array();
 
-    protected $fillable = array('job_function_id','job_function_name','is_evaluated,is_show_report');
+    protected $fillable = array('job_function_id','job_function_name','is_evaluated,is_show_report','job_function_group_id');
     protected $hidden = ['created_by', 'updated_by', 'created_dttm', 'updated_dttm'];
 	
 }
