@@ -16,6 +16,7 @@ use Auth;
 use File;
 use Excel;
 use DateTime;
+use Log;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Bonus\AdvanceSearchController;
 
@@ -466,6 +467,286 @@ class SalaryAdjustmentController extends Controller
         } // end foreach item
 
         return ['datas' => $item, 'avg' => $avg, 'sd' => $std];
+
+
+        //-------------------------ส่วนของแบ่งหน้า (ไม่ต้องแบ่งหน้า ให้แสดงทั้งหมดในหน้าเดียว)------------------
+        /*
+        // Get the current page from the url if it's not set default to 1
+    		empty($request->page) ? $page = 1 : $page = $request->page;
+
+        // Number of items per page
+        if($request->rpp == 'All' || $request->rpp == 'all') {
+            $perPage = (empty($groups)) ? 10 : $groups[$key]['count'];
+        } else {
+          	empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
+        }
+
+    		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
+
+    		// Get only the items you need using array_slice (only get 10 items since that's what you need)
+    		$itemsForCurrentPage = array_slice($groups, $offSet, $perPage, false);
+
+    		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
+      	$result = new LengthAwarePaginator($itemsForCurrentPage, count($groups), $perPage, $page);
+        */
+
+    }
+
+
+    public function show_salary_v2(Request $request)
+    {
+      $login = Auth::id();
+      // หา level ที่เป็นระดับ bu และ coo และ board
+      $adjustLevel = collect(DB::select("
+        SELECT ifnull(l.level_id,0) as level_bu, ifnull(le.level_id,0) as level_coo, ifnull(le.parent_id,0) as level_board
+    		FROM appraisal_level l
+    		LEFT JOIN appraisal_level le ON l.parent_id = le.level_id
+        WHERE l.is_start_cal_bonus = 1
+      "))->first();
+
+      // set parameter for query
+      //------------------------ เอามาจาก BonusAdjustmentController ------------------------------------//
+      $request->period_id = empty($request->period_id) ? "": $request->period_id;
+      $gue_emp_level = empty($request->emp_level) ? '' : $this->advanSearch->GetallUnderLevel($request->emp_level);
+      $gue_org_level = empty($request->org_level) ? '' : $this->advanSearch->GetallUnderLevel($request->org_level);
+      $gueOrgCodeByEmpId = empty($request->emp_id) ? '' : $this->advanSearch->GetallUnderEmpByOrg($request->emp_id);
+      $gueOrgCodeByOrgId = empty($request->org_id) ? '' : $this->advanSearch->GetallUnderOrgByOrg($request->org_id);
+
+      $qryEmpLevel = empty($gue_emp_level) && empty($request->emp_level) ? "" : " AND (emp.level_id = '{$request->emp_level}' OR find_in_set(emp.level_id, '{$gue_emp_level}'))";
+      $qryOrgLevel = empty($gue_org_level) && empty($request->org_level) ? "" : " AND (o.level_id = '{$request->org_level}' OR find_in_set(o.level_id, '{$gue_org_level}'))";
+      $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (emp.emp_id = '{$request->emp_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByEmpId}'))";
+
+      $all_emp = $this->advanSearch->isAll();
+      $employee = Employee::find(Auth::id());
+      if ($all_emp[0]->count_no > 0) {
+          if(empty($request->org_id)) {
+            $qryOrgId = "";
+          } else {
+            $qryOrgId = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+          }
+      } else {
+        if(empty($request->org_id)) {
+          $gueOrgCodeByOrgId = $this->advanSearch->GetallUnderOrgByOrg($employee->org_id);
+          $qryOrgId = "AND (emp.org_id = '{$employee->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}') )";
+        } else {
+          $qryOrgId = "AND (emp.org_id = '{$request->org_id}' OR find_in_set(o.org_code, '{$gueOrgCodeByOrgId}'))";
+        }
+      }
+
+      $request->position_id = in_array('null', $request->position_id) ? "" : $request->position_id;
+      $qryPositionId = empty($request->position_id) ? "" : " AND emp.position_id IN (".implode(',', $request->position_id).")";
+
+      $qryStageId = empty($request->stage_id) ? "": " AND emp.stage_id = '{$request->stage_id}'";
+
+      $request->appraisal_form_id = in_array('null', $request->appraisal_form_id) ? "" : $request->appraisal_form_id;
+      $qryFormId = empty($request->appraisal_form_id) ? "" : " AND emp.appraisal_form_id IN (".implode(',', $request->appraisal_form_id).")";
+      //------------------------ จบส่วนที่เอามาจาก BonusAdjustmentController ------------------------------------//
+
+      // ดึงข้อมูลของ emp ใน period นั้นตาม parameter ที่กำหนด
+      $itemList = DB::select("
+        SELECT (1) as num, emp.emp_result_id, emp.level_id, emp.period_id, em.emp_id, em.emp_code
+          , em.emp_name, po.position_id, po.position_name, le.appraisal_level_name as PG, o.org_code
+          , o.org_name, fo.appraisal_form_id, fo.appraisal_form_name, fo.is_job_evaluation, po.job_code
+          , po.position_code, emp.knowledge_point, emp.capability_point, emp.total_point, emp.baht_per_point
+          , COALESCE(emp.result_score, 0) as score_manager, from_base64(emp.s_amount) as salary
+          , from_base64(emp.pqpi_amount) as pqpi_amount, from_base64(emp.fix_other_amount) as fix_other_amount
+          , from_base64(emp.mpi_amount) as mpi_amount, from_base64(emp.pi_amount) as pi_amount
+          , from_base64(emp.var_other_amount) as var_other_amount, from_base64(emp.adjust_new_s_amount) as new_salary
+          , from_base64(emp.adjust_new_pqpi_amount) as new_pqpi_amount
+          , (CASE WHEN fo.is_job_evaluation = 1 THEN emp.raise_amount ELSE 0 END) as cal_standard
+          , pe.appraisal_year, ast.edit_flag, emp.adjust_raise_s_amount, emp.adjust_raise_pqpi_amount
+          , 0 as percent_diff, 0 as total_now_salary_new
+        FROM emp_result emp
+        LEFT JOIN employee em ON emp.emp_id = em.emp_id
+        LEFT JOIN position po ON emp.position_id = po.position_id
+        LEFT JOIN appraisal_level le ON emp.level_id = le.level_id
+        LEFT JOIN org o ON emp.org_id = o.org_id
+        LEFT JOIN appraisal_form fo ON emp.appraisal_form_id = fo.appraisal_form_id
+        LEFT JOIN appraisal_period pe ON emp.period_id = pe.period_id
+        INNER JOIN appraisal_stage ast ON ast.stage_id = emp.stage_id
+        WHERE emp.appraisal_type_id = 2
+        AND emp.period_id = {$request->period_id}
+        {$qryFormId}
+        {$qryEmpLevel}
+        {$qryOrgLevel}
+        {$qryOrgId}
+        {$qryEmpId}
+        {$qryPositionId}
+        {$qryStageId}
+        ORDER BY o.org_code ASC, le.seq_no ASC, em.emp_code ASC
+      ");
+      
+      // หาค่า score ที่ถูก adjust ด้วยตาม level(bu,coo,board) และหา last score ทั้งหมดที่อยู่ใน period นั้น ๆ 
+      $scoreList = collect(DB::select("
+        SELECT ds.emp_result_id,
+          MAX(ds.score_by_bu) AS score_bu, 
+          MAX(ds.score_by_coo) AS score_coo, 
+          MAX(ds.score_by_board) AS score_board,
+          IF( MAX(ds.score_by_board) != 0, 
+            MAX(ds.score_by_board),
+            IF( MAX(ds.score_by_coo) != 0,
+              MAX(ds.score_by_coo),
+              MAX(ds.score_by_bu)
+            )
+          ) AS last_score
+        FROM(
+          SELECT erj.emp_result_id,
+            IF(erj.org_level_id = {$adjustLevel->level_bu}, erj.adjust_result_score, 0) AS score_by_bu,
+            IF(erj.org_level_id = {$adjustLevel->level_coo}, erj.adjust_result_score, 0) AS score_by_coo,
+            IF(erj.org_level_id = {$adjustLevel->level_board}, erj.adjust_result_score, 0) AS score_by_board
+          FROM emp_result_judgement erj
+          INNER JOIN (
+            SELECT  mac.emp_result_id, mac.org_level_id, MAX(mac.created_dttm) max_date 
+            FROM emp_result_judgement mac
+            GROUP BY mac.emp_result_id, mac.org_level_id
+          ) mac ON mac.emp_result_id = erj.emp_result_id AND mac.org_level_id = erj.org_level_id AND mac.max_date = erj.created_dttm
+          INNER JOIN emp_result emac ON emac.emp_result_id = mac.emp_result_id
+          WHERE emac.period_id = {$request->period_id}
+        )ds
+        GROUP BY ds.emp_result_id
+      "));
+        
+      // หาค่า avg และ std ของ employee ทั้งหมดที่อยู่ใน period นั้น ๆ
+      $avg = $scoreList->avg('last_score');
+      $lastAdjScoreArr = $scoreList->pluck('last_score')->toArray();
+      $std = empty($lastAdjScoreArr) ? 0 : $this->advanSearch->standard_deviation($lastAdjScoreArr);
+      
+      // structure ทั้งหมดที่จะต้องแสดงตาม parameter ทั้งหมด [แสดงเฉพาะที่มีใน emp_result]
+      $strResultList = collect(DB::select("
+        SELECT emp.emp_result_id, sr.structure_id, str.structure_name, str.seq_no,
+          IFNULL(sr.weigh_score,0) as score,
+          (
+            SELECT MAX(air.weight_percent)
+            FROM emp_result ser 
+            INNER JOIN appraisal_item_result air ON air.emp_result_id = ser.emp_result_id
+            INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
+            WHERE ser.emp_result_id = emp.emp_result_id
+            AND ai.structure_id = sr.structure_id
+          ) AS total_score
+        FROM emp_result emp
+        INNER JOIN structure_result sr ON sr.emp_result_id = emp.emp_result_id
+        INNER JOIN appraisal_structure str ON str.structure_id = sr.structure_id
+        LEFT JOIN org o ON emp.org_id = o.org_id
+        WHERE emp.period_id = {$request->period_id}
+        {$qryFormId}
+        {$qryEmpLevel}
+        {$qryOrgLevel}
+        {$qryOrgId}
+        {$qryEmpId}
+        {$qryPositionId}
+        {$qryStageId}
+        ORDER BY emp.emp_result_id, str.seq_no
+      "));
+
+        // หา org ภายใต้ user และดูว่า user คือ board หรือไม่? [กำหนด board : edit_flag = 1 นอกนั้นเป็น 0]
+        // $user = DB::select("
+        //   SELECT (CASE WHEN o.level_id = {$adjustLevel->level_board} THEN 1 ELSE 0 END) as is_board,
+        //     em.level_id, em.org_id, o.org_code,
+        //     GetAllUnderOrg(o.org_code) as all_under_org
+        //   FROM employee em
+        //   INNER JOIN org o ON em.org_id = o.org_id
+        //   WHERE em.emp_code = '{$login}'
+        // ");
+        // return $user;
+
+
+        // หาค่า grade ตาม score ของ user
+        // $grade_score_user = "
+        //   SELECT grade
+        //   FROM appraisal_grade
+        //   WHERE appraisal_form_id = ?
+        //   AND appraisal_level_id = ?
+        //   AND ? BETWEEN begin_score AND end_score
+        // ";
+        
+
+      //หาค่า structure, structure แรก by record และคำนวณรายได้ปัจจุบัน
+      foreach ($itemList as $item) {
+        // นำข้อมูลของ adjust score ของแต่ละ level มาใส่ให้ main data
+        $score_ = $scoreList->where('emp_result_id', $item->emp_result_id)->first();
+        if(empty($score_)) {
+          $item->score_bu = NULL;
+          $item->score_coo = NULL;
+          $item->score_board = NULL;
+          $item->last_score_adjust = NULL;
+          $item->score_last = NULL;
+        } else {
+          $item->score_bu = $score_->score_bu;
+          $item->score_coo = $score_->score_coo;
+          $item->score_board = $score_->score_board;
+          $item->last_score_adjust = $score_->last_score;
+          $item->score_last = $score_->last_score;
+        }
+        
+
+        // คำนวณหารายได้ปัจจุบันของ employee
+        $item->total_now_salary = ($item->salary + $item->pqpi_amount + $item->fix_other_amount + $item->mpi_amount + $item->pi_amount + $item->var_other_amount);
+
+        // หาค่า structure, total structure, first structure ตามแต่ละ record 
+        $strResult = $strResultList->where('emp_result_id', $item->emp_result_id);
+        if($strResult->count() == 0) {
+          $item->structure_result = [];
+          $item->first_structure_id = NULL;
+        } else {
+          $item->structure_result = array_values($strResult->toArray()); //array_values():reset array index
+          $item->first_structure_id = $strResult->first()->structure_id;
+        }
+        
+
+          //หา grade ตาม level, from by record
+          // $cal_grade = DB::select("
+          //     SELECT grade_id
+          //     , grade
+          //     , begin_score
+          //     , end_score
+          //     , raise_type
+          //     , salary_raise_amount
+          //     , salary_raise_percent
+          //     FROM appraisal_grade
+          //     WHERE appraisal_form_id = ".$i->appraisal_form_id."
+          //     AND appraisal_level_id = ".$i->level_id."
+          //     ORDER BY begin_score ASC");
+
+          /*
+          [หน้านี้เข้าใช้งานได้เพียงแค่ board, coo]
+          is_board = 1 : user ที่เข้าสู่ระบบเป็น board,
+          is_board = 0 : user ที่เข้าสู่ระบบเป็น coo
+          */
+          // foreach ($user as $u) {
+          //   $i->is_board = $u->is_board;
+          // }
+
+          // คำนวนเกรดตามคะแนนล่าสุดที่ใช้แสดง (ดูตั้งแต่ Mgr., BU., COO, Board
+      //     if ($i->is_board == 0){   // user : coo
+      //       $i->score_board = 0;
+      //     }
+		  // $grade = DB::select($grade_score_user, array($i->appraisal_form_id, $i->level_id, $i->score_last));
+		  
+
+          // คำนวนค่า z-score by record
+          // if($std==0) {
+          //     $i->z_score = 0;
+          // } else {
+          //     $i->z_score = ($i->last_score_adjust-$avg) / $std;
+          // }
+
+          // insert date into $item
+          // if($grade){
+          //   foreach ($grade as $g) {
+          //     $i->grade = $g->grade;
+          //   }
+          // }else {
+          //   $i->grade = "";
+          // }
+
+          
+
+          
+          // $i->cal_grade = $cal_grade;
+
+        } // end foreach item
+
+        return ['datas' => $itemList, 'avg' => $avg, 'sd' => $std];
 
 
         //-------------------------ส่วนของแบ่งหน้า (ไม่ต้องแบ่งหน้า ให้แสดงทั้งหมดในหน้าเดียว)------------------
