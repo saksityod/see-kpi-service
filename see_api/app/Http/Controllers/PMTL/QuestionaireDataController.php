@@ -872,6 +872,18 @@ class QuestionaireDataController extends Controller
             ");
         return response()->json($items);
     }
+
+    public function list_year(Request $request) {
+        $items = DB::select("
+            SELECT DISTINCT
+                DATE_FORMAT( valid_date, '%Y' ) AS YEAR 
+            FROM
+                head_count 
+            ORDER BY YEAR  DESC
+            ");
+        return response()->json($items);
+    }
+
         public function list_questionaire_type1(Request $request) {
         $items = DB::select("
             SELECT DISTINCT qt.questionaire_type_id, qt.questionaire_type
