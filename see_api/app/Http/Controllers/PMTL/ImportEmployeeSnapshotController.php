@@ -53,7 +53,12 @@ class ImportEmployeeSnapshotController extends Controller
 		");
 		return response()->json($items);
 	}
-
+	
+	public function lastStart_date(Request $request)
+	{
+		$items = DB::select("SELECT DATE_FORMAT(MAX(start_date), '%d/%m/%Y') as start_date FROM employee_snapshot;");
+		return response()->json($items[0]);
+	}
 	public function auto_start_date(Request $request) {
 		$items = DB::select("
 			SELECT DISTINCT DATE_FORMAT(start_date,'%d/%m/%Y') start_date
@@ -72,6 +77,7 @@ class ImportEmployeeSnapshotController extends Controller
 		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
 		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
 		$org_id = empty($request->org_id) ? "" : "AND es.org_id = '{$request->org_id}'";
+		$job_function = empty($request->job_function_id) ? "" : "AND es.job_function_id = '{$request->job_function_id}'";
 
 		$items = DB::select("
 			SELECT es.emp_snapshot_id, CONCAT(es.emp_first_name,' ',es.emp_last_name) emp_name
@@ -86,6 +92,30 @@ class ImportEmployeeSnapshotController extends Controller
 			".$position_id."
 			".$start_date."
 			".$org_id."
+			".$job_function."
+			LIMIT 10
+		");
+		return response()->json($items);
+	}
+
+	public function auto_chiefEmp(Request $request) {
+		$request->start_date = $this->qdc_service->format_date($request->start_date);
+		$emp_name = $this->qdc_service->concat_emp_first_last_code($request->emp_name);
+
+		$start_date = empty($request->start_date) ? "" : "AND es.start_date = '{$request->start_date}'";
+		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "INNER JOIN (SELECT e.chief_emp_code FROM employee_snapshot e WHERE e.emp_snapshot_id = '{$request->emp_snapshot_id}') e on es.emp_code = e.chief_emp_code";
+
+		$items = DB::select("
+			SELECT es.emp_code, CONCAT(es.emp_first_name,' ',es.emp_last_name) emp_name
+			FROM employee_snapshot es
+			INNER JOIN position p ON p.position_id = es.position_id
+			".$emp_snapshot_id."
+			WHERE (
+				es.emp_first_name LIKE '%{$emp_name}%'
+				OR es.emp_last_name LIKE '%{$emp_name}%'
+				OR p.position_code LIKE '%{$emp_name}%'
+			)
+			".$start_date."
 			LIMIT 10
 		");
 		return response()->json($items);
@@ -114,6 +144,100 @@ class ImportEmployeeSnapshotController extends Controller
 			".$start_date."
 			".$emp_snapshot_id."
 			".$org_id."
+		");
+
+		// Get the current page from the url if it's not set default to 1
+		empty($request->page) ? $page = 1 : $page = $request->page;
+
+		// Number of items per page
+		empty($request->rpp) ? $perPage = 10 : $perPage = $request->rpp;
+
+		$offSet = ($page * $perPage) - $perPage; // Start displaying items from this number
+
+		// Get only the items you need using array_slice (only get 10 items since that's what you need)
+		$itemsForCurrentPage = array_slice($items, $offSet, $perPage, false);
+
+
+		// Return the paginator with only 10 items but with the count of all items and set the it on the correct page
+		$result = new LengthAwarePaginator($itemsForCurrentPage, count($items), $perPage, $page);
+
+
+		return response()->json($result);
+	}
+	
+	// List Delete And Mend EmployeeSnapshot
+	public function index2(Request $request)
+	{
+		$request->start_date = $this->qdc_service->format_date($request->start_date);
+
+		$level_id = empty($request->level_id) ? "" : "AND al.level_id = '{$request->level_id}'";
+		$position_id = empty($request->position_id) ? "" : "AND es.position_id = '{$request->position_id}'";
+		$start_date = empty($request->start_date) ? "" : 
+				"AND es.start_date BETWEEN '{$request->start_date}' and
+				(
+					SELECT d.end_date 
+					from 
+					(
+						SELECT STR_TO_DATE('9999-12-31','%Y-%m-%d') end_date
+						UNION
+						(
+							SELECT DISTINCT ems.start_date - INTERVAL 1 DAY end_date 
+							from employee_snapshot ems
+							WHERE DAY(ems.start_date) = 1 
+							AND ems.start_date > '{$request->start_date}' 
+							ORDER BY ems.start_date 
+							LIMIT 1
+						)
+					)d ORDER BY d.end_date
+					LIMIT 1
+				)";
+		$emp_snapshot_id = empty($request->emp_snapshot_id) ? "" : "AND es.emp_snapshot_id = '{$request->emp_snapshot_id}'";
+		$chief_emp_code = empty($request->chief_emp_code) ? "" : "AND es.chief_emp_code = '{$request->chief_emp_code}'";
+		$job_function = empty($request->job_function_id) ? "" : "AND es.job_function_id = '{$request->job_function_id}'";
+		$more_chief_emp = $request->more_chief_emp == "false" ? "" : "AND es.emp_code = es.chief_emp_code";
+		//ค้นหา position ที่ซ้ำกันมากกว่า 1 position
+		$more_position = "";
+		if($request->more_position == "true"){
+			$more_position_list = DB::select("
+			SELECT GROUP_CONCAT(emp_snapshot_id) emp_snapshot_id
+			from (
+				SELECT GROUP_CONCAT(es.emp_snapshot_id) emp_snapshot_id  FROM employee_snapshot es 
+				LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
+				LEFT OUTER JOIN position p ON p.position_id = es.position_id
+				LEFT OUTER JOIN job_function job ON es.job_function_id = job.job_function_id
+				WHERE 1=1
+				".$level_id."
+				".$position_id."
+				".$start_date."
+				".$emp_snapshot_id."
+				".$chief_emp_code."
+				".$job_function."
+				GROUP BY es.position_id
+				HAVING COUNT(es.position_id) >= 2
+				)d
+			");
+			
+			$more_position = ($request->more_chief_emp == "false" ? "AND" : "OR")." FIND_IN_SET( es.emp_snapshot_id, '".(!empty($more_position_list) ? $more_position_list[0]->emp_snapshot_id : "")."') ORDER BY p.position_code";
+			
+			
+		}
+		
+		$items = DB::select("
+			SELECT es.*,job.job_function_name ,DATE_FORMAT(es.start_date, '%d/%m/%Y') start_date, al.appraisal_level_name, p.position_code, o.org_name, es.is_active
+			FROM employee_snapshot es
+			LEFT OUTER JOIN appraisal_level al ON al.level_id = es.level_id
+			LEFT OUTER JOIN position p ON p.position_id = es.position_id
+			LEFT OUTER JOIN org o ON o.org_id = es.org_id
+			LEFT OUTER JOIN job_function job ON es.job_function_id = job.job_function_id
+			WHERE 1=1
+			".$level_id."
+			".$position_id."
+			".$start_date."
+			".$emp_snapshot_id."
+			".$chief_emp_code."
+			".$job_function."
+			".$more_chief_emp."
+			".$more_position."
 		");
 
 		// Get the current page from the url if it's not set default to 1
@@ -199,6 +323,57 @@ class ImportEmployeeSnapshotController extends Controller
 			$item->save();
 		}
 		return response()->json(['status' => 200, 'data' => $item]);
+	}
+	// Page 
+	public function update2(Request $request)
+	{
+		$errors_validator = [];
+		foreach ($request->emp_snapshot as $i) {
+			$validator = Validator::make([
+				'emp_snapshot_id' => $i['emp_snapshot_id'],
+				'emp_first_name' => $i['emp_first_name'],
+				'emp_last_name' => $i['emp_last_name'],
+				'level_id' => $i['level_id'],
+				'job_function_id' => $i['job_function_id'],
+				'distributor_code' => $i['distributor_code'],
+				'region' => $i['region'],
+				'chief_emp_code' => $i['chief_emp_code'],
+				'is_active' => $i['is_active']
+			], [
+				'emp_snapshot_id' => 'required|integer',
+				'emp_first_name' => 'required|max:100',
+				'emp_last_name' => 'required|max:100',
+				'level_id' => 'required|integer',
+				'job_function_id' => 'required|integer',
+				'distributor_code' => 'required|max:20',
+				'region' => 'required|max:20',
+				'chief_emp_code' => 'required|max:100',
+				'is_active' => 'required|integer|between:0,1'
+			]);
+	
+			if ($validator->fails()) {
+				$errors_validator = $validator->errors();
+			} else {
+				$item = EmployeeSnapshot::find($i['emp_snapshot_id']);
+				$item->emp_first_name = $this->qdc_service->trim_text($i['emp_first_name']);
+				$item->emp_last_name = $this->qdc_service->trim_text($i['emp_last_name']);
+				$item->chief_emp_code = $this->qdc_service->trim_text($i['chief_emp_code']);
+				$item->level_id = $i['level_id'];
+				$item->job_function_id = $i['job_function_id'];
+				$item->distributor_code = $this->qdc_service->trim_text($i['distributor_code']);
+				$item->region = $this->qdc_service->trim_text($i['region']);
+				$item->is_active = $i['is_active'];
+				$item->updated_by = Auth::id();
+				$item->save();
+			}
+
+		}
+        
+		if(!empty($errors_validator)){
+			return response()->json(['status' => 400, 'data' => $errors_validator]);
+		}else{
+			return response()->json(['status' => 200]);
+		}
 	}
 
 	public function import(Request $request)
@@ -594,4 +769,26 @@ class ImportEmployeeSnapshotController extends Controller
 			}
 		})->download($extension);
 	}
+
+	public function destroy(Request $request)
+	{
+		$errors = [];
+		foreach($request->emp_snapshot_id as $key => $value) {
+			//return response()->json(['key' => $key , 'value'=>$value,'test' => $value['emp_snapshot_id']]);
+			try {
+				EmployeeSnapshot::where('emp_snapshot_id',$value['emp_snapshot_id'])->delete();
+			} catch (Exception $e) {
+				$errors[] = 'Cannot delete because this employee is in use.<br>   ['.$value['start_date'].' '.$value['emp_name'].']';
+			}
+		};
+		if(empty($errors)){
+			return response()->json(['status' => 200]);
+		}else{
+			return response()->json(['status' => 400, 'data' => $errors]);
+		}
+
+	}
+
+
+
 }

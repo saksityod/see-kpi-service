@@ -472,6 +472,14 @@ Route::group(['middleware' => 'cors'], function()
 	Route::post('employee_snap/import', 'PMTL\ImportEmployeeSnapshotController@import');
 	Route::get('employee_snap/parameter/list_job', 'PMTL\ImportEmployeeSnapshotController@list_job');
 	Route::patch('employee_snap/{emp_snapshot_id}', 'PMTL\ImportEmployeeSnapshotController@update');
+	
+
+	// Delete And Mend EmployeeSnapshot //
+	Route::get('employee_snap2', 'PMTL\ImportEmployeeSnapshotController@index2');
+	Route::get('employee_snap/parameter/last_start_date', 'PMTL\ImportEmployeeSnapshotController@lastStart_date');
+	Route::get('employee_snap/parameter/auto_chief_emp', 'PMTL\ImportEmployeeSnapshotController@auto_chiefEmp');
+	Route::delete('employee_snap/delete', 'PMTL\ImportEmployeeSnapshotController@destroy');
+	Route::patch('employee_snap/update/{dummy}', 'PMTL\ImportEmployeeSnapshotController@update2');
 
 	Route::get('questionaire/list_type', 'PMTL\QuestionaireController@list_type');
 	Route::get('questionaire/list_answer_type', 'PMTL\QuestionaireController@list_answer_type');
