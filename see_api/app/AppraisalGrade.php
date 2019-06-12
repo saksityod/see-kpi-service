@@ -17,6 +17,10 @@ class AppraisalGrade extends Model
     protected $table = 'appraisal_grade';
 	protected $primaryKey = 'grade_id';
 	public $incrementing = true;
+	protected $casts = [
+        'begin_score' => 'float',
+        'end_score' => 'float'
+    ];
 	
 	//public $timestamps = false;
 	//protected $guarded = array();
