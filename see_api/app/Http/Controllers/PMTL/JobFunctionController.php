@@ -58,7 +58,7 @@ class JobFunctionController extends Controller
 
 	public function store(Request $request)
 	{
-
+		
 		$validator = Validator::make($request->all(), [
 			'job_function_name' => 'required|unique:job_function',
 			'is_evaluated' => 'required|integer',
@@ -68,6 +68,12 @@ class JobFunctionController extends Controller
 		if ($validator->fails()) {
 			return response()->json(['status' => 400, 'data' => $validator->errors()]);
 		} else {
+			if($request->is_show_report == 1){
+				
+				if(empty($request->job_function_group_id) || $request->job_function_group_id == "null"){
+					return response()->json(['status' => 400, 'data' => ["job_function_group" => ["The is job function group is required."]]]);
+				}
+			}
 			$item = new JobFunction;
 			$item->fill($request->all());
 			$item->is_evaluated = $request->is_evaluated;
@@ -112,6 +118,12 @@ class JobFunctionController extends Controller
 		if ($validator->fails()) {
 			return response()->json(['status' => 400, 'data' => $validator->errors()]);
 		} else {
+			
+			if($request->is_show_report == 1){
+				if(empty($request->job_function_group_id) || $request->job_function_group_id == "null"){
+					return response()->json(['status' => 400, 'data' => ["job_function_group" => ["The is job function group is required."]]]);
+				}
+			}
 			$item->fill($request->all());
 			$item->is_evaluated = $request->is_evaluated;
 			$item->is_show_report = $request->is_show_report;
