@@ -1,0 +1,1384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ASM_THREE" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0d1b5aff-f6ce-4d96-aea4-95f41e9a7054">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="296"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="697"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<style name="Crosstab_CH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CG" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CT" mode="Opaque" backcolor="#005FB3">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab_CD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Header Region" mode="Opaque" forecolor="#FFFFFF" backcolor="#20639B"/>
+	<style name="Crosstab group" mode="Transparent" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+			<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+			<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+			<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+			<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+		</box>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($V{group_cycle_id}.doubleValue()%2)==0]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FFFFFF" backcolor="#99E6FF">
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+			</style>
+		</conditionalStyle>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($V{group_cycle_id}.doubleValue()%2)==1]]></conditionExpression>
+			<style mode="Opaque" forecolor="#FFFFFF" backcolor="#33CCFF">
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+				</box>
+			</style>
+		</conditionalStyle>
+	</style>
+	<style name="Value Crosstab" mode="Opaque" backcolor="#FAFAFA">
+		<box>
+			<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+		</box>
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{value_MEASURE}.doubleValue() == 0.00 || $V{Divider}.doubleValue() == 0.00]]></conditionExpression>
+			<style mode="Opaque" backcolor="#F2F2F2">
+				<box>
+					<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
+				</box>
+			</style>
+		</conditionalStyle>
+	</style>
+	<parameter name="year" class="java.lang.String"/>
+	<parameter name="questionaire_type_id" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT pos.position_id
+, pos.position_name
+, pos.max_date
+, pos.emp_snapshot_id
+, pos.MGR
+, pos.FSF
+, pos.VSM
+, pos.NAME_MGR
+, pos.NAME_FSF
+, pos.NAME_VSM
+, per.valid_start_date
+, per.valid_end_date
+, 1 as group_cycle_id
+, CONCAT('Total Assessment Performed PM')  as group_cycle
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,   $P{questionaire_type_id}  , 0, 0, 2,"2" , 1) as value -- questionaire_type_id
+, 1 as Divider
+, DATE_FORMAT(per.valid_start_date, '%b-%y') as cycle_name
+, sum_headcount.SUM_MGR
+, sum_headcount.SUM_FSF
+, sum_headcount.SUM_VSM
+, sum_headcount.NAME_SUM_MGR
+, sum_headcount.NAME_SUM_FSF
+, sum_headcount.NAME_SUM_VSM
+FROM (
+-- start field
+	SELECT field.position_id
+  , field.position_name
+  , field.start_valid_date
+  , field.end_valid_date
+	, field.max_date
+  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
+    FROM employee_snapshot em
+    WHERE field.position_id = em.position_id
+    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
+  ) as emp_snapshot_id
+  , MAX(field.MGR) MGR
+  , MAX(field.FSF) FSF
+	, MAX(field.VSM) VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.MGR) END) as NAME_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.FSF) END) as NAME_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.VSM) END) as NAME_VSM
+	FROM (
+	-- start data condition
+		SELECT h.position_id
+		, po.position_name
+		, h.valid_date as start_valid_date
+		, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year} ,'-12-31') -- param_year
+		) as end_valid_date
+		, jf.job_function_group_id
+		, md.max_date
+		, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+		, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+		, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+		, SUM(h.head_count) as head_count
+		FROM head_count h
+		INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+		INNER JOIN position po ON po.position_id = h.position_id
+		CROSS JOIN (
+			SELECT MAX(valid_date) as max_date
+			FROM head_count
+			WHERE YEAR(valid_date) =  $P{year} -- param_year
+		) as md
+		WHERE YEAR(h.valid_date) =  $P{year} -- param_year
+		AND h.valid_date = md.max_date
+		GROUP BY h.position_id
+		, po.position_name
+		, h.valid_date
+		, jf.job_function_group_id
+		, md.max_date
+	-- end data condition
+	) field
+	GROUP BY field.position_id
+	, field.position_name
+	, field.start_valid_date
+	, field.end_valid_date
+	, field.max_date
+-- end field
+) pos
+CROSS JOIN (
+	SELECT h.valid_date as valid_start_date
+	, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year},'-12-31') -- param_year
+	) as valid_end_date
+  FROM head_count h
+  WHERE YEAR(h.valid_date) =  $P{year} -- $param_year
+  AND DAY(h.valid_date) = 1
+  GROUP BY h.valid_date
+) per
+CROSS JOIN (
+	SELECT MAX(sum.MGR) AS SUM_MGR
+	, MAX(sum.FSF) AS SUM_FSF
+	, MAX(sum.VSM) AS SUM_VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.MGR) END) as NAME_SUM_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.FSF) END) as NAME_SUM_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.VSM) END) as NAME_SUM_VSM
+	FROM (
+	SELECT md.max_date
+	, jf.job_function_group_id
+	, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+	, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+	, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+	FROM head_count h
+	INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+	INNER JOIN position po ON po.position_id = h.position_id
+	CROSS JOIN (
+		SELECT MAX(valid_date) as max_date
+		FROM head_count
+		WHERE YEAR(valid_date) = $P{year} -- param_year
+	) as md
+	WHERE YEAR(h.valid_date) = $P{year} -- param_year
+	AND h.valid_date = md.max_date
+	GROUP BY jf.job_function_group_id
+	) sum
+) sum_headcount
+
+UNION
+
+SELECT pos.position_id
+, pos.position_name
+, pos.max_date
+, pos.emp_snapshot_id
+, pos.MGR
+, pos.FSF
+, pos.VSM
+, pos.NAME_MGR
+, pos.NAME_FSF
+, pos.NAME_VSM
+, per.valid_start_date
+, per.valid_end_date
+, 2 as group_cycle_id
+, CONCAT('Total outlet visited PM')  as group_cycle
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id}   , 0, 0, 2,"2" , 2) as value -- questionaire_type_id
+, 1 as Divider
+, DATE_FORMAT(per.valid_start_date, '%b-%y') as cycle_name
+, sum_headcount.SUM_MGR
+, sum_headcount.SUM_FSF
+, sum_headcount.SUM_VSM
+, sum_headcount.NAME_SUM_MGR
+, sum_headcount.NAME_SUM_FSF
+, sum_headcount.NAME_SUM_VSM
+FROM (
+-- start field
+	SELECT field.position_id
+  , field.position_name
+  , field.start_valid_date
+  , field.end_valid_date
+	, field.max_date
+  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
+    FROM employee_snapshot em
+    WHERE field.position_id = em.position_id
+    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
+  ) as emp_snapshot_id
+  , MAX(field.MGR) MGR
+  , MAX(field.FSF) FSF
+	, MAX(field.VSM) VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.MGR) END) as NAME_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.FSF) END) as NAME_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.VSM) END) as NAME_VSM
+	FROM (
+	-- start data condition
+		SELECT h.position_id
+		, po.position_name
+		, h.valid_date as start_valid_date
+		, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year} ,'-12-31') -- param_year
+		) as end_valid_date
+		, jf.job_function_group_id
+		, md.max_date
+		, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+		, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+		, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+		, SUM(h.head_count) as head_count
+		FROM head_count h
+		INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+		INNER JOIN position po ON po.position_id = h.position_id
+		CROSS JOIN (
+			SELECT MAX(valid_date) as max_date
+			FROM head_count
+			WHERE YEAR(valid_date) =  $P{year} -- param_year
+		) as md
+		WHERE YEAR(h.valid_date) =  $P{year} -- param_year
+		AND h.valid_date = md.max_date
+		GROUP BY h.position_id
+		, po.position_name
+		, h.valid_date
+		, jf.job_function_group_id
+		, md.max_date
+	-- end data condition
+	) field
+	GROUP BY field.position_id
+	, field.position_name
+	, field.start_valid_date
+	, field.end_valid_date
+	, field.max_date
+-- end field
+) pos
+CROSS JOIN (
+	SELECT h.valid_date as valid_start_date
+	, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year},'-12-31') -- param_year
+	) as valid_end_date
+  FROM head_count h
+  WHERE YEAR(h.valid_date) =  $P{year} -- $param_year
+  AND DAY(h.valid_date) = 1
+  GROUP BY h.valid_date
+) per
+CROSS JOIN (
+	SELECT MAX(sum.MGR) AS SUM_MGR
+	, MAX(sum.FSF) AS SUM_FSF
+	, MAX(sum.VSM) AS SUM_VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.MGR) END) as NAME_SUM_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.FSF) END) as NAME_SUM_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.VSM) END) as NAME_SUM_VSM
+	FROM (
+	SELECT md.max_date
+	, jf.job_function_group_id
+	, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+	, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+	, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+	FROM head_count h
+	INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+	INNER JOIN position po ON po.position_id = h.position_id
+	CROSS JOIN (
+		SELECT MAX(valid_date) as max_date
+		FROM head_count
+		WHERE YEAR(valid_date) = $P{year} -- param_year
+	) as md
+	WHERE YEAR(h.valid_date) = $P{year} -- param_year
+	AND h.valid_date = md.max_date
+	GROUP BY jf.job_function_group_id
+	) sum
+) sum_headcount
+
+UNION
+
+SELECT pos.position_id
+, pos.position_name
+, pos.max_date
+, pos.emp_snapshot_id
+, pos.MGR
+, pos.FSF
+, pos.VSM
+, pos.NAME_MGR
+, pos.NAME_FSF
+, pos.NAME_VSM
+, per.valid_start_date
+, per.valid_end_date
+, 3 as group_cycle_id
+, CONCAT('AVG. Assessment per Manager PM')  as group_cycle
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,   $P{questionaire_type_id}  , 0, 0, 2,"2" , 1) as value -- questionaire_type_id
+, COALESCE((SELECT SUM(hc.head_count)
+		FROM head_count hc
+		INNER JOIN position po ON hc.position_id = po.position_id
+		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
+		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
+		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
+		WHERE em.emp_snapshot_id = pos.emp_snapshot_id
+		AND hc.valid_date = per.valid_start_date
+		AND jfg.job_function_group_id = 1
+	),0) AS Divider
+, DATE_FORMAT(per.valid_start_date, '%b-%y') as cycle_name
+, sum_headcount.SUM_MGR
+, sum_headcount.SUM_FSF
+, sum_headcount.SUM_VSM
+, sum_headcount.NAME_SUM_MGR
+, sum_headcount.NAME_SUM_FSF
+, sum_headcount.NAME_SUM_VSM
+FROM (
+-- start field
+	SELECT field.position_id
+  , field.position_name
+  , field.start_valid_date
+  , field.end_valid_date
+	, field.max_date
+  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
+    FROM employee_snapshot em
+    WHERE field.position_id = em.position_id
+    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
+  ) as emp_snapshot_id
+  , MAX(field.MGR) MGR
+  , MAX(field.FSF) FSF
+	, MAX(field.VSM) VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.MGR) END) as NAME_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.FSF) END) as NAME_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.VSM) END) as NAME_VSM
+	FROM (
+	-- start data condition
+		SELECT h.position_id
+		, po.position_name
+		, h.valid_date as start_valid_date
+		, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year} ,'-12-31') -- param_year
+		) as end_valid_date
+		, jf.job_function_group_id
+		, md.max_date
+		, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+		, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+		, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+		, SUM(h.head_count) as head_count
+		FROM head_count h
+		INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+		INNER JOIN position po ON po.position_id = h.position_id
+		CROSS JOIN (
+			SELECT MAX(valid_date) as max_date
+			FROM head_count
+			WHERE YEAR(valid_date) =  $P{year} -- param_year
+		) as md
+		WHERE YEAR(h.valid_date) =  $P{year} -- param_year
+		AND h.valid_date = md.max_date
+		GROUP BY h.position_id
+		, po.position_name
+		, h.valid_date
+		, jf.job_function_group_id
+		, md.max_date
+	-- end data condition
+	) field
+	GROUP BY field.position_id
+	, field.position_name
+	, field.start_valid_date
+	, field.end_valid_date
+	, field.max_date
+-- end field
+) pos
+CROSS JOIN (
+	SELECT h.valid_date as valid_start_date
+	, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year},'-12-31') -- param_year
+	) as valid_end_date
+  FROM head_count h
+  WHERE YEAR(h.valid_date) =  $P{year} -- $param_year
+  AND DAY(h.valid_date) = 1
+  GROUP BY h.valid_date
+) per
+CROSS JOIN (
+	SELECT MAX(sum.MGR) AS SUM_MGR
+	, MAX(sum.FSF) AS SUM_FSF
+	, MAX(sum.VSM) AS SUM_VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.MGR) END) as NAME_SUM_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.FSF) END) as NAME_SUM_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.VSM) END) as NAME_SUM_VSM
+	FROM (
+	SELECT md.max_date
+	, jf.job_function_group_id
+	, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+	, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+	, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+	FROM head_count h
+	INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+	INNER JOIN position po ON po.position_id = h.position_id
+	CROSS JOIN (
+		SELECT MAX(valid_date) as max_date
+		FROM head_count
+		WHERE YEAR(valid_date) = $P{year} -- param_year
+	) as md
+	WHERE YEAR(h.valid_date) = $P{year} -- param_year
+	AND h.valid_date = md.max_date
+	GROUP BY jf.job_function_group_id
+	) sum
+) sum_headcount
+
+UNION
+
+SELECT pos.position_id
+, pos.position_name
+, pos.max_date
+, pos.emp_snapshot_id
+, pos.MGR
+, pos.FSF
+, pos.VSM
+, pos.NAME_MGR
+, pos.NAME_FSF
+, pos.NAME_VSM
+, per.valid_start_date
+, per.valid_end_date
+, 4 as group_cycle_id
+, 'AVG. outlet visited PM'  as group_cycle
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id}  , 0, 0, 2,"2" , 2) as value -- questionaire_type_id
+, COALESCE((SELECT SUM(hc.head_count)
+		FROM head_count hc
+		INNER JOIN position po ON hc.position_id = po.position_id
+		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
+		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
+		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
+		WHERE em.emp_snapshot_id = pos.emp_snapshot_id
+		AND hc.valid_date = per.valid_start_date
+		AND jfg.job_function_group_id = 1
+	),0) AS Divider
+, DATE_FORMAT(per.valid_start_date, '%b-%y') as cycle_name
+, sum_headcount.SUM_MGR
+, sum_headcount.SUM_FSF
+, sum_headcount.SUM_VSM
+, sum_headcount.NAME_SUM_MGR
+, sum_headcount.NAME_SUM_FSF
+, sum_headcount.NAME_SUM_VSM
+FROM (
+-- start field
+	SELECT field.position_id
+  , field.position_name
+  , field.start_valid_date
+  , field.end_valid_date
+	, field.max_date
+  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
+    FROM employee_snapshot em
+    WHERE field.position_id = em.position_id
+    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
+  ) as emp_snapshot_id
+  , MAX(field.MGR) MGR
+  , MAX(field.FSF) FSF
+	, MAX(field.VSM) VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.MGR) END) as NAME_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.FSF) END) as NAME_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.VSM) END) as NAME_VSM
+	FROM (
+	-- start data condition
+		SELECT h.position_id
+		, po.position_name
+		, h.valid_date as start_valid_date
+		, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year} ,'-12-31') -- param_year
+		) as end_valid_date
+		, jf.job_function_group_id
+		, md.max_date
+		, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+		, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+		, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+		, SUM(h.head_count) as head_count
+		FROM head_count h
+		INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+		INNER JOIN position po ON po.position_id = h.position_id
+		CROSS JOIN (
+			SELECT MAX(valid_date) as max_date
+			FROM head_count
+			WHERE YEAR(valid_date) =  $P{year} -- param_year
+		) as md
+		WHERE YEAR(h.valid_date) =  $P{year} -- param_year
+		AND h.valid_date = md.max_date
+		GROUP BY h.position_id
+		, po.position_name
+		, h.valid_date
+		, jf.job_function_group_id
+		, md.max_date
+	-- end data condition
+	) field
+	GROUP BY field.position_id
+	, field.position_name
+	, field.start_valid_date
+	, field.end_valid_date
+	, field.max_date
+-- end field
+) pos
+CROSS JOIN (
+	SELECT h.valid_date as valid_start_date
+	, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year},'-12-31') -- param_year
+	) as valid_end_date
+  FROM head_count h
+  WHERE YEAR(h.valid_date) =  $P{year} -- $param_year
+  AND DAY(h.valid_date) = 1
+  GROUP BY h.valid_date
+) per
+CROSS JOIN (
+	SELECT MAX(sum.MGR) AS SUM_MGR
+	, MAX(sum.FSF) AS SUM_FSF
+	, MAX(sum.VSM) AS SUM_VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.MGR) END) as NAME_SUM_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.FSF) END) as NAME_SUM_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.VSM) END) as NAME_SUM_VSM
+	FROM (
+	SELECT md.max_date
+	, jf.job_function_group_id
+	, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+	, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+	, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+	FROM head_count h
+	INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+	INNER JOIN position po ON po.position_id = h.position_id
+	CROSS JOIN (
+		SELECT MAX(valid_date) as max_date
+		FROM head_count
+		WHERE YEAR(valid_date) = $P{year} -- param_year
+	) as md
+	WHERE YEAR(h.valid_date) = $P{year} -- param_year
+	AND h.valid_date = md.max_date
+	GROUP BY jf.job_function_group_id
+	) sum
+) sum_headcount
+
+UNION
+
+SELECT pos.position_id
+, pos.position_name
+, pos.max_date
+, pos.emp_snapshot_id
+, pos.MGR
+, pos.FSF
+, pos.VSM
+, pos.NAME_MGR
+, pos.NAME_FSF
+, pos.NAME_VSM
+, per.valid_start_date
+, per.valid_end_date
+, 5 as group_cycle_id
+, 'AVG. outlet visited / assessment PM'  as group_cycle
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,   $P{questionaire_type_id}  , 0, 0, 2,"2" , 2) as value -- questionaire_type_id
+, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,   $P{questionaire_type_id}  , 0, 0, 2,"2" , 1) as Divider -- questionaire_type_id
+, DATE_FORMAT(per.valid_start_date, '%b-%y') as cycle_name
+, sum_headcount.SUM_MGR
+, sum_headcount.SUM_FSF
+, sum_headcount.SUM_VSM
+, sum_headcount.NAME_SUM_MGR
+, sum_headcount.NAME_SUM_FSF
+, sum_headcount.NAME_SUM_VSM
+FROM (
+-- start field
+	SELECT field.position_id
+  , field.position_name
+  , field.start_valid_date
+  , field.end_valid_date
+	, field.max_date
+  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
+    FROM employee_snapshot em
+    WHERE field.position_id = em.position_id
+    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
+  ) as emp_snapshot_id
+  , MAX(field.MGR) MGR
+  , MAX(field.FSF) FSF
+	, MAX(field.VSM) VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.MGR) END) as NAME_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.FSF) END) as NAME_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(field.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(field.VSM) END) as NAME_VSM
+	FROM (
+	-- start data condition
+		SELECT h.position_id
+		, po.position_name
+		, h.valid_date as start_valid_date
+		, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year} ,'-12-31') -- param_year
+		) as end_valid_date
+		, jf.job_function_group_id
+		, md.max_date
+		, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+		, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+		, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+		, SUM(h.head_count) as head_count
+		FROM head_count h
+		INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+		INNER JOIN position po ON po.position_id = h.position_id
+		CROSS JOIN (
+			SELECT MAX(valid_date) as max_date
+			FROM head_count
+			WHERE YEAR(valid_date) =  $P{year} -- param_year
+		) as md
+		WHERE YEAR(h.valid_date) =  $P{year} -- param_year
+		AND h.valid_date = md.max_date
+		GROUP BY h.position_id
+		, po.position_name
+		, h.valid_date
+		, jf.job_function_group_id
+		, md.max_date
+	-- end data condition
+	) field
+	GROUP BY field.position_id
+	, field.position_name
+	, field.start_valid_date
+	, field.end_valid_date
+	, field.max_date
+-- end field
+) pos
+CROSS JOIN (
+	SELECT h.valid_date as valid_start_date
+	, COALESCE(
+			(SELECT hc.valid_date-INTERVAL 1 DAY
+			FROM head_count hc
+			WHERE hc.valid_date > h.valid_date
+			ORDER BY hc.valid_date ASC
+			LIMIT 1)
+			, CONCAT( $P{year},'-12-31') -- param_year
+	) as valid_end_date
+  FROM head_count h
+  WHERE YEAR(h.valid_date) =  $P{year} -- $param_year
+  AND DAY(h.valid_date) = 1
+  GROUP BY h.valid_date
+) per
+CROSS JOIN (
+	SELECT MAX(sum.MGR) AS SUM_MGR
+	, MAX(sum.FSF) AS SUM_FSF
+	, MAX(sum.VSM) AS SUM_VSM
+	, (CASE WHEN LOCATE(1, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.MGR) END) as NAME_SUM_MGR
+	, (CASE WHEN LOCATE(2, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.FSF) END) as NAME_SUM_FSF
+	, (CASE WHEN LOCATE(3, GROUP_CONCAT(sum.job_function_group_id)) = 0 THEN "N/A" ELSE MAX(sum.VSM) END) as NAME_SUM_VSM
+	FROM (
+	SELECT md.max_date
+	, jf.job_function_group_id
+	, (CASE WHEN jf.job_function_group_id = 1 THEN SUM(h.head_count) ELSE 0 END) as MGR
+	, (CASE WHEN jf.job_function_group_id = 2 THEN SUM(h.head_count) ELSE 0 END) as FSF
+	, (CASE WHEN jf.job_function_group_id = 3 THEN SUM(h.head_count) ELSE 0 END) as VSM
+	FROM head_count h
+	INNER JOIN job_function jf ON h.job_function_id = jf.job_function_id
+	INNER JOIN position po ON po.position_id = h.position_id
+	CROSS JOIN (
+		SELECT MAX(valid_date) as max_date
+		FROM head_count
+		WHERE YEAR(valid_date) = $P{year} -- param_year
+	) as md
+	WHERE YEAR(h.valid_date) = $P{year} -- param_year
+	AND h.valid_date = md.max_date
+	GROUP BY jf.job_function_group_id
+	) sum
+) sum_headcount
+
+ORDER BY 1 ASC, 11 ASC]]>
+	</queryString>
+	<field name="position_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="position_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="head_count"/>
+	</field>
+	<field name="position_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="position_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="position"/>
+	</field>
+	<field name="max_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="max_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="head_count"/>
+	</field>
+	<field name="emp_snapshot_id" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
+	</field>
+	<field name="MGR" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="MGR"/>
+	</field>
+	<field name="FSF" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="FSF"/>
+	</field>
+	<field name="VSM" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="VSM"/>
+	</field>
+	<field name="NAME_MGR" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_MGR"/>
+	</field>
+	<field name="NAME_FSF" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_FSF"/>
+	</field>
+	<field name="NAME_VSM" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_VSM"/>
+	</field>
+	<field name="valid_start_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.label" value="valid_start_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="head_count"/>
+	</field>
+	<field name="valid_end_date" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="valid_end_date"/>
+	</field>
+	<field name="group_cycle_id" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="group_cycle_id"/>
+	</field>
+	<field name="group_cycle" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="group_cycle"/>
+	</field>
+	<field name="value" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="Divider" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="Divider"/>
+	</field>
+	<field name="cycle_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cycle_name"/>
+	</field>
+	<field name="SUM_MGR" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="SUM_MGR"/>
+	</field>
+	<field name="SUM_FSF" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="SUM_FSF"/>
+	</field>
+	<field name="SUM_VSM" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="SUM_VSM"/>
+	</field>
+	<field name="NAME_SUM_MGR" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_SUM_MGR"/>
+	</field>
+	<field name="NAME_SUM_FSF" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_SUM_FSF"/>
+	</field>
+	<field name="NAME_SUM_VSM" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="NAME_SUM_VSM"/>
+	</field>
+	<group name="Group Max Date">
+		<groupExpression><![CDATA[$F{max_date}]]></groupExpression>
+		<groupFooter>
+			<band height="100">
+				<crosstab ignoreWidth="true">
+					<reportElement x="0" y="20" width="360" height="80" uuid="c14a8e14-2c28-4c9e-b75f-c04f1e831654">
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+						<property name="com.jaspersoft.studio.crosstab.style.header" value="Crosstab_CH"/>
+						<property name="com.jaspersoft.studio.crosstab.style.group" value="Crosstab_CG"/>
+						<property name="com.jaspersoft.studio.crosstab.style.total" value="Crosstab_CT"/>
+						<property name="com.jaspersoft.studio.crosstab.style.detail" value="Crosstab_CD"/>
+					</reportElement>
+					<crosstabDataset>
+						<dataset resetType="Group" resetGroup="Group Max Date"/>
+					</crosstabDataset>
+					<crosstabHeaderCell>
+						<cellContents style="Header Region">
+							<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+							<box>
+								<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<staticText>
+								<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="100" height="40" forecolor="#FFFFFF" uuid="1131e25d-1dce-4832-b67e-b0f72a56ac52"/>
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Region]]></text>
+							</staticText>
+							<staticText>
+								<reportElement stretchType="RelativeToBandHeight" x="100" y="0" width="60" height="40" forecolor="#FFFFFF" uuid="e6aa93d1-7892-4297-b11c-653ae4cd7a37"/>
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+								</textElement>
+								<text><![CDATA[HC Mag.]]></text>
+							</staticText>
+							<staticText>
+								<reportElement stretchType="RelativeToBandHeight" x="160" y="0" width="60" height="40" forecolor="#FFFFFF" uuid="c9f30230-82d8-4b0d-9403-ec90df29184b"/>
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+								</textElement>
+								<text><![CDATA[HC FSF]]></text>
+							</staticText>
+							<staticText>
+								<reportElement stretchType="RelativeToBandHeight" x="220" y="0" width="60" height="40" forecolor="#FFFFFF" uuid="0ec77c0e-7727-4350-b6a2-3be116cc28f3"/>
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+								</textElement>
+								<text><![CDATA[HC VSM]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabHeaderCell>
+					<rowGroup name="position_name" width="100" totalPosition="End">
+						<bucket class="java.lang.String">
+							<bucketExpression><![CDATA[$F{position_name}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="100" height="20" backcolor="#CCDDFF" uuid="5b037202-4f0c-414c-9da1-58eae1301d91"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<textElement verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{position_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CT">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<staticText>
+									<reportElement x="0" y="0" width="100" height="20" forecolor="#FFFFFF" uuid="9cc20aff-9abd-410d-b51c-d8ff555e7d9b"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+										<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+										<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+										<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+										<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									</box>
+									<textElement verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph leftIndent="3"/>
+									</textElement>
+									<text><![CDATA[Thailand]]></text>
+								</staticText>
+								<textField>
+									<reportElement x="100" y="0" width="60" height="20" forecolor="#FFFFFF" uuid="7a1ad77b-9ace-48a5-bc31-46c997bd175c"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_SUM_MGR}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="160" y="0" width="60" height="20" forecolor="#FFFFFF" uuid="3a1bab50-fe78-4426-9d81-5242cae9f11f"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_SUM_FSF}]]></textFieldExpression>
+								</textField>
+								<textField>
+									<reportElement x="220" y="0" width="60" height="20" forecolor="#FFFFFF" uuid="5eea13a1-a5ea-4124-86dd-fb5cf228a3d5"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_SUM_VSM}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<rowGroup name="MGR" width="60" totalPosition="End">
+						<bucket class="java.math.BigDecimal">
+							<bucketExpression><![CDATA[$F{MGR}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#CCDDFF" uuid="2ac0d052-30bd-4519-8449-b97fb5c4d467"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_MGR}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG">
+								<staticText>
+									<reportElement mode="Opaque" x="0" y="0" width="180" height="0" backcolor="#CCDDFF" uuid="a1809542-f762-4382-a1a2-698bbe135e0e"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<text><![CDATA[Total MGR]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<rowGroup name="FSF" width="60" totalPosition="End">
+						<bucket class="java.math.BigDecimal">
+							<bucketExpression><![CDATA[$F{FSF}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#CCDDFF" uuid="989899d7-2895-4d10-8a5e-3e77508f6296"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_FSF}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG">
+								<staticText>
+									<reportElement mode="Opaque" x="0" y="0" width="120" height="0" backcolor="#CCDDFF" uuid="2349f70e-46d7-4cd9-bc1e-93e65e2e5624"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<text><![CDATA[Total FSF]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<rowGroup name="VSM" width="60" totalPosition="End">
+						<bucket class="java.math.BigDecimal">
+							<bucketExpression><![CDATA[$F{VSM}]]></bucketExpression>
+						</bucket>
+						<crosstabRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="60" height="20" backcolor="#CCDDFF" uuid="b2718255-7ff4-446b-b065-c92cf1d762ef"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<textElement textAlignment="Right" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14"/>
+										<paragraph rightIndent="3"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{NAME_VSM}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabRowHeader>
+						<crosstabTotalRowHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG">
+								<staticText>
+									<reportElement mode="Opaque" x="0" y="0" width="60" height="0" backcolor="#CCDDFF" uuid="1bc12d0c-42b2-4771-8382-524031322793"/>
+									<box>
+										<pen lineWidth="1.0" lineStyle="Dotted"/>
+									</box>
+									<text><![CDATA[Total VSM]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalRowHeader>
+					</rowGroup>
+					<columnGroup name="group_cycle_id" height="20" totalPosition="End" headerPosition="Center">
+						<bucket class="java.lang.Long">
+							<bucketExpression><![CDATA[$F{group_cycle_id}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab group">
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted"/>
+								</box>
+								<textField isStretchWithOverflow="true">
+									<reportElement x="0" y="0" width="80" height="20" uuid="a933e392-393e-450a-b7b9-e31beb000b0a"/>
+									<box>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{group_cycle}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CT">
+								<staticText>
+									<reportElement x="0" y="0" width="0" height="40" forecolor="#FFFFFF" uuid="1568a1ae-99bc-48b8-81b7-50e8e7b13571"/>
+									<text><![CDATA[Total group_cycle_id]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<columnGroup name="cycle_name" height="20" totalPosition="End">
+						<bucket order="None" class="java.lang.String">
+							<bucketExpression><![CDATA[$F{cycle_name}]]></bucketExpression>
+						</bucket>
+						<crosstabColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CH">
+								<box>
+									<pen lineWidth="1.0" lineStyle="Dotted"/>
+								</box>
+								<textField>
+									<reportElement mode="Opaque" x="0" y="0" width="80" height="20" backcolor="#D9E1F2" uuid="bb76e589-683d-4337-b66d-4fbc579b723d"/>
+									<box>
+										<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+										<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									</box>
+									<textElement textAlignment="Center" verticalAlignment="Middle">
+										<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									</textElement>
+									<textFieldExpression><![CDATA[$V{cycle_name}]]></textFieldExpression>
+								</textField>
+							</cellContents>
+						</crosstabColumnHeader>
+						<crosstabTotalColumnHeader>
+							<cellContents mode="Opaque" style="Crosstab_CG">
+								<staticText>
+									<reportElement x="0" y="0" width="0" height="20" uuid="030baacc-7331-4fdb-8760-59f80307a442"/>
+									<text><![CDATA[Total cycle_name]]></text>
+								</staticText>
+							</cellContents>
+						</crosstabTotalColumnHeader>
+					</columnGroup>
+					<measure name="value_MEASURE" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{value}]]></measureExpression>
+					</measure>
+					<measure name="group_cycle" class="java.lang.String">
+						<measureExpression><![CDATA[$F{group_cycle}]]></measureExpression>
+					</measure>
+					<measure name="SUM_MGR" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{SUM_MGR}]]></measureExpression>
+					</measure>
+					<measure name="SUM_FSF" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{SUM_FSF}]]></measureExpression>
+					</measure>
+					<measure name="SUM_VSM" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{SUM_VSM}]]></measureExpression>
+					</measure>
+					<measure name="value" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{value}]]></measureExpression>
+					</measure>
+					<measure name="Divider" class="java.math.BigDecimal">
+						<measureExpression><![CDATA[$F{Divider}]]></measureExpression>
+					</measure>
+					<measure name="sum_Divider" class="java.math.BigDecimal" calculation="Sum">
+						<measureExpression><![CDATA[$F{Divider}]]></measureExpression>
+					</measure>
+					<measure name="NAME_MGR" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_MGR}]]></measureExpression>
+					</measure>
+					<measure name="NAME_FSF" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_FSF}]]></measureExpression>
+					</measure>
+					<measure name="NAME_VSM" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_VSM}]]></measureExpression>
+					</measure>
+					<measure name="NAME_SUM_MGR" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_SUM_MGR}]]></measureExpression>
+					</measure>
+					<measure name="NAME_SUM_FSF" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_SUM_FSF}]]></measureExpression>
+					</measure>
+					<measure name="NAME_SUM_VSM" class="java.lang.String">
+						<measureExpression><![CDATA[$F{NAME_SUM_VSM}]]></measureExpression>
+					</measure>
+					<crosstabCell width="80" height="20">
+						<cellContents mode="Opaque" style="Value Crosstab">
+							<box>
+								<pen lineWidth="1.0" lineStyle="Dotted"/>
+								<topPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								<leftPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								<bottomPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+								<rightPen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="80" height="20" uuid="5afb076e-f45f-491e-8bea-f0ad138fd0f7"/>
+								<box>
+									<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+									<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+								</box>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14"/>
+									<paragraph rightIndent="3"/>
+								</textElement>
+								<textFieldExpression><![CDATA[($V{value_MEASURE}.doubleValue() == 0.00 || $V{Divider}.doubleValue() == 0.00) ? "N/A" :
+(
+	($V{group_cycle_id} == 1) ? 
+		new java.text.DecimalFormat("#,##0").format(Double.valueOf($V{value_MEASURE}.doubleValue())) 
+	: 
+	(
+		($V{group_cycle_id} == 2) ? 
+			new java.text.DecimalFormat("#,##0").format(Double.valueOf($V{value_MEASURE}.doubleValue()))
+		: new java.text.DecimalFormat("#,##0.00").format(Double.valueOf($V{value_MEASURE}.doubleValue()/$V{Divider}.doubleValue()))
+	)
+)]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="group_cycle_id">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="20" forecolor="#FFFFFF" uuid="6ec6de6d-2d0a-4993-80d0-701164921cd1"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" columnTotalGroup="cycle_name">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="20" uuid="42494c94-f64a-4c48-af97-19cd9bb38bf6"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="20" rowTotalGroup="position_name">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<box>
+								<pen lineWidth="1.0" lineStyle="Dotted"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="80" height="20" forecolor="#FFFFFF" uuid="2c163b2d-c20f-4002-a8b6-cf55f2ce6d3a"/>
+								<textElement textAlignment="Right" verticalAlignment="Middle">
+									<font fontName="TH SarabunPSK" size="14" isBold="true"/>
+									<paragraph rightIndent="3"/>
+								</textElement>
+								<textFieldExpression><![CDATA[($V{value}.doubleValue() == 0.00 || $V{sum_Divider}.doubleValue() == 0.00) ? "N/A"
+:
+(
+	($V{group_cycle_id} == 1) ? 
+	new java.text.DecimalFormat("#,##0").format(Double.valueOf($V{value}.doubleValue())) 
+	: 
+	(
+		($V{group_cycle_id} == 2) ? 
+			new java.text.DecimalFormat("#,##0").format(Double.valueOf($V{value}.doubleValue()))
+	 	: new java.text.DecimalFormat("#,##0.00").format(Double.valueOf($V{value}.doubleValue()/$V{sum_Divider}.doubleValue()))
+	)
+)]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" rowTotalGroup="position_name" columnTotalGroup="group_cycle_id">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="20" forecolor="#FFFFFF" uuid="ec27b521-a9f6-4d55-81c4-61129924e7e0"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="20" rowTotalGroup="position_name" columnTotalGroup="cycle_name">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="20" forecolor="#FFFFFF" uuid="a1921710-a754-4a64-898c-24c71db72787"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="MGR">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="0" uuid="dfd64144-1185-4755-aa22-0847499f4873"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="MGR" columnTotalGroup="group_cycle_id">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" forecolor="#FFFFFF" uuid="fa37fc0c-5816-4a3e-a422-cb55034fc875"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="MGR" columnTotalGroup="cycle_name">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" uuid="1128f28c-6747-419f-a267-37a979c44063"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="FSF">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="0" uuid="a4942645-025b-4a2f-b2dc-27a3c36c2746"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="FSF" columnTotalGroup="group_cycle_id">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" forecolor="#FFFFFF" uuid="e460c56f-eef9-4aa0-bf76-9a7bf326a384"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="FSF" columnTotalGroup="cycle_name">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" uuid="c255440d-8339-41f0-88dd-2fd58c6a59a1"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="80" height="0" rowTotalGroup="VSM">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="80" height="0" uuid="f2f3670f-28a2-4955-aa64-848f51e44b81"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="VSM" columnTotalGroup="group_cycle_id">
+						<cellContents mode="Opaque" style="Crosstab_CT">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" forecolor="#FFFFFF" uuid="09db7cf4-c88c-415c-83bf-01142129c56a"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+					<crosstabCell width="0" height="0" rowTotalGroup="VSM" columnTotalGroup="cycle_name">
+						<cellContents mode="Opaque" style="Crosstab_CG">
+							<textField>
+								<reportElement x="0" y="0" width="0" height="0" uuid="e53be59c-618a-4634-9fdc-2de93e0668c0"/>
+								<textFieldExpression><![CDATA[$V{value_MEASURE}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabCell>
+				</crosstab>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+</jasperReport>

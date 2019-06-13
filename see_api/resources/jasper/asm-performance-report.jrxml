@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ASM Performance Report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9ae566fa-0938-4849-a380-3f7a3de12400">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-pmtl(local)"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="year" class="java.lang.String"/>
+	<parameter name="questionaire_type_id" class="java.lang.String"/>
+	<parameter name="param_user" class="java.lang.String"/>
+	<parameter name="subreport_path" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select 1 as one]]>
+	</queryString>
+	<field name="one" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="one"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="50">
+			<staticText>
+				<reportElement x="0" y="0" width="800" height="30" uuid="84196376-40c2-49f2-b8bb-434a5ed113a1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="TH SarabunPSK" size="20" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ASM Performance Report]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="40" splitType="Stretch">
+			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="f202d99e-8d90-4da3-856a-9f442d4b9379"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_ONE.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="40">
+			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="7b194cb0-5b90-4aff-bed7-f3ce2225c91d"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_TWO.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="40">
+			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="d7291804-1942-4fda-b880-16e019f8c596"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_THREE.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="40">
+			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="d6d9d49c-5a3d-4d6f-8f0b-42ff8ab8cbb4"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_FOUR.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="40">
+			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="934304d7-b3d1-415d-a824-1e3e61a9214b"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_FIVE.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>
