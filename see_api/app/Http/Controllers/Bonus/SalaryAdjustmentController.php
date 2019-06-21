@@ -62,8 +62,6 @@ class SalaryAdjustmentController extends Controller
     {
       $datas = $this->show_salary_v2($request);
       $items = collect($datas['datas']);
-      $avg = $datas['avg'];
-      $sd = $datas['sd'];
 
       return response()->json([
         'items' => $items,
@@ -78,10 +76,13 @@ class SalaryAdjustmentController extends Controller
         'sum_var_other_amount' => $items->sum('var_other_amount'),
         'sum_cal_standard' => $items->sum('cal_standard'),
         'count' => $items->count(),
-        'avg' => $avg,
-        'sd' => $sd,
+        'avg' => $datas['avg'],
+        'avg_filter' => $datas['avg_filter'],
+        'sd' => $datas['sd'],
+        'sd_filter' => $datas['std_filter'],
         'is_board' => $items->first()->is_board,
-        'edit_flag' => $items->first()->edit_flag
+        'edit_flag' => $items->first()->edit_flag,
+        'emp_cnt' => $datas['emp_cnt'],
       ]);
     }
 
@@ -549,22 +550,24 @@ class SalaryAdjustmentController extends Controller
         {$qryPositionId}
         {$qryStageId}
         ORDER BY o.org_code ASC, le.seq_no ASC, em.emp_code ASC
+        -- LIMIT 10
       ");
       
       // หาค่า score ที่ถูก adjust ด้วยตาม level(bu,coo,board) และหา last score ทั้งหมดที่อยู่ใน period นั้น ๆ 
       $scoreList = collect(DB::select("
-        SELECT ds.emp_result_id,
-          MAX(ds.score_by_bu) AS score_bu, 
-          MAX(ds.score_by_coo) AS score_coo, 
-          MAX(ds.score_by_board) AS score_board,
-          IF( MAX(ds.score_by_board) != 0, 
+        SELECT er.emp_result_id,
+          IFNULL(MAX(ds.score_by_bu), 0) AS score_bu, 
+          IFNULL(MAX(ds.score_by_coo), 0) AS score_coo, 
+          IFNULL(MAX(ds.score_by_board), 0) AS score_board,
+          IFNULL(IF( MAX(ds.score_by_board) != 0, 
             MAX(ds.score_by_board),
-            IF( MAX(ds.score_by_coo) != 0,
-              MAX(ds.score_by_coo),
-              MAX(ds.score_by_bu)
-            )
-          ) AS last_score
-        FROM(
+              IF( MAX(ds.score_by_coo) != 0,
+                MAX(ds.score_by_coo),
+                MAX(ds.score_by_bu)
+              )
+          ), 0) AS last_score
+        FROM emp_result er
+        LEFT OUTER JOIN(
           SELECT erj.emp_result_id,
             IF(erj.org_level_id = {$adjustLevel->level_bu}, erj.adjust_result_score, 0) AS score_by_bu,
             IF(erj.org_level_id = {$adjustLevel->level_coo}, erj.adjust_result_score, 0) AS score_by_coo,
@@ -577,43 +580,22 @@ class SalaryAdjustmentController extends Controller
           ) mac ON mac.emp_result_id = erj.emp_result_id AND mac.org_level_id = erj.org_level_id AND mac.max_date = erj.created_dttm
           INNER JOIN emp_result emac ON emac.emp_result_id = mac.emp_result_id
           WHERE emac.period_id = {$request->period_id}
-        )ds
-        GROUP BY ds.emp_result_id
+        )ds ON er.emp_result_id = ds.emp_result_id
+        WHERE er.period_id = {$request->period_id}
+        GROUP BY er.emp_result_id
       "));
         
       // หาค่า avg และ std ของ employee ทั้งหมดที่อยู่ใน period นั้น ๆ
       $avg = $scoreList->avg('last_score');
       $lastAdjScoreArr = $scoreList->pluck('last_score')->toArray();
       $std = empty($lastAdjScoreArr) ? 0 : $this->advanSearch->standard_deviation($lastAdjScoreArr);
+
+      // หาค่า avg และ std ของ employee กรองตาม parameter โดยกำหนดตัวแปลเพื่อไปเก็บค่าใน loop ของ $itemList และคำนวณหลังจากจบ loop
+      $lastScoreSum4Filter = floatval(0.00);
+      $itemListCnt4Filter = floatval(0.00);
+      $lastScoreArr4Filter = Array();
       
       // structure ทั้งหมดที่จะต้องแสดงตาม parameter ทั้งหมด [แสดงเฉพาะที่มีใน emp_result]
-      /*
-        $strResultList = collect(DB::select("
-          SELECT emp.emp_result_id, sr.structure_id, str.structure_name, str.seq_no,
-            IFNULL(sr.weigh_score,0) as score,
-            (
-              SELECT MAX(air.weight_percent)
-              FROM emp_result ser 
-              INNER JOIN appraisal_item_result air ON air.emp_result_id = ser.emp_result_id
-              INNER JOIN appraisal_item ai ON ai.item_id = air.item_id
-              WHERE ser.emp_result_id = emp.emp_result_id
-              AND ai.structure_id = sr.structure_id
-            ) AS total_score
-          FROM emp_result emp
-          INNER JOIN structure_result sr ON sr.emp_result_id = emp.emp_result_id
-          INNER JOIN appraisal_structure str ON str.structure_id = sr.structure_id
-          LEFT JOIN org o ON emp.org_id = o.org_id
-          WHERE emp.period_id = {$request->period_id}
-          {$qryFormId}
-          {$qryEmpLevel}
-          {$qryOrgLevel}
-          {$qryOrgId}
-          {$qryEmpId}
-          {$qryPositionId}
-          {$qryStageId}
-          ORDER BY emp.emp_result_id, str.seq_no
-        "));
-      */
       $strResultList = collect(DB::select("
         SELECT er.emp_result_id,
           result.structure_id, 
@@ -665,7 +647,7 @@ class SalaryAdjustmentController extends Controller
         WHERE em.emp_code = '{$login}'
       "))->first();
         
-      //หาค่า structure, structure แรก by record และคำนวณรายได้ปัจจุบัน
+      // หาค่า structure, structure แรก by record และคำนวณรายได้ปัจจุบัน
       foreach ($itemList as $item) {
         // นำข้อมูลของ adjust score ของแต่ละ level มาใส่ให้ main data
         $score_ = $scoreList->where('emp_result_id', $item->emp_result_id)->first();
@@ -675,13 +657,21 @@ class SalaryAdjustmentController extends Controller
           $item->score_board = NULL;
           $item->last_score_adjust = NULL;
           $item->score_last = NULL;
+
+          $lastScoreSum4Filter = $lastScoreSum4Filter;
+          array_push($lastScoreArr4Filter, 0);
         } else {
           $item->score_bu = $score_->score_bu;
           $item->score_coo = $score_->score_coo;
           $item->score_board = $score_->score_board;
           $item->last_score_adjust = $score_->last_score;
           $item->score_last = $score_->last_score;
+
+          $lastScoreSum4Filter = $lastScoreSum4Filter + floatval(($item->score_last == NULL) ? 0 : $item->score_last);
+          array_push($lastScoreArr4Filter, $item->score_last);
         }
+        $itemListCnt4Filter = $itemListCnt4Filter + 1;
+        
         
         // คำนวณหารายได้ปัจจุบันของ employee
         $item->total_now_salary = ($item->salary + $item->pqpi_amount + $item->fix_other_amount + $item->mpi_amount + $item->pi_amount + $item->var_other_amount);
@@ -722,7 +712,14 @@ class SalaryAdjustmentController extends Controller
 
       } // end foreach item
 
-      return ['datas' => $itemList, 'avg' => $avg, 'sd' => $std];
+      // หาค่า avg และ std ของ employee กรองตาม parameter และคำนวณ z-score ของแต่ละ employee
+      $avg_filter = $lastScoreSum4Filter / $itemListCnt4Filter;
+      $std_filter = empty($lastScoreArr4Filter) ? 0 : $this->advanSearch->standard_deviation($lastScoreArr4Filter);
+      foreach ($itemList as $item){
+        $item->z_score_filter = ($std_filter == 0) ? 0 : (($item->last_score_adjust-$avg_filter) / $std_filter);
+      }
+
+      return ['datas' => $itemList, 'avg' => $avg, 'sd' => $std, 'avg_filter' => $avg_filter, 'std_filter' => $std_filter, 'emp_cnt'=>$itemListCnt4Filter];
     }
 
     public function update(Request $request) {
