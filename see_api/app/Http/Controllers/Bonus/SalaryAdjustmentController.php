@@ -550,7 +550,7 @@ class SalaryAdjustmentController extends Controller
         {$qryPositionId}
         {$qryStageId}
         ORDER BY o.org_code ASC, le.seq_no ASC, em.emp_code ASC
-        -- LIMIT 10
+        LIMIT 10
       ");
       
       // หาค่า score ที่ถูก adjust ด้วยตาม level(bu,coo,board) และหา last score ทั้งหมดที่อยู่ใน period นั้น ๆ 
