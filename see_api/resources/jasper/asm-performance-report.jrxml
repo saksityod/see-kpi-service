@@ -44,7 +44,7 @@
 					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_ONE.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-one.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="40">
@@ -57,7 +57,7 @@
 					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_TWO.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-two.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="40">
@@ -70,7 +70,7 @@
 					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_THREE.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-three.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="40">
@@ -83,7 +83,7 @@
 					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_FOUR.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-four.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="40">
@@ -96,7 +96,7 @@
 					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA[$P{subreport_path}+"/ASM_FIVE.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-five.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
