@@ -550,7 +550,7 @@ class SalaryAdjustmentController extends Controller
         {$qryPositionId}
         {$qryStageId}
         ORDER BY o.org_code ASC, le.seq_no ASC, em.emp_code ASC
-        LIMIT 10
+        -- LIMIT 1
       ");
       
       // หาค่า score ที่ถูก adjust ด้วยตาม level(bu,coo,board) และหา last score ทั้งหมดที่อยู่ใน period นั้น ๆ 
@@ -748,8 +748,8 @@ class SalaryAdjustmentController extends Controller
             $validator_detail = Validator::make([
                 'emp_result_id' => $d['emp_result_id'],
                 'emp_id' => $d['emp_id'],
-                'salary' => $d['salary'],
-                'pqpi' => $d['pqpi']
+                'salary' => $d['adjust_raise_s_amount'],
+                'pqpi' => $d['adjust_raise_pqpi_amount']
             ], [
                 'emp_result_id' => 'required|integer',
                 'emp_id' => 'required|integer',
@@ -770,11 +770,11 @@ class SalaryAdjustmentController extends Controller
 
         foreach ($request['detail'] as $d) {
             $emp = EmpResult::find($d['emp_result_id']);
-            $emp->adjust_raise_s_amount = $d['salary'];
-            $emp->adjust_raise_pqpi_amount = $d['pqpi'];
+            $emp->adjust_raise_s_amount = $d['adjust_raise_s_amount'];
+            $emp->adjust_raise_pqpi_amount = $d['adjust_raise_pqpi_amount'];
 
-            $sum_s_amount = (int)base64_decode($emp->s_amount) + (int)$d['salary'];
-            $sum_pqpi_amount = (int)base64_decode($emp->pqpi_amount) + (int)$d['pqpi'];
+            $sum_s_amount = (int)base64_decode($emp->s_amount) + (int)$d['adjust_raise_s_amount'];
+            $sum_pqpi_amount = (int)base64_decode($emp->pqpi_amount) + (int)$d['adjust_raise_pqpi_amount'];
 
             $emp->adjust_new_s_amount = base64_encode($sum_s_amount);
             $emp->adjust_new_pqpi_amount = base64_encode($sum_pqpi_amount);
@@ -804,7 +804,7 @@ class SalaryAdjustmentController extends Controller
                         ->where('org_level_id', '=', $user->level_id)
                         ->update([
                           'adjust_grade' => (empty($d['grade']) ? '' : $d['grade']),
-                          'adjust_result_score' => $d['score_adjust']
+                          'adjust_result_score' => $d['score_last']
                         ]);
 
             } else if (count($empJust) == 0){
@@ -815,7 +815,7 @@ class SalaryAdjustmentController extends Controller
               $empResult->emp_result_id = $d['emp_result_id'];
               $empResult->judge_id = $user->emp_id;
               $empResult->org_level_id = $user->level_id;
-              $empResult->adjust_result_score = $d['score_adjust'];
+              $empResult->adjust_result_score = $d['score_last'];
               $empResult->adjust_grade = $d['grade'];
               $empResult->created_by = Auth::id();
               $empResult->created_dttm = $date;
