@@ -1,0 +1,83 @@
+CREATE DEFINER=`root`@`%` FUNCTION `GetUnderEmp`(`PaEmpSnapshot` text, `PaStartValidDate` date, `PaEndValidDate` date) RETURNS longtext CHARSET utf8
+BEGIN
+	
+	DECLARE EmpSnapshotByDate text;
+	DECLARE EmpCodeHead text;
+	DECLARE Parent text;
+	DECLARE Parent_id text;
+	DECLARE Place_Parent text;
+	DECLARE Place_Parent_id text;
+	DECLARE AllEmpUnderShow text;
+	DECLARE Have int;
+	
+	SET Have = 1;
+	SET Parent_id = "";
+	SET Place_Parent = "";
+	SET Place_Parent_id = "";
+	SET AllEmpUnderShow = "";
+	
+	SELECT GROUP_CONCAT(emp_snapshot_id)
+	INTO EmpSnapshotByDate
+	FROM employee_snapshot
+	WHERE position_id = (
+		SELECT position_id 
+		FROM employee_snapshot 
+		WHERE FIND_IN_SET(emp_snapshot_id, PaEmpSnapshot) -- PaEmpSnapshot
+		LIMIT 1)
+	AND start_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+
+	-- 	get emp_code of header
+	SELECT GROUP_CONCAT(emp_code)
+	INTO EmpCodeHead 
+	FROM employee_snapshot
+  WHERE FIND_IN_SET(emp_snapshot_id, EmpSnapshotByDate); -- EmpSnapshotByDate
+	
+	IF EmpCodeHead IS NULL THEN
+		RETURN NULL ;
+	ELSE
+		-- [Start] get under emp of EmpCodeHead
+		SET Parent = CONCAT(EmpCodeHead, ",");
+		
+		-- [Start] loop while find under emp
+		WHILE Have > 0 DO
+		
+			-- set parameter to variable for find under emp
+			SET Place_Parent = CONCAT(Place_Parent, Parent);
+			SET Place_Parent_id = CONCAT(Place_Parent_id, Parent_id);
+		
+			-- get under emp 
+			SELECT GROUP_CONCAT(emp_code)
+      , GROUP_CONCAT(emp_snapshot_id)
+			INTO Parent, Parent_id
+      FROM employee_snapshot
+      WHERE FIND_IN_SET(chief_emp_code, Parent) -- Parent
+			AND NOT FIND_IN_SET(emp_code, Parent) -- Parent
+      AND chief_emp_code != ''
+      AND start_date BETWEEN PaStartValidDate AND PaEndValidDate;
+			
+			-- set parameter for data have and don't have
+			IF Parent IS NOT NULL OR Parent_id IS NOT NULL THEN
+				SET Parent = CONCAT(Parent, ",");
+				SET Parent_id = CONCAT(Parent_id, ",");
+			ELSE
+				SET Have = 0;
+			END IF;
+						
+		END WHILE;
+		-- [Start] loop while find under emp
+		
+		-- get under emp "is_show_report = 1"
+		SELECT GROUP_CONCAT(em.emp_snapshot_id)
+		INTO AllEmpUnderShow
+    FROM employee_snapshot em
+    INNER JOIN job_function jf ON em.job_function_id = jf.job_function_id
+    WHERE FIND_IN_SET(em.emp_snapshot_id, Place_Parent_id) -- Place_Parent_id
+    AND em.emp_snapshot_id != ''
+    AND jf.is_show_report = 1 ;
+		
+		RETURN AllEmpUnderShow;
+		
+		-- [End] get under emp of EmpCodeHead
+	END IF;
+	
+END
