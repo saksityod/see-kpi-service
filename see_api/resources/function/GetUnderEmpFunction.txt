@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`%` FUNCTION `GetUnderEmp`(`PaEmpSnapshot` text, `PaStartValidDate` date, `PaEndValidDate` date) RETURNS longtext CHARSET utf8
+CREATE DEFINER=`root`@`localhost` FUNCTION `GetUnderEmp`(`PaEmpPosition` text, `PaStartValidDate` date, `PaEndValidDate` date) RETURNS longtext CHARSET utf8
 BEGIN
 	
 	DECLARE EmpSnapshotByDate text;
@@ -19,11 +19,7 @@ BEGIN
 	SELECT GROUP_CONCAT(emp_snapshot_id)
 	INTO EmpSnapshotByDate
 	FROM employee_snapshot
-	WHERE position_id = (
-		SELECT position_id 
-		FROM employee_snapshot 
-		WHERE FIND_IN_SET(emp_snapshot_id, PaEmpSnapshot) -- PaEmpSnapshot
-		LIMIT 1)
+	WHERE position_id = PaEmpPosition -- PaEmpPosition
 	AND start_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
 
 	-- 	get emp_code of header

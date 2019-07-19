@@ -96,7 +96,6 @@
 		<![CDATA[SELECT pos.position_id
 , pos.position_name
 , pos.max_date
-, pos.emp_snapshot_id
 , pos.MGR
 , pos.FSF
 , pos.VSM
@@ -107,14 +106,13 @@
 , per.valid_end_date
 , 1 as group_cycle_id
 , '%Coverage PM' as group_cycle
-, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 0, 2, 1,"2" , 1) as value
+, CalculateNumberEmp(pos.position_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 0, 2, 1,"2" , 1) as value
 , COALESCE((SELECT SUM(hc.head_count)
 		FROM head_count hc
 		INNER JOIN position po ON hc.position_id = po.position_id
-		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
 		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
 		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
-		WHERE em.emp_snapshot_id = pos.emp_snapshot_id
+		WHERE po.position_id = pos.position_id
 		AND hc.valid_date = per.valid_start_date
 		AND jfg.job_function_group_id = 2
 	),0) AS Divider
@@ -132,11 +130,6 @@ FROM (
   , field.start_valid_date
   , field.end_valid_date
 	, field.max_date
-  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
-    FROM employee_snapshot em
-    WHERE field.position_id = em.position_id
-    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
-  ) as emp_snapshot_id
   , MAX(field.MGR) MGR
   , MAX(field.FSF) FSF
 	, MAX(field.VSM) VSM
@@ -233,7 +226,6 @@ UNION
 SELECT pos.position_id
 , pos.position_name
 , pos.max_date
-, pos.emp_snapshot_id
 , pos.MGR
 , pos.FSF
 , pos.VSM
@@ -244,14 +236,13 @@ SELECT pos.position_id
 , per.valid_end_date
 , 2 as group_cycle_id
 , '%Coverage VSM' as group_cycle
-, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 0, 3, 1,"3" , 1) as value
+, CalculateNumberEmp(pos.position_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 0, 3, 1,"3" , 1) as value
 , COALESCE((SELECT SUM(hc.head_count)
 		FROM head_count hc
 		INNER JOIN position po ON hc.position_id = po.position_id
-		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
 		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
 		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
-		WHERE em.emp_snapshot_id = pos.emp_snapshot_id
+		WHERE po.position_id = pos.position_id
 		AND hc.valid_date = per.valid_start_date
 		AND jfg.job_function_group_id = 3
 	),0) AS Divider
@@ -269,11 +260,6 @@ FROM (
   , field.start_valid_date
   , field.end_valid_date
 	, field.max_date
-  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
-    FROM employee_snapshot em
-    WHERE field.position_id = em.position_id
-    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
-  ) as emp_snapshot_id
   , MAX(field.MGR) MGR
   , MAX(field.FSF) FSF
 	, MAX(field.VSM) VSM
@@ -370,7 +356,6 @@ UNION
 SELECT pos.position_id
 , pos.position_name
 , pos.max_date
-, pos.emp_snapshot_id
 , pos.MGR
 , pos.FSF
 , pos.VSM
@@ -381,14 +366,13 @@ SELECT pos.position_id
 , per.valid_end_date
 , 3 as group_cycle_id
 , '%Acknowledge PM' as group_cycle
-, CalculateNumberEmp(pos.emp_snapshot_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 4, 2, 1,"2" , 1) as value
+, CalculateNumberEmp(pos.position_id, per.valid_start_date, per.valid_end_date,  $P{questionaire_type_id} , 4, 2, 1,"2" , 1) as value
 , COALESCE((SELECT SUM(hc.head_count)
 		FROM head_count hc
 		INNER JOIN position po ON hc.position_id = po.position_id
-		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
 		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
 		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
-		WHERE em.emp_snapshot_id = pos.emp_snapshot_id
+		WHERE po.position_id = pos.position_id
 		AND hc.valid_date = per.valid_start_date
 		AND jfg.job_function_group_id = 2
 	),0) AS Divider
@@ -406,11 +390,6 @@ FROM (
   , field.start_valid_date
   , field.end_valid_date
 	, field.max_date
-  , (SELECT GROUP_CONCAT(em.emp_snapshot_id)
-    FROM employee_snapshot em
-    WHERE field.position_id = em.position_id
-    AND em.start_date BETWEEN field.start_valid_date AND field.end_valid_date
-  ) as emp_snapshot_id
   , MAX(field.MGR) MGR
   , MAX(field.FSF) FSF
 	, MAX(field.VSM) VSM
@@ -502,7 +481,7 @@ CROSS JOIN (
 	) sum
 ) sum_headcount
 
-ORDER BY 1 ASC, 11 ASC]]>
+ORDER BY 1 ASC, 10 ASC]]>
 	</queryString>
 	<field name="position_id" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="position_id"/>
@@ -515,9 +494,6 @@ ORDER BY 1 ASC, 11 ASC]]>
 	<field name="max_date" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="max_date"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="head_count"/>
-	</field>
-	<field name="emp_snapshot_id" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="emp_snapshot_id"/>
 	</field>
 	<field name="MGR" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="MGR"/>
@@ -846,12 +822,13 @@ ORDER BY 1 ASC, 11 ASC]]>
 							</cellContents>
 						</crosstabTotalRowHeader>
 					</rowGroup>
-					<columnGroup name="group_cycle_id" height="20" totalPosition="End" headerPosition="Center">
+					<columnGroup name="group_cycle_id" height="20" headerPosition="Stretch" mergeHeaderCells="true">
 						<bucket class="java.lang.Long">
 							<bucketExpression><![CDATA[$F{group_cycle_id}]]></bucketExpression>
 						</bucket>
 						<crosstabColumnHeader>
 							<cellContents mode="Opaque" style="Crosstab group">
+								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 								<box>
 									<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#000000"/>
 								</box>

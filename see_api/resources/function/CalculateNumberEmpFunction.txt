@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` FUNCTION `CalculateNumberEmp`(`PaEmpSnapshot` text, `PaStartValidDate` date, `PaEndValidDate` date, `PaQuestionaireType` text, `PaStageForCount` int, `PaDividerJobGroup` int, `PaClosstabTypeNum` int, `PaJobFunctionGroup` text, `PaTableHeaderDetail` text) RETURNS decimal(10,2)
+CREATE DEFINER=`root`@`localhost` FUNCTION `CalculateNumberEmp`(`PaEmpPosition` text, `PaStartValidDate` date, `PaEndValidDate` date, `PaQuestionaireType` text, `PaStageForCount` int, `PaDividerJobGroup` int, `PaClosstabTypeNum` int, `PaJobFunctionGroup` text, `PaTableHeaderDetail` text) RETURNS decimal(10,2)
 BEGIN
 	
 	-- PaEmpSnapshot : emp_snapshot_id header
@@ -24,7 +24,7 @@ BEGIN
 	
 	SET CountEmp = 0;
 	
-	SELECT GetUnderEmp(PaEmpSnapshot, PaStartValidDate, PaEndValidDate)
+	SELECT GetUnderEmp(PaEmpPosition, PaStartValidDate, PaEndValidDate)
 	INTO AllUnderEmp;
 	
 	-- set name table
@@ -43,10 +43,9 @@ BEGIN
 		INTO Divider
 		FROM head_count hc
 		INNER JOIN position po ON hc.position_id = po.position_id
-		INNER JOIN employee_snapshot em ON po.position_id = em.position_id
 		INNER JOIN job_function jf ON hc.job_function_id = jf.job_function_id
 		INNER JOIN job_function_group jfg ON jf.job_function_group_id = jfg.job_function_group_id
-		WHERE em.emp_snapshot_id = PaEmpSnapshot -- PaEmpSnapshot
+		WHERE po.position_id = PaEmpPosition -- PaEmpPosition
 		AND hc.valid_date = PaStartValidDate -- PaStartValidDate
 		AND jfg.job_function_group_id = PaDividerJobGroup; -- PaDividerJobGroup
 	
