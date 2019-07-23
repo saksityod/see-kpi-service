@@ -49,6 +49,19 @@
 		</band>
 		<band height="40">
 			<subreport>
+				<reportElement x="0" y="0" width="800" height="40" uuid="c1f9524b-e450-48d4-97e3-80d56ecb797b"/>
+				<subreportParameter name="questionaire_type_id">
+					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="year">
+					<subreportParameterExpression><![CDATA[$P{year}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_path}+"/asm-performance-report-one-type.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="40">
+			<subreport>
 				<reportElement x="0" y="0" width="800" height="40" uuid="7b194cb0-5b90-4aff-bed7-f3ce2225c91d"/>
 				<subreportParameter name="questionaire_type_id">
 					<subreportParameterExpression><![CDATA[$P{questionaire_type_id}]]></subreportParameterExpression>

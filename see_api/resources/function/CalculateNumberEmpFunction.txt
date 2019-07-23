@@ -9,7 +9,7 @@ BEGIN
 	-- PaDividerJobGroup : job_function_group_id for divider in crosstab 1
 	-- PaClosstabTypeNum : type crosstab calculate
 	-- PaJobFunctionGroup : job_function_group_id of table job_function_group
-	-- PaTableHeaderDetail : name table count data
+	-- PaTableHeaderDetail : name table count data ["%Acknowledge PM" fix value(1 : count from stage 4) and divider(2 : count all from)]
 	
 	DECLARE AllUnderEmp text;
 	DECLARE TableHeaderDetail text;
@@ -72,11 +72,13 @@ BEGIN
 			IF PaStageForCount = 4 THEN
 			-- [Start] where stage_id = 4
 			
+			-- [Start] Calculate From by stage_id = 4
+			IF PaTableHeaderDetail = 1 THEN
 				-- [Start] Calculate EmpSnapshot
 				IF EmpSnapshot IS NULL THEN
 					SET CountEmp = CountEmp;
 				ELSE
-					SELECT COUNT(DISTINCT qdh.emp_snapshot_id)
+					SELECT COUNT(qdh.data_header_id)
 					INTO NumEmp
 					FROM questionaire_data_header qdh
 					INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
@@ -94,7 +96,7 @@ BEGIN
 				IF AsseessorId IS NULL THEN
 					SET CountEmp = CountEmp;
 				ELSE
-					SELECT COUNT(DISTINCT qdh.assessor_id)
+					SELECT COUNT(qdh.data_header_id)
 					INTO NumEmp
 					FROM questionaire_data_header qdh
 					INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
@@ -108,6 +110,48 @@ BEGIN
 				END IF;
 				-- [End] Calculate AsseessorId
 				
+			-- [End] Calculate From by stage_id = 4	
+			
+			
+			ELSE
+			-- [Start] Calculate All From
+			
+				-- [Start] Calculate EmpSnapshot
+				IF EmpSnapshot IS NULL THEN
+					SET CountEmp = CountEmp;
+				ELSE
+					SELECT COUNT(qdh.data_header_id)
+					INTO NumEmp
+					FROM questionaire_data_header qdh
+					INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
+					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
+					WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
+					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+				
+					SET CountEmp = CountEmp+NumEmp;
+				END IF;	
+				-- [End] Calculate EmpSnapshot
+				
+				-- [Start] Calculate AsseessorId
+				IF AsseessorId IS NULL THEN
+					SET CountEmp = CountEmp;
+				ELSE
+					SELECT COUNT(qdh.data_header_id)
+					INTO NumEmp
+					FROM questionaire_data_header qdh
+					INNER JOIN questionaire q ON q.questionaire_id = qdh.questionaire_id
+					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
+					WHERE FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
+					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+				
+					SET CountEmp = CountEmp+NumEmp;	
+				END IF;
+				-- [End] Calculate AsseessorId
+				
+			-- [End] Calculate All From	
+			END IF;
 			-- [End] where stage_id = 4	
 			
 			ELSE
