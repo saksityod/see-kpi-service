@@ -1419,6 +1419,20 @@ class QuestionaireDataController extends Controller
             return response()->json(['status' => 400, 'errors' => $errors_validator]);
         }
 
+        // check questionaire_data_header in database
+        $header = $this->check_questionaire_header(
+            $this->format_date($request->questionaire_date)
+            , Questionaire::find($request->questionaire_id)->questionaire_type_id
+            , $request->emp_snapshot_id
+            , $assessor->emp_snapshot_id);
+
+        if($header != 200) {
+            return response()->json([
+                'status' => 404, 
+                'data' => $header
+            ]);
+        }
+
         $h = new QuestionaireDataHeader;
         $h->questionaire_id = $request->questionaire_id;
         $h->questionaire_date = $this->format_date($request->questionaire_date);
@@ -1614,6 +1628,32 @@ class QuestionaireDataController extends Controller
                     if($ans_type->answer_type_id==3 || $ans_type->answer_type_id==4) {
                         $question_unique[] = $d['question_id'];
                     } else {
+
+                        if (!empty($d['customer_id'])){
+
+                            //  ตรวจสอบข้อมูลจากตารางว่ามีหรือไม่
+                            $check_detail = "SELECT data_detail_id
+                                FROM questionaire_data_detail
+                                WHERE data_header_id = ".$h->data_header_id."
+                                AND section_id = ".$d['section_id']."
+                                AND customer_id = ".$d['customer_id']."
+                                AND question_id = ".$d['question_id'];
+
+                            if (empty($d['data_detail_id'])) {
+                                $check_detail = DB::select($check_detail." LIMIT 1");
+                            } else {
+                                $check_detail = DB::select($check_detail." AND data_detail_id = ".$d['data_detail_id']."
+                                            LIMIT 1");
+                            }
+
+                            // แทนค่าของข้อมูลในตัวแปร
+                            if(empty($check_detail)){
+                                $d['data_detail_id'] = null;
+                            }else {
+                                $d['data_detail_id'] = $check_detail[0]->data_detail_id;
+                            }
+                        }
+
                         if(empty($d['data_detail_id'])) {
                             $dt = new QuestionaireDataDetail;
                             $dt->data_header_id = $h->data_header_id;
@@ -2312,5 +2352,30 @@ class QuestionaireDataController extends Controller
                 $sheet->fromArray($resultArray);
             });
         })->download('xlsx');
+    }
+
+    public function check_questionaire_header($req_date, $questionaire_type_id, $emp_snapshot_id, $assessor_id){
+
+        // check questionaire_data_header in database
+        $check_assign = DB::select("
+            SELECT CONCAT(es.emp_first_name, ' ', es.emp_last_name) emp_name
+            , qt.questionaire_type
+            FROM questionaire_data_header qdh
+            INNER JOIN questionaire qn ON qdh.questionaire_id = qn.questionaire_id
+            INNER JOIN questionaire_type qt ON qn.questionaire_type_id = qt.questionaire_type_id
+            INNER JOIN employee_snapshot es ON qdh.emp_snapshot_id = es.emp_snapshot_id
+            WHERE qdh.questionaire_date = '{$req_date}'
+            AND qn.questionaire_type_id = '{$questionaire_type_id}'
+            AND qdh.emp_snapshot_id = '{$emp_snapshot_id}'
+            AND qdh.assessor_id = '{$assessor_id}'
+            AND qdh.data_stage_id < 3
+        ");
+
+        if (empty($check_assign)){
+            return 200;
+        }else {
+            return $req_date.' '.$check_assign[0]->emp_name.' ยังมีแบบฟอร์ม '.$check_assign[0]->questionaire_type.' ค้างอยู่';
+        }
+
     }
 }
