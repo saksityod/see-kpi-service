@@ -268,6 +268,7 @@ class FSF_HC_ReportController extends Controller
                   WHERE qdh.".$under->emp_questionaire." = ".$under->emp_snapshot_id."
                   AND qdh.questionaire_date BETWEEN '".$param_date_start."' AND '".$param_date_end."'
                   AND qt.questionaire_type_id = ".$exe->questionaire_type_id."
+				  AND qdh.data_stage_id IN (3,4)
                   LIMIT 1 ");
 
                // หากมีให้นับเป็น 1 หากไม่มีก็ไม่นับ

@@ -86,6 +86,7 @@ BEGIN
 					WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
 					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4)
 					AND qdh.data_stage_id = 4;
 				
 					SET CountEmp = CountEmp+NumEmp;
@@ -104,6 +105,7 @@ BEGIN
 					WHERE FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
 					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4)
 					AND qdh.data_stage_id = 4;
 				
 					SET CountEmp = CountEmp+NumEmp;	
@@ -114,7 +116,7 @@ BEGIN
 			
 			
 			ELSE
-			-- [Start] Calculate All From
+			-- [Start] Calculate All From by stage_id = 4	
 			
 				-- [Start] Calculate EmpSnapshot
 				IF EmpSnapshot IS NULL THEN
@@ -127,7 +129,8 @@ BEGIN
 					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
 					WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4);
 				
 					SET CountEmp = CountEmp+NumEmp;
 				END IF;	
@@ -144,13 +147,14 @@ BEGIN
 					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
 					WHERE FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4);
 				
 					SET CountEmp = CountEmp+NumEmp;	
 				END IF;
 				-- [End] Calculate AsseessorId
 				
-			-- [End] Calculate All From	
+			-- [End] Calculate All From	by stage_id = 4	
 			END IF;
 			-- [End] where stage_id = 4	
 			
@@ -168,7 +172,8 @@ BEGIN
 					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
 					WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4);
 				
 					SET CountEmp = CountEmp+NumEmp;
 				END IF;	
@@ -185,7 +190,8 @@ BEGIN
 					INNER JOIN questionaire_type qt ON q.questionaire_type_id = qt.questionaire_type_id
 					WHERE FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
 					AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+					AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+					AND qdh.data_stage_id IN (3,4);
 				
 					SET CountEmp = CountEmp+NumEmp;	
 				END IF;
@@ -242,7 +248,8 @@ BEGIN
         WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
         AND FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
         AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-        AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+        AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+				AND qdh.data_stage_id IN (3,4);
 				
 				RETURN CountEmp;
 			ELSE
@@ -256,7 +263,8 @@ BEGIN
         WHERE FIND_IN_SET(qdh.emp_snapshot_id, EmpSnapshot) -- EmpSnapshot
         AND FIND_IN_SET(qdh.assessor_id, AsseessorId) -- AsseessorId
         AND FIND_IN_SET(qt.questionaire_type_id, PaQuestionaireType) -- PaQuestionaireType
-        AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate; -- PaStartValidDate,PaEndValidDate
+        AND qdh.questionaire_date BETWEEN PaStartValidDate AND PaEndValidDate -- PaStartValidDate,PaEndValidDate
+				AND qdh.data_stage_id IN (3,4);
 								
 				RETURN CountEmp;
 			END IF;
