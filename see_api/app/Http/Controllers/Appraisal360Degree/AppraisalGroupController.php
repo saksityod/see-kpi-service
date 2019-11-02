@@ -25,6 +25,7 @@ use Validator;
 use Excel;
 use Config;
 use Mail;
+use Log;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -3192,12 +3193,13 @@ class AppraisalGroupController extends Controller
 
 			$java_weigh_score = 0;
 			$java_over_value = 0;
-
-			if($r->max_value-$r->actual_value > 0){
+			//Log::info('Deduct cds_value :'.$cds_result[0]->cds_value);
+			if($r->max_value-$cds_result[0]->cds_value > 0){
 				$java_over_value = 0;
 			}
-			elseif($r->max_value-$r->actual_value <= 0){
-				$java_over_value = $r->max_value-$r->actual_value;
+			elseif($r->max_value-$cds_result[0]->cds_value <= 0){
+				$java_over_value = $r->max_value-$cds_result[0]->cds_value;
+				Log::info('java_over_value :'. $r->max_value-$cds_result[0]->cds_value);
 			}
 			if($r->result_type==1){
 				$java_weigh_score = ($java_over_value * $r->deduct_score_unit);
@@ -3206,7 +3208,7 @@ class AppraisalGroupController extends Controller
 			}
 			
 			$item_result = AppraisalItemResult::find($r->item_result_id);
-			$item_result->actual_value = $r->actual_value;
+			$item_result->actual_value = $cds_result[0]->cds_value;
 			$item_result->over_value = $java_over_value;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
@@ -3239,6 +3241,7 @@ class AppraisalGroupController extends Controller
 			-- air.actual_value,
 			air.weight_percent,
 			air.max_value,
+			air.reward_score_unit,
 			air.deduct_score_unit,
 			ai.value_get_zero
 			FROM appraisal_item_result air
@@ -3255,7 +3258,7 @@ class AppraisalGroupController extends Controller
 				where ap.start_date <= ? and ap.end_date >= ?
 				and ap.appraisal_year = (select current_appraisal_year from system_config)
 			)
-			and astr.form_id = 3 
+			and astr.form_id = 4
 			and (air.emp_result_id = ? or 'All' = ?)
 			-- and air.emp_id = 859
 		",[$request->start_date, $request->start_date, $request->emp_result_id, $request->emp_result_id]);
@@ -3295,7 +3298,7 @@ class AppraisalGroupController extends Controller
 			$java_weigh_score = 0;
 			$java_over_value = 0;
 
-			$java_over_value = ($r->actual_value-$r->max_value)> 0 ? $r->actual_value-$r->max_value : 0;
+			$java_over_value = ($cds_result[0]->cds_value-$r->max_value)> 0 ? $cds_result[0]->cds_value-$r->max_value : 0;
 
 			if($r->result_type==1){
 				$java_weigh_score = ($java_over_value * $r->reward_score_unit);
@@ -3306,7 +3309,7 @@ class AppraisalGroupController extends Controller
 
 			
 			$item_result = AppraisalItemResult::find($r->item_result_id);
-			$item_result->actual_value = $r->actual_value;
+			$item_result->actual_value = $cds_result[0]->cds_value;
 			$item_result->over_value = $java_over_value;
 			$item_result->weigh_score = $java_weigh_score;
 			$item_result->updated_by = 'ETL_SEE_KPI';
