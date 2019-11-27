@@ -618,6 +618,7 @@ class BonusAppraisalController extends Controller
                     ORDER BY vel.seq_no
                     LIMIT 1
                 )
+		AND e.is_bonus = 1
                 GROUP BY e.emp_result_id
             ) erj ON erj.org_id = orj.org_id
             LEFT OUTER JOIN(
@@ -638,8 +639,7 @@ class BonusAppraisalController extends Controller
                 )
                 GROUP BY e.emp_result_id
             ) bon ON bon.org_id = orj.org_id
-            WHERE org.is_active = 1
-            AND orj.period_id = '{$period}'
+            WHERE orj.period_id = '{$period}'
             ".$buLevelQryStr."
             ".$parentOrgQryStr."
         ");
