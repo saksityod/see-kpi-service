@@ -262,6 +262,7 @@ class BonusAppraisalController extends Controller
 
     public function SavedAndCalculation(Request $request)
     {
+        set_time_limit(0);
         $requestValid = Validator::make($request->all(), [
             'appraisal_year' => 'required',
             'period_id' => 'required',
@@ -272,7 +273,7 @@ class BonusAppraisalController extends Controller
         if ($requestValid->fails()) {
             return response()->json(['status' => 400, 'data' => implode(" ", $requestValid->messages()->all())]);
         }
-
+        
 
         // update bonus adjust result score on org_result_judgement, emp_result_judgement.
         foreach ($request->data as $data) {            
@@ -283,7 +284,12 @@ class BonusAppraisalController extends Controller
             if ($validator->fails()) {
                 return response()->json(['status' => 400, 'data' => implode(" ", $validator->messages()->all())]);
             }
-
+            
+            Log::info("########################");
+            Log::info($data);
+            
+            
+            
             try{
                 $orgResultJudgement = OrgResultJudgement::find($data['org_result_judgement_id']);
                 $orgResultJudgement->adjust_result_score = $data['adjust_result_score'];
@@ -353,7 +359,7 @@ class BonusAppraisalController extends Controller
     private function BonusCalculation($period, $monthlyBonusRate)
     {
         Log::info("#################### BonusCalculation #################### \r\n");
-        set_time_limit(600);
+        set_time_limit(1200);
         $appraisalStage = AppraisalStage::where('bonus_appraisal_flag', 1)->get()->first();
 
         // 1. Query หาข้อมูลที่ใช้ในการคำนวณ โดยทำผ่าน GetBonusAppraisalOrgLevel()
@@ -387,7 +393,9 @@ class BonusAppraisalController extends Controller
 
             return $buData;
         });
-
+        
+        Log::Info($buInfo);
+        
         // 3. ทำการคำนวณหาค่า bonus_score, bonus_percent, bonus_amount ในระดับ department
         foreach ($buInfo as $bu) {
             Log::info("///// BuCode : {$bu->org_code} //////////////////////////////////////////");
