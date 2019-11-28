@@ -568,6 +568,14 @@ class AdvanceSearchController extends Controller
         return response()->json($years);
     }
 
+    public function PeriodListAll(Request $request)
+    {
+        $periods = DB::table("appraisal_period")->select('period_id', 'appraisal_period_desc')
+            ->where('appraisal_year', $request->appraisal_year)
+            ->get();
+        return response()->json($periods);
+    }
+
     public function PeriodList(Request $request)
     {
         $periods = DB::table("appraisal_period")->select('period_id', 'appraisal_period_desc')
