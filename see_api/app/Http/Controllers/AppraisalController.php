@@ -947,7 +947,9 @@ class AppraisalController extends Controller
 				}
 
 				$query = "
-					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					select DISTINCT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name,
+					-- po.org_name parent_org_name, 
+					  f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					, d.seq_no
@@ -959,7 +961,7 @@ class AppraisalController extends Controller
 					left outer join appraisal_period g on a.period_id = g.period_id
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
-					left outer join org po on o.parent_org_code = po.org_code
+					-- left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 					".$empLevelQueryStr."
@@ -983,7 +985,9 @@ class AppraisalController extends Controller
 				}
 
 				$query = "
-					select a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					select DISTINCT a.emp_result_id, a.emp_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name
+					-- , po.org_name parent_org_name
+					, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					, d.seq_no
@@ -995,7 +999,7 @@ class AppraisalController extends Controller
 					left outer join appraisal_period g on a.period_id = g.period_id
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
-					left outer join org po on o.parent_org_code = po.org_code
+					-- left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 					".$orgLevelQueryStr."
@@ -1125,7 +1129,9 @@ class AppraisalController extends Controller
 				}
 
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					select DISTINCT a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name
+					-- , po.org_name parent_org_name
+					, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
@@ -1136,7 +1142,7 @@ class AppraisalController extends Controller
 					left outer join appraisal_period g on a.period_id = g.period_id
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
-					left outer join org po on o.parent_org_code = po.org_code
+					-- left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 					".$empLevelQueryStr."
@@ -1170,7 +1176,9 @@ class AppraisalController extends Controller
 				}
 
 				$query = "
-					select a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name, po.org_name parent_org_name, f.to_action, a.stage_id, g.period_id
+					select DISTINCT a.emp_result_id, b.emp_code, b.emp_name, d.appraisal_level_name, e.appraisal_type_id, e.appraisal_type_name, p.position_name, o.org_code, o.org_name
+					-- , po.org_name parent_org_name
+					, f.to_action, a.stage_id, g.period_id
 					, g.start_date as appraisal_period_start_date
 					, concat(g.appraisal_period_desc,' Start Date: ',g.start_date,' End Date: ',g.end_date) appraisal_period_desc, af.appraisal_form_name
 					from emp_result a
@@ -1181,7 +1189,7 @@ class AppraisalController extends Controller
 					left outer join appraisal_period g on a.period_id = g.period_id
 					left outer join position p on a.position_id = p.position_id
 					left outer join org o on a.org_id = o.org_id
-					left outer join org po on o.parent_org_code = po.org_code
+					-- left outer join org po on o.parent_org_code = po.org_code
 					inner join appraisal_form af on af.appraisal_form_id = a.appraisal_form_id
 					where d.is_hr = 0
 					".$orgLevelQueryStr."
