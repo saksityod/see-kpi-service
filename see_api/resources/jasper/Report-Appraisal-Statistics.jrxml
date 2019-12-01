@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Report Analytical Statistics for Work" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8d3e516e-df28-4b6c-be56-0be69d7f5892">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Bonus Report"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas2"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.report.description"/>
 	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="585"/>
 	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="401"/>
-	<parameter name="period_id" class="java.lang.String" evaluationTime="Early">
+	<parameter name="period_id" class="java.lang.String">
 		<property name="net.sf.jasperreports.http.data.url.parameter" value="period_id"/>
 	</parameter>
-	<parameter name="appraisal_year" class="java.lang.String" evaluationTime="Early">
+	<parameter name="appraisal_year" class="java.lang.String">
 		<property name="net.sf.jasperreports.http.data.url.parameter" value="appraisal_year"/>
 	</parameter>
-	<parameter name="org_id" class="java.lang.String" evaluationTime="Early">
+	<parameter name="org_id" class="java.lang.String">
 		<property name="net.sf.jasperreports.http.data.url.parameter" value="org_id"/>
 	</parameter>
 	<parameter name="param_user" class="java.lang.String"/>
@@ -179,7 +179,7 @@
 		<property name="net.sf.jasperreports.json.field.expression" value="SumAllStaff"/>
 		<fieldDescription><![CDATA[SumAllStaff]]></fieldDescription>
 	</field>
-	<group name="Group Year" minHeightToStartNewPage="100" minDetailsToStartFromTop="100">
+	<group name="Group Year" minHeightToStartNewPage="100">
 		<groupExpression><![CDATA[$F{appraisal_year}]]></groupExpression>
 		<groupFooter>
 			<band height="25">
@@ -318,7 +318,7 @@
 					<textElement>
 						<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{parent_org_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{parent_org_code}.substring( 3 )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.###">
 					<reportElement stretchType="RelativeToTallestObject" mode="Opaque" x="643" y="0" width="35" height="20" forecolor="#000000" backcolor="#A2BCF1" uuid="ec9e6def-7e8e-4118-98b7-a0480517fe35"/>
@@ -720,7 +720,7 @@ BU]]></text>
 					<font fontName="TH SarabunPSK" size="13" isBold="true"/>
 					<paragraph leftIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_code}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{org_code}.substring( 3 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
 				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="713" y="0" width="44" height="20" forecolor="#000000" backcolor="#DCE6F1" uuid="80e89e5e-38d8-4492-b7ca-3e6336cbabf2"/>
