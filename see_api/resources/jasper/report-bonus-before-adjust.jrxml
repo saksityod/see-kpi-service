@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 5.5.2  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-bonus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="4f63ddc5-33c5-47a9-9936-41ce170abf82">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="see-kpi-dhas"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dhas"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
@@ -722,7 +722,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<textElement>
 						<font fontName="TH SarabunPSK" size="14"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{parent_org_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{parent_org_code}.substring( 3 )]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" forecolor="#FFFFFF" backcolor="#6B83B5" uuid="5f40f3f2-534a-48b6-b06b-97c5784db539"/>
@@ -1256,7 +1256,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<textElement>
 						<font fontName="TH SarabunPSK" size="14"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{mid_org_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{mid_org_code}.substring( 3 )]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" backcolor="#A2BCF1" uuid="f057fcb5-00b2-4663-bdab-c8dfca2095a3"/>
@@ -1775,7 +1775,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<textElement>
 						<font fontName="TH SarabunPSK" size="14"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{child_org_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{child_org_code}.substring( 3 )]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement mode="Opaque" x="40" y="0" width="111" height="32" backcolor="#DCE6F1" uuid="b170753c-5c0d-44f4-a19b-b4d62f5f4077"/>
@@ -2321,7 +2321,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<textElement>
 						<font fontName="TH SarabunPSK" size="14"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{department_org_code}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{department_org_code}.substring( 3 )]]></textFieldExpression>
 				</textField>
 				<componentElement>
 					<reportElement x="284" y="0" width="475" height="32" uuid="ff317fd1-a295-4af0-8565-503437a28f17">
