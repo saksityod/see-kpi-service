@@ -61,6 +61,7 @@ class BonusReportController extends Controller
             LIMIT 1
 				) name_office
         WHERE le.is_start_cal_bonus = 1
+        AND  LEFT(o.org_code,2) = SUBSTRING(".$appraisal_year.",3)
         AND FIND_IN_SET(oo.org_id, '".$bu_org_id."')
         AND o.org_id IS NOT NULL";
 
