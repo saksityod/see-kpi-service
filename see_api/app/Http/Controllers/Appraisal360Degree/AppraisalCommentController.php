@@ -97,7 +97,7 @@ class AppraisalCommentController extends Controller
 				",array($request->emp_result_id)));
 				
 				$isUseritems = $items->filter(function ($value) {
-					$empInfo = Employee::find(Auth::id());
+					$empInfo = Employee::where('is_active','1')->find(Auth::id());
 					return $value->emp_id == $empInfo->emp_id;
 				});
 				

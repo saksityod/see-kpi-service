@@ -364,7 +364,7 @@ class EmpResultJudgementController extends Controller
 
 
         // set parameter
-        $employee = Employee::find(Auth::id());
+        $employee = Employee::where('is_active','1')->find(Auth::id());
         $appraisalLevel = AppraisalLevel::find($employee->level_id);
         $AuthOrgLevel = collect(DB::select("
             SELECT level_id, appraisal_level_name
@@ -542,7 +542,7 @@ class EmpResultJudgementController extends Controller
         $levelList = $this->advanSearch->GetAllParentLevel($appraisalLevel['level_id'], true);
 
         // set parameter
-        $employee = Employee::find(Auth::id());
+        $employee = Employee::where('is_active','1')->find(Auth::id());
         $appraisalLevel = AppraisalLevel::find($employee->level_id);
 
         // หา level ที่เป็นระดับ bu และ coo และ board

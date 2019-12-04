@@ -47,7 +47,7 @@ class BonusAdjustmentController extends Controller
         $qryEmpId = empty($gueOrgCodeByEmpId) && empty($request->emp_id) ? "" : " AND (er.emp_id = '{$request->emp_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByEmpId}'))";
 
         $all_emp = $this->advanSearch->isAll();
-        $employee = Employee::find(Auth::id());
+        $employee = Employee::where('is_active','1')->find(Auth::id());
         if ($all_emp[0]->count_no > 0) {
             if(empty($request->org_id)) {
                 $qryOrgId = "";

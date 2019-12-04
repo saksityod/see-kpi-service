@@ -1438,6 +1438,7 @@ class AppraisalGroupController extends Controller
 				SELECT emp.level_id 
 				FROM employee emp
 				WHERE emp.emp_code = '{$loginEmpCode}'
+				AND is_active = 1
 			)
 		"))->first();
 		
@@ -1593,6 +1594,7 @@ class AppraisalGroupController extends Controller
 						SELECT emp_id 
 						FROM employee 
 						WHERE emp_code = '{$auth}'
+						AND is_active = 1
 					) AS assessor_id,
 					CONCAT('#', '{$assessorGroup->assessor_group_id}', er.emp_result_id, er.emp_id,' (','{$assessorGroup->assessor_group_name}',')') as emp_name,
 					air.structure_weight_percent, aps.nof_target_score, air.weight_percent,

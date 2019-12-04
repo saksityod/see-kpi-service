@@ -48,6 +48,7 @@ class AuthenticateController extends Controller
 			left outer join position p
 			on a.position_id = p.position_id
 			where a.emp_code = ?
+			AND a.is_active = 1
 		", array(Auth::id()));
 		
 		

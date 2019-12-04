@@ -679,7 +679,7 @@ class AdvanceSearchController extends Controller
                 ->orderBy('seq_no', 'asc')
                 ->get();
         } else {
-            $employee = Employee::find(Auth::id());
+            $employee = Employee::where('is_active','1')->find(Auth::id());
             $gue_emp_level = $this->GetallUnderLevel($employee->level_id);
             $underEmps = $this->GetallUnderEmp(Auth::id());
             $indLevels = DB::select("
@@ -771,7 +771,7 @@ class AdvanceSearchController extends Controller
                 ORDER BY org.org_code ASC
             ");
         } else {
-            $employee = Employee::find(Auth::id());
+            $employee = Employee::where('is_active','1')->find(Auth::id());
             $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
             $orgs = DB::select("
                 SELECT org.org_id, org.org_name
@@ -792,7 +792,7 @@ class AdvanceSearchController extends Controller
 
     public function GetEmployeeName(Request $request)
     {
-        $emp = Employee::find(Auth::id());
+        $emp = Employee::where('is_active','1')->find(Auth::id());
         $all_emp = DB::select("
             SELECT sum(b.is_all_employee) count_no
             FROM employee a
@@ -822,7 +822,7 @@ class AdvanceSearchController extends Controller
                 limit 15
             ");
         } else {
-            $employee = Employee::find(Auth::id());
+            $employee = Employee::where('is_active','1')->find(Auth::id());
             $findIn = $this->GetallUnderOrgByOrg($employee->org_id);
             if(empty($request->organization_id)) {
                 $gueOrgCodeByOrgId = "and (e.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
@@ -849,7 +849,7 @@ class AdvanceSearchController extends Controller
 
     public function GetPositionName(Request $request)
     {
-        $emp = Employee::find(Auth::id());
+        $emp = Employee::where('is_active','1')->find(Auth::id());
         $all_emp = DB::select("
             SELECT sum(b.is_all_employee) count_no
             from employee a
@@ -882,7 +882,7 @@ class AdvanceSearchController extends Controller
                 Order by position_name
             ");
         } else {
-            $employee = Employee::find(Auth::id());
+            $employee = Employee::where('is_active','1')->find(Auth::id());
             $findIn = $this->GetallUnderOrgByOrg($employee->org_id);
             if(empty($request->organization_id)) {
                 $gueOrgCodeByOrgId = "and (a.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '".$findIn."'))";
@@ -930,7 +930,7 @@ class AdvanceSearchController extends Controller
     //             ORDER BY org.org_code ASC
     //         ");
     //     } else {
-    //         $employee = Employee::find(Auth::id());
+    //         $employee = Employee::where('is_active','1')->find(Auth::id());
     //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
     //         $orgs = DB::select("
     //             SELECT org.org_id, org.org_name
@@ -951,7 +951,7 @@ class AdvanceSearchController extends Controller
 
     // public function GetEmployeeName(Request $request)
     // {
-    //     $emp = Employee::find(Auth::id());
+    //     $emp = Employee::where('is_active','1')->find(Auth::id());
     //     $all_emp = DB::select("
     //         SELECT sum(b.is_all_employee) count_no
     //         FROM employee a
@@ -975,7 +975,7 @@ class AdvanceSearchController extends Controller
     //             limit 15
     //         ");
     //     } else {
-    //         $employee = Employee::find(Auth::id());
+    //         $employee = Employee::where('is_active','1')->find(Auth::id());
     //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
     //         $items = DB::select("
     //             Select e.emp_code, e.emp_name, e.emp_id
@@ -997,7 +997,7 @@ class AdvanceSearchController extends Controller
 
     // public function GetPositionName(Request $request)
     // {
-    //     $emp = Employee::find(Auth::id());
+    //     $emp = Employee::where('is_active','1')->find(Auth::id());
     //     $all_emp = DB::select("
     //         SELECT sum(b.is_all_employee) count_no
     //         from employee a
@@ -1023,7 +1023,7 @@ class AdvanceSearchController extends Controller
     //             Order by position_name
     //         ");
     //     } else {
-    //         $employee = Employee::find(Auth::id());
+    //         $employee = Employee::where('is_active','1')->find(Auth::id());
     //         $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
     //         $items = DB::select("
     //             Select distinct b.position_id, b.position_name
@@ -1244,7 +1244,7 @@ class AdvanceSearchController extends Controller
             }
         } else {
             if(empty($request->org_id)) {
-                $employee = Employee::find(Auth::id());
+                $employee = Employee::where('is_active','1')->find(Auth::id());
                 $gueOrgCodeByOrgId = $this->GetallUnderOrgByOrg($employee->org_id);
                 $orgIdQryStr = "AND (er.org_id = '{$employee->org_id}' OR find_in_set(org.org_code, '{$gueOrgCodeByOrgId}') )";
             } else {
