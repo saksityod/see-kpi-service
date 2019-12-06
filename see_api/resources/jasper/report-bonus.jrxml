@@ -1559,7 +1559,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					</jr:table>
 				</componentElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="151" y="0" width="79" height="32" backcolor="#A2BCF1" uuid="91b91e99-d1ed-4361-ba71-506af2bbd628"/>
+					<reportElement mode="Opaque" x="151" y="0" width="79" height="32" backcolor="#A2BCF1" uuid="91b91e99-d1ed-4361-ba71-506af2bbd628"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1569,7 +1569,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					<textFieldExpression><![CDATA[""]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="230" y="0" width="54" height="32" backcolor="#A2BCF1" uuid="6fbaad46-8f04-4b19-bcc8-526d10f7fa3b"/>
+					<reportElement mode="Opaque" x="230" y="0" width="54" height="32" backcolor="#A2BCF1" uuid="6fbaad46-8f04-4b19-bcc8-526d10f7fa3b"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
@@ -1784,7 +1784,7 @@ ORDER BY total.parent_org_code ASC, total.mid_org_code ASC, total.child_org_code
 					</jr:table>
 				</componentElement>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="760" y="0" width="42" height="32" backcolor="#A2BCF1" uuid="b1a4f8af-6ab6-4a79-9947-1a2185f500eb"/>
+					<reportElement mode="Opaque" x="760" y="0" width="42" height="32" backcolor="#A2BCF1" uuid="b1a4f8af-6ab6-4a79-9947-1a2185f500eb"/>
 					<box leftPadding="3">
 						<pen lineWidth="1.0" lineStyle="Dotted" lineColor="#FFFFFF"/>
 					</box>
